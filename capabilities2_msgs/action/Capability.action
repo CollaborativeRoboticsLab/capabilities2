@@ -1,0 +1,13 @@
+# goal
+Header header
+capabilities2_msgs/CapabilityCommand goal
+---
+# result
+Header header
+capabilities2_msgs/CapabilityResponse result
+---
+# feedback
+Header header
+string name
+int32 progress
+string state
