@@ -8,6 +8,6 @@ capabilities2_msgs/CapabilityResponse result
 ---
 # feedback
 Header header
-string name
+capabilities2_msgs/Capability capability
 int32 progress
-string state
+capabilities2_msgs/Remapping[] state

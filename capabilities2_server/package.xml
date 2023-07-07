@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>capabilities2</name>
+  <name>capabilities2_server</name>
   <version>0.0.1</version>
   <description>
-    meta-package for the capabilities2 interface
+    Package that implements the capabilities2 service, a successor to capabilities
   </description>
 
   <maintainer email="michael.pritchard@canberra.edu.au">Michael Pritchard</maintainer>
@@ -13,14 +13,16 @@
 
   <license>MIT</license>
 
-  <url type="repository">https://github.com/AIResearchLab/capabilities2</url>
-
   <buildtool_depend>catkin</buildtool_depend>
 
-  <exec_depend>capabilities2_msgs</exec_depend>
-  <exec_depend>capabilities2_server</exec_depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>roslaunch</depend>
+  <depend>capabilities2_msgs</depend>
+  <depend>nodelet</depend>
+
+  <exec_depend>bondpy</exec_depend>
 
   <export>
-    <metapackage />
   </export>
 </package>

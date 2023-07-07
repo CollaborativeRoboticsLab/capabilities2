@@ -2,4 +2,4 @@
 # capabilities2_msgs/Capability capability
 int32 progress
 bool success
-string response
+capabilities2_msgs/Remapping[] response

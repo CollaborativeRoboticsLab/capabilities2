@@ -1,12 +1,11 @@
 # an abstract robot capability
 # the capability is described in a form that can be encoded or translated into natural language and back
-capabilities2_msgs/Capability capability
+capabilities2_msgs/CapabilityCommand command
 string description
 string type
-capabilities2_msgs/CapabilityCommand command
 
 ###
-# standard abstract robot capabilities
+# standard abstract robot capability types
 ###
 
 # general

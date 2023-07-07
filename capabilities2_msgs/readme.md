@@ -7,8 +7,13 @@ Message service and action types for the capabilities2 interface.
 - `Capability.msg` - A message type for a capability of a robot.
 - `CapabilityCommand.msg` - A message type for a command to a robot.
 - `CapabilityResponse.msg` - A message type for a response from a robot related to a capability.
+- `NaturalCapability.msg` - A message type for a natural capability of a robot.
 
 ## Service Types
+
+- `EstablishBond.srv` - A service type for establishing a bond between a robot and a client.
+- `FreeCapability.srv` - A service type for freeing a capability of a robot.
+- `GetCapabilitySpec.srv` - A service type for getting the specification of a capability of a robot.
 
 ## Action Types
 
