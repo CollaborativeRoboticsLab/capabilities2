@@ -1,18 +1,9 @@
 #pragma once
 
-#include <rclcpp/rclcpp.hpp>
+#include <capabilities2_server/capabilities_db.hpp>
 
 namespace capabilities2_server
 {
-class CapabilitiesDB
-{
-public:
-  CapabilitiesDB();
-  ~CapabilitiesDB();
-
-  void load_capability_models();
-  void get_capability_model();
-};
 
 class CapabilitiesAPI
 {
@@ -51,17 +42,4 @@ public:
 private:
   CapabilitiesDB DB;
 };
-
-class CapabilitiesServer : public rclcpp::Node
-{
-public:
-  CapabilitiesServer() : Node("capabilities_server")
-  {
-    // load capability models
-  }
-
-private:
-  CapabilitiesAPI API;
-};
-
 }  // namespace capabilities2_server

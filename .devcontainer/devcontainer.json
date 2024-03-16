@@ -1,5 +1,5 @@
 {
-  "name": "humble desktop",
+  "name": "rolling base",
   "dockerFile": "Dockerfile",
   "remoteUser": "vscode",
   "containerEnv": {
