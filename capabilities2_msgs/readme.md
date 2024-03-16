@@ -14,6 +14,10 @@ Message service and action types for the capabilities2 interface.
 - `EstablishBond.srv` - A service type for establishing a bond between a robot and a client.
 - `FreeCapability.srv` - A service type for freeing a capability of a robot.
 - `GetCapabilitySpec.srv` - A service type for getting the specification of a capability of a robot.
+- `GetCapabilitySpecs.srv` - A service type for getting the specifications of all capabilities of a robot.
+- `GetInterfaces.srv` - A service type for getting the interfaces of a robot.
+- `GetProviders.srv` - A service type for getting the providers of a capability of a robot.
+- `GetRemappings.srv` - A service type for getting the remappings of a capability of a robot.
 
 ## Action Types
 

@@ -1,7 +1,7 @@
 Header header
-# Capability which this event pretains to
+# Capability which this event pertains to
 string capability
-# Capability provider which this event pretains to
+# Capability provider which this event pertains to
 string provider
 
 # Event types

@@ -9,11 +9,10 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
     && apt-get update && apt-get upgrade -y \
     && apt-get install -y \
-    && sudo \
-    && git \
+    sudo \
+    git \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME \
-    &&  echo "for bcfile in /usr/share/bash-completion/completions/*; do . \$bcfile; done" >> /home/$USERNAME/.bashrc
+    && chmod 0440 /etc/sudoers.d/$USERNAME
 
 # Switch from root to user
 USER $USERNAME

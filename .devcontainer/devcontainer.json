@@ -1,12 +1,16 @@
 {
   "name": "humble desktop",
   "dockerFile": "Dockerfile",
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}"
+  },
   "runArgs": [
     "--privileged",
     "--network=host"
   ],
-  "workspaceMount": "source=${localWorkspaceFolder},target=/${localWorkspaceFolderBasename},type=bind",
-  "workspaceFolder": "/${localWorkspaceFolderBasename}",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/${remoteUser}/colcon_ws/${localWorkspaceFolderBasename},type=bind",
+  "workspaceFolder": "/home/${remoteUser}/colcon_ws/${localWorkspaceFolderBasename}",
   "mounts": [
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.bash_history,target=/home/vscode/.bash_history,type=bind"
   ]
