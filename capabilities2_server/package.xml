@@ -16,10 +16,11 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
+  <depend>bond</depend>
   <depend>capabilities2_msgs</depend>
 
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>bondpy</exec_depend>
+  <exec_depend>rclpy</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

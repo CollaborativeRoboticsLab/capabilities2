@@ -2,6 +2,10 @@
 
 This is the capabilities2 server. It allows interaction with the capabilities2 API.
 
+## System dependencies
+
+    - sqlite3
+
 ## API
 
 ### Services
