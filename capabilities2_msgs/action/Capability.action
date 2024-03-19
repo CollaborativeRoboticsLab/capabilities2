@@ -1,13 +1,13 @@
 # goal
-Header header
+std_msgs/Header header
 capabilities2_msgs/CapabilityCommand goal
 ---
 # result
-Header header
+std_msgs/Header header
 capabilities2_msgs/CapabilityResponse result
 ---
 # feedback
-Header header
+std_msgs/Header header
 capabilities2_msgs/Capability capability
 int32 progress
 capabilities2_msgs/Remapping[] state

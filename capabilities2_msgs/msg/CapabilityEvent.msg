@@ -1,4 +1,4 @@
-Header header
+std_msgs/Header header
 # Capability which this event pertains to
 string capability
 # Capability provider which this event pertains to

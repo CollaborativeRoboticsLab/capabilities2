@@ -9,8 +9,8 @@
     "--privileged",
     "--network=host"
   ],
-  "workspaceMount": "source=${localWorkspaceFolder},target=/home/${remoteUser}/colcon_ws/${localWorkspaceFolderBasename},type=bind",
-  "workspaceFolder": "/home/${remoteUser}/colcon_ws/${localWorkspaceFolderBasename}",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/vscode/colcon_ws/src/${localWorkspaceFolderBasename},type=bind",
+  "workspaceFolder": "/home/vscode/colcon_ws/src/${localWorkspaceFolderBasename}",
   "mounts": [
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.bash_history,target=/home/vscode/.bash_history,type=bind"
   ]
