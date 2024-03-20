@@ -19,7 +19,9 @@
   <depend>bond</depend>
   <depend>capabilities2_msgs</depend>
 
-  <exec_depend>rclpy</exec_depend>
+  <!-- system dependency -->
+  <depend>sqlite3</depend>
+
   <exec_depend>rclpy</exec_depend>
 
   <export>

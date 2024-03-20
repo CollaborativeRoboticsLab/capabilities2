@@ -9,7 +9,7 @@ namespace models
 {
 
 // header type definition
-struct header
+struct header_model_t
 {
   std::string name;
   int version;

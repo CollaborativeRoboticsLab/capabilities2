@@ -10,12 +10,12 @@ namespace models
 {
 
 // semantic interface model definition
-struct semantic_interface
+struct semantic_interface_model_t
 {
-  header header;
+  header_model_t header;
   std::string redefines;
   std::string global_namespace;
-  remappings remappings;
+  remappings_model_t remappings;
 
   void from_yaml(const YAML::Node& node)
   {
@@ -37,13 +37,13 @@ struct semantic_interface
 
   static std::string to_sql_table()
   {
-    return header.to_sql_table() + ", redefines TEXT NOT NULL, global_namespace TEXT, remappings TEXT";
+    return header_model_t::to_sql_table() + ", redefines TEXT NOT NULL, global_namespace TEXT, remappings TEXT";
   }
 
   std::string to_sql_values() const
   {
-    return header.to_sql_values() + ", '" + redefines + "', '" + global_namespace + "', '" + remappings.to_string() +
-           "'";
+    return header_model_t::to_sql_values() + ", '" + redefines + "', '" + global_namespace + "', '" +
+           remappings.to_string() + "'";
   }
 };
 

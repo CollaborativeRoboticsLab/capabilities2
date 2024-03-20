@@ -13,8 +13,8 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(capabilities2_msgs REQUIRED)
 find_package(bond REQUIRED)
+find_package(capabilities2_msgs REQUIRED)
 
 # Find SQLite3
 find_package(SQLite3)
@@ -35,8 +35,8 @@ include_directories(
 )
 
 add_executable(capabilities_server src/capabilities2_server_node.cpp)
-ament_target_dependencies(capabilities_server rclcpp bond capabilities2_msgs sqlite3 yaml-cpp)
-target_link_libraries(your_target_name
+ament_target_dependencies(capabilities_server rclcpp bond capabilities2_msgs SQLite3 yaml-cpp)
+target_link_libraries(capabilities_server
   ${SQLITE3_LIBRARIES}
   ${yaml-cpp_LIBRARIES}
 )

@@ -5,7 +5,7 @@
 
 #include <capabilities2_server/capabilities_api.hpp>
 
-#include <capabilities2_msgs/msg/CapabilityEvent.hpp>
+#include <capabilities2_msgs/msg/capability_event.hpp>
 
 namespace capabilities2_server
 {

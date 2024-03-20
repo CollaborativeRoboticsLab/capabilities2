@@ -9,7 +9,7 @@
 
 #include <capabilities2_server/models/interface.hpp>
 #include <capabilities2_server/models/semantic_interface.hpp>
-#include <capabilities2_server/models/provider.hpp
+#include <capabilities2_server/models/provider.hpp>
 
 namespace capabilities2_server
 {
@@ -34,21 +34,21 @@ public:
   /* inserters */
 
   // insert interface
-  void insert_interface(const models::interface& interface)
+  void insert_interface(const models::interface_model_t& interface)
   {
     const std::string query = "INSERT INTO interfaces VALUES (" + interface.to_sql_values() + ")";
     exec(query);
   }
 
   // insert semantic interface
-  void insert_semantic_interface(const models::semantic_interface& semantic_interface)
+  void insert_semantic_interface(const models::semantic_interface_model_t& semantic_interface)
   {
     const std::string query = "INSERT INTO semantic_interfaces VALUES (" + semantic_interface.to_sql_values() + ")";
     exec(query);
   }
 
   // insert provider
-  void insert_provider(const models::provider& provider)
+  void insert_provider(const models::provider_model_t& provider)
   {
     const std::string query = "INSERT INTO providers VALUES (" + provider.to_sql_values() + ")";
     exec(query);
@@ -57,7 +57,7 @@ public:
   /* getters */
 
   // get interface
-  models::interface get_interface(const std::string& name)
+  models::interface_model_t get_interface(const std::string& name)
   {
     sqlite3_stmt* stmt;
     const std::string query = "SELECT * FROM interfaces WHERE name = '" + name + "'";
@@ -69,7 +69,7 @@ public:
       throw std::runtime_error("Error preparing query: " + std::string(sqlite3_errmsg(db_)));
     }
 
-    models::interface interface;
+    models::interface_model_t interface;
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
       interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
@@ -84,7 +84,7 @@ public:
   }
 
   // get interfaces
-  std::vector<models::interface> get_interfaces()
+  std::vector<models::interface_model_t> get_interfaces()
   {
     sqlite3_stmt* stmt;
     const std::string query = "SELECT * FROM interfaces";
@@ -96,10 +96,10 @@ public:
       throw std::runtime_error("Error preparing query: " + std::string(sqlite3_errmsg(db_)));
     }
 
-    std::vector<models::interface> interfaces;
+    std::vector<models::interface_model_t> interfaces;
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      models::interface interface;
+      models::interface interface_model_t;
       interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
       interface.header.version = sqlite3_column_int(stmt, 1);
       interface.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
@@ -113,7 +113,7 @@ public:
   }
 
   // get semantic interface
-  models::semantic_interface get_semantic_interface(const std::string& name)
+  models::semantic_interface_model_t get_semantic_interface(const std::string& name)
   {
     sqlite3_stmt* stmt;
     const std::string query = "SELECT * FROM semantic_interfaces WHERE name = '" + name + "'";
@@ -125,7 +125,7 @@ public:
       throw std::runtime_error("Error preparing query: " + std::string(sqlite3_errmsg(db_)));
     }
 
-    models::semantic_interface semantic_interface;
+    models::semantic_interface_model_t semantic_interface;
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
       semantic_interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
@@ -142,7 +142,7 @@ public:
   }
 
   // get semantic interfaces
-  std::vector<models::semantic_interface> get_semantic_interfaces()
+  std::vector<models::semantic_interface_model_t> get_semantic_interfaces()
   {
     sqlite3_stmt* stmt;
     const std::string query = "SELECT * FROM semantic_interfaces";
@@ -154,10 +154,10 @@ public:
       throw std::runtime_error("Error preparing query: " + std::string(sqlite3_errmsg(db_)));
     }
 
-    std::vector<models::semantic_interface> semantic_interfaces;
+    std::vector<models::semantic_interface_model_t> semantic_interfaces;
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      models::semantic_interface semantic_interface;
+      models::semantic_interface_model_t semantic_interface;
       semantic_interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
       semantic_interface.header.version = sqlite3_column_int(stmt, 1);
       semantic_interface.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
@@ -173,7 +173,7 @@ public:
   }
 
   // get provider
-  models::provider get_provider(const std::string& name)
+  models::provider_model_t get_provider(const std::string& name)
   {
     sqlite3_stmt* stmt;
     const std::string query = "SELECT * FROM providers WHERE name = '" + name + "'";
@@ -185,7 +185,7 @@ public:
       throw std::runtime_error("Error preparing query: " + std::string(sqlite3_errmsg(db_)));
     }
 
-    models::provider provider;
+    models::provider_model_t provider;
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
       provider.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
@@ -201,7 +201,7 @@ public:
   }
 
   // get providers
-  std::vector<models::provider> get_providers()
+  std::vector<models::provider_model_t> get_providers()
   {
     sqlite3_stmt* stmt;
     const std::string query = "SELECT * FROM providers";
@@ -213,10 +213,10 @@ public:
       throw std::runtime_error("Error preparing query: " + std::string(sqlite3_errmsg(db_)));
     }
 
-    std::vector<models::provider> providers;
+    std::vector<models::provider_model_t> providers;
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      models::provider provider;
+      models::provider_model_t provider;
       provider.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
       provider.header.version = sqlite3_column_int(stmt, 1);
       provider.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
@@ -233,7 +233,7 @@ public:
   /* updaters */
 
   // update interface
-  void update_interface(const models::interface& interface)
+  void update_interface(const models::interface_model_t& interface)
   {
     const std::string query =
         "UPDATE interfaces SET " + interface.to_sql_values() + " WHERE name = '" + interface.header.name + "'";
@@ -241,7 +241,7 @@ public:
   }
 
   // update semantic interface
-  void update_semantic_interface(const models::semantic_interface& semantic_interface)
+  void update_semantic_interface(const models::semantic_interface_model_t& semantic_interface)
   {
     const std::string query = "UPDATE semantic_interfaces SET " + semantic_interface.to_sql_values() +
                               " WHERE name = '" + semantic_interface.header.name + "'";
@@ -249,7 +249,7 @@ public:
   }
 
   // update provider
-  void update_provider(const models::provider& provider)
+  void update_provider(const models::provider_model_t& provider)
   {
     const std::string query =
         "UPDATE providers SET " + provider.to_sql_values() + " WHERE name = '" + provider.header.name + "'";
@@ -259,7 +259,7 @@ public:
   /* foreign keys */
 
   // get providers by interface
-  std::vector<models::provider> get_providers_by_interface(const std::string& interface_name)
+  std::vector<models::provider_model_t> get_providers_by_interface(const std::string& interface_name)
   {
     // could be a semantic interface or an interface
     sqlite3_stmt* stmt;
@@ -271,10 +271,10 @@ public:
       throw std::runtime_error("Error preparing query: " + std::string(sqlite3_errmsg(db_)));
     }
 
-    std::vector<models::provider> providers;
+    std::vector<models::provider_model_t> providers;
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      models::provider provider;
+      models::provider_model_t provider;
       provider.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
       provider.header.version = sqlite3_column_int(stmt, 1);
       provider.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
@@ -286,7 +286,8 @@ public:
   }
 
   // get semantic interfaces by interface
-  std::vector<models::semantic_interface> get_semantic_interfaces_by_interface(const std::string& interface_name)
+  std::vector<models::semantic_interface_model_t>
+  get_semantic_interfaces_by_interface(const std::string& interface_name)
   {
     sqlite3_stmt* stmt;
     const std::string query = "SELECT * FROM semantic_interfaces WHERE redefines = '" + interface_name + "'";
@@ -297,10 +298,10 @@ public:
       throw std::runtime_error("Error preparing query: " + std::string(sqlite3_errmsg(db_)));
     }
 
-    std::vector<models::semantic_interface> semantic_interfaces;
+    std::vector<models::semantic_interface_model_t> semantic_interfaces;
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      models::semantic_interface semantic_interface;
+      models::semantic_interface_model_t semantic_interface;
       semantic_interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
       semantic_interface.header.version = sqlite3_column_int(stmt, 1);
       semantic_interface.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
@@ -348,13 +349,13 @@ protected:
   {
     // create tables if they do not exists
     const std::string create_interface_table =
-        "CREATE TABLE IF NOT EXISTS interfaces (" + models::interface::to_sql_table() + ")";
+        "CREATE TABLE IF NOT EXISTS interfaces (" + models::interface_model_t::to_sql_table() + ")";
 
     const std::string create_semantic_interface_table =
-        "CREATE TABLE IF NOT EXISTS semantic_interfaces (" + models::semantic_interface::to_sql_table() + ")";
+        "CREATE TABLE IF NOT EXISTS semantic_interfaces (" + models::semantic_interface_model_t::to_sql_table() + ")";
 
     const std::string create_provider_table =
-        "CREATE TABLE IF NOT EXISTS providers (" + models::provider::to_sql_table() + ")";
+        "CREATE TABLE IF NOT EXISTS providers (" + models::provider_model_t::to_sql_table() + ")";
 
     // XXX TODO: create meta table
     // meta table

@@ -9,7 +9,7 @@ namespace capabilities2_server
 namespace models
 {
 
-struct remapping
+struct remapping_model_t
 {
   std::string from;
   std::string to;
@@ -22,23 +22,23 @@ struct remapping
     return node;
   }
 
-  bool operator==(const remapping& other) const
+  bool operator==(const remapping_model_t& other) const
   {
     return from == other.from && to == other.to;
   }
 
-  bool operator!=(const remapping& other) const
+  bool operator!=(const remapping_model_t& other) const
   {
     return !(*this == other);
   }
 };
 
-struct remappings
+struct remappings_model_t
 {
-  std::vector<remapping> parameters;
-  std::vector<remapping> topics;
-  std::vector<remapping> services;
-  std::vector<remapping> actions;
+  std::vector<remapping_model_t> parameters;
+  std::vector<remapping_model_t> topics;
+  std::vector<remapping_model_t> services;
+  std::vector<remapping_model_t> actions;
 
   void from_yaml(const YAML::Node& node)
   {
@@ -46,7 +46,7 @@ struct remappings
     {
       for (const auto& parameter : node["parameters"])
       {
-        remapping r;
+        remapping_model_t r;
         r.from = parameter["from"].as<std::string>();
         r.to = parameter["to"].as<std::string>();
         parameters.push_back(r);
@@ -57,7 +57,7 @@ struct remappings
     {
       for (const auto& topic : node["topics"])
       {
-        remapping r;
+        remapping_model_t r;
         r.from = topic["from"].as<std::string>();
         r.to = topic["to"].as<std::string>();
         topics.push_back(r);
@@ -68,7 +68,7 @@ struct remappings
     {
       for (const auto& service : node["services"])
       {
-        remapping r;
+        remapping_model_t r;
         r.from = service["from"].as<std::string>();
         r.to = service["to"].as<std::string>();
         services.push_back(r);
@@ -79,7 +79,7 @@ struct remappings
     {
       for (const auto& action : node["actions"])
       {
-        remapping r;
+        remapping_model_t r;
         r.from = action["from"].as<std::string>();
         r.to = action["to"].as<std::string>();
         actions.push_back(r);

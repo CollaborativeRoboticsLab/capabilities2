@@ -11,12 +11,12 @@ namespace models
 {
 
 // interface specification type
-struct specification
+struct specification_model_t
 {
-  std::map<std::string, resource> parameters;
-  std::map<std::string, resource> topics;
-  std::map<std::string, resource> services;
-  std::map<std::string, resource> actions;
+  std::map<std::string, resource_model_t> parameters;
+  std::map<std::string, resource_model_t> topics;
+  std::map<std::string, resource_model_t> services;
+  std::map<std::string, resource_model_t> actions;
 
   void from_yaml(const YAML::Node& node)
   {
@@ -24,7 +24,7 @@ struct specification
     {
       for (const auto& parameter : node["parameters"])
       {
-        resource r;
+        resource_model_t r;
         r.name = parameter.first.as<std::string>();
         r.type = parameter.second["type"].as<std::string>();
         r.description = parameter.second["description"].as<std::string>();
@@ -41,13 +41,13 @@ struct specification
     node["actions"] = actions;
     return node;
   }
-}
+};
 
 // interface model definition
-struct interface
+struct interface_model_t
 {
-  header header;
-  specification interface;
+  header_model_t header;
+  specification_model_t interface;
 
   void from_yaml(const YAML::Node& node)
   {

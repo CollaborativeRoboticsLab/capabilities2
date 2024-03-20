@@ -9,7 +9,7 @@ namespace models
 {
 
 // computation graph resource type definition
-struct resource
+struct resource_model_t
 {
   std::string name;
   std::string type;

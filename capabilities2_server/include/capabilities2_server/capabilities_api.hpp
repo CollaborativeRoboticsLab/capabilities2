@@ -7,9 +7,10 @@
 
 #include <capabilities2_server/capabilities_db.hpp>
 
-#include <bond/msg/Bond.hpp>
-#include <capabilities2_msgs/msg/CapabilitySpec.hpp>
-#include <capabilities2_msgs/msg/Remapping.hpp>
+#include <bond/msg/status.hpp>
+#include <capabilities2_msgs/msg/remapping.hpp>
+#include <capabilities2_msgs/msg/capability_spec.hpp>
+#include <capabilities2_msgs/msg/capability_event.hpp>
 
 namespace capabilities2_server
 {

@@ -11,12 +11,12 @@ namespace models
 {
 
 // provider model definition
-struct provider
+struct provider_model_t
 {
-  header header;
+  header_model_t header;
   std::string implements;
   std::map<std::string, std::string> depends_on;
-  remappings remappings;
+  remappings_model_t remappings;
   std::string runner;
 
   void from_yaml(const YAML::Node& node)
@@ -44,7 +44,7 @@ struct provider
 
   static std::string to_sql_table()
   {
-    return header.to_sql_table() + ", implements TEXT NOT NULL, depends_on TEXT, remappings TEXT, runner TEXT";
+    return header_model_t::to_sql_table() + ", implements TEXT NOT NULL, depends_on TEXT, remappings TEXT, runner TEXT";
   }
 
   std::string to_sql_values() const
