@@ -42,14 +42,15 @@ struct provider_model_t
     return node;
   }
 
-  static std::string to_sql_table()
+  static const std::string to_sql_table()
   {
     return header_model_t::to_sql_table() + ", implements TEXT NOT NULL, depends_on TEXT, remappings TEXT, runner TEXT";
   }
 
-  std::string to_sql_values() const
+  const std::string to_sql_values() const
   {
-    return header.to_sql_values() + ", '" + implements + "', '" + remappings.to_string() + "', '" + runner + "'";
+    return header.to_sql_values() + ", '" + implements + "', '" + YAML::Dump(remappings.to_yaml()) + "', '" + runner +
+           "'";
   }
 };
 

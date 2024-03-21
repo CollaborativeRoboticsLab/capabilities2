@@ -20,6 +20,7 @@
   <depend>capabilities2_msgs</depend>
 
   <!-- system dependency -->
+  <depend>tinyxml2</depend>
   <depend>sqlite3</depend>
 
   <exec_depend>rclpy</exec_depend>

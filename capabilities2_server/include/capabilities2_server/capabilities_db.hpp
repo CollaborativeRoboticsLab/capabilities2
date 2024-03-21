@@ -72,11 +72,7 @@ public:
     models::interface_model_t interface;
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-      interface.header.version = sqlite3_column_int(stmt, 1);
-      interface.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-      interface.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-      interface.interface = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+      interface = to_interface(stmt);
     }
 
     sqlite3_finalize(stmt);
@@ -99,12 +95,7 @@ public:
     std::vector<models::interface_model_t> interfaces;
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      models::interface interface_model_t;
-      interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-      interface.header.version = sqlite3_column_int(stmt, 1);
-      interface.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-      interface.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-      interface.interface = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+      models::interface_model_t interface = to_interface(stmt);
       interfaces.push_back(interface);
     }
 
@@ -128,13 +119,7 @@ public:
     models::semantic_interface_model_t semantic_interface;
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      semantic_interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-      semantic_interface.header.version = sqlite3_column_int(stmt, 1);
-      semantic_interface.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-      semantic_interface.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-      semantic_interface.redefines = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
-      semantic_interface.global_namespace = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
-      semantic_interface.remappings = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)));
+      semantic_interface = to_semantic_interface(stmt);
     }
 
     sqlite3_finalize(stmt);
@@ -157,14 +142,7 @@ public:
     std::vector<models::semantic_interface_model_t> semantic_interfaces;
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      models::semantic_interface_model_t semantic_interface;
-      semantic_interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-      semantic_interface.header.version = sqlite3_column_int(stmt, 1);
-      semantic_interface.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-      semantic_interface.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-      semantic_interface.redefines = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
-      semantic_interface.global_namespace = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
-      semantic_interface.remappings = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)));
+      models::semantic_interface_model_t semantic_interface = to_semantic_interface(stmt);
       semantic_interfaces.push_back(semantic_interface);
     }
 
@@ -188,12 +166,7 @@ public:
     models::provider_model_t provider;
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      provider.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-      provider.header.version = sqlite3_column_int(stmt, 1);
-      provider.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-      provider.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-      provider.implements = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
-      provider.runner = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+      provider = to_provider(stmt);
     }
 
     sqlite3_finalize(stmt);
@@ -216,13 +189,7 @@ public:
     std::vector<models::provider_model_t> providers;
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      models::provider_model_t provider;
-      provider.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-      provider.header.version = sqlite3_column_int(stmt, 1);
-      provider.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-      provider.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-      provider.implements = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
-      provider.runner = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+      models::provider_model_t provider = to_provider(stmt);
       providers.push_back(provider);
     }
 
@@ -274,13 +241,7 @@ public:
     std::vector<models::provider_model_t> providers;
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      models::provider_model_t provider;
-      provider.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-      provider.header.version = sqlite3_column_int(stmt, 1);
-      provider.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-      provider.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-      provider.implements = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
-      provider.runner = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+      models::provider_model_t provider = to_provider(stmt);
       providers.push_back(provider);
     }
   }
@@ -301,14 +262,7 @@ public:
     std::vector<models::semantic_interface_model_t> semantic_interfaces;
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      models::semantic_interface_model_t semantic_interface;
-      semantic_interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-      semantic_interface.header.version = sqlite3_column_int(stmt, 1);
-      semantic_interface.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-      semantic_interface.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-      semantic_interface.redefines = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
-      semantic_interface.global_namespace = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
-      semantic_interface.remappings = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)));
+      models::semantic_interface_model_t semantic_interface = to_semantic_interface(stmt);
       semantic_interfaces.push_back(semantic_interface);
     }
   }
@@ -365,6 +319,59 @@ protected:
     exec(create_interface_table);
     exec(create_semantic_interface_table);
     exec(create_provider_table);
+  }
+
+  // model conversion helpers
+  models::interface_model_t to_interface(sqlite3_stmt* stmt)
+  {
+    models::interface_model_t interface;
+    interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+    interface.header.version = sqlite3_column_int(stmt, 1);
+    interface.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+    interface.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+
+    models::specification_model_t spec;
+    spec.from_yaml(YAML::Load(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)))));
+    interface.interface = spec;
+
+    return interface;
+  }
+
+  models::semantic_interface_model_t to_semantic_interface(sqlite3_stmt* stmt)
+  {
+    models::semantic_interface_model_t semantic_interface;
+    semantic_interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+    semantic_interface.header.version = sqlite3_column_int(stmt, 1);
+    semantic_interface.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+    semantic_interface.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+    semantic_interface.redefines = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
+    semantic_interface.global_namespace = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+
+    models::remappings_model_t r;
+    r.from_yaml(YAML::Load(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)))));
+    semantic_interface.remappings = r;
+
+    return semantic_interface;
+  }
+
+  models::provider_model_t to_provider(sqlite3_stmt* stmt)
+  {
+    models::provider_model_t provider;
+    provider.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+    provider.header.version = sqlite3_column_int(stmt, 1);
+    provider.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+    provider.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+    provider.implements = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
+    provider.depends_on = YAML::Load(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5))))
+                              .as<std::map<std::string, std::string>>();
+
+    models::remappings_model_t r;
+    r.from_yaml(YAML::Load(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)))));
+    provider.remappings = r;
+
+    provider.runner = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 7)));
+
+    return provider;
   }
 
 private:

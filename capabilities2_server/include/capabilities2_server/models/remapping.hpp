@@ -90,10 +90,40 @@ struct remappings_model_t
   YAML::Node to_yaml() const
   {
     YAML::Node node;
-    node["parameters"] = parameters;
-    node["topics"] = topics;
-    node["services"] = services;
-    node["actions"] = actions;
+
+    // parameters
+    YAML::Node p;
+    for (const auto& parameter : parameters)
+    {
+      p.push_back(parameter.to_yaml());
+    }
+    node["parameters"] = p;
+
+    // topics
+    YAML::Node t;
+    for (const auto& topic : topics)
+    {
+      t.push_back(topic.to_yaml());
+    }
+    node["topics"] = t;
+
+    // services
+    YAML::Node s;
+    for (const auto& service : services)
+    {
+      s.push_back(service.to_yaml());
+    }
+    node["services"] = s;
+
+    // actions
+    YAML::Node a;
+    for (const auto& action : actions)
+    {
+      a.push_back(action.to_yaml());
+    }
+    node["actions"] = a;
+
+    // return node
     return node;
   }
 };

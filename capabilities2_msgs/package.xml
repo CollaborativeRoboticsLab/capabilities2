@@ -19,8 +19,6 @@
   <depend>rosidl_default_generators</depend>
   <depend>rosidl_default_runtime</depend>
   <depend>std_msgs</depend>
-  <depend>std_srvs</depend>
-  <depend>actionlib_msgs</depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 

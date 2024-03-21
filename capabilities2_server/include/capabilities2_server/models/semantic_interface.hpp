@@ -35,15 +35,15 @@ struct semantic_interface_model_t
     return node;
   };
 
-  static std::string to_sql_table()
+  static const std::string to_sql_table()
   {
     return header_model_t::to_sql_table() + ", redefines TEXT NOT NULL, global_namespace TEXT, remappings TEXT";
   }
 
   std::string to_sql_values() const
   {
-    return header_model_t::to_sql_values() + ", '" + redefines + "', '" + global_namespace + "', '" +
-           remappings.to_string() + "'";
+    return header.to_sql_values() + ", '" + redefines + "', '" + global_namespace + "', '" +
+           YAML::Dump(remappings.to_yaml()) + "'";
   }
 };
 

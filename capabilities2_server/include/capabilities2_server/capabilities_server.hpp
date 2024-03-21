@@ -1,11 +1,31 @@
 #pragma once
 
+#include <map>
+#include <vector>
 #include <memory>
+#include <string>
+#include <fstream>
+#include <filesystem>
+#include <functional>
+
+#include <tinyxml2.h>
+
 #include <rclcpp/rclcpp.hpp>
 
 #include <capabilities2_server/capabilities_api.hpp>
 
 #include <capabilities2_msgs/msg/capability_event.hpp>
+#include <capabilities2_msgs/srv/establish_bond.hpp>
+#include <capabilities2_msgs/srv/start_capability.hpp>
+#include <capabilities2_msgs/srv/stop_capability.hpp>
+#include <capabilities2_msgs/srv/free_capability.hpp>
+#include <capabilities2_msgs/srv/use_capability.hpp>
+#include <capabilities2_msgs/srv/register_capability.hpp>
+#include <capabilities2_msgs/srv/get_interfaces.hpp>
+#include <capabilities2_msgs/srv/get_semantic_interfaces.hpp>
+#include <capabilities2_msgs/srv/get_providers.hpp>
+#include <capabilities2_msgs/srv/get_capability_spec.hpp>
+#include <capabilities2_msgs/srv/get_capability_specs.hpp>
 
 namespace capabilities2_server
 {
@@ -53,61 +73,61 @@ public:
 
     // pubs
     // events
-    auto event_pub = create_publisher<capabilities2_msgs::msg::CapabilityEvent>("~events", 10);
+    // auto event_pub = create_publisher<capabilities2_msgs::msg::CapabilityEvent>("~events", 10);
 
     // subs
 
     // services
     // establish bond
-    auto establish_bond_srv = create_service<capabilities2_msgs::srv::EstablishBond>(
-        "~establish_bond",
-        std::bind(&CapabilitiesServer::establish_bond, this, std::placeholders::_1, std::placeholders::_2));
+    // auto establish_bond_srv = create_service<capabilities2_msgs::srv::EstablishBond>(
+    //     "~establish_bond",
+    //     std::bind(&CapabilitiesServer::establish_bond, this, std::placeholders::_1, std::placeholders::_2));
 
-    // start capability
-    auto start_capability_srv = create_service<capabilities2_msgs::srv::StartCapability>(
-        "~start_capability",
-        std::bind(&CapabilitiesServer::start_capability, this, std::placeholders::_1, std::placeholders::_2));
+    // // start capability
+    // auto start_capability_srv = create_service<capabilities2_msgs::srv::StartCapability>(
+    //     "~start_capability",
+    //     std::bind(&CapabilitiesServer::start_capability, this, std::placeholders::_1, std::placeholders::_2));
 
-    // stop capability
-    auto stop_capability_srv = create_service<capabilities2_msgs::srv::StopCapability>(
-        "~stop_capability",
-        std::bind(&CapabilitiesServer::stop_capability, this, std::placeholders::_1, std::placeholders::_2));
+    // // stop capability
+    // auto stop_capability_srv = create_service<capabilities2_msgs::srv::StopCapability>(
+    //     "~stop_capability",
+    //     std::bind(&CapabilitiesServer::stop_capability, this, std::placeholders::_1, std::placeholders::_2));
 
-    // free capability
-    auto free_capability_srv = create_service<capabilities2_msgs::srv::FreeCapability>(
-        "~free_capability",
-        std::bind(&CapabilitiesServer::free_capability, this, std::placeholders::_1, std::placeholders::_2));
+    // // free capability
+    // auto free_capability_srv = create_service<capabilities2_msgs::srv::FreeCapability>(
+    //     "~free_capability",
+    //     std::bind(&CapabilitiesServer::free_capability, this, std::placeholders::_1, std::placeholders::_2));
 
-    // use capability
-    auto use_capability_srv = create_service<capabilities2_msgs::srv::UseCapability>(
-        "~use_capability",
-        std::bind(&CapabilitiesServer::use_capability, this, std::placeholders::_1, std::placeholders::_2));
+    // // use capability
+    // auto use_capability_srv = create_service<capabilities2_msgs::srv::UseCapability>(
+    //     "~use_capability",
+    //     std::bind(&CapabilitiesServer::use_capability, this, std::placeholders::_1, std::placeholders::_2));
 
-    // register capability
-    auto register_capability_srv = create_service<capabilities2_msgs::srv::RegisterCapability>(
-        "~register_capability",
-        std::bind(&CapabilitiesServer::register_capability, this, std::placeholders::_1, std::placeholders::_2));
+    // // register capability
+    // auto register_capability_srv = create_service<capabilities2_msgs::srv::RegisterCapability>(
+    //     "~register_capability",
+    //     std::bind(&CapabilitiesServer::register_capability, this, std::placeholders::_1, std::placeholders::_2));
 
-    // query capabilities
-    auto get_interfaces_srv = create_service<capabilities2_msgs::srv::GetInterfaces>(
-        "~get_interfaces",
-        std::bind(&CapabilitiesServer::get_interfaces, this, std::placeholders::_1, std::placeholders::_2));
+    // // query capabilities
+    // auto get_interfaces_srv = create_service<capabilities2_msgs::srv::GetInterfaces>(
+    //     "~get_interfaces",
+    //     std::bind(&CapabilitiesServer::get_interfaces, this, std::placeholders::_1, std::placeholders::_2));
 
-    auto get_semantic_interfaces_srv = create_service<capabilities2_msgs::srv::GetSemanticInterfaces>(
-        "~get_semantic_interfaces",
-        std::bind(&CapabilitiesServer::get_semantic_interfaces, this, std::placeholders::_1, std::placeholders::_2));
+    // auto get_semantic_interfaces_srv = create_service<capabilities2_msgs::srv::GetSemanticInterfaces>(
+    //     "~get_semantic_interfaces",
+    //     std::bind(&CapabilitiesServer::get_semantic_interfaces, this, std::placeholders::_1, std::placeholders::_2));
 
-    auto get_providers_srv = create_service<capabilities2_msgs::srv::GetProviders>(
-        "~get_providers",
-        std::bind(&CapabilitiesServer::get_providers, this, std::placeholders::_1, std::placeholders::_2));
+    // auto get_providers_srv = create_service<capabilities2_msgs::srv::GetProviders>(
+    //     "~get_providers",
+    //     std::bind(&CapabilitiesServer::get_providers, this, std::placeholders::_1, std::placeholders::_2));
 
-    auto get_capability_spec_srv = create_service<capabilities2_msgs::srv::GetCapabilitySpec>(
-        "~get_capability_spec",
-        std::bind(&CapabilitiesServer::get_capability_spec, this, std::placeholders::_1, std::placeholders::_2));
+    // auto get_capability_spec_srv = create_service<capabilities2_msgs::srv::GetCapabilitySpec>(
+    //     "~get_capability_spec",
+    //     std::bind(&CapabilitiesServer::get_capability_spec, this, std::placeholders::_1, std::placeholders::_2));
 
-    auto get_capability_specs_srv = create_service<capabilities2_msgs::srv::GetCapabilitySpecs>(
-        "~get_capability_specs",
-        std::bind(&CapabilitiesServer::get_capability_specs, this, std::placeholders::_1, std::placeholders::_2));
+    // auto get_capability_specs_srv = create_service<capabilities2_msgs::srv::GetCapabilitySpecs>(
+    //     "~get_capability_specs",
+    //     std::bind(&CapabilitiesServer::get_capability_specs, this, std::placeholders::_1, std::placeholders::_2));
   }
 
   void load_capabilities(const std::string& package_path)
@@ -134,7 +154,7 @@ public:
       std::string package_xml_string;
 
       // read package.xml
-      std::ifstream package_xml_file(package_xml);
+      std::ifstream package_xml_file(package_xml, std::ifstream::in);
       if (package_xml_file.is_open())
       {
         std::string line;

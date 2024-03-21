@@ -8,7 +8,11 @@ namespace capabilities2_server
 namespace models
 {
 
-// header type definition
+/**
+ * @brief the header model is a simple model for the header of a capability type
+ * it includes the name, version, type, and description of the capability
+ *
+ */
 struct header_model_t
 {
   std::string name;
@@ -34,14 +38,14 @@ struct header_model_t
     return node;
   }
 
-  static std::string to_sql_table() const
+  static const std::string to_sql_table()
   {
     return "name TEXT NOT NULL, version INTEGER, type TEXT NOT NULL, description TEXT";
   }
 
-  std::string to_sql_values() const
+  const std::string to_sql_values() const
   {
-    return "'" + h.name + "', " + std::to_string(h.version) + ", '" + h.type + "', '" + h.description + "'";
+    return "'" + name + "', " + std::to_string(version) + ", '" + type + "', '" + description + "'";
   }
 };
 

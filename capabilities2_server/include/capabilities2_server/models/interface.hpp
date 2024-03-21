@@ -10,7 +10,11 @@ namespace capabilities2_server
 namespace models
 {
 
-// interface specification type
+/**
+ * @brief interface specification type
+ * the specification model is the computation graph blueprint of a capability
+ *
+ */
 struct specification_model_t
 {
   std::map<std::string, resource_model_t> parameters;
@@ -35,10 +39,40 @@ struct specification_model_t
   YAML::Node to_yaml() const
   {
     YAML::Node node;
-    node["parameters"] = parameters;
-    node["topics"] = topics;
-    node["services"] = services;
-    node["actions"] = actions;
+
+    // parameters
+    YAML::Node p;
+    for (const auto& parameter : parameters)
+    {
+      p[parameter.first] = parameter.second.to_yaml();
+    }
+    node["parameters"] = p;
+
+    // topics
+    YAML::Node t;
+    for (const auto& topic : topics)
+    {
+      t[topic.first] = topic.second.to_yaml();
+    }
+    node["topics"] = t;
+
+    // services
+    YAML::Node s;
+    for (const auto& service : services)
+    {
+      s[service.first] = service.second.to_yaml();
+    }
+    node["services"] = s;
+
+    // actions
+    YAML::Node a;
+    for (const auto& action : actions)
+    {
+      a[action.first] = action.second.to_yaml();
+    }
+    node["actions"] = a;
+
+    // return node
     return node;
   }
 };
@@ -63,14 +97,14 @@ struct interface_model_t
     return node;
   }
 
-  static std::string to_sql_table() const
+  static const std::string to_sql_table()
   {
-    return header.to_sql_table() + ", interface TEXT";
+    return header_model_t::to_sql_table() + ", interface TEXT";
   }
 
-  std::string to_sql_values() const
+  const std::string to_sql_values() const
   {
-    return header.to_sql_values() + ", '" + interface.to_yaml().to_string() + "'";
+    return header.to_sql_values() + ", '" + YAML::Dump(interface.to_yaml()) + "'";
   }
 };
 
