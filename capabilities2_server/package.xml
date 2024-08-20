@@ -17,6 +17,7 @@
 
   <depend>rclcpp</depend>
   <depend>bond</depend>
+  <depend>rclcpp_components</depend>
   <depend>capabilities2_msgs</depend>
 
   <!-- system dependency -->
@@ -24,6 +25,7 @@
   <depend>sqlite3</depend>
 
   <exec_depend>rclpy</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

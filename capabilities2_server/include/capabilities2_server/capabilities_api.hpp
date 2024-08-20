@@ -98,4 +98,5 @@ private:
   BondCache bond_cache_;
   RunnerCache runner_cache_;
 };
+
 }  // namespace capabilities2_server

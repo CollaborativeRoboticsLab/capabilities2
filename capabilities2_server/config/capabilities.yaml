@@ -1,0 +1,8 @@
+/**:
+  ros__parameters:
+    loop_rate: 10.0
+    db_file: ~/cache/capabilities.sqlite3
+    rebuild: false # Set to true to rebuild the database
+    default_heartbeat_timeout: 5.0 # seconds till cap request is considered dead
+    package_paths: # paths to search for capabilities
+      - /opt/ros

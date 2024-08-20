@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <!-- Launch the capabilities server node -->
-    <node pkg="capabilities2_server" type="capabilities_server" name="capabilities" output="screen">
-    </node>
-</launch>

@@ -33,7 +33,8 @@ namespace capabilities2_server
 class CapabilitiesServer : public rclcpp::Node, public CapabilitiesAPI
 {
 public:
-  CapabilitiesServer() : Node("capabilities_server"), CapabilitiesAPI()
+  CapabilitiesServer(const rclcpp::NodeOptions& options = rclcpp::NodeOptions())
+    : Node("capabilities", options), CapabilitiesAPI()
   {
     // params interface
     // db file

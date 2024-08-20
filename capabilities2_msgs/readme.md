@@ -8,6 +8,10 @@ Message service and action types for the capabilities2 interface.
 - `CapabilityCommand.msg` - A message type for a command to a robot.
 - `CapabilityResponse.msg` - A message type for a response from a robot related to a capability.
 - `NaturalCapability.msg` - A message type for a natural capability of a robot.
+- `Remapping.msg` - A message type for a key/value remapping of a capability resource.
+- `CapabilitySpec.msg` - A message type for the specification of a capability.
+- `CapabilityEvent.msg` - A message type for an event related to a capability.
+- `RunnableCapability.msg` - A message type for a runnin a capability.
 
 ## Service Types
 

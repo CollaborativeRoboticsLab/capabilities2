@@ -14,6 +14,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(bond REQUIRED)
+find_package(rclcpp_components REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 # find_package(TinyXML2 REQUIRED)
 
@@ -33,26 +34,43 @@ include_directories(
   ${TINYXML2_INCLUDE_DIRS}
 )
 
-add_executable(capabilities_server src/capabilities2_server_node.cpp)
-ament_target_dependencies(capabilities_server rclcpp bond capabilities2_msgs SQLite3 yaml-cpp TINYXML2)
-# target_link_libraries(capabilities_server
-#   ${SQLITE3_LIBRARIES}
-#   ${yaml-cpp_LIBRARIES}
-#   ${TINYXML2_LIBRARIES}
-# )
-
-install(TARGETS
-  capabilities_server
-  DESTINATION lib/${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
+  src/capabilities_server.cpp
 )
 
-install(DIRECTORY
-  launch
+ament_target_dependencies(${PROJECT_NAME}
+  rclcpp
+  bond
+  rclcpp_components
+  capabilities2_msgs
+  SQLite3
+  yaml-cpp
+  TINYXML2
+)
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "capabilities2_server::CapabilitiesServer"
+  EXECUTABLE capabilities2_server_node
+)
+
+ament_export_targets(capabilities2_server_node)
+
+install(TARGETS ${PROJECT_NAME}
+  EXPORT capabilities2_server_node
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+install(DIRECTORY include/
+  DESTINATION include
+)
+
+install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
 
-install(DIRECTORY
-  config
+install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME}
 )
 

@@ -10,7 +10,7 @@ The capabilities package was originally implemented using Python. This package i
 
 The main reasons for this are:
 
-- To allow the capabilities service to provide details of the robot to other robots or a supervisory AI with a conversational style.
+- To allow the capabilities service to provide details of the robot to other robots, an UI or App, or a supervisory AI with a conversational style.
 - To allow packages to register their capabilities with the capabilities service using a service API or a spawner.
 - To allow capabilities to be used like actions and not just started and stopped by the capabilities service.
 - To add state to the capabilities service using a database. This allows the capabilities service or the robot to be restarted without losing state, and hot reloading.
