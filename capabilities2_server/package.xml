@@ -16,13 +16,14 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  <depend>bond</depend>
+  <depend>bondcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>capabilities2_msgs</depend>
 
   <!-- system dependency -->
   <depend>tinyxml2</depend>
   <depend>sqlite3</depend>
+  <depend>uuid</depend>
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>launch_ros</exec_depend>

@@ -17,7 +17,7 @@ namespace capabilities2_server
 class CapabilitiesDB
 {
 public:
-  CapabilitiesDB(const std::string db_file = "cache/capabilities.sqlite3") : db_(nullptr), db_file_(db_file)
+  CapabilitiesDB(const std::string db_file = "cache/capabilities.sqlite3") : db_file_(db_file), db_(nullptr)
   {
     // open db
     open();
@@ -65,7 +65,6 @@ public:
     if (exit != SQLITE_OK)
     {
       sqlite3_finalize(stmt);
-      close();
       throw std::runtime_error("Error preparing query: " + std::string(sqlite3_errmsg(db_)));
     }
 
@@ -88,7 +87,6 @@ public:
     if (exit != SQLITE_OK)
     {
       sqlite3_finalize(stmt);
-      close();
       throw std::runtime_error("Error preparing query: " + std::string(sqlite3_errmsg(db_)));
     }
 
@@ -112,7 +110,6 @@ public:
     if (exit != SQLITE_OK)
     {
       sqlite3_finalize(stmt);
-      close();
       throw std::runtime_error("Error preparing query: " + std::string(sqlite3_errmsg(db_)));
     }
 
@@ -135,7 +132,6 @@ public:
     if (exit != SQLITE_OK)
     {
       sqlite3_finalize(stmt);
-      close();
       throw std::runtime_error("Error preparing query: " + std::string(sqlite3_errmsg(db_)));
     }
 
@@ -159,7 +155,6 @@ public:
     if (exit != SQLITE_OK)
     {
       sqlite3_finalize(stmt);
-      close();
       throw std::runtime_error("Error preparing query: " + std::string(sqlite3_errmsg(db_)));
     }
 
@@ -182,7 +177,6 @@ public:
     if (exit != SQLITE_OK)
     {
       sqlite3_finalize(stmt);
-      close();
       throw std::runtime_error("Error preparing query: " + std::string(sqlite3_errmsg(db_)));
     }
 
@@ -195,6 +189,34 @@ public:
 
     sqlite3_finalize(stmt);
     return providers;
+  }
+
+  /**
+   * @brief Get remappable model by name
+   *
+   * remappable models are either semantic interfaces or providers
+   *
+   * @param name
+   * @return models::remappable_base_t
+   */
+  models::remappable_base_t get_remappable(const std::string& name)
+  {
+    // check if it is a semantic interface
+    models::semantic_interface_model_t semantic_interface = get_semantic_interface(name);
+    if (!semantic_interface.header.name.empty())
+    {
+      return semantic_interface;
+    }
+
+    // check if it is a provider
+    models::provider_model_t provider = get_provider(name);
+    if (!provider.header.name.empty())
+    {
+      return provider;
+    }
+
+    // return empty remappable model
+    return models::remappable_base_t();
   }
 
   /* updaters */
@@ -244,6 +266,8 @@ public:
       models::provider_model_t provider = to_provider(stmt);
       providers.push_back(provider);
     }
+
+    return providers;
   }
 
   // get semantic interfaces by interface
@@ -265,6 +289,8 @@ public:
       models::semantic_interface_model_t semantic_interface = to_semantic_interface(stmt);
       semantic_interfaces.push_back(semantic_interface);
     }
+
+    return semantic_interfaces;
   }
 
 protected:

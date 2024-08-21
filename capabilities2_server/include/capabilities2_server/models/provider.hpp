@@ -3,7 +3,7 @@
 #include <map>
 #include <yaml-cpp/yaml.h>
 #include <capabilities2_server/models/header.hpp>
-#include <capabilities2_server/models/remapping.hpp>
+#include <capabilities2_server/models/remappable_base.hpp>
 
 namespace capabilities2_server
 {
@@ -11,7 +11,7 @@ namespace models
 {
 
 // provider model definition
-struct provider_model_t
+struct provider_model_t : public remappable_base_t
 {
   header_model_t header;
   std::string implements;

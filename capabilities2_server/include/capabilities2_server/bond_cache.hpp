@@ -3,6 +3,10 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <functional>
+
+#include <rclcpp/rclcpp.hpp>
+#include <bondcpp/bond.hpp>
 
 namespace capabilities2_server
 {
@@ -15,7 +19,7 @@ namespace capabilities2_server
 class BondCache
 {
 public:
-  BondCache()
+  BondCache(const std::string& bonds_topic = "~/bonds") : bonds_topic_(bonds_topic)
   {
   }
 
@@ -100,7 +104,28 @@ public:
     return bond_cache_[capability];
   }
 
+  // start a live bond
+  void start(const std::string& bond_id, rclcpp::Node::SharedPtr node, std::function<void(void)> on_broken,
+             std::function<void(void)> on_formed)
+  {
+    // create a new bond with event callbacks
+    live_bonds_[bond_id] = std::make_unique<bond::Bond>(bonds_topic_, bond_id, node, on_broken, on_formed);
+
+    // start the bond
+    live_bonds_[bond_id]->start();
+  }
+
 private:
+  // bonds topic
+  std::string bonds_topic_;
+
+  // bond cache
+  // capability -> bond ids
   std::map<std::string, std::vector<std::string>> bond_cache_;
+
+  // live bonds
+  // bond id -> bond object
+  std::map<std::string, std::unique_ptr<bond::Bond>> live_bonds_;
 };
+
 }  // namespace capabilities2_server

@@ -54,6 +54,8 @@ public:
   }
 
 private:
+  // map of runner to capability
   std::map<std::string, std::string> runner_cache_;
 };
+
 }  // namespace capabilities2_server

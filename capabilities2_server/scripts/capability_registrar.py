@@ -7,12 +7,21 @@
 # imports
 import rclpy
 import rclpy.node as Node
+from capabilities2_msgs.srv import RegisterCapability
 
 
 # registrar class
 class CapabilityRegistrar(Node):
+    """Capability Registrar Node
+    """
+
     def __init__(self) -> None:
         super().__init__('capability_registrar')
+
+        # wait for service
+        self.get_logger().info('waiting for capability server...')
+        self.register_client = self.create_client(
+            RegisterCapability, 'register_capability')
 
     # register the capabilities
     def register_capabilities(self):

@@ -5,6 +5,9 @@ string package
 #   'capability_interface'
 #   'semantic_capability_interface'
 #   'capability_provider'
+string CAPABILITY_INTERFACE = 'capability_interface'
+string SEMANTIC_CAPABILITY_INTERFACE = 'semantic_capability_interface'
+string CAPABILITY_PROVIDER = 'capability_provider'
 string type
 
 # Raw string content of the spec file
