@@ -4,6 +4,7 @@ capabilities2_server launch file
 
 import os
 from launch import LaunchDescription
+from launch_ros.actions import Node
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
 from ament_index_python.packages import get_package_share_directory
@@ -38,7 +39,15 @@ def generate_launch_description():
         ]
     )
 
+    # create launch proxy node
+    launch_proxy = Node(
+        package='capabilities2_launch_proxy',
+        executable='capabilities_launch_proxy',
+        name='capabilities_launch_proxy'
+    )
+
     # return
     return LaunchDescription([
-        capabilities
+        capabilities,
+        launch_proxy
     ])

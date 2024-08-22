@@ -27,6 +27,7 @@
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>launch_ros</exec_depend>
+  <exec_depend>capabilities2_launch_proxy</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
