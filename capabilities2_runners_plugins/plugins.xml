@@ -1,0 +1,24 @@
+<library path="capabilities2_runners_plugins">
+    <class type="capabilities2_runner::LaunchRunner" base_class_type="capabilities2_runner::RunnerBase">
+        <description>
+            A plugin that provides capabilities2 launch based runner
+        </description>
+    </class>
+    <class type="capabilities2_runner::ActionRunner" base_class_type="capabilities2_runner::RunnerBase">
+        <description>
+            A plugin that provides capabilities2 action based runner
+        </description>
+    </class>
+    <!-- specific standardised action runners -->
+    <class type="capabilities2_runner::NavRunner" base_class_type="capabilities2_runner::ActionRunner">
+        <description>
+            action based nav2 stack runner
+        </description>
+    </class>
+    <!-- moveit -->
+    <class type="capabilities2_runner::MoveItRunner" base_class_type="capabilities2_runner::ActionRunner">
+        <description>
+            action based moveit runner
+        </description>
+    </class>
+</library>

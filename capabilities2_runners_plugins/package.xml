@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>capabilities2_runners_plugins</name>
+  <version>0.0.1</version>
+  <description>
+    Package for capabilities2 runners, managed running different types of capabilities
+  </description>
+
+  <maintainer email="michael.pritchard@canberra.edu.au">Michael Pritchard</maintainer>
+  <maintainer email="mppritchard3@hotmail.com">mik-p</maintainer>
+
+  <author email="michael.pritchard@canberra.edu.au">Michael Pritchard</author>
+
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>pluginlib</depend>
+  <depend>capabilities2_msgs</depend>
+
+  <!-- system dependency -->
+  <depend>uuid</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
