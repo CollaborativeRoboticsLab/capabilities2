@@ -1,0 +1,15 @@
+# standardised nav2 interface specification
+%YAML 1.1
+---
+name: nav2
+spec_version: 1
+spec_type: interface
+description: "the nav2 capability"
+interface:
+  topics:
+    - name: "cmd_vel"
+      type: "geometry_msgs/Twist"
+      description: "Velocity command topic."
+    - name: "goal"
+      type: "geometry_msgs/PoseStamped"
+      description: "Goal topic."

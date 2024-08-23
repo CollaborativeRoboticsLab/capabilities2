@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+    <name>std_capabilities</name>
+    <version>0.0.1</version>
+    <description>
+        This package provides a list of standard ROS capabilities such as nav2 and moveit2
+    </description>
+
+    <maintainer email="michael.pritchard@canberra.edu.au">Michael Pritchard</maintainer>
+    <maintainer email="mppritchard3@hotmail.com">mik-p</maintainer>
+
+    <author email="michael.pritchard@canberra.edu.au">Michael Pritchard</author>
+
+    <license>MIT</license>
+
+    <exec_depend>capabilities2_server</exec_depend>
+
+    <!-- export standard capabilities -->
+    <export>
+        <!-- the nav2 interface -->
+        <capability_interface>
+            interfaces/nav2.yaml
+        </capability_interface>
+        <!-- the moveit2 interface -->
+        <capability_interface>
+            interfaces/moveit2.yaml
+        </capability_interface>
+    </export>
+</package>
