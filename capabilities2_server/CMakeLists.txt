@@ -14,8 +14,10 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(bondcpp REQUIRED)
+find_package(pluginlib REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
+find_package(capabilities2_runners_plugins REQUIRED)
 # find_package(uuid REQUIRED)
 # find_package(TinyXML2 REQUIRED)
 
@@ -44,8 +46,10 @@ add_library(${PROJECT_NAME} SHARED
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
   bondcpp
+  pluginlib
   rclcpp_components
   capabilities2_msgs
+  capabilities2_runners_plugins
   SQLite3
   yaml-cpp
   TINYXML2

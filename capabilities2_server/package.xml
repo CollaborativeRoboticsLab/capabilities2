@@ -17,8 +17,10 @@
 
   <depend>rclcpp</depend>
   <depend>bondcpp</depend>
+  <depend>pluginlib</depend>
   <depend>rclcpp_components</depend>
   <depend>capabilities2_msgs</depend>
+  <depend>capabilities2_runners_plugins</depend>
 
   <!-- system dependency -->
   <depend>tinyxml2</depend>
