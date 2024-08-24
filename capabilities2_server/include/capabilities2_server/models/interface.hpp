@@ -35,7 +35,41 @@ struct specification_model_t
         parameters[r.name] = r;
       }
     }
+    if (node["topics"])
+    {
+      for (const auto& topic : node["topics"])
+      {
+        resource_model_t r;
+        r.name = topic.first.as<std::string>();
+        r.type = topic.second["type"].as<std::string>();
+        r.description = topic.second["description"].as<std::string>();
+        topics[r.name] = r;
+      }
+    }
+    if (node["services"])
+    {
+      for (const auto& service : node["services"])
+      {
+        resource_model_t r;
+        r.name = service.first.as<std::string>();
+        r.type = service.second["type"].as<std::string>();
+        r.description = service.second["description"].as<std::string>();
+        services[r.name] = r;
+      }
+    }
+    if (node["actions"])
+    {
+      for (const auto& action : node["actions"])
+      {
+        resource_model_t r;
+        r.name = action.first.as<std::string>();
+        r.type = action.second["type"].as<std::string>();
+        r.description = action.second["description"].as<std::string>();
+        actions[r.name] = r;
+      }
+    }
   }
+
   YAML::Node to_yaml() const
   {
     YAML::Node node;
@@ -85,14 +119,13 @@ struct interface_model_t
 
   void from_yaml(const YAML::Node& node)
   {
-    header.from_yaml(node["header"]);
+    header.from_yaml(node);
     interface.from_yaml(node["interface"]);
   }
 
   YAML::Node to_yaml() const
   {
-    YAML::Node node;
-    node["header"] = header.to_yaml();
+    YAML::Node node = header.to_yaml();
     node["interface"] = interface.to_yaml();
     return node;
   }

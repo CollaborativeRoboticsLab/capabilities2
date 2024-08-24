@@ -1,3 +1,6 @@
+# running
+*.sqlite3
+
 # dev
 .vscode/
 

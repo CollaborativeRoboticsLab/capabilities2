@@ -101,7 +101,19 @@ public:
   // get all current bonds for a capability
   const std::vector<std::string> get_bonds(const std::string& capability)
   {
+    // if doesn't exist then throw
+    if (!exists(capability))
+    {
+      throw std::runtime_error("capability not found");
+    }
+
     return bond_cache_[capability];
+  }
+
+  // exists in cache
+  bool exists(const std::string& capability)
+  {
+    return bond_cache_.find(capability) != bond_cache_.end();
   }
 
   // start a live bond

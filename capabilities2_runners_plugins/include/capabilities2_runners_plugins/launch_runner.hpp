@@ -14,8 +14,6 @@ namespace capabilities2_runner
 class LaunchRunner : public RunnerBase
 {
 public:
-  LaunchRunner(/* args */);
-  ~LaunchRunner();
 };
 
 }  // namespace capabilities2_runner

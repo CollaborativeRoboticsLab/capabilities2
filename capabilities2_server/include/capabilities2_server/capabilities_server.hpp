@@ -8,6 +8,8 @@
 #include <filesystem>
 #include <functional>
 
+#include <stdlib.h>
+
 #include <tinyxml2.h>
 
 #include <rclcpp/rclcpp.hpp>
@@ -15,6 +17,7 @@
 #include <capabilities2_server/capabilities_api.hpp>
 
 #include <capabilities2_msgs/msg/capability_event.hpp>
+#include <capabilities2_msgs/msg/capability_spec.hpp>
 #include <capabilities2_msgs/srv/establish_bond.hpp>
 #include <capabilities2_msgs/srv/start_capability.hpp>
 #include <capabilities2_msgs/srv/stop_capability.hpp>
@@ -31,6 +34,16 @@
 
 namespace capabilities2_server
 {
+
+/** */
+std::string expand_tilde(std::string& path)
+{
+  if (path[0] == '~')
+  {
+    path = std::string(std::getenv("HOME")) + path.substr(1);
+  }
+  return path;
+}
 
 /**
  * @brief capabilities server
@@ -51,7 +64,7 @@ public:
     double loop_hz_ = get_parameter("loop_rate").as_double();
 
     // db file
-    declare_parameter("db_file", "cache/capabilities.sqlite3");
+    declare_parameter("db_file", "~/.ros/capabilities/capabilities.sqlite3");
     std::string db_file = get_parameter("db_file").as_string();
 
     // rebuild db
@@ -62,6 +75,10 @@ public:
     declare_parameter("package_paths", std::vector<std::string>());
     std::vector<std::string> package_paths = get_parameter("package_paths").as_string_array();
 
+    // get full path of db file
+    std::filesystem::path db_path = std::filesystem::absolute(expand_tilde(db_file));
+    db_file = db_path.string();
+
     if (rebuild)
     {
       // remove db file if it exists
@@ -70,6 +87,13 @@ public:
       {
         RCLCPP_ERROR(get_logger(), "Error deleting file %s", db_file.c_str());
       }
+    }
+
+    // if db file does not exist
+    if (!std::filesystem::exists(db_path))
+    {
+      // create db file path
+      std::filesystem::create_directories(db_path.parent_path());
     }
 
     // init capabilities api
@@ -151,6 +175,9 @@ public:
     // cache_timer_ =
     //     create_wall_timer(std::chrono::seconds(1.0 / loop_hz_), std::bind(&CapabilitiesServer::cache_timer_cb,
     //     this));
+
+    // log
+    RCLCPP_INFO(get_logger(), "capabilities server started");
   }
 
   // service callbacks
@@ -167,7 +194,7 @@ public:
                            std::shared_ptr<capabilities2_msgs::srv::StartCapability::Response> res)
   {
     // try starting capability
-    // XXX TODO: handle errors
+    // TODO: handle errors
     start_capability(req->capability, req->preferred_provider);
 
     // set response
@@ -179,7 +206,7 @@ public:
                           std::shared_ptr<capabilities2_msgs::srv::StopCapability::Response> res)
   {
     // try stopping capability
-    // XXX TODO: handle errors
+    // TODO: handle errors
     stop_capability(req->capability);
 
     // set response
@@ -292,13 +319,13 @@ public:
   // cache timer callback
   void cache_timer_cb()
   {
-    // XXX TODO: manage bonds and runners
+    // TODO: manage bonds and runners
   }
 
-public:
+private:
   void load_capabilities(const std::string& package_path)
   {
-    RCLCPP_INFO(get_logger(), "Loading capabilities from package path: %s", package_path.c_str());
+    RCLCPP_DEBUG(get_logger(), "Loading capabilities from package path: %s", package_path.c_str());
 
     // find packages in path
     std::vector<std::string> packages;
@@ -313,34 +340,20 @@ public:
     // load capabilities from packages
     for (const auto& package : packages)
     {
-      RCLCPP_INFO(get_logger(), "Loading capabilities from package: %s", package.c_str());
+      RCLCPP_DEBUG(get_logger(), "loading capabilities from package: %s", package.c_str());
 
       // package.xml exports
       std::string package_xml = package_path + "/" + package + "/package.xml";
-      std::string package_xml_string;
-
-      // read package.xml
-      std::ifstream package_xml_file(package_xml, std::ifstream::in);
-      if (package_xml_file.is_open())
-      {
-        std::string line;
-        while (std::getline(package_xml_file, line))
-        {
-          package_xml_string += line;
-        }
-        package_xml_file.close();
-      }
-      else
-      {
-        RCLCPP_ERROR(get_logger(), "Unable to open package.xml file: %s", package_xml.c_str());
-        continue;
-      }
 
       // parse package.xml
       tinyxml2::XMLDocument doc;
-      if (doc.Parse(package_xml_string.c_str()) != tinyxml2::XML_SUCCESS)
+      try
       {
-        RCLCPP_ERROR(get_logger(), "Failed to parse package.xml file: %s", package_xml.c_str());
+        parse_package_xml(package_xml, doc);
+      }
+      catch (const std::runtime_error& e)
+      {
+        RCLCPP_ERROR(get_logger(), "failed to parse package.xml file: %s", e.what());
         continue;
       }
 
@@ -348,12 +361,109 @@ public:
       tinyxml2::XMLElement* exports = doc.FirstChildElement("package")->FirstChildElement("export");
       if (exports == nullptr)
       {
-        RCLCPP_ERROR(get_logger(), "No exports found in package.xml file: %s", package_xml.c_str());
+        RCLCPP_DEBUG(get_logger(), "No exports found in package.xml file: %s", package_xml.c_str());
         continue;
       }
 
-      // XXX TODO: get capabilities
+      // get capability specs of each type using a lambda
+      auto get_capability_specs = [&](const std::string& spec_type) {
+        // get capability spec
+        for (tinyxml2::XMLElement* spec = exports->FirstChildElement(spec_type.c_str()); spec != nullptr;
+             spec = spec->NextSiblingElement(spec_type.c_str()))
+        {
+          // read spec relative path for spec file from element contents
+          std::string spec_path = spec->GetText();
+          // clear white spaces
+          spec_path.erase(std::remove_if(spec_path.begin(), spec_path.end(), isspace), spec_path.end());
+          // remove leading slash
+          if (spec_path[0] == '/')
+          {
+            spec_path = spec_path.substr(1);
+          }
+
+          // create a spec message
+          capabilities2_msgs::msg::CapabilitySpec capability_spec;
+
+          // add package details
+          capability_spec.package = package;
+          capability_spec.type = spec_type;
+
+          // try load spec file
+          try
+          {
+            // read spec file
+            load_spec_content(package_path + "/" + package + "/" + spec_path, capability_spec);
+
+            // add capability to db
+            RCLCPP_INFO(get_logger(), "adding capability: %s", (package + "/" + spec_path).c_str());
+            add_capability(capability_spec);
+          }
+          catch (const std::runtime_error& e)
+          {
+            RCLCPP_ERROR(get_logger(), "failed to load spec file: %s", e.what());
+          }
+        }
+      };
+
+      // get interface specs
+      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_INTERFACE);
+      // get semantic interface specs
+      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::SEMANTIC_CAPABILITY_INTERFACE);
+      // get provider specs
+      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_PROVIDER);
     }
+  }
+
+  /**
+   * @brief parse package.xml file
+   *
+   * @param package_xml
+   * @param doc
+   */
+  void parse_package_xml(const std::string& package_xml, tinyxml2::XMLDocument& doc)
+  {
+    // read package.xml
+    std::ifstream package_xml_file(package_xml, std::ifstream::in);
+
+    if (!package_xml_file.is_open())
+    {
+      throw std::runtime_error("unable to open package.xml file: " + package_xml);
+    }
+
+    // read package.xml file into string
+    std::string package_xml_string{ std::istreambuf_iterator<char>(package_xml_file),
+                                    std::istreambuf_iterator<char>() };
+    package_xml_file.close();
+
+    // parse package.xml to xml doc
+    if (doc.Parse(package_xml_string.c_str()) != tinyxml2::XML_SUCCESS)
+    {
+      throw std::runtime_error("failed to parse package.xml file: " + package_xml);
+    }
+  }
+
+  /**
+   * @brief load capability spec content from a file
+   *
+   * @param spec_file
+   * @param capability_spec
+   */
+  void load_spec_content(const std::string& spec_file, capabilities2_msgs::msg::CapabilitySpec& capability_spec)
+  {
+    // read spec file
+    std::ifstream spec_file_file(spec_file, std::ifstream::in);
+
+    // file failed guard
+    if (!spec_file_file.is_open())
+    {
+      throw std::runtime_error("unable to open capability spec file: " + spec_file);
+    }
+
+    // load content into msg
+    std::string content{ std::istreambuf_iterator<char>(spec_file_file), std::istreambuf_iterator<char>() };
+    capability_spec.content = content;
+
+    spec_file_file.close();
   }
 
 private:

@@ -1,0 +1,8 @@
+# standardised nav2 interface specification
+%YAML 1.1
+---
+name: moveit2
+spec_version: 1
+spec_type: interface
+description: "the moveit2 capability"
+interface: []

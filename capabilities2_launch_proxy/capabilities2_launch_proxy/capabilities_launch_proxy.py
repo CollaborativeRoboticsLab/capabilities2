@@ -53,7 +53,7 @@ class CapabilitiesLaunchProxy(Node):
         # event pub
         self.event_pub = self.create_publisher(
             CapabilityEvent,
-            '~/event',
+            '~/events',
             10
         )
 

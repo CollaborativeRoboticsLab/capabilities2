@@ -46,31 +46,44 @@ public:
 
     // connect db
     cap_db_ = std::make_unique<CapabilitiesDB>(db_file);
+
+    // log
+    RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "CAPAPI connected to db: %s", db_file.c_str());
   }
 
   // control api
   void start_capability(const std::string& capability, const std::string& provider)
   {
-    // create a runner id
-    std::string runner_id = "runner_" + capability + "_" + provider;
+    // get the running model from the db
+    models::running_model_t running = cap_db_->get_running(provider);
+
+    // start all dependencies
+    // go through the running model and start the necessary dependencies
+    for (const auto& run : running.dependencies)
+    {
+      // make an internal 'use' bond for the capability dependency
+      bind_dependency(run.interface);
+
+      // add the runner to the cache
+      start_capability(run.interface, run.provider);
+    }
+
+    // get the provider specification for the capability
+    models::run_config_model_t run_config = cap_db_->get_run_config(provider);
 
     // create a new runner
-    runner_cache_.add_runner(runner_id, capability);
-
-    // XXX TODO: start the runner
+    // this call implicitly starts the runner
+    // create a runner id which is the cap name to uniquely identify the runner
+    // this means only one runner per capability name
+    // TODO: consider the logic for multiple runners per capability
+    runner_cache_.add_runner(capability, run_config);
   }
 
   void stop_capability(const std::string& capability)
   {
-    // get runners
-    std::vector<std::string> runners = runner_cache_.get_runners(capability);
-
-    // stop runners
-    for (const auto& runner : runners)
-    {
-      // XXX TODO: stop the runner
-      runner_cache_.remove_runner(runner);
-    }
+    // remove the runner
+    // this will implicitly stop the runner
+    runner_cache_.remove_runner(capability);
   }
 
   void free_capability(const std::string& capability, const std::string& bond_id)
@@ -79,7 +92,7 @@ public:
     bond_cache_.remove_bond(capability, bond_id);
 
     // stop the capability if no more bonds
-    if (bond_cache_.get_bonds(capability).empty())
+    if (!bond_cache_.exists(capability))
     {
       stop_capability(capability);
     }
@@ -90,11 +103,8 @@ public:
     // add bond to cache for capability
     bond_cache_.add_bond(capability, bond_id);
 
-    // start the capability with the provider if not already running
-    if (runner_cache_.get_runners(capability).empty())
-    {
-      start_capability(capability, provider);
-    }
+    // start the capability with the provider
+    start_capability(capability, provider);
   }
 
   // capability api
@@ -104,7 +114,12 @@ public:
     models::header_model_t header;
     header.from_yaml(YAML::Load(spec.content));
 
-    // XXX TODO: check for existing capability
+    // check for existing capability guard
+    if (cap_db_->exists(header.name))
+    {
+      RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "capability already exists");
+      return;
+    }
 
     // check type, create model and add to db
     if (spec.type == capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_INTERFACE)
@@ -310,21 +325,62 @@ public:
   // runner api
   std::vector<capabilities2_msgs::msg::RunningCapability> get_running_capabilities()
   {
+    // create message container
     std::vector<capabilities2_msgs::msg::RunningCapability> running_capabilities;
 
-    // XXX TODO: get running capabilities from runners
+    // get a list of running caps
+    std::vector<std::string> caps = runner_cache_.get_running_capabilities();
+
+    // for each cap get the running model from db
+    for (const std::string& cap : caps)
+    {
+      // create a running cap msg
+      capabilities2_msgs::msg::RunningCapability rc;
+
+      // TODO: get cap provider somehow
+      std::string provider = runner_cache_.provider(cap);
+
+      // get running model for provider
+      models::running_model_t running = cap_db_->get_running(provider);
+
+      // fill running cap msg
+      rc.capability.capability = running.interface;
+      rc.capability.provider = running.provider;
+      rc.started_by = running.started_by;
+      rc.pid = atoi(running.pid.c_str());
+
+      // get dependencies
+      for (auto& dep : running.dependencies)
+      {
+        capabilities2_msgs::msg::Capability cap_msg;
+        cap_msg.capability = dep.interface;
+        cap_msg.provider = dep.provider;
+        rc.dependent_capabilities.push_back(cap_msg);
+      }
+    }
 
     return running_capabilities;
   }
 
   // event api
-  const capabilities2_msgs::msg::CapabilityEvent on_capability_started();
-  const capabilities2_msgs::msg::CapabilityEvent on_capability_stopped();
-  const capabilities2_msgs::msg::CapabilityEvent on_capability_used();
-  const capabilities2_msgs::msg::CapabilityEvent on_capability_freed();
-  const capabilities2_msgs::msg::CapabilityEvent on_capability_error();
+  const capabilities2_msgs::msg::CapabilityEvent on_capability_started()
+  {
+  }
+  const capabilities2_msgs::msg::CapabilityEvent on_capability_stopped()
+  {
+  }
+  const capabilities2_msgs::msg::CapabilityEvent on_capability_used()
+  {
+  }
+  const capabilities2_msgs::msg::CapabilityEvent on_capability_freed()
+  {
+  }
+  const capabilities2_msgs::msg::CapabilityEvent on_capability_error()
+  {
+  }
 
   // bond api
+  // establish bond
   const std::string establish_bond(rclcpp::Node::SharedPtr node)
   {
     // create a new unique bond id
@@ -377,6 +433,24 @@ public:
   }
 
 private:
+  // bind a dependency to an internal bond
+  // this is a bond without a live external connection
+  // this will help keep the capability runners scoped to a reference
+  // only when all the bonds (including internal) are broken the capability is freed
+  // this is specifically needed for running dependencies of a capability
+  void bind_dependency(const std::string& capability)
+  {
+    // create a new unique bond id
+    std::string bond_id = CapabilitiesAPI::gen_bond_id();
+
+    // add the bond id to the bond cache
+    bond_cache_.add_bond(capability, bond_id);
+
+    // keep the bond id in the internal bond ids
+    internal_bond_ids_.push_back(bond_id);
+  }
+
+private:
   // logger
   rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr node_logging_interface_ptr_;
 
@@ -386,6 +460,9 @@ private:
   // caches
   BondCache bond_cache_;
   RunnerCache runner_cache_;
+
+  // internal bindings
+  std::vector<std::string> internal_bond_ids_;
 };
 
 }  // namespace capabilities2_server

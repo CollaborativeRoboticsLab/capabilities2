@@ -21,7 +21,7 @@ struct provider_model_t : public remappable_base_t
 
   void from_yaml(const YAML::Node& node)
   {
-    header.from_yaml(node["header"]);
+    header.from_yaml(node);
     implements = node["implements"].as<std::string>();
     for (const auto& dependency : node["depends_on"])
     {
@@ -33,8 +33,7 @@ struct provider_model_t : public remappable_base_t
 
   YAML::Node to_yaml() const
   {
-    YAML::Node node;
-    node["header"] = header.to_yaml();
+    YAML::Node node = header.to_yaml();
     node["implements"] = implements;
     node["depends_on"] = depends_on;
     node["remappings"] = remappings.to_yaml();

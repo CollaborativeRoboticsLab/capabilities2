@@ -34,13 +34,20 @@ find_package(yaml-cpp REQUIRED)
 include_directories(
   include
   ${SQLITE3_INCLUDE_DIRS}
-  ${yaml-cpp_INCLUDE_DIRS}
+  ${YAML_CPP_INCLUDE_DIRS}
   ${TINYXML2_INCLUDE_DIRS}
   ${UUID_INCLUDE_DIRS}
 )
 
 add_library(${PROJECT_NAME} SHARED
   src/capabilities_server.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+  ${SQLITE3_LIBRARIES}
+  ${YAML_CPP_LIBRARIES}
+  ${TINYXML2_LIBRARIES}
+  ${UUID_LIBRARIES}
 )
 
 ament_target_dependencies(${PROJECT_NAME}
@@ -67,6 +74,22 @@ install(TARGETS ${PROJECT_NAME}
   EXPORT capabilities2_server_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+# make test executable
+add_executable(test_capabilities_server test/test.cpp)
+target_link_libraries(test_capabilities_server
+  ${PROJECT_NAME}
+  ${SQLITE3_LIBRARIES}
+  ${YAML_CPP_LIBRARIES}
+  ${TINYXML2_LIBRARIES}
+  ${UUID_LIBRARIES}
+)
+add_dependencies(test_capabilities_server ${PROJECT_NAME})
+
+# install test executable
+install(TARGETS test_capabilities_server
   RUNTIME DESTINATION bin
 )
 

@@ -10,6 +10,8 @@
 #include <capabilities2_server/models/interface.hpp>
 #include <capabilities2_server/models/semantic_interface.hpp>
 #include <capabilities2_server/models/provider.hpp>
+#include <capabilities2_server/models/running.hpp>
+#include <capabilities2_server/models/run_config.hpp>
 
 namespace capabilities2_server
 {
@@ -293,6 +295,129 @@ public:
     return semantic_interfaces;
   }
 
+  // get running model from provider
+  models::running_model_t get_running(const std::string& provider_name)
+  {
+    // start with provider and work up the chain
+    models::provider_model_t provider = get_provider(provider_name);
+    if (provider.header.name.empty())
+    {
+      // return empty running model
+      return models::running_model_t();
+    }
+
+    models::running_model_t running;
+    running.interface = provider.implements;
+    running.provider = provider.header.name;
+    // TODO: implement these variables
+    running.started_by = provider_name;
+    running.pid = "0";
+
+    // get dependencies from provider depends_on
+    for (auto const& [key, value] : provider.depends_on)
+    {
+      models::capability_model_t dependency;
+      dependency.interface = key;
+      dependency.interface = value;
+      running.dependencies.push_back(dependency);
+    }
+
+    // return running model
+    return running;
+  }
+
+  // apply a remapping to a specification model
+  void apply_remappings(models::specification_model_t& spec, const models::remappable_base_t& remappable)
+  {
+    for (auto const& param : remappable.remappings.parameters)
+    {
+      spec.parameters[param.from].name = param.to;
+    }
+    for (auto const& topic : remappable.remappings.topics)
+    {
+      spec.topics[topic.from].name = topic.to;
+    }
+    for (auto const& service : remappable.remappings.services)
+    {
+      spec.services[service.from].name = service.to;
+    }
+    for (auto const& action : remappable.remappings.actions)
+    {
+      spec.actions[action.from].name = action.to;
+    }
+  }
+
+  // apply semantics to interface
+  models::interface_model_t apply_semantic_remappings(models::semantic_interface_model_t semantic)
+  {
+    // get the parent interface model
+    models::interface_model_t interface = get_interface(semantic.redefines);
+
+    interface.header = semantic.header;
+    apply_remappings(interface.interface, semantic);
+
+    return interface;
+  }
+
+  // apply provider remappings
+  models::interface_model_t apply_provider_remappings(models::provider_model_t provider)
+  {
+    // get the parent interface model
+    // is it semantic
+    models::semantic_interface_model_t semantic = get_semantic_interface(provider.implements);
+    if (!semantic.header.name.empty())
+    {
+      // apply semantic remappings
+      models::interface_model_t interface = apply_semantic_remappings(semantic);
+
+      // apply provider remappings
+      apply_remappings(interface.interface, provider);
+
+      return interface;
+    }
+
+    // if not semantic, then it's an interface
+    // get interface
+    models::interface_model_t interface = get_interface(provider.implements);
+
+    // apply provider remappings
+    apply_remappings(interface.interface, provider);
+
+    return interface;
+  }
+
+  // get run config model
+  models::run_config_model_t get_run_config(const std::string& provider_name)
+  {
+    models::provider_model_t provider = get_provider(provider_name);
+    if (provider.header.name.empty())
+    {
+      // return empty run config
+      return models::run_config_model_t();
+    }
+
+    models::run_config_model_t run_config;
+    run_config.header = get_interface(provider.implements).header;
+    run_config.runner = provider.runner;
+    run_config.started_by = provider_name;
+    run_config.pid = "0";
+
+    // remap resources
+    run_config.interface = apply_provider_remappings(provider);
+
+    return run_config;
+  }
+
+  // exists in db
+  bool exists(const std::string& resource_name)
+  {
+    // query all tables for name
+    // if name is in any table, then it exists
+    return !get_interface(resource_name).header.name.empty() ||
+           !get_semantic_interface(resource_name).header.name.empty() ||
+           !get_provider(resource_name).header.name.empty();
+  }
+
 protected:
   void open()
   {
@@ -300,7 +425,7 @@ protected:
     if (exit != SQLITE_OK)
     {
       sqlite3_close(db_);
-      throw std::runtime_error("Error opening database: " + std::string(sqlite3_errmsg(db_)));
+      throw std::runtime_error("Error opening database: " + db_file_ + " " + std::string(sqlite3_errmsg(db_)));
     }
   }
 
@@ -337,7 +462,7 @@ protected:
     const std::string create_provider_table =
         "CREATE TABLE IF NOT EXISTS providers (" + models::provider_model_t::to_sql_table() + ")";
 
-    // XXX TODO: create meta table
+    // TODO: create meta table
     // meta table
     const std::string create_meta_table = "CREATE TABLE IF NOT EXISTS meta (key TEXT NOT NULL, value TEXT NOT NULL)";
 

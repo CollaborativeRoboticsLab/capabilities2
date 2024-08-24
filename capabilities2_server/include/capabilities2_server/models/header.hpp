@@ -23,8 +23,8 @@ struct header_model_t
   void from_yaml(const YAML::Node& node)
   {
     name = node["name"].as<std::string>();
-    version = node["version"].as<int>();
-    type = node["type"].as<std::string>();
+    version = node["spec_version"].as<int>();
+    type = node["spec_type"].as<std::string>();
     description = node["description"].as<std::string>();
   }
 
@@ -32,8 +32,8 @@ struct header_model_t
   {
     YAML::Node node;
     node["name"] = name;
-    node["version"] = version;
-    node["type"] = type;
+    node["spec_version"] = version;
+    node["spec_type"] = type;
     node["description"] = description;
     return node;
   }

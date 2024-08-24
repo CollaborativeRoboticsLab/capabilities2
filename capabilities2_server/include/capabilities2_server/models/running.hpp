@@ -8,6 +8,13 @@ namespace capabilities2_server
 namespace models
 {
 
+/** */
+struct capability_model_t
+{
+  std::string interface;
+  std::string provider;
+};
+
 /**
  * @brief running capability model
  *
@@ -20,7 +27,7 @@ struct running_model_t
 {
   std::string interface;
   std::string provider;
-  std::vector<running_model_t> dependencies;
+  std::vector<capability_model_t> dependencies;
   std::string started_by;
   std::string pid;
 };
