@@ -14,11 +14,17 @@ struct remapping_model_t
   std::string from;
   std::string to;
 
+  void from_yaml_detail_iterator_value(const YAML::detail::iterator_value& iter)
+  {
+    // from is yaml key, to is yaml value
+    from = iter.first.as<std::string>();
+    to = iter.second.as<std::string>();
+  }
+
   YAML::Node to_yaml() const
   {
     YAML::Node node;
-    node["from"] = from;
-    node["to"] = to;
+    node[from] = to;
     return node;
   }
 
@@ -47,8 +53,7 @@ struct remappings_model_t
       for (const auto& parameter : node["parameters"])
       {
         remapping_model_t r;
-        r.from = parameter["from"].as<std::string>();
-        r.to = parameter["to"].as<std::string>();
+        r.from_yaml_detail_iterator_value(parameter);
         parameters.push_back(r);
       }
     }
@@ -58,8 +63,7 @@ struct remappings_model_t
       for (const auto& topic : node["topics"])
       {
         remapping_model_t r;
-        r.from = topic["from"].as<std::string>();
-        r.to = topic["to"].as<std::string>();
+        r.from_yaml_detail_iterator_value(topic);
         topics.push_back(r);
       }
     }
@@ -69,8 +73,7 @@ struct remappings_model_t
       for (const auto& service : node["services"])
       {
         remapping_model_t r;
-        r.from = service["from"].as<std::string>();
-        r.to = service["to"].as<std::string>();
+        r.from_yaml_detail_iterator_value(service);
         services.push_back(r);
       }
     }
@@ -80,8 +83,7 @@ struct remappings_model_t
       for (const auto& action : node["actions"])
       {
         remapping_model_t r;
-        r.from = action["from"].as<std::string>();
-        r.to = action["to"].as<std::string>();
+        r.from_yaml_detail_iterator_value(action);
         actions.push_back(r);
       }
     }
@@ -92,36 +94,31 @@ struct remappings_model_t
     YAML::Node node;
 
     // parameters
-    YAML::Node p;
     for (const auto& parameter : parameters)
     {
-      p.push_back(parameter.to_yaml());
+      node["parameters"][parameter.from] = parameter.to;
     }
-    node["parameters"] = p;
 
     // topics
     YAML::Node t;
     for (const auto& topic : topics)
     {
-      t.push_back(topic.to_yaml());
+      node["topics"][topic.from] = topic.to;
     }
-    node["topics"] = t;
 
     // services
     YAML::Node s;
     for (const auto& service : services)
     {
-      s.push_back(service.to_yaml());
+      node["services"][service.from] = service.to;
     }
-    node["services"] = s;
 
     // actions
     YAML::Node a;
     for (const auto& action : actions)
     {
-      a.push_back(action.to_yaml());
+      node["actions"][action.from] = action.to;
     }
-    node["actions"] = a;
 
     // return node
     return node;

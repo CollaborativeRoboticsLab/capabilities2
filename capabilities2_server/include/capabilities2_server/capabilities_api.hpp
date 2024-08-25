@@ -113,38 +113,59 @@ public:
     // peak at the spec header
     models::header_model_t header;
     header.from_yaml(YAML::Load(spec.content));
+    header.name = spec.package + "/" + header.name;
 
-    // check for existing capability guard
-    if (cap_db_->exists(header.name))
-    {
-      RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "capability already exists");
-      return;
-    }
-
-    // check type, create model and add to db
+    // check type and exists, create model and add to db
     if (spec.type == capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_INTERFACE)
     {
+      // exists guard
+      if (cap_db_->exists<models::interface_model_t>(header.name))
+      {
+        RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "interface already exists");
+        return;
+      }
+
       // convert message to model and add to db
       models::interface_model_t model;
       model.from_yaml(YAML::Load(spec.content));
+      // add package to name probably to avoid collisions (this was previous convention)
+      model.header.name = spec.package + "/" + model.header.name;
       cap_db_->insert_interface(model);
+      return;
     }
-    else if (spec.type == capabilities2_msgs::msg::CapabilitySpec::SEMANTIC_CAPABILITY_INTERFACE)
+
+    if (spec.type == capabilities2_msgs::msg::CapabilitySpec::SEMANTIC_CAPABILITY_INTERFACE)
     {
+      if (cap_db_->exists<models::semantic_interface_model_t>(header.name))
+      {
+        RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "semantic interface already exists");
+        return;
+      }
+
       models::semantic_interface_model_t model;
       model.from_yaml(YAML::Load(spec.content));
+      model.header.name = spec.package + "/" + model.header.name;
       cap_db_->insert_semantic_interface(model);
+      return;
     }
-    else if (spec.type == capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_PROVIDER)
+
+    if (spec.type == capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_PROVIDER)
     {
+      if (cap_db_->exists<models::provider_model_t>(header.name))
+      {
+        RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "provider already exists");
+        return;
+      }
+
       models::provider_model_t model;
       model.from_yaml(YAML::Load(spec.content));
+      model.header.name = spec.package + "/" + model.header.name;
       cap_db_->insert_provider(model);
+      return;
     }
-    else
-    {
-      RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "unknown capability type: %s", spec.type.c_str());
-    }
+
+    // couldn't parse unknown capability type
+    RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "unknown capability type: %s", spec.type.c_str());
   }
 
   // query api
@@ -181,16 +202,10 @@ public:
       providers.push_back(provider.header.name);
     }
 
-    // if include_semantic is true, add providers from semantic interfaces
-    if (include_semantic)
+    // if not include_semantic, remove providers for semantic interfaces
+    if (!include_semantic)
     {
-      for (const auto& semantic_interface : cap_db_->get_semantic_interfaces_by_interface(interface))
-      {
-        for (const auto& provider : cap_db_->get_providers_by_interface(semantic_interface.header.name))
-        {
-          providers.push_back(provider.header.name);
-        }
-      }
+      // TODO: implement
     }
 
     return providers;
@@ -213,10 +228,14 @@ public:
 
     if (!interface.header.name.empty())
     {
-      msg.package = interface.header.name;
+      // package name is first part of name separated by /
+      msg.package = interface.header.name.substr(0, interface.header.name.find_first_of('/'));
       msg.type = interface.header.type;
       // get spec convert to yaml then to string
-      msg.content = YAML::Dump(interface.to_yaml());
+      YAML::Node spec = interface.to_yaml();
+      // fix name to remove package name
+      spec["name"] = spec["name"].as<std::string>().substr(interface.header.name.find_first_of('/') + 1);
+      msg.content = YAML::Dump(spec);
     }
 
     // semantic interfaces
@@ -224,9 +243,11 @@ public:
 
     if (!semantic_interface.header.name.empty())
     {
-      msg.package = semantic_interface.header.name;
+      msg.package = semantic_interface.header.name.substr(0, semantic_interface.header.name.find_first_of('/'));
       msg.type = semantic_interface.header.type;
-      msg.content = YAML::Dump(semantic_interface.to_yaml());
+      YAML::Node spec = semantic_interface.to_yaml();
+      spec["name"] = spec["name"].as<std::string>().substr(semantic_interface.header.name.find_first_of('/') + 1);
+      msg.content = YAML::Dump(spec);
     }
 
     // providers
@@ -234,9 +255,11 @@ public:
 
     if (!provider.header.name.empty())
     {
-      msg.package = provider.header.name;
+      msg.package = provider.header.name.substr(0, provider.header.name.find_first_of('/'));
       msg.type = provider.header.type;
-      msg.content = YAML::Dump(provider.to_yaml());
+      YAML::Node spec = provider.to_yaml();
+      spec["name"] = spec["name"].as<std::string>().substr(provider.header.name.find_first_of('/') + 1);
+      msg.content = YAML::Dump(spec);
     }
 
     return msg;
@@ -251,9 +274,11 @@ public:
     for (const auto& interface : cap_db_->get_interfaces())
     {
       capabilities2_msgs::msg::CapabilitySpec msg;
-      msg.package = interface.header.name;
+      msg.package = interface.header.name.substr(0, interface.header.name.find_first_of('/'));
       msg.type = interface.header.type;
-      msg.content = YAML::Dump(interface.to_yaml());
+      YAML::Node spec = interface.to_yaml();
+      spec["name"] = spec["name"].as<std::string>().substr(interface.header.name.find_first_of('/') + 1);
+      msg.content = YAML::Dump(spec);
       specs.push_back(msg);
     }
 
@@ -261,9 +286,11 @@ public:
     for (const auto& semantic_interface : cap_db_->get_semantic_interfaces())
     {
       capabilities2_msgs::msg::CapabilitySpec msg;
-      msg.package = semantic_interface.header.name;
+      msg.package = semantic_interface.header.name.substr(0, semantic_interface.header.name.find_first_of('/'));
       msg.type = semantic_interface.header.type;
-      msg.content = YAML::Dump(semantic_interface.to_yaml());
+      YAML::Node spec = semantic_interface.to_yaml();
+      spec["name"] = spec["name"].as<std::string>().substr(semantic_interface.header.name.find_first_of('/') + 1);
+      msg.content = YAML::Dump(spec);
       specs.push_back(msg);
     }
 
@@ -271,9 +298,11 @@ public:
     for (const auto& provider : cap_db_->get_providers())
     {
       capabilities2_msgs::msg::CapabilitySpec msg;
-      msg.package = provider.header.name;
+      msg.package = provider.header.name.substr(0, provider.header.name.find_first_of('/'));
       msg.type = provider.header.type;
-      msg.content = YAML::Dump(provider.to_yaml());
+      YAML::Node spec = provider.to_yaml();
+      spec["name"] = spec["name"].as<std::string>().substr(provider.header.name.find_first_of('/') + 1);
+      msg.content = YAML::Dump(spec);
       specs.push_back(msg);
     }
 

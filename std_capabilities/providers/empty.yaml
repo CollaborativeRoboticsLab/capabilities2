@@ -1,0 +1,15 @@
+# the empty provider
+%YAML 1.1
+---
+name: empty
+spec_type: provider
+spec_version: 1
+description: the empty capability provider for the empty interface
+implements: std_capabilities/empty
+runner: providers/launch/empty.launch.py
+depends_on:
+  "std_capabilities/empty":
+    provider: "empty"
+remappings:
+  topics:
+    "empty": "not_empty"

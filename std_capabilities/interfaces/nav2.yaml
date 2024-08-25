@@ -7,9 +7,9 @@ spec_type: interface
 description: "the nav2 capability"
 interface:
   topics:
-    - name: "cmd_vel"
+    "cmd_vel":
       type: "geometry_msgs/Twist"
       description: "Velocity command topic."
-    - name: "goal"
+    "goal":
       type: "geometry_msgs/PoseStamped"
       description: "Goal topic."

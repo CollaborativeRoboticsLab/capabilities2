@@ -23,12 +23,12 @@ struct provider_model_t : public remappable_base_t
   {
     header.from_yaml(node);
     implements = node["implements"].as<std::string>();
+    runner = node["runner"].as<std::string>();
     for (const auto& dependency : node["depends_on"])
     {
-      depends_on[dependency.first.as<std::string>()] = dependency.second.as<std::string>();
+      depends_on[dependency.first.as<std::string>()] = dependency.second["provider"].as<std::string>();
     }
     remappings.from_yaml(node["remappings"]);
-    runner = node["runner"].as<std::string>();
   }
 
   YAML::Node to_yaml() const
@@ -48,8 +48,10 @@ struct provider_model_t : public remappable_base_t
 
   const std::string to_sql_values() const
   {
-    return header.to_sql_values() + ", '" + implements + "', '" + YAML::Dump(remappings.to_yaml()) + "', '" + runner +
-           "'";
+    YAML::Node deps;
+    deps["depends_on"] = depends_on;
+    return header.to_sql_values() + ", '" + implements + "', '" + YAML::Dump(deps["depends_on"]) + "', '" +
+           YAML::Dump(remappings.to_yaml()) + "', '" + runner + "'";
   }
 };
 

@@ -408,8 +408,16 @@ public:
     return run_config;
   }
 
-  // exists in db
+  // exists in db templated by model type
+  template <typename T>
   bool exists(const std::string& resource_name)
+  {
+    // clearly not in db as it does not match a valid model type
+    throw std::runtime_error("invalid model type");
+  }
+
+  // exists in db anywhere
+  bool exists_any(const std::string& resource_name)
   {
     // query all tables for name
     // if name is in any table, then it exists
@@ -497,10 +505,8 @@ protected:
     semantic_interface.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
     semantic_interface.redefines = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
     semantic_interface.global_namespace = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
-
-    models::remappings_model_t r;
-    r.from_yaml(YAML::Load(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)))));
-    semantic_interface.remappings = r;
+    semantic_interface.remappings.from_yaml(
+        YAML::Load(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)))));
 
     return semantic_interface;
   }
@@ -515,11 +521,7 @@ protected:
     provider.implements = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
     provider.depends_on = YAML::Load(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5))))
                               .as<std::map<std::string, std::string>>();
-
-    models::remappings_model_t r;
-    r.from_yaml(YAML::Load(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)))));
-    provider.remappings = r;
-
+    provider.remappings.from_yaml(YAML::Load(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)))));
     provider.runner = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 7)));
 
     return provider;
@@ -529,5 +531,27 @@ private:
   std::string db_file_;
   sqlite3* db_;
 };
+
+// 'exists' template specializations
+// interface exists in db
+template <>
+bool CapabilitiesDB::exists<models::interface_model_t>(const std::string& resource_name)
+{
+  return !get_interface(resource_name).header.name.empty();
+}
+
+// semantic interface exists in db
+template <>
+bool CapabilitiesDB::exists<models::semantic_interface_model_t>(const std::string& resource_name)
+{
+  return !get_semantic_interface(resource_name).header.name.empty();
+}
+
+// provider exists in db
+template <>
+bool CapabilitiesDB::exists<models::provider_model_t>(const std::string& resource_name)
+{
+  return !get_provider(resource_name).header.name.empty();
+}
 
 }  // namespace capabilities2_server

@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 
   // testing
   // open yaml file
-  std::ifstream file("/home/ubuntu/colcon_ws/src/capabilities2/std_capabilities/interfaces/nav2.yaml");
+  std::ifstream file("/home/ubuntu/colcon_ws/src/capabilities2/std_capabilities/providers/empty.yaml");
   std::string data{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
 
   // close file
@@ -25,8 +25,35 @@ int main(int argc, char** argv)
 
   // parse yaml
   YAML::Node yml = YAML::Load(data);
+  // std::cout << yml["name"] << std::endl;
 
-  std::cout << yml["name"] << std::endl;
+  capabilities2_msgs::msg::CapabilitySpec spec;
+  spec.package = "std_capabilities";
+  spec.type = capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_PROVIDER;
+  spec.content = data;
+
+  for (const auto& s : node.get_sematic_interfaces("std_capabilities/empty"))
+  {
+    std::cout << s << std::endl;
+  }
+
+  for (const auto& p : node.get_providers("std_capabilities/empty", true))
+  {
+    std::cout << p << std::endl;
+  }
+
+  capabilities2_msgs::msg::CapabilitySpec s = node.get_capability_spec("std_capabilities/empty");
+  std::cout << s.content << std::endl;
+  std::cout << "\n" << std::endl;
+
+  std::vector<capabilities2_msgs::msg::CapabilitySpec> specs = node.get_capability_specs();
+
+  for (const auto& s : specs)
+  {
+    std::cout << "package: " << s.package << std::endl;
+    std::cout << "type: " << s.type << std::endl;
+    std::cout << "content: " << s.content << std::endl;
+  }
 
   rclcpp::shutdown();
 

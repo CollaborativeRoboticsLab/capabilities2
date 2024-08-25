@@ -17,6 +17,10 @@
 
     <!-- export standard capabilities -->
     <export>
+        <!-- empty test interface -->
+        <capability_interface>
+            interfaces/empty.yaml
+        </capability_interface>
         <!-- the nav2 interface -->
         <capability_interface>
             interfaces/nav2.yaml
@@ -25,5 +29,17 @@
         <capability_interface>
             interfaces/moveit2.yaml
         </capability_interface>
+
+        <!-- semantic interfaces -->
+        <!-- not empty -->
+        <semantic_capability_interface>
+            semantic_interfaces/not_empty.yaml
+        </semantic_capability_interface>
+
+        <!-- providers -->
+        <!-- empty test provider -->
+        <capability_provider>
+            providers/empty.yaml
+        </capability_provider>
     </export>
 </package>
