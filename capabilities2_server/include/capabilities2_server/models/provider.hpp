@@ -28,14 +28,21 @@ struct provider_model_t : public remappable_base_t
     {
       depends_on[dependency.first.as<std::string>()] = dependency.second["provider"].as<std::string>();
     }
-    remappings.from_yaml(node["remappings"]);
+    // if remappings exist
+    if (node["remappings"])
+    {
+      remappings.from_yaml(node["remappings"]);
+    }
   }
 
   YAML::Node to_yaml() const
   {
     YAML::Node node = header.to_yaml();
     node["implements"] = implements;
-    node["depends_on"] = depends_on;
+    for (const auto& dependency : depends_on)
+    {
+      node["depends_on"][dependency.first]["provider"] = dependency.second;
+    }
     node["remappings"] = remappings.to_yaml();
     node["runner"] = runner;
     return node;

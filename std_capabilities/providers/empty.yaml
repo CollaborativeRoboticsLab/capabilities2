@@ -8,8 +8,8 @@ description: the empty capability provider for the empty interface
 implements: std_capabilities/empty
 runner: providers/launch/empty.launch.py
 depends_on:
-  "std_capabilities/empty":
-    provider: "empty"
+  "std_capabilities/not_empty":
+    provider: "std_capabilities/empty_depend"
 remappings:
   topics:
     "empty": "not_empty"

@@ -318,7 +318,7 @@ public:
     {
       models::capability_model_t dependency;
       dependency.interface = key;
-      dependency.interface = value;
+      dependency.provider = value;
       running.dependencies.push_back(dependency);
     }
 
@@ -397,7 +397,7 @@ public:
     }
 
     models::run_config_model_t run_config;
-    run_config.header = get_interface(provider.implements).header;
+    run_config.provider = provider.header;
     run_config.runner = provider.runner;
     run_config.started_by = provider_name;
     run_config.pid = "0";

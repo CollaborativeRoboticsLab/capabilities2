@@ -14,8 +14,22 @@ namespace capabilities2_runner
 class ActionRunner : public RunnerBase
 {
 public:
-  ActionRunner(/* args */);
-  ~ActionRunner();
+  ActionRunner()
+  {
+  }
+
+  virtual void start(const runner_opts& opts) override
+  {
+    // store opts
+    run_config_ = opts;
+
+    // TODO: launch runner
+  }
+
+  virtual void stop() override
+  {
+    // TODO: launch runner
+  }
 };
 
 }  // namespace capabilities2_runner

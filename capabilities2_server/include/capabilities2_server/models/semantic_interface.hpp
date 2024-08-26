@@ -22,7 +22,11 @@ struct semantic_interface_model_t : public remappable_base_t
     header.from_yaml(node);
     redefines = node["redefines"].as<std::string>();
     global_namespace = node["global_namespace"].as<std::string>();
-    remappings.from_yaml(node["remappings"]);
+    // if remappings exist
+    if (node["remappings"])
+    {
+      remappings.from_yaml(node["remappings"]);
+    }
   }
 
   YAML::Node to_yaml() const

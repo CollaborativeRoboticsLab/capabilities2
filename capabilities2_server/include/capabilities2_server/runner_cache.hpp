@@ -40,8 +40,14 @@ public:
     if (running(capability))
     {
       // already running
-      throw std::runtime_error("capability is running already");
+      throw std::runtime_error("capability is running already: " + capability);
       // return;
+    }
+
+    // check if run config is valid
+    if (!run_config.is_valid())
+    {
+      throw std::runtime_error("run config is not valid: " + YAML::Dump(run_config.to_yaml()));
     }
 
     // create the runner
@@ -49,8 +55,8 @@ public:
     // TODO: use different runner types based on cap and provider specs
     runner_cache_[capability] = runner_loader_.createSharedInstance("capabilities2_runner::LaunchRunner");
 
-    // TODO: start the runner
-    // runner_cache_[capability]->start(run_config.to_runner_opts());
+    // start the runner
+    runner_cache_[capability]->start(run_config.to_runner_opts());
   }
 
   void remove_runner(const std::string& capability)
@@ -59,13 +65,13 @@ public:
     if (runner_cache_.find(capability) == runner_cache_.end())
     {
       // not found so nothing to do
-      // throw std::runtime_error("capability runner not found");
-      return;
+      throw std::runtime_error("capability runner not found: " + capability);
+      // return;
     }
 
-    // TODO: safely stop the runner
+    // safely stop the runner
     std::shared_ptr<capabilities2_runner::RunnerBase> runner = runner_cache_[capability];
-    // runner->stop();
+    runner->stop();
     runner.reset();
 
     // remove the runner from map
@@ -91,8 +97,19 @@ public:
   // get provider of capability
   const std::string provider(const std::string& capability)
   {
-    // return runner_cache_[capability]->get_provider();
-    return "runner_cache_[capability]->get_provider()";
+    return runner_cache_[capability]->get_provider();
+  }
+
+  // get started_by of capability
+  const std::string started_by(const std::string& capability)
+  {
+    return runner_cache_[capability]->get_started_by();
+  }
+
+  // get pid of capability
+  const std::string pid(const std::string& capability)
+  {
+    return runner_cache_[capability]->get_pid();
   }
 
   /**

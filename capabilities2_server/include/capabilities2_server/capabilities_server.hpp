@@ -185,6 +185,8 @@ public:
   void establish_bond_cb(const std::shared_ptr<capabilities2_msgs::srv::EstablishBond::Request> req,
                          std::shared_ptr<capabilities2_msgs::srv::EstablishBond::Response> res)
   {
+    // req is empty
+
     // set bond id to response
     res->bond_id = establish_bond(shared_from_this());
   }
@@ -217,6 +219,19 @@ public:
   void free_capability_cb(const std::shared_ptr<capabilities2_msgs::srv::FreeCapability::Request> req,
                           std::shared_ptr<capabilities2_msgs::srv::FreeCapability::Response> res)
   {
+    // guard empty values
+    if (req->capability.empty())
+    {
+      RCLCPP_ERROR(get_logger(), "free_capability: capability is empty");
+      return;
+    }
+
+    if (req->bond_id.empty())
+    {
+      RCLCPP_ERROR(get_logger(), "free_capability: bond_id is empty");
+      return;
+    }
+
     // free capability of this bond
     free_capability(req->capability, req->bond_id);
 
@@ -227,6 +242,25 @@ public:
   void use_capability_cb(const std::shared_ptr<capabilities2_msgs::srv::UseCapability::Request> req,
                          std::shared_ptr<capabilities2_msgs::srv::UseCapability::Response> res)
   {
+    // guard empty values
+    if (req->capability.empty())
+    {
+      RCLCPP_ERROR(get_logger(), "use_capability: capability is empty");
+      return;
+    }
+
+    if (req->preferred_provider.empty())
+    {
+      RCLCPP_ERROR(get_logger(), "use_capability: preferred_provider is empty");
+      return;
+    }
+
+    if (req->bond_id.empty())
+    {
+      RCLCPP_ERROR(get_logger(), "use_capability: bond_id is empty");
+      return;
+    }
+
     // use capability with this bond
     use_capability(req->capability, req->preferred_provider, req->bond_id);
 
@@ -237,6 +271,13 @@ public:
   void register_capability_cb(const std::shared_ptr<capabilities2_msgs::srv::RegisterCapability::Request> req,
                               std::shared_ptr<capabilities2_msgs::srv::RegisterCapability::Response> res)
   {
+    // guard empty values
+    if (req->capability_spec.package.empty() || req->capability_spec.content.empty())
+    {
+      RCLCPP_ERROR(get_logger(), "register_capability: package or content is empty");
+      return;
+    }
+
     // register capability
     add_capability(req->capability_spec);
 
@@ -248,6 +289,8 @@ public:
   void get_interfaces_cb(const std::shared_ptr<capabilities2_msgs::srv::GetInterfaces::Request> req,
                          std::shared_ptr<capabilities2_msgs::srv::GetInterfaces::Response> res)
   {
+    // req is empty
+
     // set response
     // get all interfaces
     res->interfaces = get_interfaces();
@@ -283,8 +326,9 @@ public:
     {
       RCLCPP_ERROR(get_logger(), "capability spec not found for resource: %s", req->capability_spec.c_str());
 
-      // throw error
-      std::runtime_error("capability spec not found for resource: " + req->capability_spec);
+      // BUG: throw error causes service to crash, this is a ROS2 bug
+      // std::runtime_error("capability spec not found for resource: " + req->capability_spec);
+      return;
     }
 
     // set response
@@ -295,6 +339,8 @@ public:
   void get_capability_specs_cb(const std::shared_ptr<capabilities2_msgs::srv::GetCapabilitySpecs::Request> req,
                                std::shared_ptr<capabilities2_msgs::srv::GetCapabilitySpecs::Response> res)
   {
+    // req is empty
+
     // set response
     // get capability specs for given capability resources
     res->capability_specs = get_capability_specs();
@@ -311,6 +357,8 @@ public:
   void get_running_capabilities_cb(const std::shared_ptr<capabilities2_msgs::srv::GetRunningCapabilities::Request> req,
                                    std::shared_ptr<capabilities2_msgs::srv::GetRunningCapabilities::Response> res)
   {
+    // req is empty
+
     // set response
     // get running capabilities
     res->running_capabilities = get_running_capabilities();

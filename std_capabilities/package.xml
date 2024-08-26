@@ -41,5 +41,9 @@
         <capability_provider>
             providers/empty.yaml
         </capability_provider>
+        <!-- empty depend -->
+        <capability_provider>
+            providers/empty_depend.yaml
+        </capability_provider>
     </export>
 </package>

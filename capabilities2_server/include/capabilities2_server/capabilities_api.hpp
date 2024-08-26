@@ -61,6 +61,8 @@ public:
     // go through the running model and start the necessary dependencies
     for (const auto& run : running.dependencies)
     {
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "found dependency: %s", run.interface.c_str());
+
       // make an internal 'use' bond for the capability dependency
       bind_dependency(run.interface);
 
@@ -76,14 +78,49 @@ public:
     // create a runner id which is the cap name to uniquely identify the runner
     // this means only one runner per capability name
     // TODO: consider the logic for multiple runners per capability
-    runner_cache_.add_runner(capability, run_config);
+    try
+    {
+      runner_cache_.add_runner(capability, run_config);
+
+      // log
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "started capability: %s with provider: %s",
+                  capability.c_str(), provider.c_str());
+    }
+    catch (std::runtime_error& e)
+    {
+      RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "could not start runner: %s", e.what());
+    }
   }
 
   void stop_capability(const std::string& capability)
   {
+    // get the provider from runner
+    std::string provider = runner_cache_.provider(capability);
+    // get the running model from the db
+    models::running_model_t running = cap_db_->get_running(provider);
+
+    // unbind and stop dependencies
+    // FIXME: this unrolls the dependency tree from the bottom up but should probably be top down
+    for (const auto& run : running.dependencies)
+    {
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "freeing dependency: %s", run.interface.c_str());
+
+      // remove the internal 'use' bond for the capability dependency
+      unbind_dependency(run.interface);
+
+      // stop the dependency if no more bonds
+      if (!bond_cache_.exists(run.interface))
+      {
+        stop_capability(run.interface);
+      }
+    }
+
     // remove the runner
     // this will implicitly stop the runner
     runner_cache_.remove_runner(capability);
+
+    // log
+    RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "stopped capability: %s", capability.c_str());
   }
 
   void free_capability(const std::string& capability, const std::string& bond_id)
@@ -94,6 +131,8 @@ public:
     // stop the capability if no more bonds
     if (!bond_cache_.exists(capability))
     {
+      // stop the capability
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "stopping freed capability: %s", capability.c_str());
       stop_capability(capability);
     }
   }
@@ -366,7 +405,7 @@ public:
       // create a running cap msg
       capabilities2_msgs::msg::RunningCapability rc;
 
-      // TODO: get cap provider somehow
+      // get cap provider from runner
       std::string provider = runner_cache_.provider(cap);
 
       // get running model for provider
@@ -375,8 +414,8 @@ public:
       // fill running cap msg
       rc.capability.capability = running.interface;
       rc.capability.provider = running.provider;
-      rc.started_by = running.started_by;
-      rc.pid = atoi(running.pid.c_str());
+      rc.started_by = runner_cache_.started_by(cap);
+      rc.pid = atoi(runner_cache_.pid(cap).c_str());
 
       // get dependencies
       for (auto& dep : running.dependencies)
@@ -386,6 +425,9 @@ public:
         cap_msg.provider = dep.provider;
         rc.dependent_capabilities.push_back(cap_msg);
       }
+
+      // add running cap msg
+      running_capabilities.push_back(rc);
     }
 
     return running_capabilities;
@@ -394,18 +436,58 @@ public:
   // event api
   const capabilities2_msgs::msg::CapabilityEvent on_capability_started()
   {
+    // create event msg
+    capabilities2_msgs::msg::CapabilityEvent event;
+    event.header.frame_id = "capabilities";
+    event.header.stamp = rclcpp::Clock().now();
+
+    // started event
+    event.type = capabilities2_msgs::msg::CapabilityEvent::LAUNCHED;
+
+    // TODO: set cap, prov, pid
+
+    return event;
   }
+
   const capabilities2_msgs::msg::CapabilityEvent on_capability_stopped()
   {
+    // create event msg
+    capabilities2_msgs::msg::CapabilityEvent event;
+    event.header.frame_id = "capabilities";
+    event.header.stamp = rclcpp::Clock().now();
+
+    // terminated event
+    event.type = capabilities2_msgs::msg::CapabilityEvent::STOPPED;
+
+    // TODO: set cap, prov, pid
+
+    return event;
   }
-  const capabilities2_msgs::msg::CapabilityEvent on_capability_used()
+
+  const capabilities2_msgs::msg::CapabilityEvent on_capability_terminated()
   {
+    // create event msg
+    capabilities2_msgs::msg::CapabilityEvent event;
+    event.header.frame_id = "capabilities";
+    event.header.stamp = rclcpp::Clock().now();
+
+    // terminated event
+    event.type = capabilities2_msgs::msg::CapabilityEvent::TERMINATED;
+
+    // TODO: set cap, prov, pid
+
+    return event;
   }
-  const capabilities2_msgs::msg::CapabilityEvent on_capability_freed()
+
+  const capabilities2_msgs::msg::CapabilityEvent on_server_ready()
   {
-  }
-  const capabilities2_msgs::msg::CapabilityEvent on_capability_error()
-  {
+    // create event msg
+    capabilities2_msgs::msg::CapabilityEvent event;
+    event.header.frame_id = "capabilities";
+    event.header.stamp = rclcpp::Clock().now();
+
+    // started event
+    event.type = capabilities2_msgs::msg::CapabilityEvent::SERVER_READY;
   }
 
   // bond api
@@ -433,7 +515,7 @@ public:
   void on_bond_broken(const std::string& bond_id)
   {
     // log warning
-    RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "bond broken with id: %s", bond_id.c_str());
+    RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "bond broken for id: %s", bond_id.c_str());
 
     // get capabilities requested by the bond
     std::vector<std::string> capabilities = bond_cache_.get_capabilities(bond_id);
@@ -477,6 +559,30 @@ private:
 
     // keep the bond id in the internal bond ids
     internal_bond_ids_.push_back(bond_id);
+  }
+
+  void unbind_dependency(const std::string& capability)
+  {
+    // do we have a bond id for this capability
+
+    // get cap bonds
+    std::vector<std::string> cap_bonds = bond_cache_.get_bonds(capability);
+
+    // if any internal bonds in cap_bonds
+    for (const auto& bond : cap_bonds)
+    {
+      auto it = std::find(internal_bond_ids_.begin(), internal_bond_ids_.end(), bond);
+      if (it != internal_bond_ids_.end())
+      {
+        // remove just the first bond id found in cap_bonds and internal_bond_ids_
+        bond_cache_.remove_bond(capability, bond);
+
+        // delete internal bond
+        internal_bond_ids_.erase(it);
+
+        return;
+      }
+    }
   }
 
 private:
