@@ -176,8 +176,11 @@ public:
     //     create_wall_timer(std::chrono::seconds(1.0 / loop_hz_), std::bind(&CapabilitiesServer::cache_timer_cb,
     //     this));
 
-    // log
+    // log ready
     RCLCPP_INFO(get_logger(), "capabilities server started");
+
+    // publish ready event
+    event_pub_->publish(on_server_ready());
   }
 
   // service callbacks

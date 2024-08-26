@@ -43,6 +43,11 @@ public:
   virtual void stop() = 0;
 
   // getters
+  const std::string& get_interface() const
+  {
+    return run_config_.interface;
+  }
+
   const std::string& get_provider() const
   {
     return run_config_.provider;

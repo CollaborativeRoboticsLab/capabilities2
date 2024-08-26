@@ -309,7 +309,7 @@ public:
     models::running_model_t running;
     running.interface = provider.implements;
     running.provider = provider.header.name;
-    // TODO: implement these variables
+    // TODO: implement this variable somehow
     running.started_by = provider_name;
     running.pid = "0";
 

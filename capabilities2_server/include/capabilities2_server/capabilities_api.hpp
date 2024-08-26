@@ -434,7 +434,8 @@ public:
   }
 
   // event api
-  const capabilities2_msgs::msg::CapabilityEvent on_capability_started()
+  // related to runner api
+  const capabilities2_msgs::msg::CapabilityEvent on_capability_started(const std::string& capability)
   {
     // create event msg
     capabilities2_msgs::msg::CapabilityEvent event;
@@ -444,12 +445,15 @@ public:
     // started event
     event.type = capabilities2_msgs::msg::CapabilityEvent::LAUNCHED;
 
-    // TODO: set cap, prov, pid
+    // set cap, prov, pid
+    event.capability = capability;
+    event.provider = runner_cache_.provider(capability);
+    event.pid = atoi(runner_cache_.pid(capability).c_str());
 
     return event;
   }
 
-  const capabilities2_msgs::msg::CapabilityEvent on_capability_stopped()
+  const capabilities2_msgs::msg::CapabilityEvent on_capability_stopped(const std::string& capability)
   {
     // create event msg
     capabilities2_msgs::msg::CapabilityEvent event;
@@ -459,12 +463,15 @@ public:
     // terminated event
     event.type = capabilities2_msgs::msg::CapabilityEvent::STOPPED;
 
-    // TODO: set cap, prov, pid
+    // set cap, prov, pid
+    event.capability = capability;
+    event.provider = runner_cache_.provider(capability);
+    event.pid = atoi(runner_cache_.pid(capability).c_str());
 
     return event;
   }
 
-  const capabilities2_msgs::msg::CapabilityEvent on_capability_terminated()
+  const capabilities2_msgs::msg::CapabilityEvent on_capability_terminated(const std::string& capability)
   {
     // create event msg
     capabilities2_msgs::msg::CapabilityEvent event;
@@ -474,7 +481,10 @@ public:
     // terminated event
     event.type = capabilities2_msgs::msg::CapabilityEvent::TERMINATED;
 
-    // TODO: set cap, prov, pid
+    // set cap, prov, pid
+    event.capability = capability;
+    event.provider = runner_cache_.provider(capability);
+    event.pid = atoi(runner_cache_.pid(capability).c_str());
 
     return event;
   }
