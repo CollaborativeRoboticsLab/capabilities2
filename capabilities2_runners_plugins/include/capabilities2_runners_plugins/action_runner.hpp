@@ -18,7 +18,9 @@ public:
   {
   }
 
-  virtual void start(const runner_opts& opts) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& opts,
+                     std::function<void(const std::string&)> on_started = nullptr,
+                     std::function<void(const std::string&)> on_terminated = nullptr) override
   {
     // store opts
     run_config_ = opts;
@@ -26,9 +28,9 @@ public:
     // TODO: launch runner
   }
 
-  virtual void stop() override
+  virtual void stop(std::function<void(const std::string&)> on_stopped = nullptr) override
   {
-    // TODO: launch runner
+    // TODO: stop runner
   }
 };
 

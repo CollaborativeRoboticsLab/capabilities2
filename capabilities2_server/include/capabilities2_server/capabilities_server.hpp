@@ -171,6 +171,14 @@ public:
         "~/get_running_capabilities", std::bind(&CapabilitiesServer::get_running_capabilities_cb, this,
                                                 std::placeholders::_1, std::placeholders::_2));
 
+    // create publishing event callbacks by binding the event publisher and event message callbacks
+    // handled by the API class and passed around to runners
+    // on started, stopped, and terminated lambdas binding event_pub_
+    // init events system callbacks with lambdas
+    init_events([this](const std::string& cap) { event_pub_->publish(on_capability_started(cap)); },
+                [this](const std::string& cap) { event_pub_->publish(on_capability_stopped(cap)); },
+                [this](const std::string& cap) { event_pub_->publish(on_capability_terminated(cap)); });
+
     // timer to manage bonds and runners
     // cache_timer_ =
     //     create_wall_timer(std::chrono::seconds(1.0 / loop_hz_), std::bind(&CapabilitiesServer::cache_timer_cb,
@@ -200,7 +208,7 @@ public:
   {
     // try starting capability
     // TODO: handle errors
-    start_capability(req->capability, req->preferred_provider);
+    start_capability(shared_from_this(), req->capability, req->preferred_provider);
 
     // set response
     res->result = capabilities2_msgs::srv::StartCapability::Response::RESULT_SUCCESS;
@@ -265,7 +273,7 @@ public:
     }
 
     // use capability with this bond
-    use_capability(req->capability, req->preferred_provider, req->bond_id);
+    use_capability(shared_from_this(), req->capability, req->preferred_provider, req->bond_id);
 
     // response is empty
   }

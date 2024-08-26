@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <rclcpp/rclcpp.hpp>
 #include <pluginlib/class_loader.hpp>
 #include <capabilities2_server/models/run_config.hpp>
 #include <capabilities2_runners_plugins/runner_base.hpp>
@@ -26,6 +27,9 @@ class RunnerCache
 public:
   RunnerCache() : runner_loader_("capabilities2_runners_plugins", "capabilities2_runner::RunnerBase")
   {
+    on_started = nullptr;
+    on_stopped = nullptr;
+    on_terminated = nullptr;
   }
 
   /**
@@ -34,7 +38,8 @@ public:
    * @param capability
    * @param run_config
    */
-  void add_runner(const std::string& capability, const models::run_config_model_t& run_config)
+  void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability,
+                  const models::run_config_model_t& run_config)
   {
     // if the runner exists then throw an error
     if (running(capability))
@@ -56,7 +61,7 @@ public:
     runner_cache_[capability] = runner_loader_.createSharedInstance("capabilities2_runner::LaunchRunner");
 
     // start the runner
-    runner_cache_[capability]->start(run_config.to_runner_opts());
+    runner_cache_[capability]->start(node, run_config.to_runner_opts(), on_started, on_terminated);
   }
 
   void remove_runner(const std::string& capability)
@@ -71,7 +76,7 @@ public:
 
     // safely stop the runner
     std::shared_ptr<capabilities2_runner::RunnerBase> runner = runner_cache_[capability];
-    runner->stop();
+    runner->stop(on_stopped);
     runner.reset();
 
     // remove the runner from map
@@ -124,6 +129,22 @@ public:
     return runner_cache_.find(capability) != runner_cache_.end();
   }
 
+  // set event callbacks
+  void set_on_started(std::function<void(const std::string&)> cb)
+  {
+    on_started = cb;
+  }
+
+  void set_on_stopped(std::function<void(const std::string&)> cb)
+  {
+    on_stopped = cb;
+  }
+
+  void set_on_terminated(std::function<void(const std::string&)> cb)
+  {
+    on_terminated = cb;
+  }
+
 private:
   // map capability to running model
   // capability / provider specs -> runner
@@ -131,6 +152,11 @@ private:
 
   // runner plugin loader
   pluginlib::ClassLoader<capabilities2_runner::RunnerBase> runner_loader_;
+
+  // event callbacks
+  std::function<void(const std::string&)> on_started;
+  std::function<void(const std::string&)> on_stopped;
+  std::function<void(const std::string&)> on_terminated;
 };
 
 }  // namespace capabilities2_server

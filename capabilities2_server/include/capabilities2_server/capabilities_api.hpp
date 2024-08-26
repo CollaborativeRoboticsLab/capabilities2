@@ -51,8 +51,18 @@ public:
     RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "CAPAPI connected to db: %s", db_file.c_str());
   }
 
+  // init runner events
+  void init_events(std::function<void(const std::string&)> on_started,
+                   std::function<void(const std::string&)> on_stopped,
+                   std::function<void(const std::string&)> on_terminated)
+  {
+    runner_cache_.set_on_started(on_started);
+    runner_cache_.set_on_stopped(on_stopped);
+    runner_cache_.set_on_terminated(on_terminated);
+  }
+
   // control api
-  void start_capability(const std::string& capability, const std::string& provider)
+  void start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider)
   {
     // get the running model from the db
     models::running_model_t running = cap_db_->get_running(provider);
@@ -67,7 +77,7 @@ public:
       bind_dependency(run.interface);
 
       // add the runner to the cache
-      start_capability(run.interface, run.provider);
+      start_capability(node, run.interface, run.provider);
     }
 
     // get the provider specification for the capability
@@ -80,7 +90,7 @@ public:
     // TODO: consider the logic for multiple runners per capability
     try
     {
-      runner_cache_.add_runner(capability, run_config);
+      runner_cache_.add_runner(node, capability, run_config);
 
       // log
       RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "started capability: %s with provider: %s",
@@ -137,13 +147,14 @@ public:
     }
   }
 
-  void use_capability(const std::string& capability, const std::string& provider, const std::string& bond_id)
+  void use_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
+                      const std::string& bond_id)
   {
     // add bond to cache for capability
     bond_cache_.add_bond(capability, bond_id);
 
     // start the capability with the provider
-    start_capability(capability, provider);
+    start_capability(node, capability, provider);
   }
 
   // capability api
@@ -498,6 +509,8 @@ public:
 
     // started event
     event.type = capabilities2_msgs::msg::CapabilityEvent::SERVER_READY;
+
+    return event;
   }
 
   // bond api

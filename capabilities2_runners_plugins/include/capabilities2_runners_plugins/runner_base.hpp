@@ -1,7 +1,8 @@
 #pragma once
 
-#include <iostream>
 #include <string>
+#include <functional>
+#include <rclcpp/rclcpp.hpp>
 
 namespace capabilities2_runner
 {
@@ -39,8 +40,11 @@ public:
   ~RunnerBase() = default;
 
   // runner plugin api
-  virtual void start(const runner_opts& opts) = 0;
-  virtual void stop() = 0;
+  // incorporates event callbacks
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& opts,
+                     std::function<void(const std::string&)> on_started = nullptr,
+                     std::function<void(const std::string&)> on_terminated = nullptr) = 0;
+  virtual void stop(std::function<void(const std::string&)> on_stopped = nullptr) = 0;
 
   // getters
   const std::string& get_interface() const
