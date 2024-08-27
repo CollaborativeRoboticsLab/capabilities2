@@ -39,12 +39,42 @@ public:
 
   ~RunnerBase() = default;
 
-  // runner plugin api
+  /** runner plugin api */
+
   // incorporates event callbacks
+
+  /**
+   * @brief start the runner
+   *
+   * @param node
+   * @param opts
+   * @param on_started
+   * @param on_terminated
+   */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& opts,
                      std::function<void(const std::string&)> on_started = nullptr,
                      std::function<void(const std::string&)> on_terminated = nullptr) = 0;
+
+  /**
+   * @brief stop the runner
+   *
+   * @param on_stopped
+   */
   virtual void stop(std::function<void(const std::string&)> on_stopped = nullptr) = 0;
+
+  // helpers
+  // init base members
+  void init_base(rclcpp::Node::SharedPtr node, const runner_opts& opts)
+  {
+    // store node pointer and opts
+    node_ = node;
+    run_config_ = opts;
+  }
+
+  const std::string get_package_name()
+  {
+    return run_config_.interface.substr(0, run_config_.interface.find("/"));
+  }
 
   // getters
   const std::string& get_interface() const
@@ -68,6 +98,7 @@ public:
   }
 
 protected:
+  rclcpp::Node::SharedPtr node_;
   runner_opts run_config_;
 };
 

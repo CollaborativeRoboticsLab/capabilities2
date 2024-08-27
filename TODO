@@ -1,7 +1,6 @@
-try using ros package to find exports automatically
-
-names need to be in package/name format everywhere
-
-docs
-
-escape db function variables
+todo:
+  - try using ros package to find exports automatically
+  - names need to be in package/name format everywhere
+  - better docs
+  - escape db function variables
+  - close or change communication to launch proxy so that it can't be accessed from ros network

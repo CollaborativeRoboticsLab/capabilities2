@@ -4,11 +4,11 @@
             A plugin that provides capabilities2 launch based runner
         </description>
     </class>
-    <class type="capabilities2_runner::ActionRunner" base_class_type="capabilities2_runner::RunnerBase">
+    <!-- <class type="capabilities2_runner::ActionRunner" base_class_type="capabilities2_runner::RunnerBase">
         <description>
             A plugin that provides capabilities2 action based runner
         </description>
-    </class>
+    </class> -->
     <!-- specific standardised action runners -->
     <class type="capabilities2_runner::NavRunner" base_class_type="capabilities2_runner::ActionRunner">
         <description>

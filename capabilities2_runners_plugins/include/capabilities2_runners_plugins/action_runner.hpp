@@ -1,6 +1,8 @@
 #pragma once
 
+#include <thread>
 #include <capabilities2_runners_plugins/runner_base.hpp>
+#include <rclcpp_action/rclcpp_action.hpp>
 
 namespace capabilities2_runner
 {
@@ -11,27 +13,68 @@ namespace capabilities2_runner
  * Create an action client to run an action based capability
  *
  */
+template <typename ActionT>
 class ActionRunner : public RunnerBase
 {
 public:
-  ActionRunner()
+  ActionRunner() : RunnerBase()
   {
   }
 
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& opts,
-                     std::function<void(const std::string&)> on_started = nullptr,
-                     std::function<void(const std::string&)> on_terminated = nullptr) override
+  // helpers
+  // init action base members
+  void init_action(rclcpp::Node::SharedPtr node, const runner_opts& opts, const std::string& action_type)
   {
-    // store opts
-    run_config_ = opts;
+    // store node pointer and opts
+    init_base(node, opts);
 
-    // TODO: launch runner
+    // create an action client
+    action_client_ = rclcpp_action::create_client<ActionT>(node_, get_action_name_by_type(action_type));
+
+    // wait for action server
+    RCLCPP_INFO(node_->get_logger(), "%s waiting for action: %s", run_config_.interface.c_str(),
+                get_action_name_by_type(action_type).c_str());
+
+    if (!action_client_->wait_for_action_server())
+    {
+      throw std::runtime_error("failed to connect to action server");
+    }
   }
 
-  virtual void stop(std::function<void(const std::string&)> on_stopped = nullptr) override
+  // find resource name by action type
+  std::string get_action_name_by_type(const std::string& action_type)
   {
-    // TODO: stop runner
+    for (const auto& resource : run_config_.resources)
+    {
+      if (resource.resource_type == "action")
+      {
+        if (resource.msg_type == action_type)
+        {
+          return resource.name;
+        }
+      }
+    }
+
+    throw std::runtime_error("no action resource found");
   }
+
+  // get first action resource
+  std::string get_first_action_name()
+  {
+    for (const auto& resource : run_config_.resources)
+    {
+      if (resource.resource_type == "action")
+      {
+        return resource.name;
+      }
+    }
+
+    throw std::runtime_error("no action resource found");
+  }
+
+protected:
+  // action client
+  std::shared_ptr<rclcpp_action::Client<ActionT>> action_client_;
 };
 
 }  // namespace capabilities2_runner
