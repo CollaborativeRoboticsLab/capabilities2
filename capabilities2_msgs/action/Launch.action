@@ -1,0 +1,11 @@
+# action to run a launch file with variables
+# goal
+std_msgs/Header header
+string launch_file_path
+---
+# result
+std_msgs/Header header
+---
+# feedback
+std_msgs/Header header
+capabilities2_msgs/CapabilityEvent event

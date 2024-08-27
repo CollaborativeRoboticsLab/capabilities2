@@ -44,6 +44,7 @@ set(srv_files
 
 set(action_files
   "action/Capability.action"
+  "action/Launch.action"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}

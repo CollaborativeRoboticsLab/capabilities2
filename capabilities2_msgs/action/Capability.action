@@ -1,3 +1,5 @@
+# the capability action is a managed action that can be used to abstract the execution of an action provided by another system
+# for example, a capability could be a move_base action that is executed by a move_base node
 # goal
 std_msgs/Header header
 capabilities2_msgs/CapabilityCommand goal
@@ -9,5 +11,6 @@ capabilities2_msgs/CapabilityResponse result
 # feedback
 std_msgs/Header header
 capabilities2_msgs/Capability capability
-int32 progress
-capabilities2_msgs/Remapping[] state
+int32 progress # an estimate of the progress of the action
+capabilities2_msgs/Remapping[] state # key-value pairs that represent the state of the action
+std_msgs/String inner_feedback # feedback from the inner action encapsulated by the capability
