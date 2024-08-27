@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="3">
     <name>std_capabilities</name>
     <version>0.0.1</version>
     <description>
@@ -12,6 +12,8 @@
     <author email="michael.pritchard@canberra.edu.au">Michael Pritchard</author>
 
     <license>MIT</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
 
     <exec_depend>capabilities2_server</exec_depend>
 
