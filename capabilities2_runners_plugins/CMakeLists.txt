@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(capabilities2_runners_plugins)
+project(capabilities2_runner)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)

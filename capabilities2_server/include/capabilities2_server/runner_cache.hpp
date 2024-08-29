@@ -38,8 +38,7 @@ public:
    * @param capability
    * @param run_config
    */
-  void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability,
-                  const models::run_config_model_t& run_config)
+  void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability, const models::run_config_model_t& run_config)
   {
     // if the runner exists then throw an error
     if (running(capability))
@@ -84,6 +83,7 @@ public:
   }
 
   /**
+  /**
    * @brief Get a list of active providers in the cache
    *
    * @param capability
@@ -98,7 +98,7 @@ public:
     }
     return runners;
   }
-
+  
   // get provider of capability
   const std::string provider(const std::string& capability)
   {

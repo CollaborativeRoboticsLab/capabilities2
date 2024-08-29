@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>capabilities2_runners_plugins</name>
+  <name>capabilities2_runner</name>
   <version>0.0.1</version>
   <description>
     Package for capabilities2 runners, managed running different types of capabilities

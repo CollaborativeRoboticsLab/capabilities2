@@ -5,5 +5,5 @@ provide runners for common capabilities like nav2, moveit2, etc. Plugins extend 
 ## Runners
 
 - `base runner` - base class for runners implementing the `Runner` interface which comprises of `start`, `stop`.
-- `action runner` - runner for capabilities that are implemented as actions. This is also a base class for as most runners will be actions.
+- `action runner` - runner for capabilities that are implemented as actions. This is also a base class as most runners will be actions.
 - `launch runner` - runner for capabilities that are implemented as launch files.
