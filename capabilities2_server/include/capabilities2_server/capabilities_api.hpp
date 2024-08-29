@@ -497,6 +497,9 @@ public:
     event.provider = runner_cache_.provider(capability);
     event.pid = atoi(runner_cache_.pid(capability).c_str());
 
+    // log error
+    RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "capability terminated: %s", capability.c_str());
+
     return event;
   }
 
