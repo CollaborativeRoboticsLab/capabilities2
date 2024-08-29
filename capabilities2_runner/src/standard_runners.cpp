@@ -1,6 +1,6 @@
 #include <pluginlib/class_list_macros.hpp>
-#include <capabilities2_runners_plugins/runner_base.hpp>
-#include <capabilities2_runners_plugins/launch_runner.hpp>
+#include <capabilities2_runner/runner_base.hpp>
+#include <capabilities2_runner/launch_runner.hpp>
 
 namespace capabilities2_runner
 {

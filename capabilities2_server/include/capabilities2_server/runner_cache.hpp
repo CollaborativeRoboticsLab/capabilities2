@@ -6,7 +6,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <pluginlib/class_loader.hpp>
 #include <capabilities2_server/models/run_config.hpp>
-#include <capabilities2_runners_plugins/runner_base.hpp>
+#include <capabilities2_runner/runner_base.hpp>
 
 namespace capabilities2_server
 {
@@ -98,7 +98,7 @@ public:
     }
     return runners;
   }
-  
+
   // get provider of capability
   const std::string provider(const std::string& capability)
   {

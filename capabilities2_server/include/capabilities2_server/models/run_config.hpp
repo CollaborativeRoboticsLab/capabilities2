@@ -4,7 +4,7 @@
 
 #include <capabilities2_server/models/header.hpp>
 #include <capabilities2_server/models/interface.hpp>
-#include <capabilities2_runners_plugins/runner_base.hpp>
+#include <capabilities2_runner/runner_base.hpp>
 
 namespace capabilities2_server
 {

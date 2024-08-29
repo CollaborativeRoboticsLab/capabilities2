@@ -2,7 +2,7 @@
 
 #include <std_msgs/msg/string.hpp>
 #include <capabilities2_msgs/action/launch.hpp>
-#include <capabilities2_runners_plugins/action_runner.hpp>
+#include <capabilities2_runner/action_runner.hpp>
 
 namespace capabilities2_runner
 {

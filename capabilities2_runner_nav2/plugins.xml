@@ -1,0 +1,8 @@
+<library path="capabilities2_runners">
+    <!-- specific standardised action runners -->
+    <class type="capabilities2_runner::NavRunner" base_class_type="capabilities2_runner::ActionRunner">
+        <description>
+            action based nav2 stack runner
+        </description>
+    </class>
+</library>

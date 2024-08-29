@@ -1,7 +1,7 @@
 #pragma once
 
 #include <thread>
-#include <capabilities2_runners_plugins/runner_base.hpp>
+#include <capabilities2_runner/runner_base.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 
 namespace capabilities2_runner
