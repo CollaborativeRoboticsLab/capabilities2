@@ -7,11 +7,14 @@ use in conjunction with capabilities2_server to launch capabilities
 acts like ros2 launch command but from a topic
 '''
 
+import os
+
 from typing import Dict
 from typing import Text
 
 import threading
 import rclpy
+import rclpy.logging
 from rclpy.node import Node
 from rclpy.action import ActionServer
 from rclpy.action import CancelResponse
@@ -54,17 +57,31 @@ class CapabilitiesLaunchProxy(Node):
         # log start
         self.get_logger().info('capabilities launch proxy started')
 
-    # launch sub callback
-    def launch_cb(self, msg: Launch):
+    # launch callback
+    def launch_cb(self, goal_handle) -> Launch.Result:
         """
         launch callback
         """
 
         # launch context already exists guard
         for active_context in self.active_launch_services:
-            if active_context[0] == msg.launch_file_path:
-                self.get_logger().error('context already exists for {}'.format(msg.launch_file_path))
-                return
+            if active_context[0] == goal_handle.request.launch_file_path:
+                self.get_logger().error('context already exists for {}'.format(
+                    goal_handle.request.launch_file_path))
+
+                # abort goal
+                goal_handle.abort()
+                # action response
+                return Launch.Result()
+
+        # check if file exists
+        if not os.path.isfile(goal_handle.request.launch_file_path):
+            # file does not exist
+            self.get_logger().error('file does not exist: {}'.format(
+                goal_handle.request.launch_file_path))
+
+            goal_handle.abort()
+            return Launch.Result()
 
         # create a new service
         service = LaunchService()
@@ -72,24 +89,31 @@ class CapabilitiesLaunchProxy(Node):
         description = LaunchDescription([
             IncludeLaunchDescription(
                 AnyLaunchDescriptionSource(
-                    msg.launch_file_path
+                    goal_handle.request.launch_file_path
                 )
             ),
         ])
 
         service.include_launch_description(description)
 
-        # bind request to thread
-        threading.Thread(target=service.run).start()
-
-        # send event
-        event = CapabilityEvent()
-        event.event = 'launch'
-        event.data = msg.launch_file_path
-        self.event_pub.publish(event)
-
         # add context to active contexts
-        self.active_launch_services[msg.launch_file_path] = service
+        self.active_launch_services[goal_handle.request.launch_file_path] = service
+
+        # send event feedback
+        feedback = Launch.Feedback()
+        feedback.event.type = 'launched'
+        goal_handle.publish_feedback(feedback)
+
+        # bind request to this thread
+        # blocking call
+        self.get_logger().info('launching {}'.format(
+            goal_handle.request.launch_file_path
+        ))
+        self.active_launch_services[goal_handle.request.launch_file_path].run()
+        # threading.Thread(target=service.run).start()
+
+        goal_handle.succeed()
+        return Launch.Response()
 
     # shutdown sub callback
     def shutdown_cb(self, goal_handle) -> CancelResponse:
@@ -97,14 +121,19 @@ class CapabilitiesLaunchProxy(Node):
         shutdown callback (cancel goal)
         """
 
+        self.get_logger().info('shutting down {}'.format(
+            goal_handle.request.launch_file_path))
+
         # if context is not found log and return
-        if self.active_launch_services[] is None:
-            self.get_logger().error('no context found for {}'.format(req.data))
+        if self.active_launch_services[goal_handle.request.launch_file_path] is None:
+            self.get_logger().error('no context found for {}'.format(
+                goal_handle.request.launch_file_path))
             return CancelResponse.REJECT
 
         # find the context and
         # shutdown the context
-        threading.Thread(target=self.active_launch_services[].shutdown).start()
+        threading.Thread(
+            target=self.active_launch_services[goal_handle.request.launch_file_path].shutdown).start()
 
         return CancelResponse.ACCEPT
 

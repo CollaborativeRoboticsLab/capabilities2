@@ -37,7 +37,8 @@ public:
 
     if (!action_client_->wait_for_action_server())
     {
-      throw std::runtime_error("failed to connect to action server");
+      RCLCPP_ERROR(node_->get_logger(), "%s failed to connect to action server", run_config_.interface.c_str());
+      throw runner_exception("failed to connect to action server");
     }
   }
 
@@ -55,7 +56,7 @@ public:
       }
     }
 
-    throw std::runtime_error("no action resource found");
+    throw runner_exception("no action resource found: " + action_type);
   }
 
   // get first action resource
@@ -69,7 +70,7 @@ public:
       }
     }
 
-    throw std::runtime_error("no action resource found");
+    throw runner_exception("no action resources found for interface: " + run_config_.interface);
   }
 
 protected:

@@ -45,20 +45,29 @@ public:
     if (running(capability))
     {
       // already running
-      throw std::runtime_error("capability is running already: " + capability);
+      throw capabilities2_runner::runner_exception("capability is running already: " + capability);
       // return;
     }
 
     // check if run config is valid
     if (!run_config.is_valid())
     {
-      throw std::runtime_error("run config is not valid: " + YAML::Dump(run_config.to_yaml()));
+      throw capabilities2_runner::runner_exception("run config is not valid: " + YAML::Dump(run_config.to_yaml()));
     }
 
     // create the runner
     // add the runner to map
-    // TODO: use different runner types based on cap and provider specs
-    runner_cache_[capability] = runner_loader_.createSharedInstance("capabilities2_runner::LaunchRunner");
+    // if the spec runner contains a path to a launch file then use the launch file runner
+    if (run_config.runner.find(".launch") != std::string::npos || run_config.runner.find("/") != std::string::npos ||
+        run_config.runner.find(".py") != std::string::npos)
+    {
+      runner_cache_[capability] = runner_loader_.createSharedInstance("capabilities2_runner::LaunchRunner");
+    }
+    else
+    {
+      // use different runner types based on cap and provider specs
+      runner_cache_[capability] = runner_loader_.createSharedInstance(run_config.runner);
+    }
 
     // start the runner
     runner_cache_[capability]->start(node, run_config.to_runner_opts(), on_started, on_terminated);
@@ -70,14 +79,22 @@ public:
     if (runner_cache_.find(capability) == runner_cache_.end())
     {
       // not found so nothing to do
-      throw std::runtime_error("capability runner not found: " + capability);
+      throw capabilities2_runner::runner_exception("capability runner not found: " + capability);
       // return;
     }
 
     // safely stop the runner
-    std::shared_ptr<capabilities2_runner::RunnerBase> runner = runner_cache_[capability];
-    runner->stop(on_stopped);
-    runner.reset();
+    try
+    {
+      runner_cache_[capability]->stop(on_stopped);
+    }
+    catch (const capabilities2_runner::runner_exception& e)
+    {
+      // pass
+    }
+
+    // reset the runner pointer
+    runner_cache_[capability].reset();
 
     // remove the runner from map
     runner_cache_.erase(capability);

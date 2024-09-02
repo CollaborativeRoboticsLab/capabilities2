@@ -1,11 +1,36 @@
 #pragma once
 
+#include <stdexcept>
 #include <string>
 #include <functional>
 #include <rclcpp/rclcpp.hpp>
 
 namespace capabilities2_runner
 {
+/**
+ * @brief runner exception
+ *
+ * Base class for runner exceptions
+ *
+ */
+struct runner_exception : public std::runtime_error
+{
+  using std::runtime_error::runtime_error;
+
+  runner_exception(const std::string& what) : std::runtime_error(what)
+  {
+  }
+
+  virtual const char* what() const noexcept override
+  {
+    return std::runtime_error::what();
+  }
+};
+
+/**
+ * @brief resource definition
+ *
+ */
 struct resource
 {
   std::string name;
