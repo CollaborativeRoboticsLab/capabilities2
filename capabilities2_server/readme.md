@@ -43,6 +43,21 @@ The capabilities2 server exposes the following Topics API:
 ros2 launch capabilities2 capabilities2_server.launch.py
 ```
 
+### register a capability
+
+capabilities can be registered by exporting them in a package. The capabilities2 server will read the capabilities from the package and make them available to the user.
+
+```xml
+<!-- see std_capabilities package for examples -->
+<export>
+    <capability_interface>
+        interfaces/cool_cap.yaml
+    </capability_interface>
+</export>
+```
+
+Capabilities can also be registered through a service call. This is useful for registering capabilities that are not exported in a package. The service call has been implemented as a node in the capabilities2 package. Use the node to register capabilities during runtime.
+
 ### user program flow
 
 first, inspect the available capabilities provided under this server on this robot.

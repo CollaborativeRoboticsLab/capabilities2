@@ -7,18 +7,22 @@ use in conjunction with capabilities2_server to launch capabilities
 acts like ros2 launch command but from a topic
 '''
 
-from typing import List
-from typing import Mapping
+import os
+
+from typing import Dict
 from typing import Text
 
 import threading
 import rclpy
+import rclpy.logging
 from rclpy.node import Node
+from rclpy.action import ActionServer
+from rclpy.action import CancelResponse
 from launch import LaunchService
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import AnyLaunchDescriptionSource
-from std_msgs.msg import String
+from capabilities2_msgs.action import Launch
 from capabilities2_msgs.msg import CapabilityEvent
 
 
@@ -32,22 +36,15 @@ class CapabilitiesLaunchProxy(Node):
         super().__init__(node_name)
 
         # active contexts list
-        self.active_launch_services: List[Mapping[Text, LaunchService]] = []
+        self.active_launch_services: Dict[Text, LaunchService] = {}
 
-        # create launch sub
-        self.launch_sub = self.create_subscription(
-            String,
+        # create launch action
+        self.launch_sub = ActionServer(
+            self,
+            Launch,
             '~/launch',
-            self.launch_cb,
-            10
-        )
-
-        # create shutdown sub
-        self.shutdown_sub = self.create_subscription(
-            String,
-            '~/shutdown',
-            self.shutdown_cb,
-            10
+            execute_callback=self.launch_cb,
+            cancel_callback=self.shutdown_cb
         )
 
         # event pub
@@ -60,17 +57,31 @@ class CapabilitiesLaunchProxy(Node):
         # log start
         self.get_logger().info('capabilities launch proxy started')
 
-    # launch sub callback
-    def launch_cb(self, msg: String):
+    # launch callback
+    def launch_cb(self, goal_handle) -> Launch.Result:
         """
         launch callback
         """
 
         # launch context already exists guard
         for active_context in self.active_launch_services:
-            if active_context[0] == msg.data:
-                self.get_logger().error('context already exists for {}'.format(msg.data))
-                return
+            if active_context[0] == goal_handle.request.launch_file_path:
+                self.get_logger().error('context already exists for {}'.format(
+                    goal_handle.request.launch_file_path))
+
+                # abort goal
+                goal_handle.abort()
+                # action response
+                return Launch.Result()
+
+        # check if file exists
+        if not os.path.isfile(goal_handle.request.launch_file_path):
+            # file does not exist
+            self.get_logger().error('file does not exist: {}'.format(
+                goal_handle.request.launch_file_path))
+
+            goal_handle.abort()
+            return Launch.Result()
 
         # create a new service
         service = LaunchService()
@@ -78,39 +89,53 @@ class CapabilitiesLaunchProxy(Node):
         description = LaunchDescription([
             IncludeLaunchDescription(
                 AnyLaunchDescriptionSource(
-                    msg.data
+                    goal_handle.request.launch_file_path
                 )
             ),
         ])
 
         service.include_launch_description(description)
 
-        # bind request to thread
-        threading.Thread(target=service.run).start()
-
         # add context to active contexts
-        self.active_launch_services.append([msg.data, service])
+        self.active_launch_services[goal_handle.request.launch_file_path] = service
+
+        # send event feedback
+        feedback = Launch.Feedback()
+        feedback.event.type = 'launched'
+        goal_handle.publish_feedback(feedback)
+
+        # bind request to this thread
+        # blocking call
+        self.get_logger().info('launching {}'.format(
+            goal_handle.request.launch_file_path
+        ))
+        self.active_launch_services[goal_handle.request.launch_file_path].run()
+        # threading.Thread(target=service.run).start()
+
+        goal_handle.succeed()
+        return Launch.Response()
 
     # shutdown sub callback
-    def shutdown_cb(self, req: String):
+    def shutdown_cb(self, goal_handle) -> CancelResponse:
         """
-        shutdown callback
+        shutdown callback (cancel goal)
         """
 
-        # find the context
-        service = None
-        for active_context in self.active_launch_services:
-            if active_context[0] == req.data:
-                service = active_context[1]
-                break
+        self.get_logger().info('shutting down {}'.format(
+            goal_handle.request.launch_file_path))
 
         # if context is not found log and return
-        if service is None:
-            self.get_logger().error('no context found for {}'.format(req.data))
-            return
+        if self.active_launch_services[goal_handle.request.launch_file_path] is None:
+            self.get_logger().error('no context found for {}'.format(
+                goal_handle.request.launch_file_path))
+            return CancelResponse.REJECT
 
+        # find the context and
         # shutdown the context
-        threading.Thread(target=service.shutdown).start()
+        threading.Thread(
+            target=self.active_launch_services[goal_handle.request.launch_file_path].shutdown).start()
+
+        return CancelResponse.ACCEPT
 
 
 # main function
@@ -129,8 +154,8 @@ def main():
     rclpy.spin(capabilities_launch_proxy)
 
     # cancel the launch services
-    for active_context in capabilities_launch_proxy.active_launch_services:
-        active_context[1].shutdown()
+    for k, active_context in capabilities_launch_proxy.active_launch_services:
+        active_context.shutdown()
 
     capabilities_launch_proxy.destroy_node()
     rclpy.shutdown()

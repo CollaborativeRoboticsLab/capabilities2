@@ -179,11 +179,6 @@ public:
                 [this](const std::string& cap) { event_pub_->publish(on_capability_stopped(cap)); },
                 [this](const std::string& cap) { event_pub_->publish(on_capability_terminated(cap)); });
 
-    // timer to manage bonds and runners
-    // cache_timer_ =
-    //     create_wall_timer(std::chrono::seconds(1.0 / loop_hz_), std::bind(&CapabilitiesServer::cache_timer_cb,
-    //     this));
-
     // log ready
     RCLCPP_INFO(get_logger(), "capabilities server started");
 
@@ -375,12 +370,6 @@ public:
     res->running_capabilities = get_running_capabilities();
   }
 
-  // cache timer callback
-  void cache_timer_cb()
-  {
-    // TODO: manage bonds and runners
-  }
-
 private:
   void load_capabilities(const std::string& package_path)
   {
@@ -560,9 +549,6 @@ private:
   rclcpp::Service<capabilities2_msgs::srv::GetRemappings>::SharedPtr get_remappings_srv_;
   // get running capabilities
   rclcpp::Service<capabilities2_msgs::srv::GetRunningCapabilities>::SharedPtr get_running_capabilities_srv_;
-
-  // cache timer
-  rclcpp::TimerBase::SharedPtr cache_timer_;
 };
 
 }  // namespace capabilities2_server

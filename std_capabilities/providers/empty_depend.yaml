@@ -6,4 +6,4 @@ spec_type: provider
 spec_version: 1
 description: the empty depend capability provider for the empty interface
 implements: std_capabilities/not_empty
-runner: providers/launch/empty.launch.py
+runner: launch/empty.launch.py

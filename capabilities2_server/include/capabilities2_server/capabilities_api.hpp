@@ -96,7 +96,7 @@ public:
       RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "started capability: %s with provider: %s",
                   capability.c_str(), provider.c_str());
     }
-    catch (std::runtime_error& e)
+    catch (const capabilities2_runner::runner_exception& e)
     {
       RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "could not start runner: %s", e.what());
     }
@@ -127,7 +127,14 @@ public:
 
     // remove the runner
     // this will implicitly stop the runner
-    runner_cache_.remove_runner(capability);
+    try
+    {
+      runner_cache_.remove_runner(capability);
+    }
+    catch (const capabilities2_runner::runner_exception& e)
+    {
+      RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "could not stop runner: %s", e.what());
+    }
 
     // log
     RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "stopped capability: %s", capability.c_str());
@@ -496,6 +503,9 @@ public:
     event.capability = capability;
     event.provider = runner_cache_.provider(capability);
     event.pid = atoi(runner_cache_.pid(capability).c_str());
+
+    // log error
+    RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "capability terminated: %s", capability.c_str());
 
     return event;
   }

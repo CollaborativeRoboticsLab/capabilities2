@@ -22,8 +22,6 @@ add_library(${PROJECT_NAME} SHARED
   src/standard_runners.cpp
   # src/launch_runner.cpp
   # src/action_runner.cpp
-  # src/nav_runner.cpp
-  # src/moveit_runner.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME}
