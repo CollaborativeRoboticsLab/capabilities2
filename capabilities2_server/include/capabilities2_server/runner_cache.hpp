@@ -25,7 +25,7 @@ namespace capabilities2_server
 class RunnerCache
 {
 public:
-  RunnerCache() : runner_loader_("capabilities2_runners_plugins", "capabilities2_runner::RunnerBase")
+  RunnerCache() : runner_loader_("capabilities2_runner", "capabilities2_runner::RunnerBase")
   {
     on_started = nullptr;
     on_stopped = nullptr;
@@ -38,7 +38,8 @@ public:
    * @param capability
    * @param run_config
    */
-  void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability, const models::run_config_model_t& run_config)
+  void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability,
+                  const models::run_config_model_t& run_config)
   {
     // if the runner exists then throw an error
     if (running(capability))

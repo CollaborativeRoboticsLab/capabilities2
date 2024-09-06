@@ -30,7 +30,7 @@ The capabilities2 server exposes the following Service API:
 The capabilities2 server exposes the following Topics API:
 
 - `~/events` -  publish capability events
-- `~/bonds` -  maintain bonds with capability users
+- `~/bonds` -  maintain bonds with capability users - [Bond API](https://wiki.ros.org/bond)
 
 ## How to use
 

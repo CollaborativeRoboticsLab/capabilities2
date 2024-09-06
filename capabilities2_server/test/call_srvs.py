@@ -171,6 +171,8 @@ if __name__ == '__main__':
 
     # print result
     print(future.result())
+    # keep bond id
+    bond_id = future.result().bond_id
 
     # create a use capability request
     use_client = node.create_client(
@@ -194,6 +196,11 @@ if __name__ == '__main__':
 
     # get running capabilities
     test_get_running_capabilities(node)
+
+    # keep bond alive
+    bond = bondpy.Bond(node, "/capabilities/bonds", bond_id)
+    bond.start()
+    rclpy.spin(node)
 
     node.destroy_node()
     rclpy.shutdown()

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <thread>
 #include <capabilities2_runner/runner_base.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 
