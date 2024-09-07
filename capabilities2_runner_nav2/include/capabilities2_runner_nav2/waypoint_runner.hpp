@@ -30,7 +30,7 @@ public:
     // intialize actionRunner
     init_action(node, run_config, "WaypointFollower", on_started, on_terminated);
 
-    nav_msgs::action::FollowWaypoints::Goal goal_msg;
+    nav2_msgs::action::FollowWaypoints::Goal goal_msg;
     geometry_msgs::msg::PoseStamped pose_msg;
 
     global_frame_ = "map";
