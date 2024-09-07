@@ -244,8 +244,8 @@ class CapabilitiesLaunchProxy(Node):
         return CancelResponse.ACCEPT
 
 
-# proxy (main) function
-def proxy(args=None):
+# main function
+def main(args=None):
     """
     main function
     """
@@ -282,4 +282,4 @@ def proxy(args=None):
 # main
 if __name__ == '__main__':
     # run the proxy
-    proxy()
+    main()
