@@ -25,12 +25,11 @@ public:
                      std::function<void(const std::string&)> on_started = nullptr,
                      std::function<void(const std::string&)> on_terminated = nullptr) override
   {
+    // get action name for Capability type and init the action
     // create action client
-    init_action(node, opts, "capabilities2_msgs/action/Capability");
-  }
+    init_action(node, opts, get_action_name_by_type("capabilities2_msgs/action/Capability"), on_started, on_terminated);
 
-  virtual void stop(std::function<void(const std::string&)> on_stopped = nullptr) override
-  {
+    //
   }
 
 private:

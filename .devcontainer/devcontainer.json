@@ -1,5 +1,5 @@
 {
-  "name": "rolling base",
+  "name": "jazzy base",
   "dockerFile": "Dockerfile",
   "remoteUser": "ubuntu",
   "containerEnv": {

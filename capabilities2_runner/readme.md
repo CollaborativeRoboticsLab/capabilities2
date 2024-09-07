@@ -8,10 +8,9 @@ provide runners for common capabilities like nav2, moveit2, etc. Plugins extend 
 - `action runner` - runner for capabilities that are implemented as actions. This is also a base class for as most runners will be actions.
 - `launch runner` - runner for capabilities that are implemented as launch files.
 
-
 ## Inheritance Diagram
 
-![inheritance diagram](/images/inheritance-diagram.png)
+![inheritance diagram](./docs/images/inheritance-diagram.png)
 
 ## creating a new runner
 
