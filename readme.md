@@ -4,6 +4,10 @@
 
 A reimplementation of the [capabilities](https://github.com/osrf/capabilities) package. This package is implemented using CPP and extends the capabilities package features.
 
+## System structure
+
+![System Structure](/images/system-structure.png)
+
 ## Motivation
 
 The capabilities package was originally implemented using Python. This package is a reimplementation of the capabilities package using CPP. The CPP implementation is more efficient. Secondly, this package extends the capabilities package features.
