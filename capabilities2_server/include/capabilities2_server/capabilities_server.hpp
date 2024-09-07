@@ -375,6 +375,13 @@ private:
   {
     RCLCPP_DEBUG(get_logger(), "Loading capabilities from package path: %s", package_path.c_str());
 
+    // check if path exists
+    if (!std::filesystem::exists(package_path))
+    {
+      RCLCPP_ERROR(get_logger(), "package path does not exist: %s", package_path.c_str());
+      return;
+    }
+
     // find packages in path
     std::vector<std::string> packages;
     for (const auto& entry : std::filesystem::directory_iterator(package_path))
