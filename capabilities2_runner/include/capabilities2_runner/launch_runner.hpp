@@ -22,7 +22,7 @@ public:
   {
   }
 
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config, std::string& parameters, 
                      std::function<void(const std::string&)> on_started = nullptr,
                      std::function<void(const std::string&)> on_terminated = nullptr) override
   {

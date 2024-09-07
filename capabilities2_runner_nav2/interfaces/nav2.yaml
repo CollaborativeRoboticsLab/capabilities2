@@ -9,12 +9,8 @@ interface:
   actions:
     "WaypointFollower":
       type: "nav2_msgs::action::FollowWaypoints"
-      description: "Allow the robot to navigate to a given two dimenstional cartesian coordinate"
+      description: "This system allow the robot to navigate to a given two dimenstional coordinate given 
+                    via '$value,$value' command. '$value' represents a value in meters. As an example '1.2,0.8' 
+                    means the robot will move 1.2 meters forward and 0.8 meters to the right side."
 
-  topics:
-    "cmd_vel":
-      type: "geometry_msgs/Twist"
-      description: "Velocity command topic."
-    "goal":
-      type: "geometry_msgs/PoseStamped"
-      description: "Goal topic."
+                    what is the command to move 2 meters backward and 0.5 meters to leftside give the command only as text

@@ -1,6 +1,9 @@
 #pragma once
 
-#include <thread>
+#include <string>
+#include <iostream>
+#include <sstream>
+#include <vector>
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
@@ -88,6 +91,11 @@ public:
 		};
 	}
 
+	/**
+	 * @brief stop function to cease functionality and shutdown
+	 * 
+	 * @param on_stopped function pointer to trigger at the termination of the action client by the server
+	 */
 	virtual void stop(std::function<void(const std::string&)> on_stopped = nullptr) override
 	{
 		// if the node pointer is empty then throw an error
@@ -131,6 +139,33 @@ public:
 			}
 		}
 	}
+
+	/**
+	 * @brief split function to split the parameter string by the delimiter
+	 * 
+	 * @param parameters std::string containing the parameters
+	 * @param delimiter delimiter for spliting
+	 * 
+	 * @return a std::vector containing double values
+	 */
+	std::vector<double> split_parameters(std::string parameters, std::string delimiter) 
+	{
+		size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+		std::string token;
+		std::vector<double> result;
+
+		while ((pos_end = parameters.find(delimiter, pos_start)) != std::string::npos) 
+		{
+			token = parameters.substr (pos_start, pos_end - pos_start);
+			pos_start = pos_end + delim_len;
+			result.push_back(std::stod(token));
+		}
+
+		result.push_back(std::stod(parameters.substr(pos_start)));
+		return result;
+	}
+
+
 
 protected:
 
