@@ -25,7 +25,7 @@ namespace capabilities2_server
 class RunnerCache
 {
 public:
-  RunnerCache() : runner_loader_("capabilities2_runners_plugins", "capabilities2_runner::RunnerBase")
+  RunnerCache() : runner_loader_("capabilities2_runner", "capabilities2_runner::RunnerBase")
   {
     on_started = nullptr;
     on_stopped = nullptr;

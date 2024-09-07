@@ -11,7 +11,6 @@ namespace capabilities2_runner
  * @brief launch runner base class
  *
  * Create a launch file runner to run a launch file based capability
- *
  */
 class LaunchRunner : public ActionRunner<capabilities2_msgs::action::Launch>
 {
@@ -20,12 +19,12 @@ public:
   {
   }
 
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& opts,
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
                      std::function<void(const std::string&)> on_started = nullptr,
                      std::function<void(const std::string&)> on_terminated = nullptr) override
   {
-    // store node pointer and opts
-    init_base(node, opts);
+    // store node pointer and run_config
+    init_base(node, run_config);
 
     // create an action client
     action_client_ = rclcpp_action::create_client<capabilities2_msgs::action::Launch>(node_, "/capabilities_launch_"
@@ -57,6 +56,7 @@ public:
           // store goal handle
           goal_handle_ = goal_handle;
         };
+        
     // result callback
     send_goal_options.result_callback =
         [this, on_started, on_terminated](

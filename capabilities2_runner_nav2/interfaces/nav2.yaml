@@ -1,0 +1,20 @@
+# standardised nav2 interface specification
+%YAML 1.1
+---
+name: nav2
+spec_version: 1
+spec_type: interface
+description: "Navigational capabilities using Nav2 stack"
+interface:
+  actions:
+    "WaypointFollower":
+      type: "nav2_msgs::action::FollowWaypoints"
+      description: "Allow the robot to navigate to a given two dimenstional cartesian coordinate"
+
+  topics:
+    "cmd_vel":
+      type: "geometry_msgs/Twist"
+      description: "Velocity command topic."
+    "goal":
+      type: "geometry_msgs/PoseStamped"
+      description: "Goal topic."

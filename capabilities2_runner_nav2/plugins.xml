@@ -1,8 +1,7 @@
-<library path="capabilities2_runners">
-    <!-- specific standardised action runners -->
-    <class type="capabilities2_runner::NavRunner" base_class_type="capabilities2_runner::ActionRunner">
+<library path="capabilities2_runner_nav2">
+    <class type="capabilities2_runner_nav2::WayPointRunner" base_class_type="capabilities2_runner::ActionRunner">
         <description>
-            action based nav2 stack runner
+            A plugin that provide nav2 waypoint navigation capability
         </description>
     </class>
 </library>
