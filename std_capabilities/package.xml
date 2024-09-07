@@ -16,9 +16,11 @@
     <buildtool_depend>ament_cmake</buildtool_depend>
 
     <exec_depend>capabilities2_server</exec_depend>
+    <exec_depend>launch</exec_depend>
 
     <!-- export standard capabilities -->
     <export>
+        <build_type>ament_cmake</build_type>
         <!-- empty test interface -->
         <capability_interface>
             interfaces/empty.yaml

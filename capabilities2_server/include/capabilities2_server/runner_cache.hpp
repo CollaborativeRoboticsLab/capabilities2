@@ -38,7 +38,8 @@ public:
    * @param capability
    * @param run_config
    */
-  void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability, const models::run_config_model_t& run_config)
+  void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability,
+                  const models::run_config_model_t& run_config)
   {
     // if the runner exists then throw an error
     if (running(capability))
