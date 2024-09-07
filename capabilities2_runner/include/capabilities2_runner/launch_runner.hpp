@@ -1,5 +1,8 @@
 #pragma once
 
+#include <filesystem>
+#include <ament_index_cpp/get_package_share_directory.hpp>
+
 #include <std_msgs/msg/string.hpp>
 #include <capabilities2_msgs/action/launch.hpp>
 #include <capabilities2_runner/action_runner.hpp>
@@ -39,9 +42,25 @@ public:
       throw runner_exception("failed to connect to action server");
     }
 
+    // get the package path from environment variable
+    std::string package_path;
+    try
+    {
+      package_path = ament_index_cpp::get_package_share_directory(get_package_name());
+    }
+    catch (const std::exception& e)
+    {
+      RCLCPP_ERROR(node_->get_logger(), "Failed to get package share directory: %s", e.what());
+      throw runner_exception("failed to get package share directory");
+    }
+
+    // resolve launch path
     // get full path to launch file
-    // FIXME: resolve package path
-    std::string launch_file_path = get_package_name() + "/" + run_config_.runner;
+    // join package path with package name using path functions
+    std::string launch_file_path = std::filesystem::path(package_path).append(run_config_.runner).string();
+
+    // TEST: check the path
+    RCLCPP_INFO(node_->get_logger(), "launch file path: %s", launch_file_path.c_str());
 
     // create a launch goal
     capabilities2_msgs::action::Launch::Goal goal;
@@ -127,6 +146,7 @@ public:
       }
       catch (const rclcpp_action::exceptions::UnknownGoalHandleError& e)
       {
+        RCLCPP_ERROR(node_->get_logger(), "failed to cancel goal: %s", e.what());
         throw runner_exception(e.what());
       }
     }
