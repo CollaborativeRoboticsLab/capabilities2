@@ -9,8 +9,7 @@ interface:
   actions:
     "WaypointFollower":
       type: "nav2_msgs::action::FollowWaypoints"
-      description: "This system allow the robot to navigate to a given two dimenstional coordinate given 
-                    via '$value,$value' command. '$value' represents a value in meters. As an example '1.2,0.8' 
-                    means the robot will move 1.2 meters forward and 0.8 meters to the right side."
-
-                    what is the command to move 2 meters backward and 0.5 meters to leftside give the command only as text
+      description: "This system allow the robot to navigate to a given two dimensional coordinate 
+                    given via '<waypointfollower x='$value' y='$value' />' command. '$value' represents 
+                    a value in meters. As an example '<waypointfollower x='1.2' y='0.8' /> means the 
+                    robot will move 1.2 meters forward and 0.8 meters to the right side."

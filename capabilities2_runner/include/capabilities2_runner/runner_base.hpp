@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <string>
 #include <functional>
+#include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 
 namespace capabilities2_runner
@@ -74,11 +75,10 @@ public:
    *
 	 * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
-   * @param parameters string that contains parameters in the format '0.00,0.00'
    * @param on_started pointer to function to execute on starting the runner
    * @param on_terminated pointer to function to execute on terminating the runner
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config, std::string& parameters,
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
                      std::function<void(const std::string&)> on_started = nullptr,
                      std::function<void(const std::string&)> on_terminated = nullptr) = 0;
 
@@ -89,6 +89,12 @@ public:
    */
   virtual void stop(std::function<void(const std::string&)> on_stopped = nullptr) = 0;
 
+  /**
+   * @brief trigger the runner
+   *
+   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
+   */
+  virtual void trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr);
 
 	/**
 	 * @brief Initializer function for initializing the base runner in place of constructor due to plugin semantics

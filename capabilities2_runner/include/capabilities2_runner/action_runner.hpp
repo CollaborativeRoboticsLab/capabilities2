@@ -140,33 +140,6 @@ public:
 		}
 	}
 
-	/**
-	 * @brief split function to split the parameter string by the delimiter
-	 * 
-	 * @param parameters std::string containing the parameters
-	 * @param delimiter delimiter for spliting
-	 * 
-	 * @return a std::vector containing double values
-	 */
-	std::vector<double> split_parameters(std::string parameters, std::string delimiter) 
-	{
-		size_t pos_start = 0, pos_end, delim_len = delimiter.length();
-		std::string token;
-		std::vector<double> result;
-
-		while ((pos_end = parameters.find(delimiter, pos_start)) != std::string::npos) 
-		{
-			token = parameters.substr (pos_start, pos_end - pos_start);
-			pos_start = pos_end + delim_len;
-			result.push_back(std::stod(token));
-		}
-
-		result.push_back(std::stod(parameters.substr(pos_start)));
-		return result;
-	}
-
-
-
 protected:
 
 	/**< action client */

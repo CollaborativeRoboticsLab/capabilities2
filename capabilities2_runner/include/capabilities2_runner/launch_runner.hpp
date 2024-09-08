@@ -1,6 +1,8 @@
 #pragma once
 
 #include <filesystem>
+#include <tinyxml2.h>
+
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include <std_msgs/msg/string.hpp>
@@ -22,7 +24,7 @@ public:
   {
   }
 
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config, std::string& parameters, 
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
                      std::function<void(const std::string&)> on_started = nullptr,
                      std::function<void(const std::string&)> on_terminated = nullptr) override
   {

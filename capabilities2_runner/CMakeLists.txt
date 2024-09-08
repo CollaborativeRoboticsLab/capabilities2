@@ -15,8 +15,12 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
+find_package(PkgConfig)
+pkg_check_modules(TINYXML2 tinyxml2 REQUIRED)
 
-include_directories(include)
+include_directories(include
+${TINYXML2_INCLUDE_DIRS}
+)
 
 add_library(${PROJECT_NAME} SHARED
   src/standard_runners.cpp
@@ -24,11 +28,16 @@ add_library(${PROJECT_NAME} SHARED
   # src/action_runner.cpp
 )
 
+target_link_libraries(${PROJECT_NAME}
+  ${TINYXML2_LIBRARIES}
+)
+
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
   rclcpp_action
   pluginlib
   capabilities2_msgs
+  TINYXML2
 )
 
 pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)

@@ -33,136 +33,177 @@ namespace capabilities2_server
 class CapabilitiesAPI
 {
 public:
-  CapabilitiesAPI()
-  {
-  }
+	CapabilitiesAPI()
+	{}
 
-  // connect db
-  void connect(const std::string& db_file,
-               rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr node_logging_interface_ptr)
-  {
-    // set logger
-    node_logging_interface_ptr_ = node_logging_interface_ptr;
+	/**
+	* @brief connect with the database file
+	* 
+	* @param db_file file path of the database file
+	* @param node_logging_interface_ptr pointer to the ROS node logging interface
+	*/
+	void connect(const std::string& db_file,
+				rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr node_logging_interface_ptr)
+	{
+		// set logger
+		node_logging_interface_ptr_ = node_logging_interface_ptr;
 
-    // connect db
-    cap_db_ = std::make_unique<CapabilitiesDB>(db_file);
+		// connect db
+		cap_db_ = std::make_unique<CapabilitiesDB>(db_file);
 
-    // log
-    RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "CAPAPI connected to db: %s", db_file.c_str());
-  }
+		// log
+		RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "CAPAPI connected to db: %s", db_file.c_str());
+	}
 
-  // init runner events
-  void init_events(std::function<void(const std::string&)> on_started,
-                   std::function<void(const std::string&)> on_stopped,
-                   std::function<void(const std::string&)> on_terminated)
-  {
-    runner_cache_.set_on_started(on_started);
-    runner_cache_.set_on_stopped(on_stopped);
-    runner_cache_.set_on_terminated(on_terminated);
-  }
+	/**
+	* @brief initialize runner events. THese are called from within runners and passed on to those execution levels 
+	* as function pointers
+	* 
+	* @param on_started event triggered at the start of the runner
+	* @param on_stopped event triggered at the shutdown of the runner by the capabilities server
+	* @param on_terminated event triggered at the failure of the runner by the action or server side.
+	*/
+	void init_events(std::function<void(const std::string&)> on_started,
+					std::function<void(const std::string&)> on_stopped,
+					std::function<void(const std::string&)> on_terminated)
+	{
+		runner_cache_.set_on_started(on_started);
+		runner_cache_.set_on_stopped(on_stopped);
+		runner_cache_.set_on_terminated(on_terminated);
+	}
 
-  // control api
-  void start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider)
-  {
-    // get the running model from the db
-    models::running_model_t running = cap_db_->get_running(provider);
+	/**
+	* @brief Start a capability. Internal function only. Do not used this function externally.
+	* 
+	* @param node ros node pointer of the ros server
+	* @param capability capability name to be started
+	* @param provider provider of the capability
+	*/
+	void start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider)
+	{
+		// get the running model from the db
+		models::running_model_t running = cap_db_->get_running(provider);
 
-    // start all dependencies
-    // go through the running model and start the necessary dependencies
-    for (const auto& run : running.dependencies)
-    {
-      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "found dependency: %s", run.interface.c_str());
+		// start all dependencies
+		// go through the running model and start the necessary dependencies
+		for (const auto& run : running.dependencies)
+		{
+			RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "found dependency: %s", run.interface.c_str());
 
-      // make an internal 'use' bond for the capability dependency
-      bind_dependency(run.interface);
+			// make an internal 'use' bond for the capability dependency
+			bind_dependency(run.interface);
 
-      // add the runner to the cache
-      start_capability(node, run.interface, run.provider);
-    }
+			// add the runner to the cache
+			start_capability(node, run.interface, run.provider);
+		}
 
-    // get the provider specification for the capability
-    models::run_config_model_t run_config = cap_db_->get_run_config(provider);
+		// get the provider specification for the capability
+		models::run_config_model_t run_config = cap_db_->get_run_config(provider);
 
-    // create a new runner
-    // this call implicitly starts the runner
-    // create a runner id which is the cap name to uniquely identify the runner
-    // this means only one runner per capability name
-    // TODO: consider the logic for multiple runners per capability
-    try
-    {
-      runner_cache_.add_runner(node, capability, run_config);
+		// create a new runner
+		// this call implicitly starts the runner
+		// create a runner id which is the cap name to uniquely identify the runner
+		// this means only one runner per capability name
+		// TODO: consider the logic for multiple runners per capability
+		try
+		{
+			runner_cache_.add_runner(node, capability, run_config);
 
-      // log
-      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "started capability: %s with provider: %s",
-                  capability.c_str(), provider.c_str());
-    }
-    catch (const capabilities2_runner::runner_exception& e)
-    {
-      RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "could not start runner: %s", e.what());
-    }
-  }
+			// log
+			RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "started capability: %s with provider: %s", capability.c_str(), provider.c_str());
+		}
+		catch (const capabilities2_runner::runner_exception& e)
+		{
+			RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "could not start runner: %s", e.what());
+		}
+	}
 
-  void stop_capability(const std::string& capability)
-  {
-    // get the provider from runner
-    std::string provider = runner_cache_.provider(capability);
-    // get the running model from the db
-    models::running_model_t running = cap_db_->get_running(provider);
+	/**
+	* @brief Stop a capability. Internal function only. Do not used this function externally.
+	* 
+	* @param capability capability name to be stopped
+	*/
+	void stop_capability(const std::string& capability)
+	{
+		// get the provider from runner
+		std::string provider = runner_cache_.provider(capability);
+		// get the running model from the db
+		models::running_model_t running = cap_db_->get_running(provider);
 
-    // unbind and stop dependencies
-    // FIXME: this unrolls the dependency tree from the bottom up but should probably be top down
-    for (const auto& run : running.dependencies)
-    {
-      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "freeing dependency: %s", run.interface.c_str());
+		// unbind and stop dependencies
+		// FIXME: this unrolls the dependency tree from the bottom up but should probably be top down
+		for (const auto& run : running.dependencies)
+		{
+			RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "freeing dependency: %s", run.interface.c_str());
 
-      // remove the internal 'use' bond for the capability dependency
-      unbind_dependency(run.interface);
+			// remove the internal 'use' bond for the capability dependency
+			unbind_dependency(run.interface);
 
-      // stop the dependency if no more bonds
-      if (!bond_cache_.exists(run.interface))
-      {
-        stop_capability(run.interface);
-      }
-    }
+			// stop the dependency if no more bonds
+			if (!bond_cache_.exists(run.interface))
+			{
+				stop_capability(run.interface);
+			}
+		}
 
-    // remove the runner
-    // this will implicitly stop the runner
-    try
-    {
-      runner_cache_.remove_runner(capability);
-    }
-    catch (const capabilities2_runner::runner_exception& e)
-    {
-      RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "could not stop runner: %s", e.what());
-    }
+		// remove the runner
+		// this will implicitly stop the runner
+		try
+		{
+			runner_cache_.remove_runner(capability);
+		}
+		catch (const capabilities2_runner::runner_exception& e)
+		{
+			RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "could not stop runner: %s", e.what());
+		}
 
-    // log
-    RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "stopped capability: %s", capability.c_str());
-  }
+		// log
+		RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "stopped capability: %s", capability.c_str());
+	}
 
-  void free_capability(const std::string& capability, const std::string& bond_id)
-  {
-    // remove bond from cache for capability
-    bond_cache_.remove_bond(capability, bond_id);
+	/**
+	* @brief Free a capability after usage. This will remove the bond and callstop_capability
+	* This function can be used externally.
+	* 
+	* @param capability capability name to be freed
+	* @param bond_id bond_id of the capability instance to be freed
+	*/
+	void free_capability(const std::string& capability, const std::string& bond_id)
+	{
+		// remove bond from cache for capability
+		bond_cache_.remove_bond(capability, bond_id);
 
-    // stop the capability if no more bonds
-    if (!bond_cache_.exists(capability))
-    {
-      // stop the capability
-      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "stopping freed capability: %s", capability.c_str());
-      stop_capability(capability);
-    }
-  }
+		// stop the capability if no more bonds
+		if (!bond_cache_.exists(capability))
+		{
+			// stop the capability
+			RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "stopping freed capability: %s", capability.c_str());
+			stop_capability(capability);
+		}
+	}
 
-  void use_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
-                      const std::string& bond_id)
-  {
-    // add bond to cache for capability
-    bond_cache_.add_bond(capability, bond_id);
+	/**
+	* @brief Use a capability. This will create a bond id for the requested instance and call start_capability
+	* function can be used externally.
+	* 
+	* @param node ros node pointer of the ros server
+	* @param capability capability name to be started
+	* @param provider provider of the capability
+	* @param bond_id bond_id for the capability
+	* @param parameters parameters for the runner as tinyxml2::XMLElement
+	*/
+	void use_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider, 
+						const std::string& bond_id, std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
+	{
+		// add bond to cache for capability
+		bond_cache_.add_bond(capability, bond_id);
 
-    // start the capability with the provider
-    start_capability(node, capability, provider);
-  }
+		// start the capability with the provider
+		start_capability(node, capability, provider);
+
+		// trigger the capability
+		runner_cache_.trigger_runner(capability, parameters);
+	}
 
   // capability api
   void add_capability(const capabilities2_msgs::msg::CapabilitySpec& spec)

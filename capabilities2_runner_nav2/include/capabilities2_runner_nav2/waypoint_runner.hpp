@@ -1,5 +1,7 @@
 #pragma once
 
+
+#include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 
@@ -30,19 +32,28 @@ public:
 	 * 
 	 * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    	 * @param run_config runner configuration loaded from the yaml file
-	 * @param parameters string that contains parameters in the format '0.00,0.00'
 	 * @param on_started function pointer to trigger at the start of the action client in the runner
 	 * @param on_terminated function pointer to trigger at the termination of the action client in the runner
 	 */
-	virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config, std::string& parameters,
-						std::function<void(const std::string&)> on_started = nullptr,
-						std::function<void(const std::string&)> on_terminated = nullptr) override
+	virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+                     std::function<void(const std::string&)> on_started = nullptr,
+                     std::function<void(const std::string&)> on_terminated = nullptr) override
 	{
-		// intialize actionRunner
 		init_action(node, run_config, "WaypointFollower", on_started, on_terminated);
+	}
 
-		std::vector<double> values = split_parameters(parameters, ",");
+	/**
+	 * @brief trigger the runner
+	 *
+	 @param parameters XMLElement that contains parameters in the format '<waypointfollower x='$value' y='$value' />'
+	 */
+	virtual void trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
+	{
+		tinyxml2::XMLElement* parametersElement = parameters->FirstChildElement("waypointfollower");
 
+		parametersElement->QueryDoubleAttribute("x", &x);
+		parametersElement->QueryDoubleAttribute("y", &y);
+		
 		nav2_msgs::action::FollowWaypoints::Goal goal_msg;
 		geometry_msgs::msg::PoseStamped pose_msg;
 
@@ -51,8 +62,8 @@ public:
 
 		pose_msg.header.stamp 		= clock_->now();
 		pose_msg.header.frame_id 	= global_frame_;
-		pose_msg.pose.position.x	= values[0];
-		pose_msg.pose.position.y	= values[1];
+		pose_msg.pose.position.x	= x;
+		pose_msg.pose.position.y	= y;
 		pose_msg.pose.position.z	= 0.0;
 
 		goal_msg.poses.push_back(pose_msg);
@@ -61,9 +72,12 @@ public:
     	action_client_->async_send_goal(goal_msg, send_goal_options_);
 	}
 
+
 protected:
 		std::string global_frame_;     		/**The global frame of the robot*/
 		std::string robot_base_frame_;  	/**The frame of the robot base*/
+
+		double x, y;						/**Coordinate frame parameters*/
 };
 
 }  // namespace capabilities2_runner

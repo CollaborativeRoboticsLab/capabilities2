@@ -18,11 +18,19 @@ find_package(nav2_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_runner REQUIRED)
+find_package(PkgConfig)
+pkg_check_modules(TINYXML2 tinyxml2 REQUIRED)
 
-include_directories(include)
+include_directories(include
+${TINYXML2_INCLUDE_DIRS}
+)
 
 add_library(${PROJECT_NAME} SHARED
   src/nav2_runners.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+  ${TINYXML2_LIBRARIES}
 )
 
 ament_target_dependencies(${PROJECT_NAME}
@@ -33,6 +41,7 @@ ament_target_dependencies(${PROJECT_NAME}
   geometry_msgs
   capabilities2_msgs
   capabilities2_runner
+  TINYXML2
 )
 
 pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
