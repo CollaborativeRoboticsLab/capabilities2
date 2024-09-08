@@ -245,35 +245,37 @@ class CapabilitiesLaunchProxy(Node):
 
 
 # main function
-def main(args=None):
+def main():
     """
     main function
     """
 
     try:
         # init node
-        with rclpy.init(args=args):
+        rclpy.init()
 
-            # instantiate the capabilities launch server
-            capabilities_launch_proxy = CapabilitiesLaunchProxy()
+        # instantiate the capabilities launch server
+        capabilities_launch_proxy = CapabilitiesLaunchProxy()
 
-            # spin node in new thread
-            executor = MultiThreadedExecutor()
-            executor.add_node(capabilities_launch_proxy)
-            executor_thread = threading.Thread(target=executor.spin)
-            executor_thread.start()
+        # spin node in new thread
+        executor = MultiThreadedExecutor()
+        executor.add_node(capabilities_launch_proxy)
+        executor_thread = threading.Thread(target=executor.spin)
+        executor_thread.start()
 
-            # run the launch service
-            capabilities_launch_proxy.get_logger().info('running LaunchService')
-            capabilities_launch_proxy.launch_service.run(
-                shutdown_when_idle=False)
+        # run the launch service
+        capabilities_launch_proxy.get_logger().info('running LaunchService')
+        capabilities_launch_proxy.launch_service.run(
+            shutdown_when_idle=False)
 
-            # cancel the launch services
-            capabilities_launch_proxy.launch_service.shutdown()
+        # cancel the launch services
+        capabilities_launch_proxy.launch_service.shutdown()
 
-            executor.shutdown()
-            executor_thread.join()
-            capabilities_launch_proxy.destroy_node()
+        executor.shutdown()
+        executor_thread.join()
+        capabilities_launch_proxy.destroy_node()
+
+        # rclpy.shutdown()
 
     except ExternalShutdownException:
         pass

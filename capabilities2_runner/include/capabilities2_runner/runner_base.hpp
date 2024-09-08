@@ -41,7 +41,7 @@ struct resource
 /**
  * @brief runner options
  *
- * Contains the options required to start and maintain a consistent runner. normally 
+ * Contains the options required to start and maintain a consistent runner. normally
  * loaded from the yaml file
  *
  */
@@ -72,7 +72,7 @@ public:
   /**
    * @brief start the runner
    *
-	 * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
+   * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    * @param on_started pointer to function to execute on starting the runner
    * @param on_terminated pointer to function to execute on terminating the runner
@@ -88,13 +88,12 @@ public:
    */
   virtual void stop(std::function<void(const std::string&)> on_stopped = nullptr) = 0;
 
-
-	/**
-	 * @brief Initializer function for initializing the base runner in place of constructor due to plugin semantics
-	 * 
-	 * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
+  /**
+   * @brief Initializer function for initializing the base runner in place of constructor due to plugin semantics
+   *
+   * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
-	 */
+   */
   void init_base(rclcpp::Node::SharedPtr node, const runner_opts& run_config)
   {
     // store node pointer and opts
@@ -143,15 +142,14 @@ public:
   }
 
 protected:
-
-	/** 
-	 * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
-	 */
+  /**
+   * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
+   */
   rclcpp::Node::SharedPtr node_;
 
-	/** 
-	 * @param node runner configuration
-	 */
+  /**
+   * @param node runner configuration
+   */
   runner_opts run_config_;
 };
 
