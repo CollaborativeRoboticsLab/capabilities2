@@ -24,7 +24,7 @@
 
   <!-- system dependency -->
   <depend>tinyxml2</depend>
-  <depend>sqlite3</depend>
+  <depend>libsqlite3-dev</depend>
   <depend>uuid</depend>
 
   <exec_depend>rclpy</exec_depend>

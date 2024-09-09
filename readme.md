@@ -6,7 +6,7 @@ A reimplementation of the [capabilities](https://github.com/osrf/capabilities) p
 
 ## System structure
 
-![System Structure](/images/system-structure.png)
+![System Structure](./docs/images/system-structure.png)
 
 ## Motivation
 
