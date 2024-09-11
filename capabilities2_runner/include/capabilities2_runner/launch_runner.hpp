@@ -59,6 +59,11 @@ public:
     action_client_->async_send_goal(goal, send_goal_options_);
   }
 
+  virtual void trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) override
+  {
+    // do nothing
+  }
+
 private:
   /** launch file path */
   std::string launch_file_path;
