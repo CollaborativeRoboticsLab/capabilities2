@@ -1,9 +1,0 @@
-# dependency provider for empty provider
-%YAML 1.1
----
-name: empty_depend
-spec_type: provider
-spec_version: 1
-description: the empty depend capability provider for the empty interface
-implements: std_capabilities/not_empty
-runner: launch/empty.launch.py

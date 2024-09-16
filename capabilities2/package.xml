@@ -17,6 +17,8 @@
 
   <exec_depend>capabilities2_msgs</exec_depend>
   <exec_depend>capabilities2_server</exec_depend>
+  <exec_depend>capabilities2_runner</exec_depend>
+  <exec_depend>capabilities2_launch_proxy</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
