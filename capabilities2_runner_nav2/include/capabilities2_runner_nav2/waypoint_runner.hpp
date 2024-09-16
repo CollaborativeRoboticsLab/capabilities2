@@ -36,7 +36,7 @@ public:
                      std::function<void(const std::string&)> on_started = nullptr,
                      std::function<void(const std::string&)> on_terminated = nullptr) override
   {
-    init_action(node, run_config, "WaypointFollower", on_started, on_terminated);
+    init_action(node, run_config, "follow_waypoints", on_started, on_terminated);
   }
 
   /**
