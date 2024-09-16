@@ -74,7 +74,7 @@ public:
 		}
 
 		// start the runner
-		runner_cache_[capability]->start(node, run_config.to_runner_opts(), on_started, on_terminated);
+		runner_cache_[capability]->start(node, run_config.to_runner_opts(), on_started, on_terminated, on_stopped);
 	}
 
 	/**
@@ -107,7 +107,7 @@ public:
 		// safely stop the runner
 		try
 		{
-			runner_cache_[capability]->stop(on_stopped);
+			runner_cache_[capability]->stop();
 		}
 		catch (const capabilities2_runner::runner_exception& e)
 		{

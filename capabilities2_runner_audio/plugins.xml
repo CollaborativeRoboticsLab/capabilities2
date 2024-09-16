@@ -1,8 +1,7 @@
-<library path="capabilities2_runners">
-    <!-- specific standardised action runners -->
-    <class type="capabilities2_runner::NavRunner" base_class_type="capabilities2_runner::ActionRunner">
+<library path="capabilities2_runner">
+    <class type="capabilities2_runner::VoiceListenerRunner" base_class_type="capabilities2_runner::MultiActionRunner">
         <description>
-            action based nav2 stack runner
+            A plugin that provide speech to text capability
         </description>
     </class>
 </library>

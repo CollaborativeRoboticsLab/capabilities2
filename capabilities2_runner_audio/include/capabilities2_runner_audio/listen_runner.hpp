@@ -1,7 +1,7 @@
 #pragma once
 
 #include <tinyxml2.h>
-#include <capabilities2_runner/action_runner.hpp>
+#include <capabilities2_runner/multi_action_runner.hpp>
 #include <hri_audio_msgs/action/speech_to_text.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
@@ -16,10 +16,10 @@ namespace capabilities2_runner
  * Class to run VoiceListener action based capability
  *
  */
-class VoiceListenerRunner : public ActionRunner<hri_audio_msgs::action::speech_to_text>
+class VoiceListenerRunner : public MultiActionRunner
 {
 public:
-  VoiceListenerRunner() : ActionRunner()
+  VoiceListenerRunner() : MultiActionRunner()
   {
   }
 
@@ -33,27 +33,33 @@ public:
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
                      std::function<void(const std::string&)> on_started = nullptr,
-                     std::function<void(const std::string&)> on_terminated = nullptr) override
+                     std::function<void(const std::string&)> on_terminated = nullptr,
+                     std::function<void(const std::string&)> on_stopped = nullptr) override
   {
-    init_action(node, run_config, "speech_to_text", on_started, on_terminated);
+    init_runner(node, run_config, on_started, on_terminated, on_stopped);
+
+    init_action<hri_audio_msgs::action::SpeechToText>("speech_to_text");
   }
+
+	/**
+	 * @brief stop function to cease functionality and shutdown
+	 *
+	 */
+	virtual void stop() override
+	{
+    deinit_action<hri_audio_msgs::action::SpeechToText>("speech_to_text");
+	}
 
   /**
    * @brief trigger the runner
    *
-   @param parameters XMLElement that contains parameters in the format '<speech_to_text recognized_text='$value'/>'
+   @param parameters XMLElement
    */
   virtual void trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
   {
-    tinyxml2::XMLElement* parametersElement = parameters->FirstChildElement("speech_to_text");
-
     hri_audio_msgs::action::SpeechToText::Goal goal_msg;
 
-    
-
-
-    // launch runner using action client
-    action_client_->async_send_goal(goal_msg, send_goal_options_);
+    trigger_action<hri_audio_msgs::action::SpeechToText>("speech_to_text", goal_msg);
   }
 
   
