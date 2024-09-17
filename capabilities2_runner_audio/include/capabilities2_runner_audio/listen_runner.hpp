@@ -58,8 +58,16 @@ public:
   virtual void trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
   {
     hri_audio_msgs::action::SpeechToText::Goal goal_msg;
+    goal_msg = SpeechToText.Goal()  # Create a new goal message
+    goal_msg.header.stamp = self.get_clock().now().to_msg()  # Set the timestamp
+
 
     trigger_action<hri_audio_msgs::action::SpeechToText>("speech_to_text", goal_msg);
+
+
+
+    // launch runner using action client
+    action_client_->async_send_goal(goal_msg, send_goal_options_);
   }
 
   
