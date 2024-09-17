@@ -80,14 +80,15 @@ public:
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
                      std::function<void(const std::string&)> on_started = nullptr,
-                     std::function<void(const std::string&)> on_terminated = nullptr) = 0;
+                     std::function<void(const std::string&)> on_terminated = nullptr,
+                     std::function<void(const std::string&)> on_stopped = nullptr) = 0;
 
   /**
    * @brief stop the runner
    *
    * @param on_stopped pointer to function to execute on stopping the runner
    */
-  virtual void stop(std::function<void(const std::string&)> on_stopped = nullptr) = 0;
+  virtual void stop() = 0;
 
   /**
    * @brief trigger the runner
@@ -101,12 +102,20 @@ public:
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
+   * @param on_started pointer to function to execute on starting the runner
+   * @param on_terminated pointer to function to execute on terminating the runner
    */
-  void init_base(rclcpp::Node::SharedPtr node, const runner_opts& run_config)
+  void init_base(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+                  std::function<void(const std::string&)> on_started = nullptr,
+                  std::function<void(const std::string&)> on_terminated = nullptr,
+                  std::function<void(const std::string&)> on_stopped = nullptr)
   {
     // store node pointer and opts
-    node_ = node;
-    run_config_ = run_config;
+    node_           = node;
+    run_config_     = run_config;
+    on_started_     = on_started;
+    on_terminated_  = on_terminated;
+    on_stopped_     = on_stopped;
   }
 
   /**
@@ -159,6 +168,21 @@ protected:
    * @param node runner configuration
    */
   runner_opts run_config_;
+
+  /**
+   * @param node pointer to function to execute on starting the runner
+   */
+  std::function<void(const std::string&)> on_started_;
+
+  /**
+   * @param node pointer to function to execute on terminating the runner
+   */
+  std::function<void(const std::string&)> on_terminated_;
+
+  /**
+   * @param node pointer to function to execute on stopping the runner
+   */
+  std::function<void(const std::string&)> on_stopped_;
 };
 
 }  // namespace capabilities2_runner

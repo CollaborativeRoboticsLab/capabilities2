@@ -1,5 +1,5 @@
-<library path="capabilities2_runner_nav2">
-    <class type="capabilities2_runner_nav2::WayPointRunner" base_class_type="capabilities2_runner::ActionRunner">
+<library path="capabilities2_runner">
+    <class type="capabilities2_runner::WayPointRunner" base_class_type="capabilities2_runner::ActionRunner">
         <description>
             A plugin that provide nav2 waypoint navigation capability
         </description>
