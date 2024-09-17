@@ -1,0 +1,15 @@
+# standardised nav2 interface specification
+%YAML 1.1
+---
+name: audio
+spec_version: 1
+spec_type: interface
+description: "Audio capabilities using hri audio stack"
+interface:
+  actions:
+    "speech_to_text":
+      type: "hri_audio_msgs::action::SpeechToText"
+      description: "This system allow the robot to listen anything the user speaking via listen_runner"
+    "text_to_speech":
+      tyoe: "hri_audio_msgs::action::TextToSpeech"
+      description: "This system allow the robot to ask anything with the user via speak_runner with the format '<VoiceSpeaker tts_text='$tts_text'/>'"

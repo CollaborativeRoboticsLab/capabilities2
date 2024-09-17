@@ -29,7 +29,7 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    * @param on_started function pointer to trigger at the start of the action client in the runner
-   * @param on_terminated function pointer to trigger at the termination of the action client in the runner
+   * @param on_terminated function x, ypointer to trigger at the termination of the action client in the runner
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
                      std::function<void(const std::string&)> on_started = nullptr,
@@ -70,8 +70,6 @@ public:
 protected:
   std::string global_frame_;     /**The global frame of the robot*/
   std::string robot_base_frame_; /**The frame of the robot base*/
-
-  double x, y; /**Coordinate frame parameters*/
 };
 
 }  // namespace capabilities2_runner
