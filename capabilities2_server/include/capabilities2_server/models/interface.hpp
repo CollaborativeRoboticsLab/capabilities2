@@ -128,12 +128,32 @@ struct interface_model_t : public predicateable_base_t
   {
     header.from_yaml(node);
     interface.from_yaml(node["interface"]);
+    // if relations exist
+    if (node["relations"])
+    {
+      for (const auto& relation : node["relations"])
+      {
+        predicate_model_t p;
+        p.from_yaml(relation);
+        relations.push_back(p);
+      }
+    }
   }
 
   YAML::Node to_yaml() const
   {
     YAML::Node node = header.to_yaml();
     node["interface"] = interface.to_yaml();
+    // if relations exist
+    if (relations.size() > 0)
+    {
+      YAML::Node r;
+      for (const auto& relation : relations)
+      {
+        r.push_back(relation.to_yaml());
+      }
+      node["relations"] = r;
+    }
     return node;
   }
 

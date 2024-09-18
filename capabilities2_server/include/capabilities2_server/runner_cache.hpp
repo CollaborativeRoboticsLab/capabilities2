@@ -38,7 +38,7 @@ public:
    * @param node   pointer to the origin node, generally the capabilities2_server
    * @param capability capability name to be loaded
    * @param run_config run_config of the runner to be loaded
-   * @param parameters parameters related to the runner in std::string form for compatibility accross various runners
+   * @param parameters parameters related to the runner in xml form for compatibility across various runners
    */
   void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability,
                   const models::run_config_model_t& run_config,
