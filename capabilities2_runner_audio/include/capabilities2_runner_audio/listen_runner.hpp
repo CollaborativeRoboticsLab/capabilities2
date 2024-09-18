@@ -41,14 +41,14 @@ public:
     init_action<hri_audio_msgs::action::SpeechToText>("speech_to_text");
   }
 
-	/**
-	 * @brief stop function to cease functionality and shutdown
-	 *
-	 */
-	virtual void stop() override
-	{
+  /**
+   * @brief stop function to cease functionality and shutdown
+   *
+   */
+  virtual void stop() override
+  {
     deinit_action<hri_audio_msgs::action::SpeechToText>("speech_to_text");
-	}
+  }
 
   /**
    * @brief trigger the runner
@@ -62,10 +62,7 @@ public:
     goal_msg.header.stamp = node_->get_clock()->now();
 
     trigger_action<hri_audio_msgs::action::SpeechToText>("speech_to_text", goal_msg);
-
   }
-
-  
 
 protected:
   std::string global_frame_;     /**The global frame of the robot*/

@@ -106,16 +106,16 @@ public:
    * @param on_terminated pointer to function to execute on terminating the runner
    */
   void init_base(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                  std::function<void(const std::string&)> on_started = nullptr,
-                  std::function<void(const std::string&)> on_terminated = nullptr,
-                  std::function<void(const std::string&)> on_stopped = nullptr)
+                 std::function<void(const std::string&)> on_started = nullptr,
+                 std::function<void(const std::string&)> on_terminated = nullptr,
+                 std::function<void(const std::string&)> on_stopped = nullptr)
   {
     // store node pointer and opts
-    node_           = node;
-    run_config_     = run_config;
-    on_started_     = on_started;
-    on_terminated_  = on_terminated;
-    on_stopped_     = on_stopped;
+    node_ = node;
+    run_config_ = run_config;
+    on_started_ = on_started;
+    on_terminated_ = on_terminated;
+    on_stopped_ = on_stopped;
   }
 
   /**

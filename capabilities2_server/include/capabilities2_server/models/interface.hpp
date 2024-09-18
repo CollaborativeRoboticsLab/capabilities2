@@ -4,6 +4,7 @@
 #include <yaml-cpp/yaml.h>
 #include <capabilities2_server/models/header.hpp>
 #include <capabilities2_server/models/resource.hpp>
+#include <capabilities2_server/models/predicateable_base.hpp>
 
 namespace capabilities2_server
 {
@@ -111,8 +112,14 @@ struct specification_model_t
   }
 };
 
-// interface model definition
-struct interface_model_t
+/**
+ * @brief interface model
+ *
+ * the main representation of a capability
+ * mapping skill-like concepts to ROS-resources that usually make up a logical robot subsystem
+ *
+ */
+struct interface_model_t : public predicateable_base_t
 {
   header_model_t header;
   specification_model_t interface;
