@@ -10,6 +10,15 @@ namespace models
 {
 
 // semantic interface model definition
+/**
+ * @brief semantic interface model
+ *
+ * a semantic interface redefines an interface in a semantic way
+ * this helps avoid resource collisions in the computation graph
+ * when using abstract capabilities such as when capabilities are shared
+ * between different robot implementations
+ *
+ */
 struct semantic_interface_model_t : public remappable_base_t
 {
   header_model_t header;

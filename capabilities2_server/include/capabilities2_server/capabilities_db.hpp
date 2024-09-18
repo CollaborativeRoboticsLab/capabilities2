@@ -7,6 +7,7 @@
 #include <sqlite3.h>
 #include <yaml-cpp/yaml.h>
 
+#include <capabilities2_server/db_base.hpp>
 #include <capabilities2_server/models/interface.hpp>
 #include <capabilities2_server/models/semantic_interface.hpp>
 #include <capabilities2_server/models/provider.hpp>
@@ -16,7 +17,7 @@
 namespace capabilities2_server
 {
 
-class CapabilitiesDB
+class CapabilitiesDB : public DBBase
 {
 public:
   CapabilitiesDB(const std::string db_file = "cache/capabilities.sqlite3") : db_file_(db_file), db_(nullptr)
@@ -36,21 +37,21 @@ public:
   /* inserters */
 
   // insert interface
-  void insert_interface(const models::interface_model_t& interface)
+  virtual void insert_interface(const models::interface_model_t& interface) override
   {
     const std::string query = "INSERT INTO interfaces VALUES (" + interface.to_sql_values() + ")";
     exec(query);
   }
 
   // insert semantic interface
-  void insert_semantic_interface(const models::semantic_interface_model_t& semantic_interface)
+  virtual void insert_semantic_interface(const models::semantic_interface_model_t& semantic_interface) override
   {
     const std::string query = "INSERT INTO semantic_interfaces VALUES (" + semantic_interface.to_sql_values() + ")";
     exec(query);
   }
 
   // insert provider
-  void insert_provider(const models::provider_model_t& provider)
+  virtual void insert_provider(const models::provider_model_t& provider) override
   {
     const std::string query = "INSERT INTO providers VALUES (" + provider.to_sql_values() + ")";
     exec(query);
@@ -59,7 +60,7 @@ public:
   /* getters */
 
   // get interface
-  models::interface_model_t get_interface(const std::string& name)
+  virtual models::interface_model_t get_interface(const std::string& name) override
   {
     sqlite3_stmt* stmt;
     const std::string query = "SELECT * FROM interfaces WHERE name = '" + name + "'";
@@ -81,7 +82,7 @@ public:
   }
 
   // get interfaces
-  std::vector<models::interface_model_t> get_interfaces()
+  virtual std::vector<models::interface_model_t> get_interfaces() override
   {
     sqlite3_stmt* stmt;
     const std::string query = "SELECT * FROM interfaces";
@@ -104,7 +105,7 @@ public:
   }
 
   // get semantic interface
-  models::semantic_interface_model_t get_semantic_interface(const std::string& name)
+  virtual models::semantic_interface_model_t get_semantic_interface(const std::string& name) override
   {
     sqlite3_stmt* stmt;
     const std::string query = "SELECT * FROM semantic_interfaces WHERE name = '" + name + "'";
@@ -126,7 +127,7 @@ public:
   }
 
   // get semantic interfaces
-  std::vector<models::semantic_interface_model_t> get_semantic_interfaces()
+  virtual std::vector<models::semantic_interface_model_t> get_semantic_interfaces() override
   {
     sqlite3_stmt* stmt;
     const std::string query = "SELECT * FROM semantic_interfaces";
@@ -149,7 +150,7 @@ public:
   }
 
   // get provider
-  models::provider_model_t get_provider(const std::string& name)
+  virtual models::provider_model_t get_provider(const std::string& name) override
   {
     sqlite3_stmt* stmt;
     const std::string query = "SELECT * FROM providers WHERE name = '" + name + "'";
@@ -171,7 +172,7 @@ public:
   }
 
   // get providers
-  std::vector<models::provider_model_t> get_providers()
+  virtual std::vector<models::provider_model_t> get_providers() override
   {
     sqlite3_stmt* stmt;
     const std::string query = "SELECT * FROM providers";
@@ -201,7 +202,7 @@ public:
    * @param name
    * @return models::remappable_base_t
    */
-  models::remappable_base_t get_remappable(const std::string& name)
+  virtual models::remappable_base_t get_remappable(const std::string& name) override
   {
     // check if it is a semantic interface
     models::semantic_interface_model_t semantic_interface = get_semantic_interface(name);
@@ -224,7 +225,7 @@ public:
   /* updaters */
 
   // update interface
-  void update_interface(const models::interface_model_t& interface)
+  virtual void update_interface(const models::interface_model_t& interface) override
   {
     const std::string query =
         "UPDATE interfaces SET " + interface.to_sql_values() + " WHERE name = '" + interface.header.name + "'";
@@ -232,7 +233,7 @@ public:
   }
 
   // update semantic interface
-  void update_semantic_interface(const models::semantic_interface_model_t& semantic_interface)
+  virtual void update_semantic_interface(const models::semantic_interface_model_t& semantic_interface) override
   {
     const std::string query = "UPDATE semantic_interfaces SET " + semantic_interface.to_sql_values() +
                               " WHERE name = '" + semantic_interface.header.name + "'";
@@ -250,7 +251,7 @@ public:
   /* foreign keys */
 
   // get providers by interface
-  std::vector<models::provider_model_t> get_providers_by_interface(const std::string& interface_name)
+  virtual std::vector<models::provider_model_t> get_providers_by_interface(const std::string& interface_name) override
   {
     // could be a semantic interface or an interface
     sqlite3_stmt* stmt;
@@ -273,8 +274,8 @@ public:
   }
 
   // get semantic interfaces by interface
-  std::vector<models::semantic_interface_model_t>
-  get_semantic_interfaces_by_interface(const std::string& interface_name)
+  virtual std::vector<models::semantic_interface_model_t>
+  get_semantic_interfaces_by_interface(const std::string& interface_name) override
   {
     sqlite3_stmt* stmt;
     const std::string query = "SELECT * FROM semantic_interfaces WHERE redefines = '" + interface_name + "'";
@@ -296,7 +297,7 @@ public:
   }
 
   // get running model from provider
-  models::running_model_t get_running(const std::string& provider_name)
+  virtual models::running_model_t get_running(const std::string& provider_name) override
   {
     // start with provider and work up the chain
     models::provider_model_t provider = get_provider(provider_name);
@@ -327,7 +328,8 @@ public:
   }
 
   // apply a remapping to a specification model
-  void apply_remappings(models::specification_model_t& spec, const models::remappable_base_t& remappable)
+  virtual void apply_remappings(models::specification_model_t& spec,
+                                const models::remappable_base_t& remappable) override
   {
     for (auto const& param : remappable.remappings.parameters)
     {
@@ -348,7 +350,7 @@ public:
   }
 
   // apply semantics to interface
-  models::interface_model_t apply_semantic_remappings(models::semantic_interface_model_t semantic)
+  virtual models::interface_model_t apply_semantic_remappings(models::semantic_interface_model_t semantic) override
   {
     // get the parent interface model
     models::interface_model_t interface = get_interface(semantic.redefines);
@@ -360,7 +362,7 @@ public:
   }
 
   // apply provider remappings
-  models::interface_model_t apply_provider_remappings(models::provider_model_t provider)
+  virtual models::interface_model_t apply_provider_remappings(models::provider_model_t provider) override
   {
     // get the parent interface model
     // is it semantic
@@ -387,7 +389,7 @@ public:
   }
 
   // get run config model
-  models::run_config_model_t get_run_config(const std::string& provider_name)
+  virtual models::run_config_model_t get_run_config(const std::string& provider_name) override
   {
     models::provider_model_t provider = get_provider(provider_name);
     if (provider.header.name.empty())
@@ -408,26 +410,8 @@ public:
     return run_config;
   }
 
-  // exists in db templated by model type
-  template <typename T>
-  bool exists(const std::string& resource_name)
-  {
-    // clearly not in db as it does not match a valid model type
-    throw std::runtime_error("invalid model type");
-  }
-
-  // exists in db anywhere
-  bool exists_any(const std::string& resource_name)
-  {
-    // query all tables for name
-    // if name is in any table, then it exists
-    return !get_interface(resource_name).header.name.empty() ||
-           !get_semantic_interface(resource_name).header.name.empty() ||
-           !get_provider(resource_name).header.name.empty();
-  }
-
 protected:
-  void open()
+  virtual void open() override
   {
     const int exit = sqlite3_open(db_file_.c_str(), &db_);
     if (exit != SQLITE_OK)
@@ -437,7 +421,7 @@ protected:
     }
   }
 
-  void close()
+  virtual void close() override
   {
     // close if the database is open
     if (db_ != nullptr)
@@ -458,7 +442,7 @@ protected:
     }
   }
 
-  void create_tables()
+  virtual void create_tables() override
   {
     // create tables if they do not exists
     const std::string create_interface_table =
@@ -480,6 +464,7 @@ protected:
     exec(create_provider_table);
   }
 
+private:
   // model conversion helpers
   models::interface_model_t to_interface(sqlite3_stmt* stmt)
   {
@@ -528,30 +513,8 @@ protected:
   }
 
 private:
-  std::string db_file_;
+  const std::string db_file_;
   sqlite3* db_;
 };
-
-// 'exists' template specializations
-// interface exists in db
-template <>
-bool CapabilitiesDB::exists<models::interface_model_t>(const std::string& resource_name)
-{
-  return !get_interface(resource_name).header.name.empty();
-}
-
-// semantic interface exists in db
-template <>
-bool CapabilitiesDB::exists<models::semantic_interface_model_t>(const std::string& resource_name)
-{
-  return !get_semantic_interface(resource_name).header.name.empty();
-}
-
-// provider exists in db
-template <>
-bool CapabilitiesDB::exists<models::provider_model_t>(const std::string& resource_name)
-{
-  return !get_provider(resource_name).header.name.empty();
-}
 
 }  // namespace capabilities2_server

@@ -11,6 +11,13 @@ namespace models
 {
 
 // provider model definition
+/**
+ * @brief provider model
+ *
+ * a provider model defines the implementation of a capability
+ * the provider can be specific to a robot implementation of a general capability
+ *
+ */
 struct provider_model_t : public remappable_base_t
 {
   header_model_t header;

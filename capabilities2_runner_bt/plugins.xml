@@ -1,0 +1,7 @@
+<library path="capabilities2_runner">
+    <class type="capabilities2_runner::BTActionRunner" base_class_type="capabilities2_runner::RunnerBase">
+        <description>
+            A plugin that provide speech to text capability
+        </description>
+    </class>
+</library>

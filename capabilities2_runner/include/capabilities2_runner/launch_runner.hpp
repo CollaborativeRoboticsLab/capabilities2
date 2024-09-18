@@ -27,7 +27,7 @@ public:
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
                      std::function<void(const std::string&)> on_started = nullptr,
                      std::function<void(const std::string&)> on_terminated = nullptr,
-							       std::function<void(const std::string&)> on_stopped = nullptr) override
+                     std::function<void(const std::string&)> on_stopped = nullptr) override
   {
     // store node pointer and run_config
     init_action(node, run_config, "capabilities_launch_proxy/launch", on_started, on_terminated, on_stopped);
