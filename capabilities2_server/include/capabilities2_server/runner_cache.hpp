@@ -79,7 +79,6 @@ public:
   /**
    * @brief Trigger a runner in the cache
    *
-   * @param node   pointer to the origin node, generally the capabilities2_server
    * @param capability capability name to be loaded
    * @param parameters parameters related to the runner in std::string form for compatibility accross various runners
    */
