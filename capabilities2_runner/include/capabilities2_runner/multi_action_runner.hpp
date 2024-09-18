@@ -131,7 +131,7 @@ public:
 
   /**
    * @brief Trigger function for calling and triggering an action. Non blocking implementation so result will not
-   * be returned.
+   * be returned.  Use when action triggering is required and result message of the action is not required.
    *
    * @param action_name action name used in the yaml file, used to load specific configuration from the run_config
    * @param goal_msg goal message to be sent to the action server
@@ -187,6 +187,7 @@ public:
 
   /**
    * @brief Trigger function for calling and triggering an action. Blocking implementation so result will be returned.
+   * Use when result message of the action is required.
    *
    * @param action_name action name used in the yaml file, used to load specific configuration from the run_config
    * @param goal_msg goal message to be sent to the action server

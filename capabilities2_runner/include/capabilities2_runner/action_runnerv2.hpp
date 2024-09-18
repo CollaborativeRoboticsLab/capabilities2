@@ -149,7 +149,7 @@ public:
 
   /**
    * @brief Trigger function for calling and triggering an action. Non blocking implementation so result will not
-   * be returned.
+   * be returned. Use when action triggering is required and result message of the action is not required.
    *
    * @param goal_msg goal message to be sent to the action server
    *
@@ -200,6 +200,7 @@ public:
 
   /**
    * @brief Trigger function for calling and triggering an action. Blocking implementation so result will be returned.
+   * Use when result message of the action is required.
    *
    * @param goal_msg goal message to be sent to the action server
    * @param result_msg result message returned by the action server upon completion
