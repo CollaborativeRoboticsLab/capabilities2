@@ -1,29 +1,41 @@
 # Capabilities2 Server
 
-This is the capabilities2 server. It allows interaction with the capabilities2 API. It is a reimplementation of the capabilities package using CPP. The CPP implementation is more efficient. Secondly, this package extends the capabilities package features.
+This is the capabilities2 server. It allows interaction with the capabilities2 API. It is a reimplementation of the capabilities package using CPP. The CPP implementation is resource efficient. Secondly, this package extends the capabilities package features. Extensions include:
+
+1. Database support for storing capabilities
+2. Capability registration through service calls
+3. Abstracted providers through a *runners* API see [capabilities2_runner](../capabilities2_runner/readme.md)
 
 ## System dependencies
 
-The capabilities2 server depends on the following system dependencies:
+The capabilities2 server depends on the following `bondcpp` ROS2 package. See the package.xml for the full list of dependencies. Notably, the capabilities2 server depends on the following system dependencies:
 
 - `sqlite3`
+- `yaml-cpp`
+- `tinyxml2`
+- `uuid`
 
 ## API
 
-The capabilities2 server provides the following API:
+The capabilities2 server provides the following ROS API:
 
 ### Services
 
-The capabilities2 server exposes the following Service API:
+The capabilities2 server exposes the following Service API (see [capabilities2_msgs](../capabilities2_msgs/readme.md) for data types):
 
-- `~/get_interfaces`
-- `~/get_semantic_interfaces`
-- `~/get_providers`
-- `~/get_remappings`
-- `~/get_capability_specs`
-- `~/establish_bond`
-- `~/use_capability`
-- `~/free_capability`
+- `~/get_interfaces` - get the interfaces provided by the capabilities server
+- `~/get_semantic_interfaces` - get the semantic interfaces provided by the capabilities server
+- `~/get_providers` - get the providers available on the capabilities server
+- `~/get_remappings` - get the remappings for a capability
+- `~/get_capability_spec` - get a raw specifications for a capability
+- `~/get_capability_specs` - get all raw specifications in the capabilities server
+- `~/establish_bond` - establish a bond with the capabilities server to use capabilities
+- `~/use_capability` - use a capability
+- `~/free_capability` - free a capability (when done using it, when all users are done the capability is freed)
+- `~/start_capability` - start a capability (this is a forceful start, and ignores use and free logic)
+- `~/stop_capability` - stop a capability (this is a forceful stop, and ignores use and free logic)
+- `~/register_capability` - register a capability with the capabilities server
+- `~/get_running_capabilities` - get the currently running capabilities
 
 ### Topics
 
@@ -34,7 +46,7 @@ The capabilities2 server exposes the following Topics API:
 
 ## How to use
 
-### launch capabilities2 server
+### Launch capabilities2 server
 
 ```bash
 # can add launch args for path to packages
@@ -43,7 +55,7 @@ The capabilities2 server exposes the following Topics API:
 ros2 launch capabilities2 capabilities2_server.launch.py
 ```
 
-### register a capability
+### Register a capability
 
 capabilities can be registered by exporting them in a package. The capabilities2 server will read the capabilities from the package and make them available to the user.
 
@@ -56,9 +68,26 @@ capabilities can be registered by exporting them in a package. The capabilities2
 </export>
 ```
 
-Capabilities can also be registered through a service call. This is useful for registering capabilities that are not exported in a package. The service call has been implemented as a node in the capabilities2 package. Use the node to register capabilities during runtime.
+Capabilities can also be registered through a service call. This is useful for registering capabilities that are not exported in a package. The service call has been implemented as a node in the capabilities2 package. Use the node to register capabilities during runtime. THis method can also be used to update capabilities.
 
-### user program flow
+### Capability example
+
+```yaml
+# cool_cap.yaml
+name: cool_cap
+spec_version: 1
+spec_type: interface
+description: "This is a cool capability"
+interface:
+  topics:
+    "/cool_topic":
+      type: "std_msgs/msg/String"
+      description: "This is a cool topic"
+```
+
+### User program flow
+
+Using a capability requires the user to establish a bond with the capabilities2 server. The bond is used to maintain a persistent connection with the server.
 
 first, inspect the available capabilities provided under this server on this robot.
 
@@ -82,3 +111,16 @@ ros2 service call /capabilities/use_capability capabilities2_msgs/srv/UseCapabil
 ```
 
 This capability can be freed by calling the `free_capability` service, or just let the bond expire. The capability will be freed automatically.
+
+## Developing
+
+A `devcontainer` is provided for developing the capabilities2 meta-package. Dependencies need to be installed in the container. Install the dependencies with rosdep:
+
+```bash
+# in the devcontainer
+rosdep install --from-paths src --ignore-src -r -y
+```
+
+### Specialising the capabilities2 server
+
+The capabilities2 server is implemented as a [ROS2 Component](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Composition.html). The server can be specialised by composing it with another Component that adds domain logic.

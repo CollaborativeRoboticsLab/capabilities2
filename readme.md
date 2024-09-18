@@ -3,8 +3,9 @@
 [![ROS2 Jazzy](https://img.shields.io/badge/ROS2-Jazzy-blue)](https://index.ros.org/doc/ros2/Releases/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Open in Visual Studio Code](https://img.shields.io/badge/vscode-dev-blue)](https://open.vscode.dev/airesearchlab/capabilities2)
+<!-- [![codecov](https://codecov.io/gh/airesearchlab/capabilities2/branch/main/graph/badge.svg?token=3ZQZQZQZQZ)](https://codecov.io/gh/airesearchlab/capabilities2) -->
 
-A reimplementation of the [capabilities](https://github.com/osrf/capabilities) package. This package is implemented using CPP and extends the capabilities package features.
+A reimplementation of the [capabilities](https://github.com/osrf/capabilities) package. This package is implemented using CPP and extends the capabilities package features. See the [capabilities2_server](./capabilities2_server/readme.md) package for the main component of this package.
 
 ## System structure
 
@@ -45,7 +46,7 @@ The main reasons for this are:
 - A robot is asked to do a task it has never done before. This could be achieved by combining capabilities in new ways. or a robot is asked to do a task it has done before but with a different context. This could be achieved by changing the parameters of capabilities.
 - A universal remote control for robots could be created using the capabilities as a standardised interface. This might be useful for robot subsystem integrators. This could also be used to create a robot app store, or standardised sensor and actuator interfaces.
 
-## acknoledgements
+## Acknowledgements
 
 This work is based on the capabilities package developed by the Open Source Robotics Foundation.
 

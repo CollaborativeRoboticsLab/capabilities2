@@ -43,7 +43,7 @@ struct run_config_model_t
     auto push_by_type = [&](const std::map<std::string, resource_model_t>& resources, const std::string& type) {
       for (const auto& resource : resources)
       {
-        opts.resources.push_back({ resource.second.name, resource.second.type });
+        opts.resources.push_back({ resource.second.name, type, resource.second.type });
       }
     };
 
@@ -71,6 +71,8 @@ struct run_config_model_t
     node["runner"] = runner;
     node["started_by"] = started_by;
     node["pid"] = pid;
+
+    return node;
   }
 };
 

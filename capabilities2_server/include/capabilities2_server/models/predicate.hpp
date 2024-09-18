@@ -1,4 +1,4 @@
-#pragma
+#pragma once
 
 #include <string>
 #include <yaml-cpp/yaml.h>
@@ -26,6 +26,15 @@ struct predicate_model_t
     subject = node["subject"].as<std::string>();
     predicate = node["predicate"].as<std::string>();
     object = node["object"].as<std::string>();
+  }
+
+  YAML::Node to_yaml() const
+  {
+    YAML::Node node;
+    node["subject"] = subject;
+    node["predicate"] = predicate;
+    node["object"] = object;
+    return node;
   }
 };
 
