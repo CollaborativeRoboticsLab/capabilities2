@@ -1,12 +1,15 @@
 #pragma once
 
+#include <thread>
+
 #include <tinyxml2.h>
-#include <capabilities2_runner/action_runner.hpp>
-#include <geometry_msgs/msg/pose_stamped.hpp>
-#include <nav2_msgs/action/follow_waypoints.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
-#include <thread>
+
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <nav2_msgs/action/follow_waypoints.hpp>
+
+#include <capabilities2_runner/action_runnerv2.hpp>
 
 namespace capabilities2_runner
 {
@@ -20,61 +23,71 @@ namespace capabilities2_runner
 class WayPointRunner : public ActionRunner<nav2_msgs::action::FollowWaypoints>
 {
 public:
-    WayPointRunner() : ActionRunner()
-    {
-    }
+  WayPointRunner() : ActionRunner()
+  {
+  }
 
-    /**
-     * @brief Starter function for starting the action runner
-     *
-     * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
-     * @param run_config runner configuration loaded from the yaml file
-     * @param on_started function pointer to trigger at the start of the action client in the runner
-     * @param on_terminated function pointer to trigger at the termination of the action client in the runner
-     */
-    virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                        std::function<void(const std::string&)> on_started = nullptr,
-                        std::function<void(const std::string&)> on_terminated = nullptr,
-						std::function<void(const std::string&)> on_stopped = nullptr) override
-    {
-        init_action(node, run_config, "follow_waypoints", on_started, on_terminated, on_stopped);
-    }
+  /**
+   * @brief Starter function for starting the action runner
+   *
+   * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
+   * @param run_config runner configuration loaded from the yaml file
+   * @param on_started function pointer to trigger at the start of the action client in the runner
+   * @param on_terminated function pointer to trigger at the termination of the action client in the runner
+   */
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+                     std::function<void(const std::string&)> on_started = nullptr,
+                     std::function<void(const std::string&)> on_terminated = nullptr,
+                     std::function<void(const std::string&)> on_stopped = nullptr) override
+  {
+    init_runner(node, run_config, on_started, on_terminated, on_stopped);
 
-    /**
-     * @brief trigger the runner
-     *
-     @param parameters XMLElement that contains parameters in the format '<waypointfollower x='$value' y='$value' />'
-    */
-    virtual void trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
-    {
-        tinyxml2::XMLElement* parametersElement = parameters->FirstChildElement("waypointfollower");
+    init_action("follow_waypoints");
+  }
 
-        parametersElement->QueryDoubleAttribute("x", &x);
-        parametersElement->QueryDoubleAttribute("y", &y);
+  /**
+   * @brief stop function to cease functionality and shutdown
+   *
+   */
+  virtual void stop() override
+  {
+    deinit_action();
+  }
 
-        nav2_msgs::action::FollowWaypoints::Goal goal_msg;
-        geometry_msgs::msg::PoseStamped pose_msg;
+  /**
+   * @brief trigger the runner
+   *
+   @param parameters XMLElement that contains parameters in the format '<waypointfollower x='$value' y='$value' />'
+  */
+  virtual void trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
+  {
+    tinyxml2::XMLElement* parametersElement = parameters->FirstChildElement("waypointfollower");
 
-        global_frame_ = "map";
-        robot_base_frame_ = "base_link";
+    parametersElement->QueryDoubleAttribute("x", &x);
+    parametersElement->QueryDoubleAttribute("y", &y);
 
-        pose_msg.header.stamp = node_->get_clock()->now();
-        pose_msg.header.frame_id = global_frame_;
-        pose_msg.pose.position.x = x;
-        pose_msg.pose.position.y = y;
-        pose_msg.pose.position.z = 0.0;
+    nav2_msgs::action::FollowWaypoints::Goal goal_msg;
+    geometry_msgs::msg::PoseStamped pose_msg;
 
-        goal_msg.poses.push_back(pose_msg);
+    global_frame_ = "map";
+    robot_base_frame_ = "base_link";
 
-        // launch runner using action client
-        action_client_->async_send_goal(goal_msg, send_goal_options_);
-    }
+    pose_msg.header.stamp = node_->get_clock()->now();
+    pose_msg.header.frame_id = global_frame_;
+    pose_msg.pose.position.x = x;
+    pose_msg.pose.position.y = y;
+    pose_msg.pose.position.z = 0.0;
 
-    protected:
-    std::string global_frame_;     /**The global frame of the robot*/
-    std::string robot_base_frame_; /**The frame of the robot base*/
+    goal_msg.poses.push_back(pose_msg);
 
-    double x, y; /**Coordinate frame parameters*/
+    bool success = trigger_action(goal_msg);
+  }
+
+protected:
+  std::string global_frame_;     /**The global frame of the robot*/
+  std::string robot_base_frame_; /**The frame of the robot base*/
+
+  double x, y; /**Coordinate frame parameters*/
 };
 
 }  // namespace capabilities2_runner

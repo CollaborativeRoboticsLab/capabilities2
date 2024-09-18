@@ -7,7 +7,7 @@ spec_type: interface
 description: "Navigational capabilities using Nav2 stack"
 interface:
   actions:
-    "WaypointFollower":
+    "follow_waypoints":
       type: "nav2_msgs::action::FollowWaypoints"
       description: "This system allow the robot to navigate to a given two dimensional coordinate 
                     given via '<waypointfollower x='$value' y='$value' />' command. '$value' represents 

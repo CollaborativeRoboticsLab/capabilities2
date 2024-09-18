@@ -3,15 +3,13 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-#include <map>
-#include <any>
+#include <vector>
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <action_msgs/srv/cancel_goal.hpp>
 
 #include <capabilities2_runner/runner_base.hpp>
-#include <capabilities2_runner/struct/action_client_bundle.hpp>
 
 namespace capabilities2_runner
 {
@@ -21,13 +19,14 @@ namespace capabilities2_runner
  *
  * Create an action client to run an action based capability
  */
-class MultiActionRunner : public RunnerBase
+template <typename ActionT>
+class ActionRunner : public RunnerBase
 {
 public:
   /**
    * @brief Constructor which needs to be empty due to plugin semantics
    */
-  MultiActionRunner() : RunnerBase()
+  ActionRunner() : RunnerBase()
   {
   }
 
@@ -54,39 +53,58 @@ public:
    *
    * @param action_name action name used in the yaml file, used to load specific configuration from the run_config
    */
-  template <typename ActionT>
-  void init_action(const std::string& action_name)
+  virtual void init_action(const std::string& action_name)
   {
-    typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle_;
-    typename rclcpp_action::Client<ActionT>::SendGoalOptions send_goal_options_;
-
-    auto client_ = rclcpp_action::create_client<ActionT>(node_, action_name);
+    // create an action client
+    action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name);
 
     // wait for action server
     RCLCPP_INFO(node_->get_logger(), "%s waiting for action: %s", run_config_.interface.c_str(), action_name.c_str());
 
-    if (!client_->wait_for_action_server(std::chrono::seconds(3)))
+    if (!action_client_->wait_for_action_server(std::chrono::seconds(3)))
     {
       RCLCPP_ERROR(node_->get_logger(), "%s failed to connect to action: %s", run_config_.interface.c_str(),
                    action_name.c_str());
       throw runner_exception("failed to connect to action server");
     }
 
-    ActionClientBundle<ActionT> bundle{ client_, goal_handle_, send_goal_options_ };
+    // // send goal options
+    // // goal response callback
+    // send_goal_options_.goal_response_callback =
+    //     [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
+    //       // publish event
+    //       if (goal_handle)
+    //         if (on_started_)
+    //           on_started_(run_config_.interface);
 
-    action_clients_map_[action_name] = std::make_any<ActionClientBundle<ActionT>>(bundle);
+    //       // store goal handle to be used with stop funtion
+    //       goal_handle_ = goal_handle;
+    //     };
+
+    // // result callback
+    // send_goal_options_.result_callback =
+    //     [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
+    //       if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
+    //       {
+    //         // Do something
+    //       }
+    //       else
+    //       {
+    //         // send terminated event
+    //         if (on_terminated_)
+    //         {
+    //           on_terminated_(run_config_.interface);
+    //         }
+    //       }
+    //     };
   }
 
   /**
-   * @brief Deinitializer function for stopping an the action
+   * @brief deinitializer function to cease functionality and shutdown
    *
-   * @param action_name action name used in the yaml file, used to load specific configuration from the run_config
    */
-  template <typename ActionT>
-  void deinit_action(const std::string& action_name)
+  virtual void deinit_action()
   {
-    auto bundle = std::any_cast<ActionClientBundle<ActionT>>(action_clients_map_[action_name]);
-
     // if the node pointer is empty then throw an error
     // this means that the runner was not started and is being used out of order
 
@@ -96,16 +114,16 @@ public:
     // throw an error if the action client is null
     // this can happen if the runner is not able to find the action resource
 
-    if (!bundle.action_client)
+    if (!action_client_)
       throw runner_exception("cannot stop runner action that was not started");
 
     // stop runner using action client
-    if (bundle.goal_handle)
+    if (goal_handle_)
     {
       try
       {
-        auto cancel_future = bundle.action_client->async_cancel_goal(
-            bundle.goal_handle, [this](action_msgs::srv::CancelGoal_Response::SharedPtr response) {
+        auto cancel_future = action_client_->async_cancel_goal(
+            goal_handle_, [this](action_msgs::srv::CancelGoal_Response::SharedPtr response) {
               if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE)
               {
                 // throw runner_exception("failed to cancel runner");
@@ -133,18 +151,14 @@ public:
    * @brief Trigger function for calling and triggering an action. Non blocking implementation so result will not
    * be returned.
    *
-   * @param action_name action name used in the yaml file, used to load specific configuration from the run_config
    * @param goal_msg goal message to be sent to the action server
    *
    * @returns True for success of launching an action. False for failure to launching the action.
    */
-  template <typename ActionT>
-  bool trigger_action(const std::string& action_name, typename ActionT::Goal& goal_msg)
+  bool trigger_action(typename ActionT::Goal& goal_msg)
   {
-    auto bundle = std::any_cast<ActionClientBundle<ActionT>>(action_clients_map_[action_name]);
-
     // result callback
-    bundle.send_goal_options.result_callback =
+    send_goal_options_.result_callback =
         [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
           if (wrapped_result.code != rclcpp_action::ResultCode::SUCCEEDED)
           {
@@ -156,7 +170,7 @@ public:
           }
         };
 
-    auto goal_handle_future = bundle.action_client->async_send_goal(goal_msg, bundle.send_goal_options);
+    auto goal_handle_future = action_client_->async_send_goal(goal_msg, send_goal_options_);
 
     if (rclcpp::spin_until_future_complete(node_, goal_handle_future) != rclcpp::FutureReturnCode::SUCCESS)
     {
@@ -178,29 +192,23 @@ public:
         on_started_(run_config_.interface);
 
       // store goal handle to be used with stop funtion
-      bundle.goal_handle = goal_handle;
+
+      goal_handle_ = goal_handle;
       return true;
     }
-
-    action_clients_map_[action_name] = std::make_any<ActionClientBundle<ActionT>>(bundle);
   }
 
   /**
    * @brief Trigger function for calling and triggering an action. Blocking implementation so result will be returned.
    *
-   * @param action_name action name used in the yaml file, used to load specific configuration from the run_config
    * @param goal_msg goal message to be sent to the action server
    * @param result_msg result message returned by the action server upon completion
    *
    * @returns True for success of completing an action. False for failure to complete the action.
    */
-  template <typename ActionT>
-  bool trigger_action_wait(const std::string& action_name, typename ActionT::Goal& goal_msg,
-                           typename ActionT::Result::SharedPtr result_msg)
+  bool trigger_action_wait(typename ActionT::Goal& goal_msg, typename ActionT::Result::SharedPtr result_msg)
   {
-    auto bundle = std::any_cast<ActionClientBundle<ActionT>>(action_clients_map_[action_name]);
-
-    auto goal_handle_future = bundle.action_client->async_send_goal(goal_msg, bundle.send_goal_options);
+    auto goal_handle_future = action_client_->async_send_goal(goal_msg, send_goal_options_);
 
     if (rclcpp::spin_until_future_complete(node_, goal_handle_future) != rclcpp::FutureReturnCode::SUCCESS)
     {
@@ -222,11 +230,11 @@ public:
         on_started_(run_config_.interface);
 
       // store goal handle to be used with stop funtion
-      bundle.goal_handle = goal_handle;
+      goal_handle_ = goal_handle;
     }
 
     // Wait for the server to be done with the goal
-    auto result_future = bundle.action_client->async_get_result(goal_handle);
+    auto result_future = action_client_->async_get_result(goal_handle);
 
     RCLCPP_INFO(node_->get_logger(), "Waiting for result");
 
@@ -297,11 +305,15 @@ protected:
     throw runner_exception("no action resources found for interface: " + run_config_.interface);
   }
 
-  /**
-   * Dictionary to hold action client bundle. The key is a string, and the value is a
-   * polymorphic bundle.
-   * */
-  std::map<std::string, std::any> action_clients_map_;
+  /**< action client */
+  std::shared_ptr<rclcpp_action::Client<ActionT>> action_client_;
+
+  /**< Send Goal Option struct to link result_callback, feedback_callback and goal_response_callback with action client
+   */
+  typename rclcpp_action::Client<ActionT>::SendGoalOptions send_goal_options_;
+
+  /**< goal handle parameter to capture goal response from goal_response_callback */
+  typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle_;
 };
 
 }  // namespace capabilities2_runner

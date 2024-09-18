@@ -1,11 +1,13 @@
 #pragma once
 
 #include <tinyxml2.h>
-#include <capabilities2_runner/multi_action_runner.hpp>
-#include <hri_audio_msgs/action/speech_to_text.hpp>
+
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <thread>
+
+#include <hri_audio_msgs/action/speech_to_text.hpp>
+#include <capabilities2_runner/multi_action_runner.hpp>
 
 namespace capabilities2_runner
 {
@@ -41,14 +43,14 @@ public:
     init_action<hri_audio_msgs::action::SpeechToText>("speech_to_text");
   }
 
-	/**
-	 * @brief stop function to cease functionality and shutdown
-	 *
-	 */
-	virtual void stop() override
-	{
+  /**
+   * @brief stop function to cease functionality and shutdown
+   *
+   */
+  virtual void stop() override
+  {
     deinit_action<hri_audio_msgs::action::SpeechToText>("speech_to_text");
-	}
+  }
 
   /**
    * @brief trigger the runner
@@ -58,14 +60,12 @@ public:
   virtual void trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
   {
     hri_audio_msgs::action::SpeechToText::Goal goal_msg;
+    hri_audio_msgs::action::SpeechToText::Result::SharedPtr result_msg;
 
     goal_msg.header.stamp = node_->get_clock()->now();
 
-    trigger_action<hri_audio_msgs::action::SpeechToText>("speech_to_text", goal_msg);
-
+    bool result = trigger_action_wait<hri_audio_msgs::action::SpeechToText>("speech_to_text", goal_msg, result_msg);
   }
-
-  
 
 protected:
   std::string global_frame_;     /**The global frame of the robot*/
