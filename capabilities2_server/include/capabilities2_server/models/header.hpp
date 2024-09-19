@@ -8,6 +8,13 @@ namespace capabilities2_server
 namespace models
 {
 
+/** */
+// TODO: implement hidden unique id
+// struct identifiable_base_t
+// {
+//   int id;
+// };
+
 /** @brief base model for all models that can be modified */
 struct modifiable_base_t
 {
@@ -53,7 +60,9 @@ struct header_model_t : soft_deleteable_base_t, modifiable_base_t
 
   static const std::string to_sql_table()
   {
-    return "name TEXT NOT NULL, version INTEGER, type TEXT NOT NULL, description TEXT";
+    // name, version, type, description
+    // name is the primary key
+    return "name TEXT NOT NULL PRIMARY KEY, version INTEGER, type TEXT NOT NULL, description TEXT";
   }
 
   const std::string to_sql_values() const

@@ -419,6 +419,9 @@ protected:
       sqlite3_close(db_);
       throw std::runtime_error("Error opening database: " + db_file_ + " " + std::string(sqlite3_errmsg(db_)));
     }
+
+    // enable foreign keys
+    sqlite3_exec(db_, "PRAGMA foreign_keys = ON;", nullptr, nullptr, nullptr);
   }
 
   virtual void close() override

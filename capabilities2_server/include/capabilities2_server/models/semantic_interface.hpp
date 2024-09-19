@@ -50,7 +50,9 @@ struct semantic_interface_model_t : public remappable_base_t, predicateable_base
 
   static const std::string to_sql_table()
   {
-    return header_model_t::to_sql_table() + ", redefines TEXT NOT NULL, global_namespace TEXT, remappings TEXT";
+    // redefines is foreign key to interfaces
+    return header_model_t::to_sql_table() + ", redefines TEXT NOT NULL, global_namespace TEXT, remappings TEXT, "
+                                            "FOREIGN KEY(redefines) REFERENCES interfaces(name)";
   }
 
   std::string to_sql_values() const
