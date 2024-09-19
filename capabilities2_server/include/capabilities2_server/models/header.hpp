@@ -8,12 +8,25 @@ namespace capabilities2_server
 namespace models
 {
 
+/** @brief base model for all models that can be modified */
+struct modifiable_base_t
+{
+  std::string date_created;
+  std::string date_modified;
+};
+
+/** @brief base model for all models that can be soft deleted */
+struct soft_deleteable_base_t
+{
+  bool is_deleted = false;
+};
+
 /**
  * @brief the header model is a simple model for the header of a capability type
  * it includes the name, version, type, and description of the capability
  *
  */
-struct header_model_t
+struct header_model_t : soft_deleteable_base_t, modifiable_base_t
 {
   std::string name;
   int version;

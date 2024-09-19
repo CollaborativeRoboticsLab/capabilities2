@@ -400,6 +400,13 @@ private:
       // package.xml exports
       std::string package_xml = package_path + "/" + package + "/package.xml";
 
+      // check if package.xml exists
+      if (!std::filesystem::exists(package_xml))
+      {
+        RCLCPP_DEBUG(get_logger(), "package.xml does not exist: %s", package_xml.c_str());
+        continue;
+      }
+
       // parse package.xml
       tinyxml2::XMLDocument doc;
       try

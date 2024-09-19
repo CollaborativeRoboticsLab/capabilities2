@@ -4,6 +4,7 @@
 #include <yaml-cpp/yaml.h>
 #include <capabilities2_server/models/header.hpp>
 #include <capabilities2_server/models/remappable_base.hpp>
+#include <capabilities2_server/models/predicateable_base.hpp>
 
 namespace capabilities2_server
 {
@@ -18,7 +19,7 @@ namespace models
  * the provider can be specific to a robot implementation of a general capability
  *
  */
-struct provider_model_t : public remappable_base_t
+struct provider_model_t : public remappable_base_t, predicateable_base_t
 {
   header_model_t header;
   std::string implements;
