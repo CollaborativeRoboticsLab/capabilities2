@@ -54,6 +54,10 @@ The main reasons for this are:
 - A robot is asked to do a task it has never done before. This could be achieved by combining capabilities in new ways. or a robot is asked to do a task it has done before but with a different context. This could be achieved by changing the parameters of capabilities.
 - A universal remote control for robots could be created using the capabilities as a standardised interface. This might be useful for robot subsystem integrators. This could also be used to create a robot app store, or standardised sensor and actuator interfaces.
 
+## Usage
+
+The main usage will typically involve creating capabilities, providers, and semantic interfaces. See [docs](./docs/) for the format of these entities. Runners can be created using the runner API parent classes [here](./capabilities2_runner/readme.md). The capabilities service can be started using the [capabilities2_server](./capabilities2_server/readme.md) package.
+
 ## Developing
 
 ### Dependencies

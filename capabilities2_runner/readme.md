@@ -9,6 +9,20 @@ provides `runner` API for abstract provision of capabilities. Plugins extend the
 - `launch runner` - runner for capabilities that are implemented as launch files.
 - `multi action runner` - runner for capabilities that are implemented as multiple actions.
 
+### launch runner
+
+The `launch runner` inherits from the `action runner` and is a special case. To instatiate this runner, provide a launch file path as the `runner` tag in the capability provider.
+
+```yaml
+# provider ...
+name: my_provider
+spec_version: 1
+spec_type: provider
+implements: my_capability
+# the runner to use is an exported plugin name based on RunnerBase
+runner: path/to/launch_file.launch.py
+```
+
 ## Inheritance Diagram
 
 An example of the inheritance diagram for the runners is shown below. The `RunnerBase` class is the base class for all runners. The `ActionRunner` class is the base class for runners that are implemented as actions. The example shows a waypoint capability that is implemented as a single action. The `WaypointRunner` class inherits from the `ActionRunner` class.
