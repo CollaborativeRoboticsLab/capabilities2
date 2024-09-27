@@ -10,6 +10,7 @@
 
 ## Features
 
+- [ ] implement provider definition handling in runner
 - [ ] try using ros package to find exports automatically
 - [ ] improve the event system
 - [ ] move to established db handler lib
