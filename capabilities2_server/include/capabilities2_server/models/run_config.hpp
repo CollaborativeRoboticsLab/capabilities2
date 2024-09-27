@@ -4,6 +4,7 @@
 
 #include <capabilities2_server/models/header.hpp>
 #include <capabilities2_server/models/interface.hpp>
+#include <capabilities2_server/models/defineable_base.hpp>
 #include <capabilities2_runner/runner_base.hpp>
 
 namespace capabilities2_server
@@ -19,7 +20,7 @@ namespace models
  * resource names
  *
  */
-struct run_config_model_t
+struct run_config_model_t : defineable_base_t
 {
   header_model_t provider;
   interface_model_t interface;
@@ -67,6 +68,10 @@ struct run_config_model_t
 
     node["provider"] = provider.to_yaml();
     node["interface"] = interface.to_yaml();
+    if (defined())
+    {
+      node["definition"] = definition_str;
+    }
     node["global_namespace"] = global_namespace;
     node["runner"] = runner;
     node["started_by"] = started_by;

@@ -1,6 +1,6 @@
 # capabilities2_launch_proxy
 
-provides an api proxy to ros2 launch. Implements features that are only available in python as launch api is not available in C++.
+Provides an Action API proxy to the ros2 launch framework. Implements features that are only available in python since the `launch` API is not available in C++.
 
 Contains the essential features to implement the ros1 [`capabilities`](https://wiki.ros.org/capabilities) package launch functionality in ros2.
 
@@ -8,14 +8,31 @@ Use in conjunction with `capabilities2_server` package, to provide a full capabi
 
 ## how it works
 
-implements three main functions:
+Implements three main functions:
 
 - `launch` - run a launch file
 - `shutdown` - shutdown a launch
-- `events` - send events
+- `events` - send capability events
 
-the lifecylce of these functions are typically handled by the capabilities server but could be used for other things.
+The lifecylce of these functions are typically handled by the capabilities server but could be used for other things.
 
-## use without capabilities server
+## Use without capabilities2 server
 
-The proxy provides an action called `~/launch`. The goal is a file path to launch from. The feedback provides events about the launch status.
+The proxy provides an action called `~/launch`. The `goal` is a file path to launch from. The feedback provides events about the launch status.
+
+### Add to a launch file
+
+```python
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    return LaunchDescription([
+        # create launch proxy node
+        Node(
+            package='capabilities2_launch_proxy',
+            executable='capabilities_launch_proxy',
+            name='capabilities_launch_proxy'
+        )
+    ])
+```

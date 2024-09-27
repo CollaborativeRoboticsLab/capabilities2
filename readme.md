@@ -11,6 +11,14 @@ A reimplementation of the [capabilities](https://github.com/osrf/capabilities) p
 
 ![System Structure](./docs/images/system-structure.png)
 
+### Entities
+
+Capabilities are represented in YAML files, see the definitions and examples for each:
+
+- [Interfaces](./docs/interfaces.md)
+- [Providers](./docs/providers.md)
+- [Semantic Interfaces](./docs/semantic_interfaces.md)
+
 ## Design
 
 The new capabilities package is designed to be more efficient and extensible. The functions are implemented as plugins, which can be loaded at runtime. The execution of providers is abstracted using an API called runners. The runners can manage more arbitrary provider operation which can include performing actions or services, or even running other capabilities. The capability models are stored in a database, This will allow various feature improvements such as hot reloading, state persistence, and model extension. Another possible feature is to create more complex ontological relationships between capabilities such as prerequisites, conflicts, or RDF triples (for example, `grasp` results in `holding`, or `pick` is a type of `manipulation`, or `grasp` is incompatible with `push`).
@@ -46,9 +54,30 @@ The main reasons for this are:
 - A robot is asked to do a task it has never done before. This could be achieved by combining capabilities in new ways. or a robot is asked to do a task it has done before but with a different context. This could be achieved by changing the parameters of capabilities.
 - A universal remote control for robots could be created using the capabilities as a standardised interface. This might be useful for robot subsystem integrators. This could also be used to create a robot app store, or standardised sensor and actuator interfaces.
 
+## Developing
+
+### Dependencies
+
+A `devcontainer` is provided for developing the capabilities2 meta-package. Dependencies need to be installed in the container. Install the dependencies with rosdep:
+
+```bash
+# in the devcontainer
+rosdep install --from-paths src --ignore-src -r -y
+
+Check dependencies using rosdep
+```
+
+### Building
+
+Use Colcon to build the package:
+
+```bash
+colcon build
+```
+
 ## Acknowledgements
 
-This work is based on the capabilities package developed by the Open Source Robotics Foundation.
+This work is based on the capabilities package developed by the Open Source Robotics Foundation. [github.com/osrf/capabilities](https://github.com/osrf/capabilities).
 
 ## Citation
 

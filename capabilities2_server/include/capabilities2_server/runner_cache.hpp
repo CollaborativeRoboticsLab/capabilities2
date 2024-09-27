@@ -3,6 +3,8 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <functional>
+#include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 #include <pluginlib/class_loader.hpp>
 #include <capabilities2_server/models/run_config.hpp>
@@ -38,11 +40,9 @@ public:
    * @param node   pointer to the origin node, generally the capabilities2_server
    * @param capability capability name to be loaded
    * @param run_config run_config of the runner to be loaded
-   * @param parameters parameters related to the runner in xml form for compatibility across various runners
    */
   void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability,
-                  const models::run_config_model_t& run_config,
-                  std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
+                  const models::run_config_model_t& run_config)
   {
     // if the runner exists then throw an error
     if (running(capability))
@@ -79,12 +79,22 @@ public:
   /**
    * @brief Trigger a runner in the cache
    *
+   * xml parameters are used
+   *
    * @param capability capability name to be loaded
    * @param parameters parameters related to the runner in std::string form for compatibility accross various runners
    */
   void trigger_runner(const std::string& capability, std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
   {
-    runner_cache_[capability]->trigger(parameters);
+    // is the runner in the cache
+    if (running(capability))
+    {
+      runner_cache_[capability]->trigger(parameters);
+    }
+    else
+    {
+      throw capabilities2_runner::runner_exception("capability runner not found: " + capability);
+    }
   }
 
   /**

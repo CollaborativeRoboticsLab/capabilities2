@@ -8,16 +8,18 @@ namespace capabilities2_server
 namespace models
 {
 
-/** */
-// TODO: implement hidden unique id
-// struct identifiable_base_t
-// {
-//   int id;
-// };
+/** @brief unique key for a row */
+// implement hidden unique id
+struct identifiable_base_t
+{
+  // TODO: add autoincrementing col in DB
+  int id;
+};
 
 /** @brief base model for all models that can be modified */
 struct modifiable_base_t
 {
+  // TODO: implement creation and modified logic in db handler
   std::string date_created;
   std::string date_modified;
 };
@@ -25,6 +27,7 @@ struct modifiable_base_t
 /** @brief base model for all models that can be soft deleted */
 struct soft_deleteable_base_t
 {
+  // TODO: implement soft delete logic in db handler
   bool is_deleted = false;
 };
 
@@ -33,17 +36,17 @@ struct soft_deleteable_base_t
  * it includes the name, version, type, and description of the capability
  *
  */
-struct header_model_t : soft_deleteable_base_t, modifiable_base_t
+struct header_model_t : identifiable_base_t, soft_deleteable_base_t, modifiable_base_t
 {
   std::string name;
-  int version;
+  std::string version;
   std::string type;
   std::string description;
 
   void from_yaml(const YAML::Node& node)
   {
     name = node["name"].as<std::string>();
-    version = node["spec_version"].as<int>();
+    version = node["spec_version"].as<std::string>();
     type = node["spec_type"].as<std::string>();
     description = node["description"].as<std::string>();
   }
@@ -62,12 +65,12 @@ struct header_model_t : soft_deleteable_base_t, modifiable_base_t
   {
     // name, version, type, description
     // name is the primary key
-    return "name TEXT NOT NULL PRIMARY KEY, version INTEGER, type TEXT NOT NULL, description TEXT";
+    return "name TEXT NOT NULL PRIMARY KEY, version TEXT NOT NULL, type TEXT NOT NULL, description TEXT";
   }
 
   const std::string to_sql_values() const
   {
-    return "'" + name + "', " + std::to_string(version) + ", '" + type + "', '" + description + "'";
+    return "'" + name + "', '" + version + "', '" + type + "', '" + description + "'";
   }
 };
 

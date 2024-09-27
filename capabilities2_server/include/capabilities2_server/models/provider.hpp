@@ -5,6 +5,7 @@
 #include <capabilities2_server/models/header.hpp>
 #include <capabilities2_server/models/remappable_base.hpp>
 #include <capabilities2_server/models/predicateable_base.hpp>
+#include <capabilities2_server/models/defineable_base.hpp>
 
 namespace capabilities2_server
 {
@@ -19,7 +20,7 @@ namespace models
  * the provider can be specific to a robot implementation of a general capability
  *
  */
-struct provider_model_t : public remappable_base_t, predicateable_base_t
+struct provider_model_t : public remappable_base_t, predicateable_base_t, public defineable_base_t
 {
   header_model_t header;
   std::string implements;
@@ -41,6 +42,8 @@ struct provider_model_t : public remappable_base_t, predicateable_base_t
     {
       remappings.from_yaml(node["remappings"]);
     }
+    // definition
+    defineable_base_t::from_yaml(node);
   }
 
   YAML::Node to_yaml() const
@@ -53,12 +56,19 @@ struct provider_model_t : public remappable_base_t, predicateable_base_t
     }
     node["remappings"] = remappings.to_yaml();
     node["runner"] = runner;
+    // definition
+    if (defined())
+    {
+      node["definition"] = definition_str;
+    }
+
     return node;
   }
 
   static const std::string to_sql_table()
   {
-    return header_model_t::to_sql_table() + ", implements TEXT NOT NULL, depends_on TEXT, remappings TEXT, runner TEXT";
+    return header_model_t::to_sql_table() + ", implements TEXT NOT NULL, depends_on TEXT, remappings TEXT, runner "
+                                            "TEXT, definition TEXT";
   }
 
   const std::string to_sql_values() const
@@ -66,7 +76,7 @@ struct provider_model_t : public remappable_base_t, predicateable_base_t
     YAML::Node deps;
     deps["depends_on"] = depends_on;
     return header.to_sql_values() + ", '" + implements + "', '" + YAML::Dump(deps["depends_on"]) + "', '" +
-           YAML::Dump(remappings.to_yaml()) + "', '" + runner + "'";
+           YAML::Dump(remappings.to_yaml()) + "', '" + runner + "'" + (defined() ? ", '" + definition_str + "'" : "");
   }
 };
 

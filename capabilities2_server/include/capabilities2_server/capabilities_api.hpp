@@ -7,6 +7,8 @@
 #include <functional>
 
 #include <uuid/uuid.h>
+#include <yaml-cpp/yaml.h>
+#include <tinyxml2.h>
 
 #include <rclcpp/rclcpp.hpp>
 #include <capabilities2_server/db_base.hpp>
@@ -121,6 +123,29 @@ public:
   }
 
   /**
+   * @brief trigger a capability
+   *
+   * This is a new function for a capability provider (runner)
+   * that is already started but has additional parameters to be triggered
+   * This function can be used externally.
+   *
+   * @param capability
+   * @param parameters
+   */
+  void trigger_capability(const std::string& capability, std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
+  {
+    // trigger the runner
+    try
+    {
+      runner_cache_.trigger_runner(capability, parameters);
+    }
+    catch (const capabilities2_runner::runner_exception& e)
+    {
+      RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "could not trigger runner: %s", e.what());
+    }
+  }
+
+  /**
    * @brief Stop a capability. Internal function only. Do not used this function externally.
    *
    * @param capability capability name to be stopped
@@ -192,19 +217,15 @@ public:
    * @param capability capability name to be started
    * @param provider provider of the capability
    * @param bond_id bond_id for the capability
-   * @param parameters parameters for the runner as tinyxml2::XMLElement
    */
   void use_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
-                      const std::string& bond_id, std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
+                      const std::string& bond_id)
   {
     // add bond to cache for capability
     bond_cache_.add_bond(capability, bond_id);
 
     // start the capability with the provider
     start_capability(node, capability, provider);
-
-    // trigger the capability
-    runner_cache_.trigger_runner(capability, parameters);
   }
 
   // capability api
