@@ -1,0 +1,11 @@
+# action to transfer a plan for execution
+# goal
+std_msgs/Header header
+string plan
+---
+# result
+std_msgs/Header header
+bool success
+---
+# feedback
+std_msgs/Header header

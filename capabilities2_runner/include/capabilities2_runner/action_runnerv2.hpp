@@ -67,36 +67,6 @@ public:
                    action_name.c_str());
       throw runner_exception("failed to connect to action server");
     }
-
-    // // send goal options
-    // // goal response callback
-    // send_goal_options_.goal_response_callback =
-    //     [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
-    //       // publish event
-    //       if (goal_handle)
-    //         if (on_started_)
-    //           on_started_(run_config_.interface);
-
-    //       // store goal handle to be used with stop funtion
-    //       goal_handle_ = goal_handle;
-    //     };
-
-    // // result callback
-    // send_goal_options_.result_callback =
-    //     [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
-    //       if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
-    //       {
-    //         // Do something
-    //       }
-    //       else
-    //       {
-    //         // send terminated event
-    //         if (on_terminated_)
-    //         {
-    //           on_terminated_(run_config_.interface);
-    //         }
-    //       }
-    //     };
   }
 
   /**
