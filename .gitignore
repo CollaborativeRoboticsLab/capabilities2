@@ -31,6 +31,10 @@ devel_isolated/
 *.dox
 *.wikidoc
 
+# Ignore generated doxygem documentation
+capabilities2_documentation/html
+capabilities2_documentation/latex
+
 # eclipse stuff
 .project
 .cproject

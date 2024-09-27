@@ -170,8 +170,11 @@ private:
 
 		if (!capabilities2_xml_parser::check_tags(plan, interface_list, control_tag_list))
 		{
-
+			RCLCPP_INFO(this->get_logger(), "Execution plan is faulty. Please recheck and update");
+			return false;
 		}
+
+		
 	}
 
 	void execute_plan()
