@@ -10,7 +10,7 @@ namespace capabilities2_runner
  * @brief encapsulated capability runner
  *
  * Create an action client to run an action based capability
- * using and encapsulated capability action
+ * using an encapsulated capability action
  * this allows a system to run an action that is not a managed action
  *
  */
@@ -23,11 +23,13 @@ public:
 
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& opts,
                      std::function<void(const std::string&)> on_started = nullptr,
-                     std::function<void(const std::string&)> on_terminated = nullptr) override
+                     std::function<void(const std::string&)> on_terminated = nullptr,
+                     std::function<void(const std::string&)> on_stopped = nullptr) override
   {
     // get action name for Capability type and init the action
     // create action client
-    init_action(node, opts, get_action_name_by_type("capabilities2_msgs/action/Capability"), on_started, on_terminated);
+    init_action(node, opts, get_action_name_by_type("capabilities2_msgs/action/Capability"), on_started, on_terminated,
+                on_stopped);
 
     //
   }

@@ -3,9 +3,10 @@
 [![ROS2 Jazzy](https://img.shields.io/badge/ROS2-Jazzy-blue)](https://index.ros.org/doc/ros2/Releases/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Open in Visual Studio Code](https://img.shields.io/badge/vscode-dev-blue)](https://open.vscode.dev/airesearchlab/capabilities2)
-<!-- [![codecov](https://codecov.io/gh/airesearchlab/capabilities2/branch/main/graph/badge.svg?token=3ZQZQZQZQZ)](https://codecov.io/gh/airesearchlab/capabilities2) -->
+![C++](https://img.shields.io/badge/Code-C++-informational?&logo=c%2b%2b)
+![ROS](https://img.shields.io/badge/Framework-ROS-informational?&logo=ROS)
 
-A reimplementation of the [capabilities](https://github.com/osrf/capabilities) package. This package is implemented using CPP and extends the capabilities package features. See the [capabilities2_server](./capabilities2_server/readme.md) package for the main component of this package.
+A reimplementation of the [capabilities](https://github.com/osrf/capabilities) package. This package is implemented using CPP and extends the capabilities package features. See the [capabilities2_server](./capabilities2_server/readme.md) package for the main system component.
 
 ## System structure
 
@@ -13,11 +14,13 @@ A reimplementation of the [capabilities](https://github.com/osrf/capabilities) p
 
 ### Entities
 
-Capabilities are represented in YAML files, see the definitions and examples for each:
+Capabilities are represented in specification file stored as YAML, see the definitions and examples for each:
 
-- [Interfaces](./docs/interfaces.md)
-- [Providers](./docs/providers.md)
-- [Semantic Interfaces](./docs/semantic_interfaces.md)
+| Entity | Description |
+| --- | --- |
+| [Interfaces](./docs/interfaces.md) | The main capability specification file |
+| [Providers](./docs/providers.md) | The capability provider specification file provides a mechanism to operate the capability |
+| [Semantic Interfaces](./docs/semantic_interfaces.md) | The semantic interface specification file provides a mechanism to redefine a capability with semantic information |
 
 ## Design
 
@@ -42,17 +45,19 @@ The capabilities package was originally implemented using Python. This package i
 The main reasons for this are:
 
 1. To allow the capabilities service to provide details of the robot to other robots, a UI or App, or a supervisory AI with a conversational style.
-1. To allow packages to register their capabilities with the capabilities service using a service API or a spawner.
-1. To allow capabilities to be used like actions and not just started and stopped by the capabilities service.
-1. To add state to the capabilities service using a database. This allows the capabilities service or the robot to be restarted without losing state, and hot reloading.
-1. To allow the capabilities service to be used as a library.
+1. To allow packages to register their capabilities at runtime with the capabilities service using a service API or a spawner. Or to modify the capabilities of a robot at runtime.
+1. To allow capabilities to be used like actions and not just started and stopped by the capabilities service as in the original capabilities package launch files method.
+1. To add state to the capabilities service using a database. This allows the capabilities service or the robot to be restarted without losing state, and hot reloading, and model extension including more complex ontological relationships between capabilities.
+1. To allow the capabilities service to be used as a library (as in a ROS2 `component`).
 
 ### Example use cases
 
-- A generic GenAI could derive a plan from the capabilities of a robot, to perform more general multi-step tasks. This could be achieved by using the capabilities as a knowledge base. This may solve problems with GenAI integration, where the GenAI has to be trained on a specific robot, or there is a significant delay in the GenAI communicating with the robot - since the GenAI does not actually execute the task, it is used to suggest a plan and supervise the robot.
-- A robot encounters another robot of unknown origin and asks it what it can do. The capabilities could be communicated using M2M communication or speech. This could allow robots from different manufacturers to work together.
-- A robot is asked to do a task it has never done before. This could be achieved by combining capabilities in new ways. or a robot is asked to do a task it has done before but with a different context. This could be achieved by changing the parameters of capabilities.
-- A universal remote control for robots could be created using the capabilities as a standardised interface. This might be useful for robot subsystem integrators. This could also be used to create a robot app store, or standardised sensor and actuator interfaces.
+| Use case | Description |
+| --- | --- |
+| Generative AI (predominantly language models) Integration | A generic GenAI could derive a plan from the capabilities of a robot, to perform more general multi-step tasks. This could be achieved by using the capabilities as a knowledge base. This may solve problems with GenAI integration, where the GenAI has to be trained on a specific robot, or there is a significant delay in the GenAI communicating with the robot - since the GenAI does not actually execute the task, it is used to suggest a plan and supervise the robot. |
+| Inter-Robot Communications | A robot encounters another robot of unknown origin and asks it what it can do. The capabilities could be communicated using M2M communication or speech. This could allow robots from different manufacturers to work together. |
+| Enable emergent skills | A robot is asked to do a task it has never done before. This could be achieved by combining capabilities in new ways. or a robot is asked to do a task it has done before but with a different context. This could be achieved by changing the parameters of capabilities. |
+| Interoperable Robots | A universal remote control for robots could be created using the capabilities as a standardised interface. This might be useful for robot subsystem integrators. This could also be used to create a robot app store, or standardised sensor and actuator interfaces. |
 
 ## Usage
 

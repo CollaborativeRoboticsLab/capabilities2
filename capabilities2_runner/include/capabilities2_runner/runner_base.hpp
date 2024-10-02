@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <string>
 #include <functional>
+#include <optional>
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 
@@ -77,6 +78,7 @@ public:
    * @param run_config runner configuration loaded from the yaml file
    * @param on_started pointer to function to execute on starting the runner
    * @param on_terminated pointer to function to execute on terminating the runner
+   * @param on_stopped pointer to function to execute on stopping the runner
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
                      std::function<void(const std::string&)> on_started = nullptr,
@@ -86,16 +88,22 @@ public:
   /**
    * @brief stop the runner
    *
-   * @param on_stopped pointer to function to execute on stopping the runner
    */
   virtual void stop() = 0;
 
   /**
    * @brief trigger the runner
    *
+   * this method allows insertion of parameters in a runner after it has been initialized
+   * it is an approach to parameterise capabilities
+   *
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
+   *
+   * @return std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>> function pointer to invoke
+   * elsewhere such as an event callback
    */
-  virtual void trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) = 0;
+  virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
+  trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) = 0;
 
   /**
    * @brief Initializer function for initializing the base runner in place of constructor due to plugin semantics
@@ -183,6 +191,11 @@ protected:
    * @param node pointer to function to execute on stopping the runner
    */
   std::function<void(const std::string&)> on_stopped_;
+
+  /**
+   * @param node pointer to function to execute on result
+   */
+  std::function<void(const std::string&)> on_result_;
 };
 
 }  // namespace capabilities2_runner
