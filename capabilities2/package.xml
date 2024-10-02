@@ -13,7 +13,7 @@
 
   <license>MIT</license>
 
-  <url type="repository">https://github.com/AIResearchLab/capabilities2</url>
+  <url type="repository">anon</url>
 
   <exec_depend>capabilities2_msgs</exec_depend>
   <exec_depend>capabilities2_server</exec_depend>

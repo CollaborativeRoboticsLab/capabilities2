@@ -2,7 +2,7 @@
 
 [![ROS2 Jazzy](https://img.shields.io/badge/ROS2-Jazzy-blue)](https://index.ros.org/doc/ros2/Releases/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Open in Visual Studio Code](https://img.shields.io/badge/vscode-dev-blue)](https://open.vscode.dev/airesearchlab/capabilities2)
+
 ![C++](https://img.shields.io/badge/Code-C++-informational?&logo=c%2b%2b)
 ![ROS](https://img.shields.io/badge/Framework-ROS-informational?&logo=ROS)
 
