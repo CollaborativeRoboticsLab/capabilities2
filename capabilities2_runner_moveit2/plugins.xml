@@ -1,8 +1,0 @@
-<library path="capabilities2_runners">
-    <!-- moveit -->
-    <class type="capabilities2_runner::MoveItRunner" base_class_type="capabilities2_runner::ActionRunner">
-        <description>
-            action based moveit runner
-        </description>
-    </class>
-</library>
