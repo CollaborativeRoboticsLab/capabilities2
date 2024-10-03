@@ -17,3 +17,5 @@ Once the user decides on a capability that they are authorised to use, the capab
 To prevent internal topics from leaking into the rosbridge access control, ROS2 security could be used to secure the internal topics. This would ensure that only internal connections can access internal topics, and capabilities can only add externally safe topics to the rosbridge access control.
 
 ### Basic diagram
+
+![Basic diagram](./images/securing-capability-based-robot.png)
