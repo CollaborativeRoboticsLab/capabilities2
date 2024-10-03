@@ -4,7 +4,7 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <capabilities2_msgs/action/launch.hpp>
-#include <capabilities2_runner/action_runner.hpp>
+#include <capabilities2_runner/notrigger_action_runner.hpp>
 
 namespace capabilities2_runner
 {
@@ -14,10 +14,10 @@ namespace capabilities2_runner
  *
  * Create a launch file runner to run a launch file based capability
  */
-class LaunchRunner : public ActionRunner<capabilities2_msgs::action::Launch>
+class LaunchRunner : public NoTriggerActionRunner<capabilities2_msgs::action::Launch>
 {
 public:
-  LaunchRunner() : ActionRunner()
+  LaunchRunner() : NoTriggerActionRunner()
   {
   }
 
@@ -55,25 +55,6 @@ public:
 
     // launch runner using action client
     action_client_->async_send_goal(goal, send_goal_options_);
-  }
-
-  virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
-  trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) override
-  {
-    // there is no trigger for launch runner
-    // do nothing
-    return std::nullopt;
-  }
-
-protected:
-  // not implemented
-  virtual typename capabilities2_msgs::action::Launch::Goal
-  generate_goal(std::shared_ptr<tinyxml2::XMLElement> parameters)
-  {
-  }
-  virtual std::shared_ptr<tinyxml2::XMLElement>
-  generate_result(const typename capabilities2_msgs::action::Launch::Result::SharedPtr& result)
-  {
   }
 
 private:
