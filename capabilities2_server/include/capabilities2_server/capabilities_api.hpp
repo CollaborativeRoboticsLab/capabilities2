@@ -152,8 +152,17 @@ public:
    */
   void stop_capability(const std::string& capability)
   {
+    // make sure provider exists
+    // this can happen if dependencies fail to resolve in the first place
+    if (!runner_cache_.running(capability))
+    {
+      RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "could not get provider for: %s", capability.c_str());
+      return;
+    }
+
     // get the provider from runner
     std::string provider = runner_cache_.provider(capability);
+
     // get the running model from the db
     models::running_model_t running = cap_db_->get_running(provider);
 
@@ -182,6 +191,7 @@ public:
     catch (const capabilities2_runner::runner_exception& e)
     {
       RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "could not stop runner: %s", e.what());
+      return;
     }
 
     // log

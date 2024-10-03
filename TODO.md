@@ -14,3 +14,4 @@
 - [ ] try using ros package to find exports automatically
 - [ ] improve the event system
 - [ ] move to established db handler lib
+- [ ] better bt runner impl
