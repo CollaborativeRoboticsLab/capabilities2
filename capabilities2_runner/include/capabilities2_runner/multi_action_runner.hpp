@@ -11,10 +11,22 @@
 #include <action_msgs/srv/cancel_goal.hpp>
 
 #include <capabilities2_runner/runner_base.hpp>
-#include <capabilities2_runner/struct/action_client_bundle.hpp>
 
 namespace capabilities2_runner
 {
+
+/**
+ * @brief templated struct to handle Action clients and their respective goal_handles
+ *
+ * @tparam ActionT action type
+ */
+template <typename ActionT>
+struct ActionClientBundle
+{
+  std::shared_ptr<rclcpp_action::Client<ActionT>> action_client;
+  typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle;
+  typename rclcpp_action::Client<ActionT>::SendGoalOptions send_goal_options;
+};
 
 /**
  * @brief action runner base class
