@@ -38,7 +38,7 @@ public:
                      std::function<void(const std::string&)> on_terminated = nullptr,
                      std::function<void(const std::string&)> on_stopped = nullptr) override
   {
-    init_runner(node, run_config, on_started, on_terminated, on_stopped);
+    init_base(node, run_config, on_started, on_terminated, on_stopped);
 
     init_action<hri_audio_msgs::action::SpeechToText>("speech_to_text");
   }

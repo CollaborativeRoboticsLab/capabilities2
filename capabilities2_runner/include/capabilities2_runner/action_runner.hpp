@@ -236,50 +236,6 @@ protected:
    */
   virtual std::shared_ptr<tinyxml2::XMLElement> generate_result(const typename ActionT::Result::SharedPtr& result) = 0;
 
-  /**
-   * @brief Get the name of an action resource by given action type
-   *
-   * This helps to navigate remappings from the runner config
-   *
-   * @param action_type
-   * @return std::string
-   */
-  std::string get_action_name_by_type(const std::string& action_type)
-  {
-    for (const auto& resource : run_config_.resources)
-    {
-      if (resource.resource_type == "action")
-      {
-        if (resource.msg_type == action_type)
-        {
-          return resource.name;
-        }
-      }
-    }
-
-    throw runner_exception("no action resource found: " + action_type);
-  }
-
-  /**
-   * @brief get first action resource name
-   *
-   * This can be used to get the name of the first action resource in the runner config
-   *
-   * @return std::string
-   */
-  std::string get_first_action_name()
-  {
-    for (const auto& resource : run_config_.resources)
-    {
-      if (resource.resource_type == "action")
-      {
-        return resource.name;
-      }
-    }
-
-    throw runner_exception("no action resources found for interface: " + run_config_.interface);
-  }
-
   /**< action client */
   typename rclcpp_action::Client<ActionT>::SharedPtr action_client_;
 

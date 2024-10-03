@@ -29,9 +29,10 @@ struct ActionClientBundle
 };
 
 /**
- * @brief action runner base class
+ * @brief Multi action runner base class
  *
- * Create an action client to run an action based capability
+ * Create action clients to run multiple action based capabilities
+ * this class provides helpers to set up sequential and concurrent actions
  */
 class MultiActionRunner : public RunnerBase
 {
@@ -44,25 +45,9 @@ public:
   }
 
   /**
-   * @brief Initializer function for initializing the action runner in place of constructor due to plugin semantics
+   * @brief create action clients
    *
-   * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
-   * @param run_config runner configuration loaded from the yaml file
-   * @param on_started function pointer to trigger at the start of the action client in the runner
-   * @param on_terminated function pointer to trigger at the termination of the action client in the runner
-   * @param on_stopped function pointer to trigger at the termination of the action client by the server
-   */
-  virtual void init_runner(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                           std::function<void(const std::string&)> on_started = nullptr,
-                           std::function<void(const std::string&)> on_terminated = nullptr,
-                           std::function<void(const std::string&)> on_stopped = nullptr)
-  {
-    // initialize the runner base by storing node pointer and run config
-    init_base(node, run_config, on_started, on_terminated, on_stopped);
-  }
-
-  /**
-   * @brief Initializer function for initializing the action runner in place of constructor due to plugin semantics
+   * Create a new action client and store it in the map
    *
    * @param action_name action name used in the yaml file, used to load specific configuration from the run_config
    */
@@ -92,6 +77,8 @@ public:
   /**
    * @brief Deinitializer function for stopping an the action
    *
+   * Stop the named action and delete the action client
+   *
    * @param action_name action name used in the yaml file, used to load specific configuration from the run_config
    */
   template <typename ActionT>
@@ -107,7 +94,6 @@ public:
 
     // throw an error if the action client is null
     // this can happen if the runner is not able to find the action resource
-
     if (!bundle.action_client)
       throw runner_exception("cannot stop runner action that was not started");
 
@@ -139,6 +125,10 @@ public:
         throw runner_exception(e.what());
       }
     }
+
+    // delete action client
+    bundle.action_client.reset();
+    action_clients_map_.erase(action_name);
   }
 
   /**
@@ -266,50 +256,6 @@ public:
   }
 
 protected:
-  /**
-   * @brief Get the name of an action resource by given action type
-   *
-   * This helps to navigate remappings from the runner config
-   *
-   * @param action_type
-   * @return std::string
-   */
-  std::string get_action_name_by_type(const std::string& action_type)
-  {
-    for (const auto& resource : run_config_.resources)
-    {
-      if (resource.resource_type == "action")
-      {
-        if (resource.msg_type == action_type)
-        {
-          return resource.name;
-        }
-      }
-    }
-
-    throw runner_exception("no action resource found: " + action_type);
-  }
-
-  /**
-   * @brief get first action resource name
-   *
-   * This can be used to get the name of the first action resource in the runner config
-   *
-   * @return std::string
-   */
-  std::string get_first_action_name()
-  {
-    for (const auto& resource : run_config_.resources)
-    {
-      if (resource.resource_type == "action")
-      {
-        return resource.name;
-      }
-    }
-
-    throw runner_exception("no action resources found for interface: " + run_config_.interface);
-  }
-
   /**
    * Dictionary to hold action client bundle. The key is a string, and the value is a
    * polymorphic bundle.
