@@ -9,7 +9,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav2_msgs/action/follow_waypoints.hpp>
 
-#include <capabilities2_runner/action_runnerv2.hpp>
+#include <capabilities2_runner/action_runner.hpp>
 
 namespace capabilities2_runner
 {
@@ -40,18 +40,7 @@ public:
                      std::function<void(const std::string&)> on_terminated = nullptr,
                      std::function<void(const std::string&)> on_stopped = nullptr) override
   {
-    init_runner(node, run_config, on_started, on_terminated, on_stopped);
-
-    init_action("follow_waypoints");
-  }
-
-  /**
-   * @brief stop function to cease functionality and shutdown
-   *
-   */
-  virtual void stop() override
-  {
-    deinit_action();
+    init_action(node, run_config, "follow_waypoints", on_started, on_terminated, on_stopped);
   }
 
   /**
@@ -59,7 +48,8 @@ public:
    *
    @param parameters XMLElement that contains parameters in the format '<waypointfollower x='$value' y='$value' />'
   */
-  virtual void trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
+  virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
+  trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
   {
     tinyxml2::XMLElement* parametersElement = parameters->FirstChildElement("waypointfollower");
 
@@ -80,7 +70,47 @@ public:
 
     goal_msg.poses.push_back(pose_msg);
 
-    bool success = trigger_action(goal_msg);
+    auto goal_handle_future = action_client_->async_send_goal(goal_msg);
+
+    return [this, goal_handle_future](std::shared_ptr<tinyxml2::XMLElement> result) {
+      if (rclcpp::spin_until_future_complete(node_, goal_handle_future) != rclcpp::FutureReturnCode::SUCCESS)
+      {
+        RCLCPP_ERROR(node_->get_logger(), "send goal call failed");
+        return;
+      }
+
+      auto result_future = action_client_->async_get_result(goal_handle_future.get());
+      if (rclcpp::spin_until_future_complete(node_, result_future) != rclcpp::FutureReturnCode::SUCCESS)
+      {
+        RCLCPP_ERROR(node_->get_logger(), "get result call failed");
+        return;
+      }
+
+      auto wrapped_result = result_future.get();
+      if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
+      {
+        RCLCPP_INFO(node_->get_logger(), "Waypoint reached");
+        result->BoolAttribute("result", true);
+      }
+      else
+      {
+        RCLCPP_INFO(node_->get_logger(), "Waypoint not reached");
+      }
+    };
+  }
+
+protected:
+  // not implemented
+  virtual nav2_msgs::action::FollowWaypoints::Goal
+  generate_goal(std::shared_ptr<tinyxml2::XMLElement> parameters) override
+  {
+    return nav2_msgs::action::FollowWaypoints::Goal();
+  }
+
+  virtual std::shared_ptr<tinyxml2::XMLElement>
+  generate_result(const nav2_msgs::action::FollowWaypoints::Result::SharedPtr& result) override
+  {
+    return nullptr;
   }
 
 protected:

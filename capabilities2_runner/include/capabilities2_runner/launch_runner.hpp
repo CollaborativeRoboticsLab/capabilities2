@@ -1,10 +1,7 @@
 #pragma once
 
 #include <filesystem>
-#include <tinyxml2.h>
-
 #include <ament_index_cpp/get_package_share_directory.hpp>
-
 #include <std_msgs/msg/string.hpp>
 #include <capabilities2_msgs/action/launch.hpp>
 #include <capabilities2_runner/action_runner.hpp>
@@ -60,9 +57,23 @@ public:
     action_client_->async_send_goal(goal, send_goal_options_);
   }
 
-  virtual void trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) override
+  virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
+  trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) override
   {
+    // there is no trigger for launch runner
     // do nothing
+    return std::nullopt;
+  }
+
+protected:
+  // not implemented
+  virtual typename capabilities2_msgs::action::Launch::Goal
+  generate_goal(std::shared_ptr<tinyxml2::XMLElement> parameters)
+  {
+  }
+  virtual std::shared_ptr<tinyxml2::XMLElement>
+  generate_result(const typename capabilities2_msgs::action::Launch::Result::SharedPtr& result)
+  {
   }
 
 private:

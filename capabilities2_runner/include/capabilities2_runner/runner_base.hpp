@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <string>
 #include <functional>
+#include <optional>
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 
@@ -77,6 +78,7 @@ public:
    * @param run_config runner configuration loaded from the yaml file
    * @param on_started pointer to function to execute on starting the runner
    * @param on_terminated pointer to function to execute on terminating the runner
+   * @param on_stopped pointer to function to execute on stopping the runner
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
                      std::function<void(const std::string&)> on_started = nullptr,
@@ -86,16 +88,22 @@ public:
   /**
    * @brief stop the runner
    *
-   * @param on_stopped pointer to function to execute on stopping the runner
    */
   virtual void stop() = 0;
 
   /**
    * @brief trigger the runner
    *
+   * this method allows insertion of parameters in a runner after it has been initialized
+   * it is an approach to parameterise capabilities
+   *
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
+   *
+   * @return std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>> function pointer to invoke
+   * elsewhere such as an event callback
    */
-  virtual void trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) = 0;
+  virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
+  trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) = 0;
 
   /**
    * @brief Initializer function for initializing the base runner in place of constructor due to plugin semantics
@@ -159,6 +167,140 @@ public:
   }
 
 protected:
+  // run config getters
+
+  /**
+   * @brief Get a resource name by data type from the config
+   *
+   * This helps to navigate remappings from the runner config
+   *
+   * WARNING: this only gets the first resource found of the given type
+   *
+   * @param resource_type
+   * @param msg_type
+   * @return const std::string
+   */
+  const std::string get_resource_name_by_type(const std::string& resource_type, const std::string& msg_type) const
+  {
+    for (const auto& resource : run_config_.resources)
+    {
+      if (resource.resource_type == resource_type)
+      {
+        if (resource.msg_type == msg_type)
+        {
+          return resource.name;
+        }
+      }
+    }
+
+    throw runner_exception("no resource found: " + msg_type);
+  }
+
+  /**
+   * @brief Get a parameter name by type
+   *
+   * @param param_type
+   * @return const std::string
+   */
+  const std::string get_parameter_name_by_type(const std::string& param_type) const
+  {
+    return get_resource_name_by_type("parameter", param_type);
+  }
+
+  /**
+   * @brief Get a topic name by type
+   *
+   * @param topic_type
+   * @return const std::string
+   */
+  const std::string get_topic_name_by_type(const std::string& topic_type) const
+  {
+    return get_resource_name_by_type("topic", topic_type);
+  }
+
+  /**
+   * @brief Get a service name by type
+   *
+   * @param srv_type
+   * @return const std::string
+   */
+  const std::string get_service_name_by_type(const std::string& srv_type) const
+  {
+    return get_resource_name_by_type("service", srv_type);
+  }
+
+  /**
+   * @brief Get the action name by type object
+   *
+   * @param action_type
+   * @return const std::string
+   */
+  const std::string get_action_name_by_type(const std::string& action_type) const
+  {
+    return get_resource_name_by_type("action", action_type);
+  }
+
+  /**
+   * @brief get first name of a given resource
+   *
+   * This can be used to get the name of the first action resource in the runner config
+   *
+   * @return std::string
+   */
+  const std::string get_first_resource_name(const std::string& resource_type) const
+  {
+    for (const auto& resource : run_config_.resources)
+    {
+      if (resource.resource_type == resource_type)
+      {
+        return resource.name;
+      }
+    }
+
+    throw runner_exception("no " + resource_type + " resource found for interface: " + run_config_.interface);
+  }
+
+  /**
+   * @brief Get the first parameter name
+   *
+   * @return const std::string
+   */
+  const std::string get_first_parameter_name() const
+  {
+    return get_first_resource_name("parameter");
+  }
+
+  /**
+   * @brief Get the first topic name
+   *
+   * @return const std::string
+   */
+  const std::string get_first_topic_name() const
+  {
+    return get_first_resource_name("topic");
+  }
+
+  /**
+   * @brief Get the first service name
+   *
+   * @return const std::string
+   */
+  const std::string get_first_service_name() const
+  {
+    return get_first_resource_name("service");
+  }
+
+  /**
+   * @brief Get the first action name
+   *
+   * @return const std::string
+   */
+  const std::string get_first_action_name() const
+  {
+    return get_first_resource_name("action");
+  }
+
+protected:
   /**
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    */
@@ -183,6 +325,11 @@ protected:
    * @param node pointer to function to execute on stopping the runner
    */
   std::function<void(const std::string&)> on_stopped_;
+
+  /**
+   * @param node pointer to function to execute on result
+   */
+  std::function<void(const std::string&)> on_result_;
 };
 
 }  // namespace capabilities2_runner

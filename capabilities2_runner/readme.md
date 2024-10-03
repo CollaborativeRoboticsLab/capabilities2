@@ -43,4 +43,39 @@ implements: my_capability
 runner: capabilities2_runner::MyRunner
 ```
 
-The runner must inherit from the RunnerBase or the ActionRunner class. The runner must implement the `start` and `stop` methods, and then be registered as a plugin.
+The runner should inherit from the `RunnerBase` or another like the `ActionRunner` class. The runner must implement the `start`, `stop`, and `trigger` methods, and then be registered as a plugin, using the `PLUGINLIB_EXPORT_CLASS` macro.
+
+### Base Runner
+
+The `RunnerBase` class is the base class for all runners. It provides the `start`, `stop`, and `trigger` methods. The `start` method is used to start the runner, the `stop` method is used to stop the runner, and the `trigger` method is used to trigger the runner. See the `RunnerBase` class definition function templates below:
+
+```cpp
+namespace capabilities2_runner
+{
+
+  class RunnerBase
+  {
+  public:
+    // start the runner
+    virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+                     std::function<void(const std::string&)> on_started = nullptr,
+                     std::function<void(const std::string&)> on_terminated = nullptr,
+                     std::function<void(const std::string&)> on_stopped = nullptr) = 0;
+
+    // stop the runner
+    virtual void stop() = 0;
+
+    // trigger the runner
+    virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
+    trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) = 0;
+  };
+
+} // namespace capabilities2_runner
+```
+
+## Experimental Runners
+
+The `capabilities2_runner` package provides experimental runners that can be used to start capabilities. These runners are not fully tested and may not work as expected. The experimental runners are:
+
+- `capabilities2_runner::EnCapRunner` - runner that provides a capability action interface that encapsulates another action.
+- `capabilities2_runner::MultiActionRunner` - runs multiple actions in parallel.

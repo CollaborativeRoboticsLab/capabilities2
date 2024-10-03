@@ -38,7 +38,7 @@ public:
                      std::function<void(const std::string&)> on_terminated = nullptr,
                      std::function<void(const std::string&)> on_stopped = nullptr) override
   {
-    init_runner(node, run_config, on_started, on_terminated, on_stopped);
+    init_base(node, run_config, on_started, on_terminated, on_stopped);
 
     init_action<hri_audio_msgs::action::SpeechToText>("speech_to_text");
   }
@@ -52,19 +52,19 @@ public:
     deinit_action<hri_audio_msgs::action::SpeechToText>("speech_to_text");
   }
 
-  /**
-   * @brief trigger the runner
-   *
-   @param parameters XMLElement
-   */
-  virtual void trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
+  virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
+  trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) override
   {
     hri_audio_msgs::action::SpeechToText::Goal goal_msg;
     hri_audio_msgs::action::SpeechToText::Result::SharedPtr result_msg;
 
     goal_msg.header.stamp = node_->get_clock()->now();
 
-    bool result = trigger_action_wait<hri_audio_msgs::action::SpeechToText>("speech_to_text", goal_msg, result_msg);
+    return [this, &goal_msg, &result_msg](std::shared_ptr<tinyxml2::XMLElement> result) {
+      bool action_result =
+          trigger_action_wait<hri_audio_msgs::action::SpeechToText>("speech_to_text", goal_msg, result_msg);
+      result->BoolAttribute("result", action_result);
+    };
   }
 
 protected:

@@ -140,53 +140,104 @@ public:
     }
   }
 
+  /**
+   * @brief the trigger function on the action runner is used to trigger an action.
+   * this method provides a mechanism for injecting parameters or a goal into the action
+   * and then trigger the action
+   *
+   * @param parameters
+   * @return std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
+   */
+  virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
+  trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) override
+  {
+    // the action is being triggered out of order
+    if (!goal_handle_)
+      throw runner_exception("cannot trigger action that was not started");
+
+    // if parameters are not provided then cannot proceed
+    if (!parameters)
+      throw runner_exception("cannot trigger action without parameters");
+
+    // generate a goal from parameters if provided
+    typename ActionT::Goal goal_msg = generate_goal(parameters);
+
+    // trigger the action client with goal
+    auto goal_handle_future = action_client_->async_send_goal(goal_msg, send_goal_options_);
+
+    // spin until send future completes
+    if (rclcpp::spin_until_future_complete(node_, goal_handle_future) != rclcpp::FutureReturnCode::SUCCESS)
+    {
+      RCLCPP_ERROR(node_->get_logger(), "send goal call failed");
+      return std::nullopt;
+    }
+
+    // get result future
+    typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle;
+    auto result_future = action_client_->async_get_result(goal_handle);
+
+    // create a function to call for the result
+    // the future will be returned to the caller
+    // and the caller can provide a conversion function
+    // to handle the result
+    std::function<void(std::shared_ptr<tinyxml2::XMLElement>)> result_callback =
+        [this, result_future](std::shared_ptr<tinyxml2::XMLElement> result) {
+          // wait for result
+          if (rclcpp::spin_until_future_complete(node_, result_future) != rclcpp::FutureReturnCode::SUCCESS)
+          {
+            RCLCPP_ERROR(node_->get_logger(), "get result call failed");
+            return;
+          }
+
+          // get wrapped result
+          typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult wrapped_result = result_future.get();
+
+          // convert the result
+          if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
+          {
+            // publish event
+            if (on_result_)
+            {
+              on_result_(run_config_.interface);
+            }
+
+            result = generate_result(wrapped_result.result);
+            return;
+          }
+        };
+
+    return result_callback;
+  }
+
 protected:
   /**
-   * @brief Get the name of an action resource by given action type
+   * @brief Generate a goal from parameters
    *
-   * This helps to navigate remappings from the runner config
+   * This function is used in conjunction with the trigger function to inject type erased parameters
+   * into the typed action
    *
-   * @param action_type
-   * @return std::string
+   * A pattern needs to be implemented in the derived class
+   *
+   * @param parameters
+   * @return ActionT::Goal the generated goal
    */
-  std::string get_action_name_by_type(const std::string& action_type)
-  {
-    for (const auto& resource : run_config_.resources)
-    {
-      if (resource.resource_type == "action")
-      {
-        if (resource.msg_type == action_type)
-        {
-          return resource.name;
-        }
-      }
-    }
-
-    throw runner_exception("no action resource found: " + action_type);
-  }
+  virtual typename ActionT::Goal generate_goal(std::shared_ptr<tinyxml2::XMLElement> parameters) = 0;
 
   /**
-   * @brief get first action resource name
+   * @brief generate a typed erased goal result
    *
-   * This can be used to get the name of the first action resource in the runner config
+   * this method is used in a callback passed to the trigger caller to get type erased result
+   * from the action the result can be passed by the caller or ignored
    *
-   * @return std::string
+   * The pattern needs to be implemented in the derived class
+   *
+   * @param wrapped_result
+   * @return std::shared_ptr<tinyxml2::XMLElement>
    */
-  std::string get_first_action_name()
-  {
-    for (const auto& resource : run_config_.resources)
-    {
-      if (resource.resource_type == "action")
-      {
-        return resource.name;
-      }
-    }
+  virtual std::shared_ptr<tinyxml2::XMLElement> generate_result(const typename ActionT::Result::SharedPtr& result) = 0;
 
-    throw runner_exception("no action resources found for interface: " + run_config_.interface);
-  }
-
-  /** action client */
-  std::shared_ptr<rclcpp_action::Client<ActionT>> action_client_;
+  /**< action client */
+  typename rclcpp_action::Client<ActionT>::SharedPtr action_client_;
 
   /** Send Goal Option struct to link result_callback, feedback_callback and goal_response_callback with action client
    */
