@@ -18,9 +18,27 @@ The runner should be exported as a plugin using the `PLUGINLIB_EXPORT_CLASS` mac
 
 ```cpp
 #include <capabilities2_runner/runner_base.hpp>
-#include <pluginlib/class_list_macros
+#include <pluginlib/class_list_macros.hpp>
 
 ...
 
 PLUGINLIB_EXPORT_CLASS(capabilities2_runner::MyRunner, capabilities2_runner::RunnerBase)
 ```
+
+## Runner Execution Patterns
+
+### Start -> Stop
+
+The simplest runner execution pattern is to start the runner and then stop it. An example of this is the `LaunchRunner`. This pattern represents a ***self-contained*** capability. An example might be the action of a robot following another entity. This skill could be self-contained and runs continuously until stopped. This case assumes that the skill is continuously running and does not require any external triggers. ROS **Topic** subscriptions and **Launch** files are like this type.
+
+### Start -> Trigger -> Stop
+
+A more complex runner execution pattern is to start the runner, trigger it, and then stop it. This pattern represents a ***one-shot*** capability. An example might be the action of a robot moving to a waypoint. This skill is triggered once and then stops.
+
+### Start -> Trigger -> Trigger -> ... -> Stop
+
+An even more complex runner execution pattern is to start the runner, trigger it multiple times, and then stop it. This pattern represents a ***repeating*** capability. An example might be the action of a robot completing a state-machine or tree. This skill is triggered multiple times and then stops. This pattern (and the previous one) often implies that data is passed to and from the runner.
+
+### Start -> End (no Stop)
+
+The final runner execution pattern is to start the runner and then end it without stopping. This pattern represents a challenge for the runner API, as it is not clear when the runner should be stopped. ROS communications patterns including **Services** and **Actions** are like this type.

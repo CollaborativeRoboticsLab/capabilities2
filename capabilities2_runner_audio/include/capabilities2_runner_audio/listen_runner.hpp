@@ -68,10 +68,6 @@ public:
   }
 
 protected:
-  std::string global_frame_;     /**The global frame of the robot*/
-  std::string robot_base_frame_; /**The frame of the robot base*/
-
-  double x, y; /**Coordinate frame parameters*/
 };
 
 }  // namespace capabilities2_runner
