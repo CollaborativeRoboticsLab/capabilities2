@@ -185,14 +185,14 @@ protected:
     throw runner_exception("no action resources found for interface: " + run_config_.interface);
   }
 
-  /**< action client */
+  /** action client */
   std::shared_ptr<rclcpp_action::Client<ActionT>> action_client_;
 
-  /**< Send Goal Option struct to link result_callback, feedback_callback and goal_response_callback with action client
+  /** Send Goal Option struct to link result_callback, feedback_callback and goal_response_callback with action client
    */
   typename rclcpp_action::Client<ActionT>::SendGoalOptions send_goal_options_;
 
-  /**< goal handle parameter to capture goal response from goal_response_callback */
+  /** goal handle parameter to capture goal response from goal_response_callback */
   typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle_;
 };
 

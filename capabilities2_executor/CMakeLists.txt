@@ -39,6 +39,21 @@ ament_target_dependencies(${PROJECT_NAME}
   TINYXML2
 )
 
+add_library(${PROJECT_NAME}_file SHARED
+  src/capabilities_file_parser.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_file
+  ${TINYXML2_LIBRARIES}
+)
+
+ament_target_dependencies(${PROJECT_NAME}_file
+  rclcpp
+  rclcpp_action
+  capabilities2_msgs
+  TINYXML2
+)
+
 install(DIRECTORY include/
   DESTINATION include
 )

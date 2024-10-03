@@ -24,6 +24,7 @@ set(msg_files
   "msg/NaturalCapability.msg"
   "msg/CapabilityCommand.msg"
   "msg/CapabilityResponse.msg"
+  "msg/CapabilityConnection.msg"
 )
 
 set(srv_files
@@ -46,6 +47,7 @@ set(action_files
   "action/Capability.action"
   "action/Launch.action"
   "action/Plan.action"
+  "action/Connections.action"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
