@@ -36,8 +36,6 @@ public:
 
 	void send_goal()
 	{
-		using namespace std::placeholders;
-
 		this->timer_->cancel();
 
 		// try to load the file

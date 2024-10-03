@@ -1,6 +1,7 @@
 # action to send a list of interface connections to capabilities server
 # goal
 std_msgs/Header header
+string bond_id
 CapabilityConnection[] connections
 ---
 # result
