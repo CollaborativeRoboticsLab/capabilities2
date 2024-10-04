@@ -26,5 +26,21 @@
 
   <export>
     <build_type>ament_cmake</build_type>
+    <!-- interfaces -->
+    <capability_interface>
+      interfaces/speech_to_text.yaml
+    </capability_interface>
+    <capability_interface>
+      interfaces/text_to_speech.yaml
+    </capability_interface>
+
+    <!-- providers -->
+    <capability_provider>
+      providers/ListenerRunner.yaml
+    </capability_provider>
+    <capability_provider>
+      providers/SpeakerRunner.yaml
+    </capability_provider>
+
   </export>
 </package>

@@ -132,7 +132,7 @@ public:
    * @param capability
    * @param parameters
    */
-  void trigger_capability(const std::string& capability, std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
+  void trigger_capability(const std::string& capability, tinyxml2::XMLElement* parameters = nullptr)
   {
     // trigger the runner
     try

@@ -84,7 +84,7 @@ public:
    * @param capability capability name to be loaded
    * @param parameters parameters related to the runner in std::string form for compatibility accross various runners
    */
-  void trigger_runner(const std::string& capability, std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
+  void trigger_runner(const std::string& capability, tinyxml2::XMLElement* parameters = nullptr)
   {
     // is the runner in the cache
     if (running(capability))

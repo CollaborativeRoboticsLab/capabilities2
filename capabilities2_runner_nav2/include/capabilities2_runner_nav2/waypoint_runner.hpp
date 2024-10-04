@@ -32,29 +32,33 @@ public:
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
-   * @param on_started function pointer to trigger at the start of the action client in the runner
-   * @param on_terminated function pointer to trigger at the termination of the action client in the runner
+   * @param on_started pointer to function to execute on starting the runner
+   * @param on_failure pointer to function to execute on failure of the runner
+   * @param on_success pointer to function to execute on success of the runner
+   * @param on_stopped pointer to function to execute on stopping the runner
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
                      std::function<void(const std::string&)> on_started = nullptr,
-                     std::function<void(const std::string&)> on_terminated = nullptr,
+                     std::function<void(const std::string&)> on_failure = nullptr,
+                     std::function<void(const std::string&)> on_success = nullptr,
                      std::function<void(const std::string&)> on_stopped = nullptr) override
   {
-    init_action(node, run_config, "follow_waypoints", on_started, on_terminated, on_stopped);
+    init_action(node, run_config, "follow_waypoints", on_started, on_failure, on_success, on_stopped);
   }
 
+protected:
   /**
-   * @brief trigger the runner
-   *
-   @param parameters XMLElement that contains parameters in the format '<waypointfollower x='$value' y='$value' />'
-  */
-  virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
-  trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr)
+   * @brief This generate goal function overrides the generate_goal() function from ActionRunner()
+   * @param parameters XMLElement that contains parameters in the format
+   '<Event name=follow_waypoints provider=WaypointRunner x='$value' y='$value' />'
+   * @return ActionT::Goal the generated goal
+   */
+  virtual nav2_msgs::action::FollowWaypoints::Goal generate_goal(tinyxml2::XMLElement* parameters) override
   {
-    tinyxml2::XMLElement* parametersElement = parameters->FirstChildElement("waypointfollower");
+    parameters_ = parameters;
 
-    parametersElement->QueryDoubleAttribute("x", &x);
-    parametersElement->QueryDoubleAttribute("y", &y);
+    parameters_->QueryDoubleAttribute("x", &x);
+    parameters_->QueryDoubleAttribute("y", &y);
 
     nav2_msgs::action::FollowWaypoints::Goal goal_msg;
     geometry_msgs::msg::PoseStamped pose_msg;
@@ -70,44 +74,16 @@ public:
 
     goal_msg.poses.push_back(pose_msg);
 
-    auto goal_handle_future = action_client_->async_send_goal(goal_msg);
-
-    return [this, goal_handle_future](std::shared_ptr<tinyxml2::XMLElement> result) {
-      if (rclcpp::spin_until_future_complete(node_, goal_handle_future) != rclcpp::FutureReturnCode::SUCCESS)
-      {
-        RCLCPP_ERROR(node_->get_logger(), "send goal call failed");
-        return;
-      }
-
-      auto result_future = action_client_->async_get_result(goal_handle_future.get());
-      if (rclcpp::spin_until_future_complete(node_, result_future) != rclcpp::FutureReturnCode::SUCCESS)
-      {
-        RCLCPP_ERROR(node_->get_logger(), "get result call failed");
-        return;
-      }
-
-      auto wrapped_result = result_future.get();
-      if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
-      {
-        RCLCPP_INFO(node_->get_logger(), "Waypoint reached");
-        result->BoolAttribute("result", true);
-      }
-      else
-      {
-        RCLCPP_INFO(node_->get_logger(), "Waypoint not reached");
-      }
-    };
+    return goal_msg;
   }
 
-protected:
-  // not implemented
-  virtual nav2_msgs::action::FollowWaypoints::Goal
-  generate_goal(std::shared_ptr<tinyxml2::XMLElement> parameters) override
-  {
-    return nav2_msgs::action::FollowWaypoints::Goal();
-  }
-
-  virtual std::shared_ptr<tinyxml2::XMLElement>
+  /**
+   * @brief This generate result function overrides the generate_result() function from ActionRunner(). Since
+   * this is not used in this context, this returns nullptr
+   * @param result message from FollowWaypoints action
+   * @return nullptr
+   */
+  virtual tinyxml2::XMLElement*
   generate_result(const nav2_msgs::action::FollowWaypoints::Result::SharedPtr& result) override
   {
     return nullptr;

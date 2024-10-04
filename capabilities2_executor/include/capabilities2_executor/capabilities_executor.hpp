@@ -32,16 +32,14 @@
 class CapabilitiesExecutor : public rclcpp::Node
 {
 public:
-  CapabilitiesExecutor(const rclcpp::NodeOptions& options = rclcpp::NodeOptions())
-    : Node("Capabilities2_Executor", options)
+  CapabilitiesExecutor(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("Capabilities2_Executor", options)
   {
     control_tag_list.push_back("sequential");
     control_tag_list.push_back("parallel");
     control_tag_list.push_back("recovery");
 
     this->planner_server_ = rclcpp_action::create_server<capabilities2_msgs::action::Plan>(
-        this, "~/capabilities",
-        std::bind(&CapabilitiesExecutor::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        this, "~/capabilities", std::bind(&CapabilitiesExecutor::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&CapabilitiesExecutor::handle_cancel, this, std::placeholders::_1),
         std::bind(&CapabilitiesExecutor::handle_accepted, this, std::placeholders::_1));
 
@@ -62,8 +60,7 @@ private:
    * @param goal pointer to the action goal message
    * @return rclcpp_action::GoalResponse
    */
-  rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
-                                          std::shared_ptr<const capabilities2_msgs::action::Plan::Goal> goal)
+  rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const capabilities2_msgs::action::Plan::Goal> goal)
   {
     RCLCPP_INFO(this->get_logger(), "Received the goal request with the plan");
     (void)uuid;
@@ -87,8 +84,7 @@ private:
    * @param goal_handle pointer to the action goal handle
    * @return rclcpp_action::GoalResponse
    */
-  rclcpp_action::CancelResponse
-  handle_cancel(const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Plan>> goal_handle)
+  rclcpp_action::CancelResponse handle_cancel(const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Plan>> goal_handle)
   {
     RCLCPP_INFO(this->get_logger(), "Received the request to cancel the plan");
     (void)goal_handle;
@@ -101,11 +97,9 @@ private:
    *
    * @param goal_handle pointer to the action goal handle
    */
-  void
-  handle_accepted(const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Plan>> goal_handle)
+  void handle_accepted(const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Plan>> goal_handle)
   {
-    execution_thread = std::make_unique<std::thread>(
-        std::bind(&CapabilitiesExecutor::execute_plan, this, std::placeholders::_1), goal_handle);
+    execution_thread = std::make_unique<std::thread>(std::bind(&CapabilitiesExecutor::execute_plan, this, std::placeholders::_1), goal_handle);
   }
 
   /**
@@ -142,21 +136,16 @@ private:
       // request semantic interface from the server
       auto result_semantic_future = get_sem_interf_client_->async_send_request(request_sematic);
 
-      RCLCPP_INFO(this->get_logger(), "Requesting Semantic Interface information from Capabilities2 Server for %s",
-                  interface.c_str());
+      RCLCPP_INFO(this->get_logger(), "Requesting Semantic Interface information from Capabilities2 Server for %s", interface.c_str());
 
       // wait until data is received
-      if (rclcpp::spin_until_future_complete(shared_from_this(), result_semantic_future) !=
-          rclcpp::FutureReturnCode::SUCCESS)
+      if (rclcpp::spin_until_future_complete(shared_from_this(), result_semantic_future) != rclcpp::FutureReturnCode::SUCCESS)
       {
-        RCLCPP_INFO(this->get_logger(),
-                    "Failed to receive Semantic Interface information from Capabilities2 Server for %s",
-                    interface.c_str());
+        RCLCPP_INFO(this->get_logger(), "Failed to receive Semantic Interface information from Capabilities2 Server for %s", interface.c_str());
         return false;
       }
 
-      RCLCPP_INFO(this->get_logger(), "Received Semantic Interface information from Capabilities2 Server for %s",
-                  interface.c_str());
+      RCLCPP_INFO(this->get_logger(), "Received Semantic Interface information from Capabilities2 Server for %s", interface.c_str());
 
       // add sematic interfaces to the list if available
       if (result_semantic_future.get()->semantic_interfaces.size() > 0)
@@ -171,21 +160,17 @@ private:
 
           auto result_providers_future = get_providers_client_->async_send_request(request_providers);
 
-          RCLCPP_INFO(this->get_logger(),
-                      "Requesting Providers information from Capabilities2 Server for semantic interface %s",
+          RCLCPP_INFO(this->get_logger(), "Requesting Providers information from Capabilities2 Server for semantic interface %s",
                       semantic_interface.c_str());
 
           // wait until data is received
-          if (rclcpp::spin_until_future_complete(shared_from_this(), result_providers_future) !=
-              rclcpp::FutureReturnCode::SUCCESS)
+          if (rclcpp::spin_until_future_complete(shared_from_this(), result_providers_future) != rclcpp::FutureReturnCode::SUCCESS)
           {
-            RCLCPP_INFO(this->get_logger(), "Failed to receive Providers information from Capabilities2 Server for %s",
-                        semantic_interface.c_str());
+            RCLCPP_INFO(this->get_logger(), "Failed to receive Providers information from Capabilities2 Server for %s", semantic_interface.c_str());
             return false;
           }
 
-          RCLCPP_INFO(this->get_logger(), "Received Providers information from Capabilities2 Server for %s",
-                      semantic_interface.c_str());
+          RCLCPP_INFO(this->get_logger(), "Received Providers information from Capabilities2 Server for %s", semantic_interface.c_str());
 
           // add defualt provider to the list
           providers_list.push_back(result_providers_future.get()->default_provider);
@@ -211,21 +196,16 @@ private:
 
         auto result_providers_future = get_providers_client_->async_send_request(request_providers);
 
-        RCLCPP_INFO(this->get_logger(),
-                    "Requesting Providers information from Capabilities2 Server for semantic interface %s",
-                    interface.c_str());
+        RCLCPP_INFO(this->get_logger(), "Requesting Providers information from Capabilities2 Server for semantic interface %s", interface.c_str());
 
         // wait until data is received
-        if (rclcpp::spin_until_future_complete(shared_from_this(), result_providers_future) !=
-            rclcpp::FutureReturnCode::SUCCESS)
+        if (rclcpp::spin_until_future_complete(shared_from_this(), result_providers_future) != rclcpp::FutureReturnCode::SUCCESS)
         {
-          RCLCPP_INFO(this->get_logger(), "Failed to receive Providers information from Capabilities2 Server for %s",
-                      interface.c_str());
+          RCLCPP_INFO(this->get_logger(), "Failed to receive Providers information from Capabilities2 Server for %s", interface.c_str());
           return false;
         }
 
-        RCLCPP_INFO(this->get_logger(), "Received Providers information from Capabilities2 Server for %s",
-                    interface.c_str());
+        RCLCPP_INFO(this->get_logger(), "Received Providers information from Capabilities2 Server for %s", interface.c_str());
 
         providers_list.push_back(result_providers_future.get()->default_provider);
 
@@ -252,8 +232,7 @@ private:
   {
     // intialize a vector to accomodate elements from both
     std::vector<std::string> tag_list(interface_list.size() + control_tag_list.size());
-    std::merge(interface_list.begin(), interface_list.end(), control_tag_list.begin(), control_tag_list.end(),
-               tag_list.begin());
+    std::merge(interface_list.begin(), interface_list.end(), control_tag_list.begin(), control_tag_list.end(), tag_list.begin());
 
     // verify whether document got 'plan' tags
     if (!capabilities2_xml_parser::check_plan_tag(document))
@@ -309,8 +288,7 @@ private:
    *
    * @param server_goal_handle goal handle of the server
    */
-  void execute_plan(
-      const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Plan>> server_goal_handle)
+  void execute_plan(const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Plan>> server_goal_handle)
   {
     auto result = std::make_shared<capabilities2_msgs::action::Plan::Result>();
 
@@ -388,8 +366,7 @@ private:
     // send goal options
     // goal response callback
     send_goal_options.goal_response_callback =
-        [this, server_goal_handle](
-            const rclcpp_action::ClientGoalHandle<capabilities2_msgs::action::Connections>::SharedPtr& goal_handle) {
+        [this, server_goal_handle](const rclcpp_action::ClientGoalHandle<capabilities2_msgs::action::Connections>::SharedPtr& goal_handle) {
           if (!goal_handle)
           {
             RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
@@ -410,8 +387,7 @@ private:
 
     // result callback
     send_goal_options.result_callback =
-        [this, server_goal_handle](
-            const rclcpp_action::ClientGoalHandle<capabilities2_msgs::action::Connections>::WrappedResult& result) {
+        [this, server_goal_handle](const rclcpp_action::ClientGoalHandle<capabilities2_msgs::action::Connections>::WrappedResult& result) {
           auto result_out = std::make_shared<capabilities2_msgs::action::Plan::Result>();
 
           switch (result.code)

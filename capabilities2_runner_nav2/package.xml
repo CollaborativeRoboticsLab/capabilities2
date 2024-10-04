@@ -25,5 +25,15 @@
 
   <export>
     <build_type>ament_cmake</build_type>
+    
+    <!-- interfaces -->
+    <capability_interface>
+      interfaces/follow_waypoints.yaml
+    </capability_interface>
+
+    <!-- providers -->
+    <capability_provider>
+      providers/WaypointRunner.yaml
+    </capability_provider>
   </export>
 </package>

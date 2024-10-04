@@ -1,7 +1,12 @@
 <library path="capabilities2_runner">
-    <class type="capabilities2_runner::VoiceListenerRunner" base_class_type="capabilities2_runner::MultiActionRunner">
+    <class type="capabilities2_runner::ListenerRunner" base_class_type="capabilities2_runner::ActionRunner">
         <description>
             A plugin that provide speech to text capability
+        </description>
+    </class>
+    <class type="capabilities2_runner::SpeakerRunner" base_class_type="capabilities2_runner::ActionRunner">
+        <description>
+            A plugin that provide text to speech capability
         </description>
     </class>
 </library>

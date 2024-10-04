@@ -36,17 +36,19 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    * @param action_name action name used in the yaml file, used to load specific configuration from the run_config
-   * @param on_started function pointer to trigger at the start of the action client in the runner
-   * @param on_terminated function pointer to trigger at the termination of the action client in the runner
-   * @param on_stopped function pointer to trigger at the termination of the action client by the server
+   * @param on_started pointer to function to execute on starting the runner
+   * @param on_failure pointer to function to execute on failure of the runner
+   * @param on_success pointer to function to execute on success of the runner
+   * @param on_stopped pointer to function to execute on stopping the runner
    */
   virtual void init_action(rclcpp::Node::SharedPtr node, const runner_opts& run_config, const std::string& action_name,
                            std::function<void(const std::string&)> on_started = nullptr,
-                           std::function<void(const std::string&)> on_terminated = nullptr,
+                           std::function<void(const std::string&)> on_failure = nullptr,
+                           std::function<void(const std::string&)> on_success = nullptr,
                            std::function<void(const std::string&)> on_stopped = nullptr)
   {
     // initialize the runner base by storing node pointer and run config
-    init_base(node, run_config, on_started, on_terminated, on_stopped);
+    init_base(node, run_config, on_started, on_failure, on_success, on_stopped);
 
     // create an action client
     action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name);
@@ -79,15 +81,15 @@ public:
         [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
           if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
           {
-            // Do something
+            // send terminated event
+            if (on_success_)
+              on_success_(run_config_.interface);
           }
           else
           {
             // send terminated event
-            if (on_terminated_)
-            {
-              on_terminated_(run_config_.interface);
-            }
+            if (on_failure_)
+              on_failure_(run_config_.interface);
           }
         };
   }
@@ -146,10 +148,10 @@ public:
    * and then trigger the action
    *
    * @param parameters
-   * @return std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
+   * @return std::optional<std::function<void(tinyxml2::XMLElement*)>>
    */
-  virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
-  trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) override
+  virtual std::optional<std::function<void(tinyxml2::XMLElement*)>>
+  trigger(tinyxml2::XMLElement* parameters = nullptr) override
   {
     // the action is being triggered out of order
     if (!goal_handle_)
@@ -173,15 +175,21 @@ public:
     }
 
     // get result future
-    typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle;
+    typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle = goal_handle_future.get();
+    if (!goal_handle)
+    {
+      RCLCPP_ERROR(node_->get_logger(), "Goal was rejected by server");
+      return std::nullopt;
+    }
+
     auto result_future = action_client_->async_get_result(goal_handle);
 
     // create a function to call for the result
     // the future will be returned to the caller
     // and the caller can provide a conversion function
     // to handle the result
-    std::function<void(std::shared_ptr<tinyxml2::XMLElement>)> result_callback =
-        [this, result_future](std::shared_ptr<tinyxml2::XMLElement> result) {
+    std::function<void(tinyxml2::XMLElement*)> result_callback =
+        [this, result_future](tinyxml2::XMLElement* result) {
           // wait for result
           if (rclcpp::spin_until_future_complete(node_, result_future) != rclcpp::FutureReturnCode::SUCCESS)
           {
@@ -195,12 +203,6 @@ public:
           // convert the result
           if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
           {
-            // publish event
-            if (on_result_)
-            {
-              on_result_(run_config_.interface);
-            }
-
             result = generate_result(wrapped_result.result);
             return;
           }
@@ -221,7 +223,7 @@ protected:
    * @param parameters
    * @return ActionT::Goal the generated goal
    */
-  virtual typename ActionT::Goal generate_goal(std::shared_ptr<tinyxml2::XMLElement> parameters) = 0;
+  virtual typename ActionT::Goal generate_goal(tinyxml2::XMLElement* parameters) = 0;
 
   /**
    * @brief generate a typed erased goal result
@@ -232,9 +234,12 @@ protected:
    * The pattern needs to be implemented in the derived class
    *
    * @param wrapped_result
-   * @return std::shared_ptr<tinyxml2::XMLElement>
+   * @return tinyxml2::XMLElement*
    */
-  virtual std::shared_ptr<tinyxml2::XMLElement> generate_result(const typename ActionT::Result::SharedPtr& result) = 0;
+  virtual tinyxml2::XMLElement* generate_result(const typename ActionT::Result::SharedPtr& result) = 0;
+
+  /**< pointer to XMLElement which contain parameters */
+  tinyxml2::XMLElement* parameters_;
 
   /**< action client */
   typename rclcpp_action::Client<ActionT>::SharedPtr action_client_;
