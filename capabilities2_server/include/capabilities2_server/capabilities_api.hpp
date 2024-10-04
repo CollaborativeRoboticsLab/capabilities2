@@ -258,10 +258,22 @@ public:
 
       // convert message to model and add to db
       models::interface_model_t model;
-      model.from_yaml(YAML::Load(spec.content));
+      try
+      {
+        model.from_yaml(YAML::Load(spec.content));
+      }
+      catch (const std::exception& e)
+      {
+        RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "failed to convert spec to model: %s", e.what());
+        return;
+      }
+
       // add package to name probably to avoid collisions (this was previous convention)
       model.header.name = spec.package + "/" + model.header.name;
       cap_db_->insert_interface(model);
+
+      // log
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "interface added to db: %s", model.header.name.c_str());
       return;
     }
 
@@ -274,9 +286,23 @@ public:
       }
 
       models::semantic_interface_model_t model;
-      model.from_yaml(YAML::Load(spec.content));
+
+      try
+      {
+        model.from_yaml(YAML::Load(spec.content));
+      }
+      catch (const std::exception& e)
+      {
+        RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "failed to convert spec to model: %s", e.what());
+        return;
+      }
+
       model.header.name = spec.package + "/" + model.header.name;
       cap_db_->insert_semantic_interface(model);
+
+      // log
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "semantic interface added to db: %s",
+                  model.header.name.c_str());
       return;
     }
 
@@ -289,9 +315,21 @@ public:
       }
 
       models::provider_model_t model;
-      model.from_yaml(YAML::Load(spec.content));
+
+      try
+      {
+        model.from_yaml(YAML::Load(spec.content));
+      }
+      catch (const std::exception& e)
+      {
+        RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "failed to convert spec to model: %s", e.what());
+        return;
+      }
       model.header.name = spec.package + "/" + model.header.name;
       cap_db_->insert_provider(model);
+
+      // log
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "provider added to db: %s", model.header.name.c_str());
       return;
     }
 

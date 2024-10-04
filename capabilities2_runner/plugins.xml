@@ -4,9 +4,9 @@
             A plugin that provides capabilities2 launch based runner
         </description>
     </class>
-    <!-- <class type="capabilities2_runner::ActionRunner" base_class_type="capabilities2_runner::RunnerBase">
+    <class type="capabilities2_runner::DummyRunner" base_class_type="capabilities2_runner::RunnerBase">
         <description>
-            A plugin that provides capabilities2 action based runner
+            A plugin that provides a  dummy-runner to test capabilities2
         </description>
-    </class> -->
+    </class>
 </library>
