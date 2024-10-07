@@ -1,7 +1,0 @@
-<library path="capabilities2_runner">
-    <class type="capabilities2_runner::WayPointRunner" base_class_type="capabilities2_runner::ActionRunner">
-        <description>
-            A plugin that provide nav2 waypoint navigation capability
-        </description>
-    </class>
-</library>
