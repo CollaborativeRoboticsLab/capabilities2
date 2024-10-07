@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 
   // testing
   // open yaml file
-  std::ifstream file("/home/ubuntu/colcon_ws/src/capabilities2/std_capabilities/providers/empty.yaml");
+  std::ifstream file("/home/ubuntu/colcon_ws/src/std_capabilities/providers/empty.yaml");
   std::string data{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
 
   // close file

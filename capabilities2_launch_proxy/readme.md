@@ -38,3 +38,9 @@ def generate_launch_description():
         )
     ])
 ```
+
+### Run standalone
+
+```bash
+ros2 run capabilities2_launch_proxy capabilities_launch_proxy
+```
