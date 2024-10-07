@@ -1,6 +1,6 @@
 # Capabilities2 Server
 
-This is the capabilities2 server. It allows interaction with the capabilities2 API. It is a reimplementation of the capabilities package using CPP. The CPP implementation is resource efficient. Secondly, this package extends the capabilities package features. Extensions include:
+Capabilities2 server allows interaction with the capabilities2 API. It is a reimplementation of the capabilities package using CPP. The CPP implementation is resource efficient. Secondly, this package extends the capabilities package features. Extensions include:
 
 1. Database support for storing capabilities
 2. Capability registration through service calls
