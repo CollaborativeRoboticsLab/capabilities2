@@ -4,7 +4,7 @@
   <name>capabilities2_launch_proxy</name>
   <version>0.0.1</version>
   <description>ros2 launch proxy to support launching capabilities similar to ros1 capabilities</description>
-  <maintainer email="mppritchard3@hotmail.com">mik-p</maintainer>
+  <maintainer email="anon">anon</maintainer>
 
   <license>MIT</license>
 
