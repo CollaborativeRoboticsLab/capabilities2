@@ -1,13 +1,3 @@
-# Docs
-
-For detailed information about the code, build the code documentation using Doxygen. see [`capabilities2_documentation`](./capabilities2_documentation/).
-
-```bash
-# in the devcontainer
-cd capabilities2_documentation
-doxygen Doxyfile
-```
-
 ## Basic Tutorial
 
 A basic tutorial can be found in [here](./basic_tutorial.md). This tutorial will guide you through the process of creating a simple capability and running it.
