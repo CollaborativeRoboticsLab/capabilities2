@@ -577,8 +577,18 @@ public:
 
     // set cap, prov, pid
     event.capability = capability;
-    event.provider = runner_cache_.provider(capability);
-    event.pid = atoi(runner_cache_.pid(capability).c_str());
+
+    // try to get details
+    try
+    {
+      event.provider = runner_cache_.provider(capability);
+      event.pid = atoi(runner_cache_.pid(capability).c_str());
+    }
+    catch (const capabilities2_runner::runner_exception& e)
+    {
+      event.provider = "unknown";
+      event.pid = -1;
+    }
 
     return event;
   }
@@ -595,8 +605,18 @@ public:
 
     // set cap, prov, pid
     event.capability = capability;
-    event.provider = runner_cache_.provider(capability);
-    event.pid = atoi(runner_cache_.pid(capability).c_str());
+
+    // try to get details
+    try
+    {
+      event.provider = runner_cache_.provider(capability);
+      event.pid = atoi(runner_cache_.pid(capability).c_str());
+    }
+    catch (const capabilities2_runner::runner_exception& e)
+    {
+      event.provider = "unknown";
+      event.pid = -1;
+    }
 
     return event;
   }
@@ -613,8 +633,16 @@ public:
 
     // set cap, prov, pid
     event.capability = capability;
-    event.provider = runner_cache_.provider(capability);
-    event.pid = atoi(runner_cache_.pid(capability).c_str());
+    try
+    {
+      event.provider = runner_cache_.provider(capability);
+      event.pid = atoi(runner_cache_.pid(capability).c_str());
+    }
+    catch (const capabilities2_runner::runner_exception& e)
+    {
+      event.provider = "unknown";
+      event.pid = -1;
+    }
 
     // log error
     RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "capability terminated: %s", capability.c_str());
