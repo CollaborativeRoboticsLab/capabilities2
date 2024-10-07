@@ -1,12 +1,3 @@
-# Docs
-
-For detailed information about the code, build the code documentation using Doxygen. see [`capabilities2_documentation`](./capabilities2_documentation/).
-
-```bash
-# in the devcontainer
-cd capabilities2_documentation
-doxygen Doxyfile
-```
 
 ## Basic Tutorial
 
