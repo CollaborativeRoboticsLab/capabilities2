@@ -9,11 +9,12 @@ class DummyRunner : public RunnerBase
 public:
   void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
              std::function<void(const std::string&)> on_started = nullptr,
-             std::function<void(const std::string&)> on_terminated = nullptr,
+             std::function<void(const std::string&)> on_failure = nullptr,
+             std::function<void(const std::string&)> on_success = nullptr,
              std::function<void(const std::string&)> on_stopped = nullptr) override
   {
     // init the base runner
-    init_base(node, run_config, on_started, on_terminated, on_stopped);
+    init_base(node, run_config, on_started, on_failure, on_success, on_stopped);
 
     // do nothing
   }
@@ -27,8 +28,8 @@ public:
     // stop the runner
   }
 
-  std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
-  trigger(std::shared_ptr<tinyxml2::XMLElement> parameters) override
+  std::optional<std::function<void(tinyxml2::XMLElement*)>>
+  trigger(tinyxml2::XMLElement* parameters) override
   {
     return std::nullopt;
   }

@@ -29,9 +29,10 @@ class RunnerCache
 public:
   RunnerCache() : runner_loader_("capabilities2_runner", "capabilities2_runner::RunnerBase")
   {
-    on_started = nullptr;
-    on_stopped = nullptr;
-    on_terminated = nullptr;
+    // on_started = nullptr;
+    // on_stopped = nullptr;
+    // on_failure = nullptr;
+    // on_success = nullptr;
   }
 
   /**
@@ -40,9 +41,17 @@ public:
    * @param node   pointer to the origin node, generally the capabilities2_server
    * @param capability capability name to be loaded
    * @param run_config run_config of the runner to be loaded
+   * @param on_started pointer to function to execute on starting the runner
+   * @param on_failure pointer to function to execute on failure of the runner
+   * @param on_success pointer to function to execute on success of the runner
+   * @param on_stopped pointer to function to execute on stopping the runner
    */
   void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability,
-                  const models::run_config_model_t& run_config)
+                  const models::run_config_model_t& run_config,
+                  std::function<void(const std::string&)> on_started = nullptr,
+                  std::function<void(const std::string&)> on_failure = nullptr,
+                  std::function<void(const std::string&)> on_success = nullptr,
+                  std::function<void(const std::string&)> on_stopped = nullptr)
   {
     // if the runner exists then throw an error
     if (running(capability))
@@ -73,7 +82,7 @@ public:
     }
 
     // start the runner
-    runner_cache_[capability]->start(node, run_config.to_runner_opts(), on_started, on_terminated, on_stopped);
+    runner_cache_[capability]->start(node, run_config.to_runner_opts(), on_started, on_failure, on_success, on_stopped);
   }
 
   /**
@@ -203,30 +212,30 @@ public:
    *
    * @param cb callback function pointer
    */
-  void set_on_started(std::function<void(const std::string&)> cb)
-  {
-    on_started = cb;
-  }
+  // void set_on_started(std::function<void(const std::string&)> cb)
+  // {
+  //   on_started = cb;
+  // }
 
   /**
    * @brief Callback function for 'on_stopped' event
    *
    * @param cb callback function pointer
    */
-  void set_on_stopped(std::function<void(const std::string&)> cb)
-  {
-    on_stopped = cb;
-  }
+  // void set_on_stopped(std::function<void(const std::string&)> cb)
+  // {
+  //   on_stopped = cb;
+  // }
 
   /**
-   * @brief Callback function for 'on_terminated' event
+   * @brief Callback function for 'on_failure' event
    *
    * @param cb callback function pointer
    */
-  void set_on_terminated(std::function<void(const std::string&)> cb)
-  {
-    on_terminated = cb;
-  }
+  // void set_on_terminated(std::function<void(const std::string&)> cb)
+  // {
+  //   on_failure = cb;
+  // }
 
 private:
   // map capability to running model
@@ -237,9 +246,10 @@ private:
   pluginlib::ClassLoader<capabilities2_runner::RunnerBase> runner_loader_;
 
   // event callbacks
-  std::function<void(const std::string&)> on_started;
-  std::function<void(const std::string&)> on_stopped;
-  std::function<void(const std::string&)> on_terminated;
+  // std::function<void(const std::string&)> on_started;
+  // std::function<void(const std::string&)> on_stopped;
+  // std::function<void(const std::string&)> on_failure;
+  // std::function<void(const std::string&)> on_success;
 };
 
 }  // namespace capabilities2_server

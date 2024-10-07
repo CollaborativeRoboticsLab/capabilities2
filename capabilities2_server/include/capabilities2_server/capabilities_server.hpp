@@ -418,8 +418,8 @@ public:
   void handle_accepted(
       const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Connections>> goal_handle)
   {
-    fabric_launch_thread =
-        std::make_unique<std::thread>(std::bind(&CapabilitiesServer::launch_fabric, this, std::placeholders::_1), goal_handle);
+    fabric_launch_thread = std::make_unique<std::thread>(
+        std::bind(&CapabilitiesServer::launch_fabric, this, std::placeholders::_1), goal_handle);
   }
 
 private:
@@ -433,19 +433,16 @@ private:
   {
     const auto goal = goal_handle->get_goal();
 
-    // execute us_capability for all the connections received
+    // start all runners and interfaces that the connections depend on
     for (const auto& connection : goal->connections)
     {
-      if (connection.source.capability != "start")
-        use_capability(shared_from_this(), connection.source.capability, connection.source.provider, goal->bond_id);
-
-      use_capability(shared_from_this(), connection.target.capability, connection.target.provider, goal->bond_id);
+      start_dependents(shared_from_this(), goal->bond_id, connection.target.capability, connection.target.provider);
     }
 
     // establish relationships for all the connections received
-    for (const auto& connection : goal->connections)
+    for (auto connection = goal->connections.rbegin(); connection != goal->connections.rend(); ++connection)
     {
-      // if (connection.source.capability != "start")
+      if (*connection.source.capability != "start")
     }
 
     // trigger starting connections

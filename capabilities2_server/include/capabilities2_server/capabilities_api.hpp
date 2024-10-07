@@ -66,14 +66,14 @@ public:
    * @param on_stopped event triggered at the shutdown of the runner by the capabilities server
    * @param on_terminated event triggered at the failure of the runner by the action or server side.
    */
-  void init_events(std::function<void(const std::string&)> on_started,
-                   std::function<void(const std::string&)> on_stopped,
-                   std::function<void(const std::string&)> on_terminated)
-  {
-    runner_cache_.set_on_started(on_started);
-    runner_cache_.set_on_stopped(on_stopped);
-    runner_cache_.set_on_terminated(on_terminated);
-  }
+  // void init_events(std::function<void(const std::string&)> on_started,
+  //                  std::function<void(const std::string&)> on_stopped,
+  //                  std::function<void(const std::string&)> on_terminated)
+  // {
+  //   runner_cache_.set_on_started(on_started);
+  //   runner_cache_.set_on_stopped(on_stopped);
+  //   runner_cache_.set_on_terminated(on_terminated);
+  // }
 
   /**
    * @brief Start a capability. Internal function only. Do not used this function externally.
@@ -81,8 +81,16 @@ public:
    * @param node ros node pointer of the ros server
    * @param capability capability name to be started
    * @param provider provider of the capability
+   * @param on_started pointer to function to execute on starting the runner
+   * @param on_failure pointer to function to execute on failure of the runner
+   * @param on_success pointer to function to execute on success of the runner
+   * @param on_stopped pointer to function to execute on stopping the runner
    */
-  void start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider)
+  void start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
+                        std::function<void(const std::string&)> on_started = nullptr,
+                        std::function<void(const std::string&)> on_failure = nullptr,
+                        std::function<void(const std::string&)> on_success = nullptr,
+                        std::function<void(const std::string&)> on_stopped = nullptr)
   {
     // get the running model from the db
     models::running_model_t running = cap_db_->get_running(provider);
@@ -110,7 +118,7 @@ public:
     // TODO: consider the logic for multiple runners per capability
     try
     {
-      runner_cache_.add_runner(node, capability, run_config);
+      runner_cache_.add_runner(node, capability, run_config, on_started, on_failure, on_success, on_stopped);
 
       // log
       RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "started capability: %s with provider: %s",
@@ -123,11 +131,40 @@ public:
   }
 
   /**
+   * @brief Start the dependencies of a capability. Internal function only. Do not used this function externally.
+   *
+   * @param node ros node pointer of the ros server
+   * @param bond_id bond_id for the capability
+   * @param capability capability name to be started
+   * @param provider provider of the capability
+   */
+  void start_dependents(rclcpp::Node::SharedPtr node, const std::string& bond_id,
+                                    const std::string& capability, const std::string& provider)
+  {
+    // Create bond id
+    bond_cache_.add_bond(capability, bond_id);
+
+    // get the running model from the db
+    models::running_model_t running = cap_db_->get_running(provider);
+
+    // start all dependencies
+    // go through the running model and start the necessary dependencies
+    for (const auto& run : running.dependencies)
+    {
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "found dependency: %s", run.interface.c_str());
+
+      // make an internal 'use' bond for the capability dependency
+      bind_dependency(run.interface);
+
+      // add the runner to the cache
+      start_capability(node, run.interface, run.provider);
+    }
+  }
+  /**
    * @brief trigger a capability
    *
-   * This is a new function for a capability provider (runner)
-   * that is already started but has additional parameters to be triggered
-   * This function can be used externally.
+   * This is a new function for a capability provider (runner) that is already started but has
+   * additional parameters to be triggered. This function can be used externally.
    *
    * @param capability
    * @param parameters
@@ -236,6 +273,35 @@ public:
 
     // start the capability with the provider
     start_capability(node, capability, provider);
+  }
+
+  /**
+   * @brief Connect two capabilities sequentially. This will create a bond ids for the requested instances and, build
+   * a event callback for sequential triggering and start the capabilities.
+   *
+   * @param node ros node pointer of the ros server
+   * @param capability capability name to be started
+   * @param provider provider of the capability
+   */
+  void create_serial_connection(rclcpp::Node::SharedPtr node, const std::string& bond_id,
+                                const std::string& source_capability, const std::string& source_provider,
+                                const std::string& target_capability, const std::string& target_provider)
+  {
+
+    
+
+    try
+    {
+      runner_cache_.add_runner(node, capability, cap_db_->get_run_config(provider), on_started, on_failure, on_success, on_stopped);
+
+      // log
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "started capability: %s with provider: %s",
+                  capability.c_str(), provider.c_str());
+    }
+    catch (const capabilities2_runner::runner_exception& e)
+    {
+      RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "could not start runner: %s", e.what());
+    }
   }
 
   // capability api
