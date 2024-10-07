@@ -6,7 +6,7 @@
 ![C++](https://img.shields.io/badge/Code-C++-informational?&logo=c%2b%2b)
 ![ROS](https://img.shields.io/badge/Framework-ROS-informational?&logo=ROS)
 
-A reimplementation of the [capabilities](https://github.com/osrf/capabilities) package. This package is implemented using CPP and extends the capabilities package features. See the [capabilities2_server](./capabilities2_server/readme.md) package for the main system component.
+A reimplementation of the [capabilities](https://github.com/osrf/capabilities) package. This package is implemented using C++17 and extends the capabilities package features. See the [capabilities2_server](./capabilities2_server/readme.md) package for the main system component.
 
 ## System structure
 

@@ -1,13 +1,13 @@
 # capabilities2_runner plugin API
 
-provides `runner` API for abstract provision of capabilities. Plugins extend the execution functionality of the `capabilities` system. The ROS1 implementation used launch files to start capabilities. The ROS2 implementation uses runners to start capabilities. This allows for more flexibility in how capabilities are started and stopped, or how they are managed, and operate.
+This package provides `runner` API for abstract provision of capabilities. Plugins extend the execution functionality of the `capabilities` system. The ROS1 implementation used launch files to start capabilities. The ROS2 implementation uses runners to start capabilities. This allows for more flexibility in how capabilities are started and stopped, or how they are managed, and operate.
 
 ## Runners
 
-- `base runner` - base class for runners implementing the `Runner` interface which comprises of `start`, `stop`.
-- `action runner` - runner for capabilities that are implemented as actions. This is also a base class for as most runners will be actions.
-- `launch runner` - runner for capabilities that are implemented as launch files.
-- `multi action runner` - runner for capabilities that are implemented as multiple actions.
+- `capabilities2_runner::RunnerBase` - Base class for runners implementing the `Runner` interface which comprises of `start`, `stop` and `trigger` functionality.
+- `capabilities2_runner::ActionRunner` - Base runner class for capabilities that are implemented as ROS Actions. Overrides `stop` and `trigger` fro, RunnerBase.
+- `capabilities2_runner::LaunchRunner` - Runner for capabilities that are implemented as launch files.
+- `capabilities2_runner::MultiActionRunner` - Base runner class for capabilities that are implemented using multiple actions.
 
 ### launch runner
 

@@ -1,9 +1,9 @@
 # Capabilities2 Server
 
-This is the capabilities2 server. It allows interaction with the capabilities2 API. It is a reimplementation of the capabilities package using CPP. The CPP implementation is resource efficient. Secondly, this package extends the capabilities package features. Extensions include:
+Capabilities2 server allows interaction with the capabilities2 API. It is a reimplementation of the capabilities package using C++ (original capabilities package was written in Python 2.7). In addition to C++ reimplementation being more resource efficient, this package extends the capabilities package features in following ways,
 
-1. Database support for storing capabilities
-2. Capability registration through service calls
+1. Database support for storing capabilities.
+2. Capability registration through service calls.
 3. Abstracted providers through a *runners* API see [capabilities2_runner](../capabilities2_runner/readme.md)
 
 ## System dependencies
