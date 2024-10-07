@@ -120,7 +120,7 @@ Read more about this [here](../capabilities2/capabilities2_server/readme.md)
 
 ### Running Test cases
 
-Read more about this [here](../capabilities2/capabilities2_server/readme.md) 
+Read more about this [here](../capabilities2/docs/run_test_scripts.md) 
 
 ## Acknowledgements
 
