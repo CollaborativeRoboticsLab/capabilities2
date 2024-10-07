@@ -51,14 +51,6 @@ The capabilities2 server exposes the following Topics API:
 
 ## How to use
 
-### Launch capabilities2 server
-
-```bash
-ros2 launch capabilities2_server capabilities2_server.launch.py
-```
-
-Can add launch args for path to packages for exported capabilties via terminal as well. refer `./config/capabilities.yaml` for example usage.
-
 ### Register a capability
 
 Capabilities can be registered by exporting them in a package. The capabilities2 server will read the capabilities from the package and make them available to the user.
@@ -89,6 +81,14 @@ interface:
 
 Capabilities can also be registered through a service call. This is useful for registering capabilities that are not exported in a package. The service call has been implemented as a node in the capabilities2 package. Use the node to register capabilities during runtime. This method can also be used to update capabilities.
 
+### Launch capabilities2 server
+
+```bash
+ros2 launch capabilities2_server capabilities2_server.launch.py
+```
+
+Can add launch args for path to packages for exported capabilties via terminal as well. refer `./config/capabilities.yaml` for example usage.
+
 
 ### Terminal based capability usage
 
@@ -97,7 +97,7 @@ Using a capability requires the user to establish a bond with the capabilities2 
 first, inspect the available capabilities provided under this server on this robot.
 
 ```bash
-ros2 service call /get_capability_specs capabilities2_msgs/srv/GetCapabilitySpecs
+ros2 service call /capabilities/get_capability_specs capabilities2_msgs/srv/GetCapabilitySpecs
 ```
 
 then, request a bond id to become a persistent user
@@ -105,7 +105,7 @@ then, request a bond id to become a persistent user
 ```bash
 ros2 service call /capabilities/establish_bond capabilities2_msgs/srv/EstablishBond
 
-# this bond needs to be updated every second by publishing a heartbeat the bond topic
+# this bond needs to be updated every second by publishing a heartbeat the bond topic. Replace the ... with value received from above call
 ros2 topic pub /capabilities/bonds ...
 ```
 
@@ -116,6 +116,7 @@ ros2 service call /capabilities/use_capability capabilities2_msgs/srv/UseCapabil
 ```
 
 This capability can be freed by calling the `free_capability` service, or just let the bond expire. The capability will be freed automatically.
+
 
 ## Developing
 
