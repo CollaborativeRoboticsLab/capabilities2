@@ -52,7 +52,7 @@ The capabilities2 server exposes the following Topics API:
 # can add launch args for path to packages
 # for exported capabilties
 # ./config/capabilities.yaml has example
-ros2 launch capabilities2 capabilities2_server.launch.py
+ros2 launch capabilities2_server capabilities2_server.launch.py
 ```
 
 ### Register a capability
