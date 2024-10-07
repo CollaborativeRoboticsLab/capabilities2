@@ -23,41 +23,45 @@ The capabilities2 server provides the following ROS API:
 
 The capabilities2 server exposes the following Service API (see [capabilities2_msgs](../capabilities2_msgs/readme.md) for data types):
 
-- `~/get_interfaces` - get the interfaces provided by the capabilities server
-- `~/get_semantic_interfaces` - get the semantic interfaces provided by the capabilities server
-- `~/get_providers` - get the providers available on the capabilities server
-- `~/get_remappings` - get the remappings for a capability
-- `~/get_capability_spec` - get a raw specifications for a capability
-- `~/get_capability_specs` - get all raw specifications in the capabilities server
-- `~/establish_bond` - establish a bond with the capabilities server to use capabilities
-- `~/use_capability` - use a capability
-- `~/free_capability` - free a capability (when done using it, when all users are done the capability is freed)
-- `~/start_capability` - start a capability (this is a forceful start, and ignores use and free logic)
-- `~/stop_capability` - stop a capability (this is a forceful stop, and ignores use and free logic)
-- `~/register_capability` - register a capability with the capabilities server
-- `~/get_running_capabilities` - get the currently running capabilities
+| Topic | Service Message | Description |
+| :---  | :---            | :---        |
+| `~/get_interfaces`           | `GetInterfaces.srv`         | Get the interfaces provided by the capabilities server |
+| `~/get_semantic_interfaces`  | `GetSemanticInterfaces.srv` | Get the semantic interfaces provided by the capabilities server |
+| `~/get_providers`            | `GetProviders.srv`          | Get the providers available on the capabilities server |
+| `~/get_remappings`           | `GetRemappings.srv`         | Get the remappings for a capability |
+| `~/get_capability_spec`      | `GetCapabilitySpec.srv`     | Get a raw specifications for a capability |
+| `~/get_capability_specs`     | `GetCapabilitySpecs.srv`    | Get all raw specifications in the capabilities server |
+| `~/get_running_capabilities` | `GetRunningCapabilities.srv`| Get the currently running capabilities |
+| `~/establish_bond`           | `EstablishBond.srv`         | Establish a bond with the capabilities server to use capabilities |
+| `~/use_capability`           | `UseCapability.srv`         | Use a capability |
+| `~/free_capability`          | `FreeCapability.srv`        | Free a capability (when done using it, when all users are done the capability is freed) |
+| `~/start_capability`         | `StartCapability.srv`       | Start a capability (this is a forceful start, and ignores use and free logic) |
+| `~/stop_capability`          | `StopCapability.srv`        | Stop a capability (this is a forceful stop, and ignores use and free logic) |
+| `~/register_capability`      | `RegisterCapability.srv`    | Register a capability with the capabilities server |
+
 
 ### Topics
 
 The capabilities2 server exposes the following Topics API:
 
-- `~/events` -  publish capability events
-- `~/bonds` -  maintain bonds with capability users - [Bond API](https://wiki.ros.org/bond)
+| Topic | Message | Description |
+| :---  | :---            | :---        |
+| `~/events`  | `GetInterfaces.srv`         | Publish capability events |
+| `~/bonds`   | `GetSemanticInterfaces.srv` | Maintain bonds with capability users - [Bond API](https://wiki.ros.org/bond) |
 
 ## How to use
 
 ### Launch capabilities2 server
 
 ```bash
-# can add launch args for path to packages
-# for exported capabilties
-# ./config/capabilities.yaml has example
-ros2 launch capabilities2 capabilities2_server.launch.py
+ros2 launch capabilities2_server capabilities2_server.launch.py
 ```
+
+Can add launch args for path to packages for exported capabilties via terminal as well. refer `./config/capabilities.yaml` for example usage.
 
 ### Register a capability
 
-capabilities can be registered by exporting them in a package. The capabilities2 server will read the capabilities from the package and make them available to the user.
+Capabilities can be registered by exporting them in a package. The capabilities2 server will read the capabilities from the package and make them available to the user.
 
 ```xml
 <!-- see std_capabilities package for examples -->
@@ -68,9 +72,7 @@ capabilities can be registered by exporting them in a package. The capabilities2
 </export>
 ```
 
-Capabilities can also be registered through a service call. This is useful for registering capabilities that are not exported in a package. The service call has been implemented as a node in the capabilities2 package. Use the node to register capabilities during runtime. THis method can also be used to update capabilities.
-
-### Capability example
+Following is the content of the cool_cap.yaml
 
 ```yaml
 # cool_cap.yaml
@@ -85,7 +87,10 @@ interface:
       description: "This is a cool topic"
 ```
 
-### User program flow
+Capabilities can also be registered through a service call. This is useful for registering capabilities that are not exported in a package. The service call has been implemented as a node in the capabilities2 package. Use the node to register capabilities during runtime. This method can also be used to update capabilities.
+
+
+### Terminal based capability usage
 
 Using a capability requires the user to establish a bond with the capabilities2 server. The bond is used to maintain a persistent connection with the server.
 
