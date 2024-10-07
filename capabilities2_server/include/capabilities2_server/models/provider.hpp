@@ -76,7 +76,7 @@ struct provider_model_t : public remappable_base_t, predicateable_base_t, public
     YAML::Node deps;
     deps["depends_on"] = depends_on;
     return header.to_sql_values() + ", '" + implements + "', '" + YAML::Dump(deps["depends_on"]) + "', '" +
-           YAML::Dump(remappings.to_yaml()) + "', '" + runner + "'" + (defined() ? ", '" + definition_str + "'" : "");
+           YAML::Dump(remappings.to_yaml()) + "', '" + runner + "', '" + definition_str + "'";
   }
 };
 

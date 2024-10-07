@@ -1,0 +1,14 @@
+# action to send a list of interface connections to capabilities server
+# goal
+std_msgs/Header header
+string bond_id
+CapabilityConnection[] connections
+---
+# result
+std_msgs/Header header
+CapabilityConnection[] failed_connections
+---
+# feedback
+std_msgs/Header header
+int32 success_count
+int32 total_count

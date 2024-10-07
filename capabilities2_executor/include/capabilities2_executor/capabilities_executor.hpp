@@ -10,10 +10,15 @@
 
 #include <capabilities2_executor/capabilities_xml_parser.hpp>
 
+#include <capabilities2_msgs/msg/capability_connection.hpp>
+
 #include <capabilities2_msgs/action/plan.hpp>
+#include <capabilities2_msgs/action/connections.hpp>
+
 #include <capabilities2_msgs/srv/establish_bond.hpp>
 #include <capabilities2_msgs/srv/get_interfaces.hpp>
 #include <capabilities2_msgs/srv/get_semantic_interfaces.hpp>
+#include <capabilities2_msgs/srv/get_providers.hpp>
 
 /**
  * @brief Capabilities Executor
@@ -27,243 +32,500 @@
 class CapabilitiesExecutor : public rclcpp::Node
 {
 public:
-	CapabilitiesExecutor(const rclcpp::NodeOptions &options = rclcpp::NodeOptions())
-		: Node("Capabilities2_Executor", options)
-	{
-		control_tag_list.push_back("sequential");
-		control_tag_list.push_back("parallel");
-		control_tag_list.push_back("recovery");
-		control_tag_list.push_back("roundrobin");
-		// control_tag_list.push_back("behaviourtree");
+  CapabilitiesExecutor(const rclcpp::NodeOptions& options = rclcpp::NodeOptions())
+    : Node("Capabilities2_Executor", options)
+  {
+    control_tag_list.push_back("sequential");
+    control_tag_list.push_back("parallel");
+    control_tag_list.push_back("recovery");
 
-		declare_parameter("read_file", false);
-		read_file = get_parameter("read_file").as_bool();
+    this->planner_server_ = rclcpp_action::create_server<capabilities2_msgs::action::Plan>(
+        this, "~/capabilities",
+        std::bind(&CapabilitiesExecutor::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&CapabilitiesExecutor::handle_cancel, this, std::placeholders::_1),
+        std::bind(&CapabilitiesExecutor::handle_accepted, this, std::placeholders::_1));
 
-		declare_parameter("plan_file_path", "plan.xml");
-		plan_file_path = get_parameter("plan_file_path").as_string();
+    this->client_capabilities_ = rclcpp_action::create_client<capabilities2_msgs::action::Connections>(this, "~/capabilities_fabric");
 
-		using namespace std::placeholders;
+    get_interfaces_client_ = this->create_client<capabilities2_msgs::srv::GetInterfaces>("~/get_interfaces");
+    get_sem_interf_client_ = this->create_client<capabilities2_msgs::srv::GetSemanticInterfaces>("~/get_semantic_interfaces");
 
-		this->planner_server_ = rclcpp_action::create_server<capabilities2_msgs::action::Plan>(
-			this,
-			"~/capabilities",
-			std::bind(&CapabilitiesExecutor::handle_goal, this, _1, _2),
-			std::bind(&CapabilitiesExecutor::handle_cancel, this, _1),
-			std::bind(&CapabilitiesExecutor::handle_accepted, this, _1));
-
-		get_interfaces_client_ = this->create_client<capabilities2_msgs::srv::GetInterfaces>("~/get_interfaces");
-		get_sem_interf_client_ = this->create_client<capabilities2_msgs::srv::GetSemanticInterfaces>("~/get_semantic_interfaces");
-
-		establish_bond_client_ = this->create_client<capabilities2_msgs::srv::EstablishBond>("~/establish_bond");
-
-		if (read_file)
-		{
-			// try to load the file
-			tinyxml2::XMLError xml_status = document.LoadFile(plan_file_path.c_str());
-
-			// check if the file loading failed
-			if (xml_status != tinyxml2::XMLError::XML_SUCCESS)
-			{
-				RCLCPP_INFO(this->get_logger(), "Loading the file from path : %s failed", plan_file_path.c_str());
-
-				rclcpp::shutdown();
-			}
-
-			execution_thread = std::make_unique<std::thread>(std::bind(&CapabilitiesExecutor::execute_plan, this));
-		}
-	}
+    establish_bond_client_ = this->create_client<capabilities2_msgs::srv::EstablishBond>("~/establish_bond");
+  }
 
 private:
-	/**
-	 * @brief Handle the goal request that comes in from client. returns whether goal is accepted or rejected
-	 *
-	 *
-	 * @param uuid uuid of the goal
-	 * @param goal pointer to the action goal message
-	 * @return rclcpp_action::GoalResponse
-	 */
-	rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID &uuid, std::shared_ptr<const capabilities2_msgs::action::Plan::Goal> goal)
-	{
-		RCLCPP_INFO(this->get_logger(), "Received the goal request with the plan");
-		(void)uuid;
+  /**
+   * @brief Handle the goal request that comes in from client. returns whether goal is accepted or rejected
+   *
+   *
+   * @param uuid uuid of the goal
+   * @param goal pointer to the action goal message
+   * @return rclcpp_action::GoalResponse
+   */
+  rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
+                                          std::shared_ptr<const capabilities2_msgs::action::Plan::Goal> goal)
+  {
+    RCLCPP_INFO(this->get_logger(), "Received the goal request with the plan");
+    (void)uuid;
 
-		// try to parse the std::string plan from capabilities_msgs/Plan to the to a XMLDocument file
-		tinyxml2::XMLError xml_status = document.Parse(goal->plan.c_str());
+    // try to parse the std::string plan from capabilities_msgs/Plan to the to a XMLDocument file
+    tinyxml2::XMLError xml_status = document.Parse(goal->plan.c_str());
 
-		// check if the file parsing failed
-		if (xml_status != tinyxml2::XMLError::XML_SUCCESS)
-		{
-			RCLCPP_INFO(this->get_logger(), "Parsing the plan from goal message failed");
-			return rclcpp_action::GoalResponse::REJECT;
-		}
+    // check if the file parsing failed
+    if (xml_status != tinyxml2::XMLError::XML_SUCCESS)
+    {
+      RCLCPP_INFO(this->get_logger(), "Parsing the plan from goal message failed");
+      return rclcpp_action::GoalResponse::REJECT;
+    }
 
-		return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
-	}
+    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+  }
 
-	rclcpp_action::CancelResponse handle_cancel(const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Plan>> goal_handle)
-	{
-		RCLCPP_INFO(this->get_logger(), "Received the request to cancel the plan");
-		(void)goal_handle;
+  /**
+   * @brief Handle the goal cancel request that comes in from client.
+   *
+   * @param goal_handle pointer to the action goal handle
+   * @return rclcpp_action::GoalResponse
+   */
+  rclcpp_action::CancelResponse
+  handle_cancel(const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Plan>> goal_handle)
+  {
+    RCLCPP_INFO(this->get_logger(), "Received the request to cancel the plan");
+    (void)goal_handle;
 
-		return rclcpp_action::CancelResponse::ACCEPT;
-	}
+    return rclcpp_action::CancelResponse::ACCEPT;
+  }
 
-	void handle_accepted(const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Plan>> goal_handle)
-	{
-		execution_thread = std::make_unique<std::thread>(std::bind(&CapabilitiesExecutor::execute_plan, this));
-	}
+  /**
+   * @brief Handle the goal accept event originating from handle_goal.
+   *
+   * @param goal_handle pointer to the action goal handle
+   */
+  void
+  handle_accepted(const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Plan>> goal_handle)
+  {
+    execution_thread = std::make_unique<std::thread>(
+        std::bind(&CapabilitiesExecutor::execute_plan, this, std::placeholders::_1), goal_handle);
+  }
 
-	bool verify_plan()
-	{
-		auto request_interface = std::make_shared<capabilities2_msgs::srv::GetInterfaces::Request>();
-		auto request_sematic = std::make_shared<capabilities2_msgs::srv::GetSemanticInterfaces::Request>();
+  /**
+   * @brief request the interfaces, semantic_interfaces and providers from the capabilities2 server
+   *
+   * @return `true` if interface retreival is successful,`false` otherwise
+   */
+  bool request_information()
+  {
+    // create request messages
+    auto request_interface = std::make_shared<capabilities2_msgs::srv::GetInterfaces::Request>();
+    auto request_sematic = std::make_shared<capabilities2_msgs::srv::GetSemanticInterfaces::Request>();
+    auto request_providers = std::make_shared<capabilities2_msgs::srv::GetProviders::Request>();
 
-		auto result_future = get_interfaces_client_->async_send_request(request_interface);
+    // request data from the server
+    auto result_future = get_interfaces_client_->async_send_request(request_interface);
 
-		RCLCPP_INFO(this->get_logger(), "Requesting Interface information from Capabilities2 Server");
+    RCLCPP_INFO(this->get_logger(), "Requesting Interface information from Capabilities2 Server");
 
-		if (rclcpp::spin_until_future_complete(shared_from_this(), result_future) != rclcpp::FutureReturnCode::SUCCESS)
-		{
-			RCLCPP_INFO(this->get_logger(), "Failed to receive Interface information from Capabilities2 Server");
-			return false;
-		}
+    // wait until data is received
+    if (rclcpp::spin_until_future_complete(shared_from_this(), result_future) != rclcpp::FutureReturnCode::SUCCESS)
+    {
+      RCLCPP_INFO(this->get_logger(), "Failed to receive Interface information from Capabilities2 Server");
+      return false;
+    }
 
-		RCLCPP_INFO(this->get_logger(), "Received Interface information from Capabilities2 Server");
+    RCLCPP_INFO(this->get_logger(), "Received Interface information from Capabilities2 Server");
 
-		for (const auto &interface : result_future.get()->interfaces)
-		{
-			request_sematic->interface = interface;
+    // request semantic interfaces available for each and every interface got from the server
+    for (const auto& interface : result_future.get()->interfaces)
+    {
+      request_sematic->interface = interface;
 
-			auto result_remantic_future = get_sem_interf_client_->async_send_request(request_sematic);
+      // request semantic interface from the server
+      auto result_semantic_future = get_sem_interf_client_->async_send_request(request_sematic);
 
-			RCLCPP_INFO(this->get_logger(), "Requesting Semantic Interface information from Capabilities2 Server for %s", interface.c_str());
+      RCLCPP_INFO(this->get_logger(), "Requesting Semantic Interface information from Capabilities2 Server for %s",
+                  interface.c_str());
 
-			if (rclcpp::spin_until_future_complete(shared_from_this(), result_remantic_future) != rclcpp::FutureReturnCode::SUCCESS)
-			{
-				RCLCPP_INFO(this->get_logger(), "Failed to receive Semantic Interface information from Capabilities2 Server for %s", interface.c_str());
-				return false;
-			}
+      // wait until data is received
+      if (rclcpp::spin_until_future_complete(shared_from_this(), result_semantic_future) !=
+          rclcpp::FutureReturnCode::SUCCESS)
+      {
+        RCLCPP_INFO(this->get_logger(),
+                    "Failed to receive Semantic Interface information from Capabilities2 Server for %s",
+                    interface.c_str());
+        return false;
+      }
 
-			RCLCPP_INFO(this->get_logger(), "Received Semantic Interface information from Capabilities2 Server for %s", interface.c_str());
+      RCLCPP_INFO(this->get_logger(), "Received Semantic Interface information from Capabilities2 Server for %s",
+                  interface.c_str());
 
-			if (result_remantic_future.get()->semantic_interfaces.size() > 0)
-			{
-				for (const auto &semantic_interface : result_remantic_future.get()->semantic_interfaces)
-				{
-					interface_list.push_back(semantic_interface);
-				}
-			}
-			else
-			{
-				interface_list.push_back(interface);
-			}
-		}
+      // add sematic interfaces to the list if available
+      if (result_semantic_future.get()->semantic_interfaces.size() > 0)
+      {
+        for (const auto& semantic_interface : result_semantic_future.get()->semantic_interfaces)
+        {
+          interface_list.push_back(semantic_interface);
 
-		// intialize a vector to accomodate elememnts from both
-		std::vector<std::string> tag_list(interface_list.size() + control_tag_list.size());
-		std::merge(interface_list.begin(), interface_list.end(), control_tag_list.begin(), control_tag_list.end(), tag_list.begin());
+          // request providers of the semantic interface
+          request_providers->interface = semantic_interface;
+          request_providers->include_semantic = true;
 
-		if (!capabilities2_xml_parser::check_plan_tag(document))
-			return false;
+          auto result_providers_future = get_providers_client_->async_send_request(request_providers);
 
-		tinyxml2::XMLElement* plan = capabilities2_xml_parser::get_plan(document);
+          RCLCPP_INFO(this->get_logger(),
+                      "Requesting Providers information from Capabilities2 Server for semantic interface %s",
+                      semantic_interface.c_str());
 
-		if (!capabilities2_xml_parser::check_tags(plan, interface_list, control_tag_list))
-		{
-			RCLCPP_INFO(this->get_logger(), "Execution plan is faulty. Please recheck and update");
-			return false;
-		}
+          // wait until data is received
+          if (rclcpp::spin_until_future_complete(shared_from_this(), result_providers_future) !=
+              rclcpp::FutureReturnCode::SUCCESS)
+          {
+            RCLCPP_INFO(this->get_logger(), "Failed to receive Providers information from Capabilities2 Server for %s",
+                        semantic_interface.c_str());
+            return false;
+          }
 
-		
-	}
+          RCLCPP_INFO(this->get_logger(), "Received Providers information from Capabilities2 Server for %s",
+                      semantic_interface.c_str());
 
-	void execute_plan()
-	{
-		if (!verify_plan())
-		{
-			RCLCPP_INFO(this->get_logger(), "Plan verification failed");
-		}
+          // add defualt provider to the list
+          providers_list.push_back(result_providers_future.get()->default_provider);
 
-		// if (verify_plan())
-		// {
-		// 	establish_bonds();
+          // add additional providers to the list if available
+          if (result_providers_future.get()->providers.size() > 0)
+          {
+            for (const auto& provider : result_providers_future.get()->providers)
+            {
+              providers_list.push_back(provider);
+            }
+          }
+        }
+      }
+      // if no semantic interfaces are availble for a given interface, add the interface instead
+      else
+      {
+        interface_list.push_back(interface);
 
-		// 	use_capability();
+        // request providers of the semantic interface
+        request_providers->interface = interface;
+        request_providers->include_semantic = false;
 
-		// 	trigger_capability();
-		// }
-		// else
-		// {
-		// 	request_updated_plan();
-		// }
+        auto result_providers_future = get_providers_client_->async_send_request(request_providers);
 
-		// RCLCPP_INFO(this->get_logger(), "Executing goal");
-		// rclcpp::Rate loop_rate(1);
-		// const auto goal = goal_handle->get_goal();
-		// auto feedback = std::make_shared<Fibonacci::Feedback>();
-		// auto &sequence = feedback->partial_sequence;
-		// sequence.push_back(0);
-		// sequence.push_back(1);
-		// auto result = std::make_shared<Fibonacci::Result>();
+        RCLCPP_INFO(this->get_logger(),
+                    "Requesting Providers information from Capabilities2 Server for semantic interface %s",
+                    interface.c_str());
 
-		// for (int i = 1; (i < goal->order) && rclcpp::ok(); ++i)
-		// {
-		// 	// Check if there is a cancel request
-		// 	if (goal_handle->is_canceling())
-		// 	{
-		// 		result->sequence = sequence;
-		// 		goal_handle->canceled(result);
-		// 		RCLCPP_INFO(this->get_logger(), "Goal canceled");
-		// 		return;
-		// 	}
-		// 	// Update sequence
-		// 	sequence.push_back(sequence[i] + sequence[i - 1]);
-		// 	// Publish feedback
-		// 	goal_handle->publish_feedback(feedback);
-		// 	RCLCPP_INFO(this->get_logger(), "Publish feedback");
+        // wait until data is received
+        if (rclcpp::spin_until_future_complete(shared_from_this(), result_providers_future) !=
+            rclcpp::FutureReturnCode::SUCCESS)
+        {
+          RCLCPP_INFO(this->get_logger(), "Failed to receive Providers information from Capabilities2 Server for %s",
+                      interface.c_str());
+          return false;
+        }
 
-		// 	loop_rate.sleep();
-		// }
+        RCLCPP_INFO(this->get_logger(), "Received Providers information from Capabilities2 Server for %s",
+                    interface.c_str());
 
-		// // Check if goal is done
-		// if (rclcpp::ok())
-		// {
-		// 	result->sequence = sequence;
-		// 	goal_handle->succeed(result);
-		// 	RCLCPP_INFO(this->get_logger(), "Goal succeeded");
-		// }
-	}
+        providers_list.push_back(result_providers_future.get()->default_provider);
 
-	/** File Path link */
-	std::string plan_file_path;
+        // add sematic interfaces to the list if available
+        if (result_providers_future.get()->providers.size() > 0)
+        {
+          for (const auto& provider : result_providers_future.get()->providers)
+          {
+            providers_list.push_back(provider);
+          }
+        }
+      }
+    }
 
-	/** flag to select loading from file or accepting via action server */
-	bool read_file;
+    return true;
+  }
 
-	/** XML Document */
-	tinyxml2::XMLDocument document;
+  /**
+   * @brief verify the plan using received interfaces
+   *
+   * @return `true` if interface retreival is successful,`false` otherwise
+   */
+  bool verify_plan()
+  {
+    // intialize a vector to accomodate elements from both
+    std::vector<std::string> tag_list(interface_list.size() + control_tag_list.size());
+    std::merge(interface_list.begin(), interface_list.end(), control_tag_list.begin(), control_tag_list.end(),
+               tag_list.begin());
 
-	/** Execution Thread */
-	std::shared_ptr<std::thread> execution_thread;
+    // verify whether document got 'plan' tags
+    if (!capabilities2_xml_parser::check_plan_tag(document))
+    {
+      RCLCPP_INFO(this->get_logger(), "Execution plan is not compatible. Please recheck and update");
+      return false;
+    }
 
-	/** Interface List */
-	std::vector<std::string> interface_list;
+    // extract the components within the 'plan' tags
+    tinyxml2::XMLElement* plan = capabilities2_xml_parser::get_plan(document);
 
-	/** Control flow List */
-	std::vector<std::string> control_tag_list;
+    // verify whether the plan is valid
+    if (!capabilities2_xml_parser::check_tags(plan, interface_list, providers_list, control_tag_list))
+    {
+      RCLCPP_INFO(this->get_logger(), "Execution plan is faulty. Please recheck and update");
+      return false;
+    }
 
-	/** action server */
-	std::shared_ptr<rclcpp_action::Server<capabilities2_msgs::action::Plan>> planner_server_;
+    return true;
+  }
 
-	/** action server goal handle*/
-	std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Plan>> goal_handle;
+  /**
+   * @brief establish the bond with capabilities2 server
+   *
+   * @return `true` if bond establishing is successful,`false` otherwise
+   */
+  bool establish_bond()
+  {
+    // create bond establishing server request
+    auto request_bond = std::make_shared<capabilities2_msgs::srv::EstablishBond::Request>();
 
-	/** Get interfaces from capabilities server */
-	rclcpp::Client<capabilities2_msgs::srv::GetInterfaces>::SharedPtr get_interfaces_client_;
+    // send the request
+    auto result_future = establish_bond_client_->async_send_request(request_bond);
 
-	/** Get semantic interfaces from capabilities server */
-	rclcpp::Client<capabilities2_msgs::srv::GetSemanticInterfaces>::SharedPtr get_sem_interf_client_;
+    RCLCPP_INFO(this->get_logger(), "Requesting to establish bond with Capabilities2 Server");
 
-	/** establish bond */
-	rclcpp::Client<capabilities2_msgs::srv::EstablishBond>::SharedPtr establish_bond_client_;
+    // wait for the result
+    if (rclcpp::spin_until_future_complete(shared_from_this(), result_future) != rclcpp::FutureReturnCode::SUCCESS)
+    {
+      RCLCPP_INFO(this->get_logger(), "Failed to establish bond with Capabilities2 Server");
+      return false;
+    }
+
+    RCLCPP_INFO(this->get_logger(), "Established bond with Capabilities2 Server");
+
+    bond_id = result_future.get()->bond_id;
+
+    return true;
+  }
+
+  /**
+   * @brief execute the plan
+   *
+   * @param server_goal_handle goal handle of the server
+   */
+  void execute_plan(
+      const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Plan>> server_goal_handle)
+  {
+    auto result = std::make_shared<capabilities2_msgs::action::Plan::Result>();
+
+    // verify the plan
+    if (!request_information())
+    {
+      RCLCPP_INFO(this->get_logger(), "Interface retreival failed");
+
+      // TODO: improve with error codes
+      result->success = false;
+      server_goal_handle->canceled(result);
+
+      RCLCPP_INFO(this->get_logger(), "Server Execution Cancelled");
+    }
+
+    // verify the plan
+    if (!verify_plan())
+    {
+      RCLCPP_INFO(this->get_logger(), "Plan verification failed");
+
+      // TODO: improve with error codes
+      result->success = false;
+      server_goal_handle->canceled(result);
+
+      RCLCPP_INFO(this->get_logger(), "Server Execution Cancelled");
+    }
+
+    // extract the plan from the XMLDocument
+    tinyxml2::XMLElement* plan = capabilities2_xml_parser::get_plan(document);
+
+    // Extract the connections from the plan
+    capabilities2_xml_parser::extract_connections(plan, connection_list);
+
+    // estasblish the bond with the server
+    if (!establish_bond())
+    {
+      RCLCPP_INFO(this->get_logger(), "Establishing bond failed");
+
+      // TODO: improve with error codes
+      result->success = false;
+      server_goal_handle->canceled(result);
+
+      RCLCPP_INFO(this->get_logger(), "Server Execution Cancelled");
+    }
+
+    auto connection_goal_msg = capabilities2_msgs::action::Connections::Goal();
+    connection_goal_msg.bond_id = bond_id;
+    connection_goal_msg.header.stamp = this->get_clock()->now();
+
+    capabilities2_msgs::msg::CapabilityConnection connection_msg;
+
+    for (const auto& connection : connection_list)
+    {
+      connection_msg.source.capability = connection.source_event;
+      connection_msg.source.provider = connection.source_provider;
+      connection_msg.target.capability = connection.target_event;
+      connection_msg.target.provider = connection.target_provider;
+
+      if (connection.connection == capabilities2_executor::connection_type_t::ON_SUCCESS_START)
+        connection_msg.connection_type = capabilities2_msgs::msg::CapabilityConnection::ON_SUCCESS_START;
+
+      if (connection.connection == capabilities2_executor::connection_type_t::ON_START_START)
+        connection_msg.connection_type = capabilities2_msgs::msg::CapabilityConnection::ON_START_START;
+
+      if (connection.connection == capabilities2_executor::connection_type_t::ON_FAILURE_START)
+        connection_msg.connection_type = capabilities2_msgs::msg::CapabilityConnection::ON_FAILURE_START;
+
+      connection_msg.target_parameters = capabilities2_xml_parser::convert_to_string(connection.event_element);
+
+      connection_goal_msg.connections.push_back(connection_msg);
+    }
+
+    auto send_goal_options = rclcpp_action::Client<capabilities2_msgs::action::Connections>::SendGoalOptions();
+
+    // send goal options
+    // goal response callback
+    send_goal_options.goal_response_callback =
+        [this, server_goal_handle](
+            const rclcpp_action::ClientGoalHandle<capabilities2_msgs::action::Connections>::SharedPtr& goal_handle) {
+          if (!goal_handle)
+          {
+            RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
+
+            auto result = std::make_shared<capabilities2_msgs::action::Plan::Result>();
+
+            // TODO: improve with error codes
+            result->success = false;
+            server_goal_handle->canceled(result);
+
+            RCLCPP_INFO(this->get_logger(), "Server Execution Cancelled");
+          }
+          else
+          {
+            RCLCPP_INFO(this->get_logger(), "Goal accepted by server, waiting for result");
+          }
+        };
+
+    // result callback
+    send_goal_options.result_callback =
+        [this, server_goal_handle](
+            const rclcpp_action::ClientGoalHandle<capabilities2_msgs::action::Connections>::WrappedResult& result) {
+          auto result_out = std::make_shared<capabilities2_msgs::action::Plan::Result>();
+
+          switch (result.code)
+          {
+            case rclcpp_action::ResultCode::SUCCEEDED:
+              break;
+            case rclcpp_action::ResultCode::ABORTED:
+              RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
+
+              // TODO: improve with error codes
+              result_out->success = false;
+              server_goal_handle->canceled(result_out);
+
+              RCLCPP_INFO(this->get_logger(), "Server Execution Cancelled");
+
+              return;
+            case rclcpp_action::ResultCode::CANCELED:
+              RCLCPP_ERROR(this->get_logger(), "Goal was canceled");
+
+              // TODO: improve with error codes
+              result_out->success = false;
+              server_goal_handle->canceled(result_out);
+
+              RCLCPP_INFO(this->get_logger(), "Server Execution Cancelled");
+
+              return;
+            default:
+              RCLCPP_ERROR(this->get_logger(), "Unknown result code");
+
+              // TODO: improve with error codes
+              result_out->success = false;
+              server_goal_handle->canceled(result_out);
+
+              RCLCPP_INFO(this->get_logger(), "Server Execution Cancelled");
+              return;
+          }
+
+          if (result.result->failed_connections.size() > 0)
+          {
+            // TODO: improve with error codes
+            result_out->success = false;
+
+            for (const auto& failed_connection : result.result->failed_connections)
+            {
+              RCLCPP_ERROR(this->get_logger(), "Failed Events : %s", failed_connection.target_parameters.c_str());
+
+              result_out->failed_elements.push_back(failed_connection.target_parameters);
+            }
+
+            server_goal_handle->canceled(result_out);
+
+            RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
+          }
+          else
+          {
+            // TODO: improve with error codes
+            result_out->success = true;
+            server_goal_handle->succeed(result_out);
+
+            RCLCPP_INFO(this->get_logger(), "Server Execution Succeeded");
+          }
+
+          rclcpp::shutdown();
+        };
+
+    this->client_capabilities_->async_send_goal(connection_goal_msg, send_goal_options);
+  }
+
+private:
+  /** File Path link */
+  std::string plan_file_path;
+
+  /** flag to select loading from file or accepting via action server */
+  bool read_file;
+
+  /** Bond ID between capabilities server and this client */
+  std::string bond_id;
+
+  /** XML Document */
+  tinyxml2::XMLDocument document;
+
+  /** vector of connections */
+  std::vector<capabilities2_executor::connection_t> connection_list;
+
+  /** Execution Thread */
+  std::shared_ptr<std::thread> execution_thread;
+
+  /** Interface List */
+  std::vector<std::string> interface_list;
+
+  /** Providers List */
+  std::vector<std::string> providers_list;
+
+  /** Control flow List */
+  std::vector<std::string> control_tag_list;
+
+  /** action client for connecting with capabilities server*/
+  rclcpp_action::Client<capabilities2_msgs::action::Connections>::SharedPtr client_capabilities_;
+
+  /** action server that exposes executor*/
+  std::shared_ptr<rclcpp_action::Server<capabilities2_msgs::action::Plan>> planner_server_;
+
+  /** action server goal handle*/
+  std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Plan>> goal_handle;
+
+  /** Get interfaces from capabilities server */
+  rclcpp::Client<capabilities2_msgs::srv::GetInterfaces>::SharedPtr get_interfaces_client_;
+
+  /** Get semantic interfaces from capabilities server */
+  rclcpp::Client<capabilities2_msgs::srv::GetSemanticInterfaces>::SharedPtr get_sem_interf_client_;
+
+  /** Get providers from capabilities server */
+  rclcpp::Client<capabilities2_msgs::srv::GetProviders>::SharedPtr get_providers_client_;
+
+  /** establish bond */
+  rclcpp::Client<capabilities2_msgs::srv::EstablishBond>::SharedPtr establish_bond_client_;
 };

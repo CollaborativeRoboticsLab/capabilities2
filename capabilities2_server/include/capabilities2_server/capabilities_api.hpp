@@ -152,8 +152,17 @@ public:
    */
   void stop_capability(const std::string& capability)
   {
+    // make sure provider exists
+    // this can happen if dependencies fail to resolve in the first place
+    if (!runner_cache_.running(capability))
+    {
+      RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "could not get provider for: %s", capability.c_str());
+      return;
+    }
+
     // get the provider from runner
     std::string provider = runner_cache_.provider(capability);
+
     // get the running model from the db
     models::running_model_t running = cap_db_->get_running(provider);
 
@@ -182,6 +191,7 @@ public:
     catch (const capabilities2_runner::runner_exception& e)
     {
       RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "could not stop runner: %s", e.what());
+      return;
     }
 
     // log
@@ -248,10 +258,22 @@ public:
 
       // convert message to model and add to db
       models::interface_model_t model;
-      model.from_yaml(YAML::Load(spec.content));
+      try
+      {
+        model.from_yaml(YAML::Load(spec.content));
+      }
+      catch (const std::exception& e)
+      {
+        RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "failed to convert spec to model: %s", e.what());
+        return;
+      }
+
       // add package to name probably to avoid collisions (this was previous convention)
       model.header.name = spec.package + "/" + model.header.name;
       cap_db_->insert_interface(model);
+
+      // log
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "interface added to db: %s", model.header.name.c_str());
       return;
     }
 
@@ -264,9 +286,23 @@ public:
       }
 
       models::semantic_interface_model_t model;
-      model.from_yaml(YAML::Load(spec.content));
+
+      try
+      {
+        model.from_yaml(YAML::Load(spec.content));
+      }
+      catch (const std::exception& e)
+      {
+        RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "failed to convert spec to model: %s", e.what());
+        return;
+      }
+
       model.header.name = spec.package + "/" + model.header.name;
       cap_db_->insert_semantic_interface(model);
+
+      // log
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "semantic interface added to db: %s",
+                  model.header.name.c_str());
       return;
     }
 
@@ -279,9 +315,21 @@ public:
       }
 
       models::provider_model_t model;
-      model.from_yaml(YAML::Load(spec.content));
+
+      try
+      {
+        model.from_yaml(YAML::Load(spec.content));
+      }
+      catch (const std::exception& e)
+      {
+        RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "failed to convert spec to model: %s", e.what());
+        return;
+      }
       model.header.name = spec.package + "/" + model.header.name;
       cap_db_->insert_provider(model);
+
+      // log
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "provider added to db: %s", model.header.name.c_str());
       return;
     }
 

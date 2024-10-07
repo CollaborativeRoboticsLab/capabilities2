@@ -152,6 +152,9 @@ public:
    */
   const std::string provider(const std::string& capability)
   {
+    if (!running(capability))
+      throw capabilities2_runner::runner_exception("capability runner not found: " + capability);
+
     return runner_cache_[capability]->get_provider();
   }
 
@@ -163,6 +166,9 @@ public:
    */
   const std::string started_by(const std::string& capability)
   {
+    if (!running(capability))
+      throw capabilities2_runner::runner_exception("capability runner not found: " + capability);
+
     return runner_cache_[capability]->get_started_by();
   }
 
@@ -174,6 +180,9 @@ public:
    */
   const std::string pid(const std::string& capability)
   {
+    if (!running(capability))
+      throw capabilities2_runner::runner_exception("capability runner not found: " + capability);
+
     return runner_cache_[capability]->get_pid();
   }
 

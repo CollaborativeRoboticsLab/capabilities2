@@ -6,6 +6,7 @@ string plan
 # result
 std_msgs/Header header
 bool success
+string[] failed_elements
 ---
 # feedback
 std_msgs/Header header

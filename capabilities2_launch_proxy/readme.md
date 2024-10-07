@@ -10,9 +10,11 @@ Use in conjunction with `capabilities2_server` package, to provide a full capabi
 
 Implements three main functions:
 
-- `launch` - run a launch file
-- `shutdown` - shutdown a launch
-- `events` - send capability events
+| Function | Description |
+| --- | --- |
+| `launch` | Run a launch file requested a runtime via a network request |
+| `shutdown` | shutdown a launch file that has been started |
+| `events` | send capability events during operation |
 
 The lifecylce of these functions are typically handled by the capabilities server but could be used for other things.
 
@@ -35,4 +37,10 @@ def generate_launch_description():
             name='capabilities_launch_proxy'
         )
     ])
+```
+
+### Run standalone
+
+```bash
+ros2 run capabilities2_launch_proxy capabilities_launch_proxy
 ```

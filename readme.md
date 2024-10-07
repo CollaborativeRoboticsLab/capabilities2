@@ -2,7 +2,6 @@
 
 [![ROS2 Jazzy](https://img.shields.io/badge/ROS2-Jazzy-blue)](https://index.ros.org/doc/ros2/Releases/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
 ![C++](https://img.shields.io/badge/Code-C++-informational?&logo=c%2b%2b)
 ![ROS](https://img.shields.io/badge/Framework-ROS-informational?&logo=ROS)
 
@@ -86,8 +85,5 @@ colcon build
 
 ## Acknowledgements
 
-This work is based on the capabilities package developed by the Open Source Robotics Foundation. [github.com/osrf/capabilities](https://github.com/osrf/capabilities).
-
-## Citation
-
-If you use this work in an academic context, please cite the following publication(s):
+This work is based on the capabilities package developed by the Open Source Robotics Foundation. [github.com/osrf/capabilities](https://github.com/osrf/capabilities) (No affiliation).
+/

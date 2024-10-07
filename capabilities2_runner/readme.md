@@ -29,9 +29,9 @@ An example of the inheritance diagram for the runners is shown below. The `Runne
 
 ![inheritance diagram](./docs/images/inheritance-diagram.png)
 
-## creating a new runner
+## Creating a new runner
 
-New runners can be created to perform new capabilities. The runner can be specified in a capability provider as the `runner` tag:
+Runners can be created to perform capabilities. The runner can be specified in a capability provider as the `runner` tag:
 
 ```yaml
 # provider ...
@@ -43,7 +43,9 @@ implements: my_capability
 runner: capabilities2_runner::MyRunner
 ```
 
-The runner should inherit from the `RunnerBase` or another like the `ActionRunner` class. The runner must implement the `start`, `stop`, and `trigger` methods, and then be registered as a plugin, using the `PLUGINLIB_EXPORT_CLASS` macro.
+The runner should inherit from the `RunnerBase` or another like the `ActionRunner` class. The runner must implement the `start`, `stop`, and `trigger` methods, and then be registered as a plugin, using the `PLUGINLIB_EXPORT_CLASS` macro. See [Creating Runners](./docs/create_runners.md) for more information.
+
+```cpp
 
 ### Base Runner
 
@@ -78,4 +80,4 @@ namespace capabilities2_runner
 The `capabilities2_runner` package provides experimental runners that can be used to start capabilities. These runners are not fully tested and may not work as expected. The experimental runners are:
 
 - `capabilities2_runner::EnCapRunner` - runner that provides a capability action interface that encapsulates another action.
-- `capabilities2_runner::MultiActionRunner` - runs multiple actions in parallel.
+- `capabilities2_runner::MultiActionRunner` - runs multiple actions in sequence or parallel.
