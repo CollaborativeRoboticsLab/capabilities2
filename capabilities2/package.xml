@@ -6,10 +6,10 @@
     meta-package for the capabilities2 interface
   </description>
 
-  <maintainer email="anon">anon</maintainer>
-  <maintainer email="anon">anon</maintainer>
+  <maintainer email="anon@anon.tld">anon</maintainer>
+  <maintainer email="anon@anon.tld">anon</maintainer>
 
-  <author email="anon">anon</author>
+  <author email="anon@anon.tld">anon</author>
 
   <license>MIT</license>
 

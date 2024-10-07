@@ -6,10 +6,10 @@
     Package that implements the capabilities2 service, a successor to capabilities
   </description>
 
-  <maintainer email="anon">anon</maintainer>
-  <maintainer email="anon">anon</maintainer>
+  <maintainer email="anon@anon.tld">anon</maintainer>
+  <maintainer email="anon@anon.tld">anon</maintainer>
 
-  <author email="anon">anon</author>
+  <author email="anon@anon.tld">anon</author>
 
   <license>MIT</license>
 
