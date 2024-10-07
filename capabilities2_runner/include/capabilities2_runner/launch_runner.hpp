@@ -53,6 +53,8 @@ public:
     capabilities2_msgs::action::Launch::Goal goal;
     goal.launch_file_path = launch_file_path;
 
+    send_goal_options_.result_callback = nullptr;
+
     // launch runner using action client
     action_client_->async_send_goal(goal, send_goal_options_);
   }

@@ -105,7 +105,7 @@ public:
   void remove_runner(const std::string& capability)
   {
     // find the runner in the cache
-    if (runner_cache_.find(capability) == runner_cache_.end())
+    if (!running(capability))
     {
       // not found so nothing to do
       throw capabilities2_runner::runner_exception("capability runner not found: " + capability);
@@ -120,6 +120,7 @@ public:
     catch (const capabilities2_runner::runner_exception& e)
     {
       // pass
+      // RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "%s", e.what());
     }
 
     // reset the runner pointer
