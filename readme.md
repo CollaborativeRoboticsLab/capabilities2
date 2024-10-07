@@ -44,7 +44,7 @@ To enable the launch functionality from `capabilities` in `capabilities2`, a `la
 
 ## Using Capabilities package (Development and Deployment)
 
-The current package has been tested on Ubuntu and ROS2 Rolling and Jazzy.
+The current package has been tested on Ubuntu and ROS2 Rolling and Jazzy. [More information](./docs/readme.md)
 
 ### Basic setup
 
