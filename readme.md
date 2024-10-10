@@ -122,16 +122,16 @@ Read more about this [here](../capabilities2/capabilities2_server/readme.md)
 
 Read more about this [here](../capabilities2/docs/run_test_scripts.md) 
 
-Docs
+### Docs
 
-For detailed information about the code, build the code documentation using Doxygen. see capabilities2_documentation.
+For detailed information about the code, build the code documentation using Doxygen. see [`capabilities2_documentation`](./capabilities2_documentation/).
 
+```bash
 # in the devcontainer
 cd capabilities2_documentation
 doxygen Doxyfile
-
-Open capabilities2_documentation/html/index.html in a browser for Documentation.
-
+```
+Open [`capabilities2_documentation/html/index.html`](./capabilities2_documentation/html/index.html) in a browser for Documentation.
 ## Acknowledgements
 
 This work is based on the capabilities package developed by the Open Source Robotics Foundation. [github.com/osrf/capabilities](https://github.com/osrf/capabilities).
