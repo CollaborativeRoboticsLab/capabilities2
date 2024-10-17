@@ -30,18 +30,10 @@ public:
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
-   * @param on_started pointer to function to execute on starting the runner
-   * @param on_failure pointer to function to execute on failure of the runner
-   * @param on_success pointer to function to execute on success of the runner
-   * @param on_stopped pointer to function to execute on stopping the runner
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                     std::function<void(const std::string&)> on_started = nullptr,
-                     std::function<void(const std::string&)> on_failure = nullptr,
-                     std::function<void(const std::string&)> on_success = nullptr,
-                     std::function<void(const std::string&)> on_stopped = nullptr) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
-    init_action(node, run_config, "speech_to_text", on_started, on_failure, on_success, on_stopped);
+    init_action(node, run_config, "speech_to_text");
   }
 
 protected:

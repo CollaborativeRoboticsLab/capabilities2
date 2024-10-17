@@ -33,21 +33,15 @@ public:
    * this is deferred since the action client topic name is not known at this level
    * of abstraction
    *
-   * @param node
-   * @param run_config
-   * @param action_name
-   * @param on_started
-   * @param on_terminated
-   * @param on_stopped
+   * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
+   * @param run_config runner configuration loaded from the yaml file
+   * @param action_name action name used in the yaml file, used to load specific configuration from the run_config
    */
   virtual void init_encapsulated_action(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                                        const std::string& action_name,
-                                        std::function<void(const std::string&)> on_started = nullptr,
-                                        std::function<void(const std::string&)> on_terminated = nullptr,
-                                        std::function<void(const std::string&)> on_stopped = nullptr)
+                                        const std::string& action_name)
   {
     // init the base action runner
-    init_action(node, run_config, action_name, on_started, on_terminated, on_stopped);
+    init_action(node, run_config, action_name);
 
     // create an encapsulating action server
     encap_action_ = rclcpp_action::create_server<capabilities2_msgs::action::Capability>(

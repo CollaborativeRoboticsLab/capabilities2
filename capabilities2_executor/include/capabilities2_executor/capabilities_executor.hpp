@@ -34,9 +34,7 @@ class CapabilitiesExecutor : public rclcpp::Node
 public:
   CapabilitiesExecutor(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("Capabilities2_Executor", options)
   {
-    control_tag_list.push_back("sequential");
-    control_tag_list.push_back("parallel");
-    control_tag_list.push_back("recovery");
+    control_tag_list = capabilities2_xml_parser::get_control_list();
 
     this->planner_server_ = rclcpp_action::create_server<capabilities2_msgs::action::Plan>(
         this, "~/capabilities", std::bind(&CapabilitiesExecutor::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
@@ -320,7 +318,7 @@ private:
     tinyxml2::XMLElement* plan = capabilities2_xml_parser::get_plan(document);
 
     // Extract the connections from the plan
-    capabilities2_xml_parser::extract_connections(plan, connection_list);
+    capabilities2_xml_parser::extract_connections(plan, connection_map);
 
     // estasblish the bond with the server
     if (!establish_bond())
@@ -340,23 +338,59 @@ private:
 
     capabilities2_msgs::msg::CapabilityConnection connection_msg;
 
-    for (const auto& connection : connection_list)
+    for (const auto& [key, value] : connection_map)
     {
-      connection_msg.source.capability = connection.source_event;
-      connection_msg.source.provider = connection.source_provider;
-      connection_msg.target.capability = connection.target_event;
-      connection_msg.target.provider = connection.target_provider;
+      RCLCPP_INFO(this->get_logger(), "Node : %i", key);
 
-      if (connection.connection == capabilities2_executor::connection_type_t::ON_SUCCESS_START)
-        connection_msg.connection_type = capabilities2_msgs::msg::CapabilityConnection::ON_SUCCESS_START;
+      if (capabilities2_xml_parser::convert_to_string(value.source.parameters, connection_msg.source_parameters))
+      {
+        connection_msg.source.capability = value.source.runner;
+        connection_msg.source.provider = value.source.provider;
 
-      if (connection.connection == capabilities2_executor::connection_type_t::ON_START_START)
-        connection_msg.connection_type = capabilities2_msgs::msg::CapabilityConnection::ON_START_START;
+        RCLCPP_INFO(this->get_logger(), "Source Capability : %s", connection_msg.source.capability.c_str());
+        RCLCPP_INFO(this->get_logger(), "Source Provider   : %s", connection_msg.source.provider.c_str());
+        RCLCPP_INFO(this->get_logger(), "Source Parameters : %s", connection_msg.source_parameters.c_str());
+      }
 
-      if (connection.connection == capabilities2_executor::connection_type_t::ON_FAILURE_START)
-        connection_msg.connection_type = capabilities2_msgs::msg::CapabilityConnection::ON_FAILURE_START;
+      if (capabilities2_xml_parser::convert_to_string(value.target_on_start.parameters, connection_msg.target_on_start_parameters))
+      {
+        connection_msg.target_on_start.capability = value.target_on_start.runner;
+        connection_msg.target_on_start.provider = value.target_on_start.provider;
 
-      connection_msg.target_parameters = capabilities2_xml_parser::convert_to_string(connection.event_element);
+        RCLCPP_INFO(this->get_logger(), "Triggered on start Capability : %s", connection_msg.target_on_start.capability.c_str());
+        RCLCPP_INFO(this->get_logger(), "Triggered on start Provider   : %s", connection_msg.target_on_start.provider.c_str());
+        RCLCPP_INFO(this->get_logger(), "Triggered on start Parameters : %s", connection_msg.target_on_start_parameters.c_str());
+      }
+
+      if (capabilities2_xml_parser::convert_to_string(value.target_on_stop.parameters, connection_msg.target_on_stop_parameters))
+      {
+        connection_msg.target_on_stop.capability = value.target_on_stop.runner;
+        connection_msg.target_on_stop.provider = value.target_on_stop.provider;
+
+        RCLCPP_INFO(this->get_logger(), "Triggered on stop Capability : %s", connection_msg.target_on_stop.capability.c_str());
+        RCLCPP_INFO(this->get_logger(), "Triggered on stop Provider   : %s", connection_msg.target_on_stop.provider.c_str());
+        RCLCPP_INFO(this->get_logger(), "Triggered on stop Parameters : %s", connection_msg.target_on_stop_parameters.c_str());
+      }
+
+      if (capabilities2_xml_parser::convert_to_string(value.target_on_success.parameters, connection_msg.target_on_success_parameters))
+      {
+        connection_msg.target_on_success.capability = value.target_on_success.runner;
+        connection_msg.target_on_success.provider = value.target_on_success.provider;
+
+        RCLCPP_INFO(this->get_logger(), "Triggered on success Capability : %s", connection_msg.target_on_success.capability.c_str());
+        RCLCPP_INFO(this->get_logger(), "Triggered on success Provider   : %s", connection_msg.target_on_success.provider.c_str());
+        RCLCPP_INFO(this->get_logger(), "Triggered on success Parameters : %s", connection_msg.target_on_success_parameters.c_str());
+      }
+
+      if (capabilities2_xml_parser::convert_to_string(value.target_on_failure.parameters, connection_msg.target_on_failure_parameters))
+      {
+        connection_msg.target_on_failure.capability = value.target_on_failure.runner;
+        connection_msg.target_on_failure.provider = value.target_on_failure.provider;
+
+        RCLCPP_INFO(this->get_logger(), "Triggered on failure Capability : %s", connection_msg.target_on_failure.capability.c_str());
+        RCLCPP_INFO(this->get_logger(), "Triggered on failure Provider   : %s", connection_msg.target_on_failure.provider.c_str());
+        RCLCPP_INFO(this->get_logger(), "Triggered on failure Parameters : %s", connection_msg.target_on_failure_parameters.c_str());
+      }
 
       connection_goal_msg.connections.push_back(connection_msg);
     }
@@ -432,9 +466,9 @@ private:
 
             for (const auto& failed_connection : result.result->failed_connections)
             {
-              RCLCPP_ERROR(this->get_logger(), "Failed Events : %s", failed_connection.target_parameters.c_str());
+              RCLCPP_ERROR(this->get_logger(), "Failed Events : %s", failed_connection.source_parameters.c_str());
 
-              result_out->failed_elements.push_back(failed_connection.target_parameters);
+              result_out->failed_elements.push_back(failed_connection.source_parameters);
             }
 
             server_goal_handle->canceled(result_out);
@@ -470,7 +504,7 @@ private:
   tinyxml2::XMLDocument document;
 
   /** vector of connections */
-  std::vector<capabilities2_executor::connection_t> connection_list;
+  std::map<int, capabilities2_executor::node_t> connection_map;
 
   /** Execution Thread */
   std::shared_ptr<std::thread> execution_thread;

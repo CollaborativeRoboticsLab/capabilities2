@@ -36,19 +36,11 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    * @param action_name action name used in the yaml file, used to load specific configuration from the run_config
-   * @param on_started pointer to function to execute on starting the runner
-   * @param on_failure pointer to function to execute on failure of the runner
-   * @param on_success pointer to function to execute on success of the runner
-   * @param on_stopped pointer to function to execute on stopping the runner
    */
-  virtual void init_action(rclcpp::Node::SharedPtr node, const runner_opts& run_config, const std::string& action_name,
-                           std::function<void(const std::string&)> on_started = nullptr,
-                           std::function<void(const std::string&)> on_failure = nullptr,
-                           std::function<void(const std::string&)> on_success = nullptr,
-                           std::function<void(const std::string&)> on_stopped = nullptr)
+  virtual void init_action(rclcpp::Node::SharedPtr node, const runner_opts& run_config, const std::string& action_name)
   {
     // initialize the runner base by storing node pointer and run config
-    init_base(node, run_config, on_started, on_failure, on_success, on_stopped);
+    init_base(node, run_config);
 
     // create an action client
     action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name);
@@ -62,36 +54,6 @@ public:
                    action_name.c_str());
       throw runner_exception("failed to connect to action server");
     }
-
-    // send goal options
-    // goal response callback
-    send_goal_options_.goal_response_callback =
-        [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
-          // publish event
-          if (goal_handle)
-            if (on_started_)
-              on_started_(run_config_.interface);
-
-          // store goal handle to be used with stop funtion
-          goal_handle_ = goal_handle;
-        };
-
-    // result callback
-    send_goal_options_.result_callback =
-        [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
-          if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
-          {
-            // send terminated event
-            if (on_success_)
-              on_success_(run_config_.interface);
-          }
-          else
-          {
-            // send terminated event
-            if (on_failure_)
-              on_failure_(run_config_.interface);
-          }
-        };
   }
 
   /**
@@ -125,9 +87,11 @@ public:
               }
 
               // publish event
-              if (on_stopped_)
+              if (event_tracker[execute_tracker_id].on_stopped)
               {
-                on_stopped_(run_config_.interface);
+                event_tracker[execute_tracker_id].on_stopped(
+                    update_on_stopped(event_tracker[execute_tracker_id].on_stopped_param));
+                execute_tracker_id += 1;
               }
             });
 
@@ -154,8 +118,8 @@ public:
   trigger(tinyxml2::XMLElement* parameters = nullptr) override
   {
     // the action is being triggered out of order
-    if (!goal_handle_)
-      throw runner_exception("cannot trigger action that was not started");
+    // if (!goal_handle_)
+    //   throw runner_exception("cannot trigger action that was not started");
 
     // if parameters are not provided then cannot proceed
     if (!parameters)
@@ -163,6 +127,48 @@ public:
 
     // generate a goal from parameters if provided
     typename ActionT::Goal goal_msg = generate_goal(parameters);
+
+    // send goal options
+    // goal response callback
+    send_goal_options_.goal_response_callback =
+        [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
+          // publish event
+          if (goal_handle)
+            if (event_tracker[execute_tracker_id].on_started)
+            {
+              event_tracker[execute_tracker_id].on_started(
+                  update_on_started(event_tracker[execute_tracker_id].on_started_param));
+              execute_tracker_id += 1;
+            }
+
+          // store goal handle to be used with stop funtion
+          goal_handle_ = goal_handle;
+        };
+
+    // result callback
+    send_goal_options_.result_callback =
+        [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
+          if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
+          {
+            // send success event
+            if (event_tracker[execute_tracker_id].on_success)
+            {
+              event_tracker[execute_tracker_id].on_success(
+                  update_on_success(event_tracker[execute_tracker_id].on_success_param));
+              execute_tracker_id += 1;
+            }
+          }
+          else
+          {
+            // send terminated event
+            if (event_tracker[execute_tracker_id].on_failure)
+            {
+              event_tracker[execute_tracker_id].on_failure(
+                  update_on_failure(event_tracker[execute_tracker_id].on_failure_param));
+              execute_tracker_id += 1;
+            }
+          }
+        };
 
     // trigger the action client with goal
     auto goal_handle_future = action_client_->async_send_goal(goal_msg, send_goal_options_);
@@ -184,29 +190,27 @@ public:
 
     auto result_future = action_client_->async_get_result(goal_handle);
 
-    // create a function to call for the result
-    // the future will be returned to the caller
-    // and the caller can provide a conversion function
-    // to handle the result
-    std::function<void(tinyxml2::XMLElement*)> result_callback =
-        [this, result_future](tinyxml2::XMLElement* result) {
-          // wait for result
-          if (rclcpp::spin_until_future_complete(node_, result_future) != rclcpp::FutureReturnCode::SUCCESS)
-          {
-            RCLCPP_ERROR(node_->get_logger(), "get result call failed");
-            return;
-          }
+    // create a function to call for the result. the future will be returned to the caller and the caller
+    // can provide a conversion function to handle the result
 
-          // get wrapped result
-          typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult wrapped_result = result_future.get();
+    std::function<void(tinyxml2::XMLElement*)> result_callback = [this, result_future](tinyxml2::XMLElement* result) {
+      // wait for result
+      if (rclcpp::spin_until_future_complete(node_, result_future) != rclcpp::FutureReturnCode::SUCCESS)
+      {
+        RCLCPP_ERROR(node_->get_logger(), "get result call failed");
+        return;
+      }
 
-          // convert the result
-          if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
-          {
-            result = generate_result(wrapped_result.result);
-            return;
-          }
-        };
+      // get wrapped result
+      typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult wrapped_result = result_future.get();
+
+      // convert the result
+      if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
+      {
+        result = generate_result(wrapped_result.result);
+        return;
+      }
+    };
 
     return result_callback;
   }

@@ -26,19 +26,11 @@ public:
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
-   * @param on_started pointer to function to execute on starting the runner
-   * @param on_failure pointer to function to execute on failure of the runner
-   * @param on_success pointer to function to execute on success of the runner
-   * @param on_stopped pointer to function to execute on stopping the runner
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                     std::function<void(const std::string&)> on_started = nullptr,
-                     std::function<void(const std::string&)> on_failure = nullptr,
-                     std::function<void(const std::string&)> on_success = nullptr,
-                     std::function<void(const std::string&)> on_stopped = nullptr) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
     // store node pointer and run_config
-    init_action(node, run_config, "capabilities_launch_proxy/launch", on_started, on_failure, on_success, on_stopped);
+    init_action(node, run_config, "capabilities_launch_proxy/launch");
 
     // get the package path from environment variable
     std::string package_path;
@@ -63,6 +55,8 @@ public:
     // create a launch goal
     capabilities2_msgs::action::Launch::Goal goal;
     goal.launch_file_path = launch_file_path;
+
+    send_goal_options_.result_callback = nullptr;
 
     // launch runner using action client
     action_client_->async_send_goal(goal, send_goal_options_);

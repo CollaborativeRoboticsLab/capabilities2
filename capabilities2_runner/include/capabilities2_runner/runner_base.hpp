@@ -58,6 +58,32 @@ struct runner_opts
   std::string pid;
 };
 
+/**
+ * @brief event options
+ *
+ * keeps track of events that are related to runner instances at various points of the
+ * plan
+ * @param on_started pointer to function to execute on start
+ * @param on_success pointer to function to execute on success
+ * @param on_failure pointer to function to execute on failure
+ * @param on_stopped pointer to function to execute on stop
+ * @param on_started_param parameters for the function to execute on start
+ * @param on_success_param parameters for the function to execute on success
+ * @param on_failure_param parameters for the function to execute on failure
+ * @param on_stopped_param parameters for the function to execute on stop
+ */
+struct event_opts
+{
+  std::function<void(tinyxml2::XMLElement*)> on_started;
+  std::function<void(tinyxml2::XMLElement*)> on_success;
+  std::function<void(tinyxml2::XMLElement*)> on_failure;
+  std::function<void(tinyxml2::XMLElement*)> on_stopped;
+  tinyxml2::XMLElement* on_started_param;
+  tinyxml2::XMLElement* on_success_param;
+  tinyxml2::XMLElement* on_failure_param;
+  tinyxml2::XMLElement* on_stopped_param;
+};
+
 class RunnerBase
 {
 public:
@@ -76,16 +102,8 @@ public:
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
-   * @param on_started pointer to function to execute on starting the runner
-   * @param on_failure pointer to function to execute on failure of the runner
-   * @param on_success pointer to function to execute on success of the runner
-   * @param on_stopped pointer to function to execute on stopping the runner
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                 std::function<void(const std::string&)> on_started = nullptr,
-                 std::function<void(const std::string&)> on_failure = nullptr,
-                 std::function<void(const std::string&)> on_success = nullptr,
-                 std::function<void(const std::string&)> on_stopped = nullptr) = 0;
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) = 0;
 
   /**
    * @brief stop the runner
@@ -112,22 +130,48 @@ public:
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
-   * @param on_started pointer to function to execute on starting the runner
-   * @param on_terminated pointer to function to execute on terminating the runner
    */
-  void init_base(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                 std::function<void(const std::string&)> on_started = nullptr,
-                 std::function<void(const std::string&)> on_failure = nullptr,
-                 std::function<void(const std::string&)> on_success = nullptr,
-                 std::function<void(const std::string&)> on_stopped = nullptr)
+  void init_base(rclcpp::Node::SharedPtr node, const runner_opts& run_config)
   {
     // store node pointer and opts
     node_ = node;
     run_config_ = run_config;
-    on_started_ = on_started;
-    on_failure_ = on_failure;
-    on_stopped_ = on_stopped;
-    on_success_ = on_success;
+    insert_tracker_id = 0;
+    execute_tracker_id = 0;
+  }
+
+  /**
+   * @brief attach events to the runner
+   *
+   * @param on_started pointer to function to execute on starting the runner
+   * @param on_started_param parameters to triggers the on_started event with
+   * @param on_failure pointer to function to execute on failure of the runner
+   * @param on_failure_param parameters to triggers the on_started event with
+   * @param on_success pointer to function to execute on success of the runner
+   * @param on_success_param parameters to triggers the on_started event with
+   * @param on_stopped pointer to function to execute on stopping the runner
+   * @param on_stopped_param parameters to triggers the on_started event with
+   */
+  void attach_events(
+      std::function<void(tinyxml2::XMLElement*)> on_started = nullptr, tinyxml2::XMLElement* on_started_param = nullptr,
+      std::function<void(tinyxml2::XMLElement*)> on_failure = nullptr, tinyxml2::XMLElement* on_failure_param = nullptr,
+      std::function<void(tinyxml2::XMLElement*)> on_success = nullptr, tinyxml2::XMLElement* on_success_param = nullptr,
+      std::function<void(tinyxml2::XMLElement*)> on_stopped = nullptr, tinyxml2::XMLElement* on_stopped_param = nullptr)
+  {
+    event_opts event;
+
+    event.on_started = on_started;
+    event.on_failure = on_failure;
+    event.on_stopped = on_stopped;
+    event.on_success = on_success;
+
+    event.on_started_param = on_started_param;
+    event.on_failure_param = on_failure_param;
+    event.on_success_param = on_success_param;
+    event.on_stopped_param = on_stopped_param;
+
+    event_tracker[insert_tracker_id] = event;
+    insert_tracker_id += 1;
   }
 
   /**
@@ -171,6 +215,71 @@ public:
   }
 
 protected:
+
+  /**
+   * @brief Update on_started event parameters with new data if avaible.
+   *
+   * This function is used to inject new data into the XMLElement containing
+   * parameters related to the on_started trigger event
+   *
+   * A pattern needs to be implemented in the derived class
+   *
+   * @param parameters pointer to the XMLElement containing parameters
+   * @return pointer to the XMLElement containing updated parameters
+   */
+  virtual tinyxml2::XMLElement* update_on_started(tinyxml2::XMLElement* parameters)
+  {
+    return parameters;
+  };
+
+  /**
+   * @brief Update on_stopped event parameters with new data if avaible.
+   *
+   * This function is used to inject new data into the XMLElement containing
+   * parameters related to the on_stopped trigger event
+   *
+   * A pattern needs to be implemented in the derived class
+   *
+   * @param parameters pointer to the XMLElement containing parameters
+   * @return pointer to the XMLElement containing updated parameters
+   */
+  virtual tinyxml2::XMLElement* update_on_stopped(tinyxml2::XMLElement* parameters)
+  {
+    return parameters;
+  };
+
+  /**
+   * @brief Update on_failure event parameters with new data if avaible.
+   *
+   * This function is used to inject new data into the XMLElement containing
+   * parameters related to the on_failure trigger event
+   *
+   * A pattern needs to be implemented in the derived class
+   *
+   * @param parameters pointer to the XMLElement containing parameters
+   * @return pointer to the XMLElement containing updated parameters
+   */
+  virtual tinyxml2::XMLElement* update_on_failure(tinyxml2::XMLElement* parameters)
+  {
+    return parameters;
+  };
+
+  /**
+   * @brief Update on_success event parameters with new data if avaible.
+   *
+   * This function is used to inject new data into the XMLElement containing
+   * parameters related to the on_success trigger event
+   *
+   * A pattern needs to be implemented in the derived class
+   *
+   * @param parameters pointer to the XMLElement containing parameters
+   * @return pointer to the XMLElement containing updated parameters
+   */
+  virtual tinyxml2::XMLElement* update_on_success(tinyxml2::XMLElement* parameters)
+  {
+    return parameters;
+  };
+
   // run config getters
 
   /**
@@ -306,34 +415,29 @@ protected:
 
 protected:
   /**
-   * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
+   * @brief shared pointer to the capabilities node. Allows to use ros node related functionalities
    */
   rclcpp::Node::SharedPtr node_;
 
   /**
-   * @param node runner configuration
+   * @brief run_config_ runner configuration
    */
   runner_opts run_config_;
 
   /**
-   * @param node pointer to function to execute on starting the runner
+   * @brief dictionary of events
    */
-  std::function<void(const std::string&)> on_started_;
+  std::map<int, event_opts> event_tracker;
 
   /**
-   * @param node pointer to function to execute on success
+   * @brief Last tracker id to be inserted
    */
-  std::function<void(const std::string&)> on_success_;
+  int insert_tracker_id;
 
   /**
-   * @param node pointer to function to execute on failure
+   * @brief Last tracker id to be executed
    */
-  std::function<void(const std::string&)> on_failure_;
-
-  /**
-   * @param node pointer to function to execute on stopping the runner
-   */
-  std::function<void(const std::string&)> on_stopped_;
+  int execute_tracker_id;
 };
 
 }  // namespace capabilities2_runner
