@@ -41,17 +41,9 @@ public:
    * @param node   pointer to the origin node, generally the capabilities2_server
    * @param capability capability name to be loaded
    * @param run_config run_config of the runner to be loaded
-   * @param on_started pointer to function to execute on starting the runner
-   * @param on_failure pointer to function to execute on failure of the runner
-   * @param on_success pointer to function to execute on success of the runner
-   * @param on_stopped pointer to function to execute on stopping the runner
    */
   void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability,
-                  const models::run_config_model_t& run_config,
-                  std::function<void(const std::string&)> on_started = nullptr,
-                  std::function<void(const std::string&)> on_failure = nullptr,
-                  std::function<void(const std::string&)> on_success = nullptr,
-                  std::function<void(const std::string&)> on_stopped = nullptr)
+                  const models::run_config_model_t& run_config)
   {
     // if the runner exists then throw an error
     if (running(capability))
@@ -82,7 +74,7 @@ public:
     }
 
     // start the runner
-    runner_cache_[capability]->start(node, run_config.to_runner_opts(), on_started, on_failure, on_success, on_stopped);
+    runner_cache_[capability]->start(node, run_config.to_runner_opts());
   }
 
   /**
@@ -93,17 +85,111 @@ public:
    * @param capability capability name to be loaded
    * @param parameters parameters related to the runner in std::string form for compatibility accross various runners
    */
-  void trigger_runner(const std::string& capability, tinyxml2::XMLElement* parameters = nullptr)
+  void trigger_runner(const std::string& capability, const std::string& parameters)
   {
+    tinyxml2::XMLDocument doc;
+    doc.Parse(parameters.c_str());
+    tinyxml2::XMLElement* xml_parameters = doc.FirstChildElement();
+
     // is the runner in the cache
     if (running(capability))
     {
-      runner_cache_[capability]->trigger(parameters);
+      runner_cache_[capability]->trigger(xml_parameters);
     }
     else
     {
       throw capabilities2_runner::runner_exception("capability runner not found: " + capability);
     }
+  }
+
+  /**
+   * @brief Set triggers for `on_success`, `on_failure`, `on_start`, `on_stop` events
+   *
+   *
+   * @param capability capability from where the events originate
+   * @param on_started_capability capability triggered by on_start event
+   * @param on_started_parameters parameters related to capability triggered by on_start event
+   * @param on_stopped_capability capability triggered by on_stop event
+   * @param on_stopped_parameters parameters related to capability triggered by on_stop event
+   * @param on_success_capability capability triggered by on_success event
+   * @param on_success_parameters parameters related to capability triggered by on_success event
+   * @param on_failure_capability capability triggered by on_failure event
+   * @param on_failure_parameters parameters related to capability triggered by on_failure event
+   */
+  void set_runner_triggers(const std::string& capability, const std::string& on_started_capability,
+                           const std::string& on_started_parameters, const std::string& on_failure_capability,
+                           const std::string& on_failure_parameters, const std::string& on_success_capability,
+                           const std::string& on_success_parameters, const std::string& on_stopped_capability,
+                           const std::string& on_stopped_parameters)
+  {
+    capabilities2_runner::event_opts event_options;
+
+    if (on_started_capability != "")
+    {
+      event_options.on_started = [this, &on_started_capability](tinyxml2::XMLElement* parameters) {
+        runner_cache_[on_started_capability]->trigger(parameters);
+      };
+
+      tinyxml2::XMLDocument doc;
+      doc.Parse(on_started_parameters.c_str());
+      event_options.on_started_param = doc.FirstChildElement();
+    }
+    else
+    {
+      event_options.on_started = nullptr;
+      event_options.on_started_param = nullptr;
+    }
+
+    if (on_failure_capability != "")
+    {
+      event_options.on_failure = [this, &on_failure_capability](tinyxml2::XMLElement* parameters) {
+        runner_cache_[on_failure_capability]->trigger(parameters);
+      };
+
+      tinyxml2::XMLDocument doc;
+      doc.Parse(on_failure_parameters.c_str());
+      event_options.on_failure_param = doc.FirstChildElement();
+    }
+    else
+    {
+      event_options.on_failure = nullptr;
+      event_options.on_failure_param = nullptr;
+    }
+
+    if (on_success_capability != "")
+    {
+      event_options.on_success = [this, &on_success_capability](tinyxml2::XMLElement* parameters) {
+        runner_cache_[on_success_capability]->trigger(parameters);
+      };
+
+      tinyxml2::XMLDocument doc;
+      doc.Parse(on_success_parameters.c_str());
+      event_options.on_success_param = doc.FirstChildElement();
+    }
+    else
+    {
+      event_options.on_success = nullptr;
+      event_options.on_success_param = nullptr;
+    }
+
+    if (on_stopped_capability != "")
+    {
+      event_options.on_stopped = [this, &on_stopped_capability](tinyxml2::XMLElement* parameters) {
+        runner_cache_[on_stopped_capability]->trigger(parameters);
+      };
+
+      tinyxml2::XMLDocument doc;
+      doc.Parse(on_stopped_parameters.c_str());
+      event_options.on_stopped_param = doc.FirstChildElement();
+    }
+    else
+    {
+      event_options.on_stopped = nullptr;
+      event_options.on_stopped_param = nullptr;
+    }
+
+    runner_cache_[capability]->attach_events(event_options);
+    event_cache_[capability] = event_options;
   }
 
   /**
@@ -241,6 +327,9 @@ private:
   // map capability to running model
   // capability / provider specs -> runner
   std::map<std::string, std::shared_ptr<capabilities2_runner::RunnerBase>> runner_cache_;
+
+  // map events to capabilities
+  std::map<std::string, capabilities2_runner::event_opts> event_cache_;
 
   // runner plugin loader
   pluginlib::ClassLoader<capabilities2_runner::RunnerBase> runner_loader_;

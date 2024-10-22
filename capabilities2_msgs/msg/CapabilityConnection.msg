@@ -1,10 +1,5 @@
-capabilities2_msgs/Capability source
-string source_parameters
-capabilities2_msgs/Capability target_on_start
-string target_on_start_parameters
-capabilities2_msgs/Capability target_on_stop
-string target_on_stop_parameters
-capabilities2_msgs/Capability target_on_success
-string target_on_success_parameters
-capabilities2_msgs/Capability target_on_failure
-string target_on_failure_parameters
+Capability source
+Capability target_on_start
+Capability target_on_stop
+Capability target_on_success
+Capability target_on_failure

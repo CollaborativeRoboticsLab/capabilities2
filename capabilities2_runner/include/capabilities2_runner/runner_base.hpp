@@ -143,34 +143,11 @@ public:
   /**
    * @brief attach events to the runner
    *
-   * @param on_started pointer to function to execute on starting the runner
-   * @param on_started_param parameters to triggers the on_started event with
-   * @param on_failure pointer to function to execute on failure of the runner
-   * @param on_failure_param parameters to triggers the on_started event with
-   * @param on_success pointer to function to execute on success of the runner
-   * @param on_success_param parameters to triggers the on_started event with
-   * @param on_stopped pointer to function to execute on stopping the runner
-   * @param on_stopped_param parameters to triggers the on_started event with
+   * @param event_option event_options related for the action
    */
-  void attach_events(
-      std::function<void(tinyxml2::XMLElement*)> on_started = nullptr, tinyxml2::XMLElement* on_started_param = nullptr,
-      std::function<void(tinyxml2::XMLElement*)> on_failure = nullptr, tinyxml2::XMLElement* on_failure_param = nullptr,
-      std::function<void(tinyxml2::XMLElement*)> on_success = nullptr, tinyxml2::XMLElement* on_success_param = nullptr,
-      std::function<void(tinyxml2::XMLElement*)> on_stopped = nullptr, tinyxml2::XMLElement* on_stopped_param = nullptr)
+  void attach_events(capabilities2_runner::event_opts& event_option)
   {
-    event_opts event;
-
-    event.on_started = on_started;
-    event.on_failure = on_failure;
-    event.on_stopped = on_stopped;
-    event.on_success = on_success;
-
-    event.on_started_param = on_started_param;
-    event.on_failure_param = on_failure_param;
-    event.on_success_param = on_success_param;
-    event.on_stopped_param = on_stopped_param;
-
-    event_tracker[insert_tracker_id] = event;
+    event_tracker[insert_tracker_id] = event_option;
     insert_tracker_id += 1;
   }
 

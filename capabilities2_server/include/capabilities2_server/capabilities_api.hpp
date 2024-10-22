@@ -17,6 +17,8 @@
 #include <capabilities2_server/runner_cache.hpp>
 
 #include <capabilities2_msgs/msg/remapping.hpp>
+#include <capabilities2_msgs/msg/capability.hpp>
+#include <capabilities2_msgs/msg/capability_connection.hpp>
 #include <capabilities2_msgs/msg/capability_spec.hpp>
 #include <capabilities2_msgs/msg/capability_event.hpp>
 #include <capabilities2_msgs/srv/get_remappings.hpp>
@@ -81,16 +83,8 @@ public:
    * @param node ros node pointer of the ros server
    * @param capability capability name to be started
    * @param provider provider of the capability
-   * @param on_started pointer to function to execute on starting the runner
-   * @param on_failure pointer to function to execute on failure of the runner
-   * @param on_success pointer to function to execute on success of the runner
-   * @param on_stopped pointer to function to execute on stopping the runner
    */
-  void start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
-                        std::function<void(const std::string&)> on_started = nullptr,
-                        std::function<void(const std::string&)> on_failure = nullptr,
-                        std::function<void(const std::string&)> on_success = nullptr,
-                        std::function<void(const std::string&)> on_stopped = nullptr)
+  void start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider)
   {
     // get the running model from the db
     models::running_model_t running = cap_db_->get_running(provider);
@@ -118,7 +112,7 @@ public:
     // TODO: consider the logic for multiple runners per capability
     try
     {
-      runner_cache_.add_runner(node, capability, run_config, on_started, on_failure, on_success, on_stopped);
+      runner_cache_.add_runner(node, capability, run_config);
 
       // log
       RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "started capability: %s with provider: %s",
@@ -138,8 +132,8 @@ public:
    * @param capability capability name to be started
    * @param provider provider of the capability
    */
-  void start_dependents(rclcpp::Node::SharedPtr node, const std::string& bond_id,
-                                    const std::string& capability, const std::string& provider)
+  void start_dependencies(rclcpp::Node::SharedPtr node, const std::string& bond_id, const std::string& capability,
+                          const std::string& provider)
   {
     // Create bond id
     bond_cache_.add_bond(capability, bond_id);
@@ -169,7 +163,7 @@ public:
    * @param capability
    * @param parameters
    */
-  void trigger_capability(const std::string& capability, tinyxml2::XMLElement* parameters = nullptr)
+  void trigger_capability(const std::string& capability, const std::string& parameters)
   {
     // trigger the runner
     try
@@ -276,31 +270,36 @@ public:
   }
 
   /**
-   * @brief Connect two capabilities sequentially. This will create a bond ids for the requested instances and, build
-   * a event callback for sequential triggering and start the capabilities.
+   * @brief Set triggers for `on_success`, `on_failure`, `on_start`, `on_stop` events for a given capability
    *
-   * @param node ros node pointer of the ros server
-   * @param capability capability name to be started
-   * @param provider provider of the capability
+   * @param capability capability from where the events originate
+   * @param on_started_capability capability triggered by on_start event
+   * @param on_started_parameters parameters related to capability triggered by on_start event
+   * @param on_stopped_capability capability triggered by on_stop event
+   * @param on_stopped_parameters parameters related to capability triggered by on_stop event
+   * @param on_success_capability capability triggered by on_success event
+   * @param on_success_parameters parameters related to capability triggered by on_success event
+   * @param on_failure_capability capability triggered by on_failure event
+   * @param on_failure_parameters parameters related to capability triggered by on_failure event
    */
-  void create_serial_connection(rclcpp::Node::SharedPtr node, const std::string& bond_id,
-                                const std::string& source_capability, const std::string& source_provider,
-                                const std::string& target_capability, const std::string& target_provider)
+  void set_triggers(const std::string& capability, const std::string& on_started_capability,
+                    const std::string& on_started_parameters, const std::string& on_failure_capability,
+                    const std::string& on_failure_parameters, const std::string& on_success_capability,
+                    const std::string& on_success_parameters, const std::string& on_stopped_capability,
+                    const std::string& on_stopped_parameters)
   {
-
-    
-
     try
     {
-      runner_cache_.add_runner(node, capability, cap_db_->get_run_config(provider), on_started, on_failure, on_success, on_stopped);
+      runner_cache_.set_runner_triggers(capability, on_started_capability, on_started_parameters, on_failure_capability,
+                                        on_failure_parameters, on_success_capability, on_success_parameters,
+                                        on_stopped_capability, on_stopped_parameters);
 
       // log
-      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "started capability: %s with provider: %s",
-                  capability.c_str(), provider.c_str());
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "setting triggers for capability: %s", capability.c_str());
     }
     catch (const capabilities2_runner::runner_exception& e)
     {
-      RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "could not start runner: %s", e.what());
+      RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "could not set triggers: %s", e.what());
     }
   }
 

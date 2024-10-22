@@ -16,7 +16,6 @@
 #include <rclcpp_action/rclcpp_action.hpp>
 
 #include <capabilities2_server/capabilities_api.hpp>
-
 #include <capabilities2_msgs/msg/capability_event.hpp>
 #include <capabilities2_msgs/msg/capability_spec.hpp>
 #include <capabilities2_msgs/msg/capability_connection.hpp>
@@ -179,14 +178,6 @@ public:
         std::bind(&CapabilitiesServer::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&CapabilitiesServer::handle_cancel, this, std::placeholders::_1),
         std::bind(&CapabilitiesServer::handle_accepted, this, std::placeholders::_1));
-
-    // create publishing event callbacks by binding the event publisher and event message callbacks
-    // handled by the API class and passed around to runners
-    // on started, stopped, and terminated lambdas binding event_pub_
-    // init events system callbacks with lambdas
-    init_events([this](const std::string& cap) { event_pub_->publish(on_capability_started(cap)); },
-                [this](const std::string& cap) { event_pub_->publish(on_capability_stopped(cap)); },
-                [this](const std::string& cap) { event_pub_->publish(on_capability_terminated(cap)); });
 
     // log ready
     RCLCPP_INFO(get_logger(), "capabilities server started");
@@ -436,20 +427,22 @@ private:
     // start all runners and interfaces that the connections depend on
     for (const auto& connection : goal->connections)
     {
-      start_dependents(shared_from_this(), goal->bond_id, connection.target.capability, connection.target.provider);
+      start_dependencies(shared_from_this(), goal->bond_id, connection.source.capability, connection.source.provider);
     }
 
     // establish relationships for all the connections received
-    for (auto connection = goal->connections.rbegin(); connection != goal->connections.rend(); ++connection)
-    {
-      if (*connection.source.capability != "start")
-    }
-
-    // trigger starting connections
     for (const auto& connection : goal->connections)
     {
-      // if (connection.source.capability == "start")
+      set_triggers(connection.source.capability, connection.target_on_start.capability,
+                   connection.target_on_start.parameters, connection.target_on_failure.capability,
+                   connection.target_on_failure.parameters, connection.target_on_success.capability, 
+                   connection.target_on_success.parameters, connection.target_on_stop.capability,
+                   connection.target_on_stop.parameters);
     }
+
+    auto first_node = goal->connections[0];
+
+    trigger_capability(first_node.source.capability, first_node.source.parameters);
 
     // response is empty
   }

@@ -72,16 +72,14 @@ bool convert_to_string(tinyxml2::XMLElement* element, std::string& paramters)
   if (element)
   {
     tinyxml2::XMLPrinter printer;
-
     element->Accept(&printer);
-
     paramters = printer.CStr();
-
     return true;
   }
   else
   {
-    false;
+    paramters = "";
+    return false;
   }
 }
 
@@ -95,11 +93,8 @@ bool convert_to_string(tinyxml2::XMLElement* element, std::string& paramters)
 std::string convert_to_string(tinyxml2::XMLDocument& document)
 {
   tinyxml2::XMLPrinter printer;
-
   document.Accept(&printer);
-
   std::string value = printer.CStr();
-
   return value;
 }
 

@@ -342,54 +342,79 @@ private:
     {
       RCLCPP_INFO(this->get_logger(), "Node : %i", key);
 
-      if (capabilities2_xml_parser::convert_to_string(value.source.parameters, connection_msg.source_parameters))
+      if (capabilities2_xml_parser::convert_to_string(value.source.parameters, connection_msg.source.parameters))
       {
         connection_msg.source.capability = value.source.runner;
         connection_msg.source.provider = value.source.provider;
 
         RCLCPP_INFO(this->get_logger(), "Source Capability : %s", connection_msg.source.capability.c_str());
         RCLCPP_INFO(this->get_logger(), "Source Provider   : %s", connection_msg.source.provider.c_str());
-        RCLCPP_INFO(this->get_logger(), "Source Parameters : %s", connection_msg.source_parameters.c_str());
+        RCLCPP_INFO(this->get_logger(), "Source Parameters : %s", connection_msg.source.parameters.c_str());
+      }
+      else
+      {
+        connection_msg.source.capability = "";
+        connection_msg.source.provider = "";
       }
 
-      if (capabilities2_xml_parser::convert_to_string(value.target_on_start.parameters, connection_msg.target_on_start_parameters))
+      if (capabilities2_xml_parser::convert_to_string(value.target_on_start.parameters, connection_msg.target_on_start.parameters))
       {
         connection_msg.target_on_start.capability = value.target_on_start.runner;
         connection_msg.target_on_start.provider = value.target_on_start.provider;
 
         RCLCPP_INFO(this->get_logger(), "Triggered on start Capability : %s", connection_msg.target_on_start.capability.c_str());
         RCLCPP_INFO(this->get_logger(), "Triggered on start Provider   : %s", connection_msg.target_on_start.provider.c_str());
-        RCLCPP_INFO(this->get_logger(), "Triggered on start Parameters : %s", connection_msg.target_on_start_parameters.c_str());
+        RCLCPP_INFO(this->get_logger(), "Triggered on start Parameters : %s", connection_msg.target_on_start.parameters.c_str());
+      }
+      else
+      {
+        connection_msg.target_on_start.capability = "";
+        connection_msg.target_on_start.provider = "";
       }
 
-      if (capabilities2_xml_parser::convert_to_string(value.target_on_stop.parameters, connection_msg.target_on_stop_parameters))
+      if (capabilities2_xml_parser::convert_to_string(value.target_on_stop.parameters, connection_msg.target_on_stop.parameters))
       {
         connection_msg.target_on_stop.capability = value.target_on_stop.runner;
         connection_msg.target_on_stop.provider = value.target_on_stop.provider;
 
         RCLCPP_INFO(this->get_logger(), "Triggered on stop Capability : %s", connection_msg.target_on_stop.capability.c_str());
         RCLCPP_INFO(this->get_logger(), "Triggered on stop Provider   : %s", connection_msg.target_on_stop.provider.c_str());
-        RCLCPP_INFO(this->get_logger(), "Triggered on stop Parameters : %s", connection_msg.target_on_stop_parameters.c_str());
+        RCLCPP_INFO(this->get_logger(), "Triggered on stop Parameters : %s", connection_msg.target_on_stop.parameters.c_str());
+      }
+      else
+      {
+        connection_msg.target_on_stop.capability = "";
+        connection_msg.target_on_stop.provider = "";
       }
 
-      if (capabilities2_xml_parser::convert_to_string(value.target_on_success.parameters, connection_msg.target_on_success_parameters))
+      if (capabilities2_xml_parser::convert_to_string(value.target_on_success.parameters, connection_msg.target_on_success.parameters))
       {
         connection_msg.target_on_success.capability = value.target_on_success.runner;
         connection_msg.target_on_success.provider = value.target_on_success.provider;
 
         RCLCPP_INFO(this->get_logger(), "Triggered on success Capability : %s", connection_msg.target_on_success.capability.c_str());
         RCLCPP_INFO(this->get_logger(), "Triggered on success Provider   : %s", connection_msg.target_on_success.provider.c_str());
-        RCLCPP_INFO(this->get_logger(), "Triggered on success Parameters : %s", connection_msg.target_on_success_parameters.c_str());
+        RCLCPP_INFO(this->get_logger(), "Triggered on success Parameters : %s", connection_msg.target_on_success.parameters.c_str());
+      }
+      else
+      {
+        connection_msg.target_on_success.capability = "";
+        connection_msg.target_on_success.provider = "";
       }
 
-      if (capabilities2_xml_parser::convert_to_string(value.target_on_failure.parameters, connection_msg.target_on_failure_parameters))
+      if (capabilities2_xml_parser::convert_to_string(value.target_on_failure.parameters, connection_msg.target_on_failure.parameters))
       {
         connection_msg.target_on_failure.capability = value.target_on_failure.runner;
         connection_msg.target_on_failure.provider = value.target_on_failure.provider;
 
         RCLCPP_INFO(this->get_logger(), "Triggered on failure Capability : %s", connection_msg.target_on_failure.capability.c_str());
         RCLCPP_INFO(this->get_logger(), "Triggered on failure Provider   : %s", connection_msg.target_on_failure.provider.c_str());
-        RCLCPP_INFO(this->get_logger(), "Triggered on failure Parameters : %s", connection_msg.target_on_failure_parameters.c_str());
+        RCLCPP_INFO(this->get_logger(), "Triggered on failure Parameters : %s", connection_msg.target_on_failure.parameters.c_str());
+      }
+      else
+      {
+        connection_msg.target_on_failure.capability = "";
+        connection_msg.target_on_failure.provider = "";
       }
 
       connection_goal_msg.connections.push_back(connection_msg);
@@ -466,9 +491,9 @@ private:
 
             for (const auto& failed_connection : result.result->failed_connections)
             {
-              RCLCPP_ERROR(this->get_logger(), "Failed Events : %s", failed_connection.source_parameters.c_str());
+              RCLCPP_ERROR(this->get_logger(), "Failed Events : %s", failed_connection.source.parameters.c_str());
 
-              result_out->failed_elements.push_back(failed_connection.source_parameters);
+              result_out->failed_elements.push_back(failed_connection.source.parameters);
             }
 
             server_goal_handle->canceled(result_out);
