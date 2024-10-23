@@ -83,9 +83,14 @@ public:
    * @param node ros node pointer of the ros server
    * @param capability capability name to be started
    * @param provider provider of the capability
+   * 
+   * @return `true` if capability started successfully. else returns `false`
    */
-  void start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider)
+  bool start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider)
   {
+    // return value
+    bool value = true;
+
     // get the running model from the db
     models::running_model_t running = cap_db_->get_running(provider);
 
@@ -99,7 +104,7 @@ public:
       bind_dependency(run.interface);
 
       // add the runner to the cache
-      start_capability(node, run.interface, run.provider);
+      value = value and start_capability(node, run.interface, run.provider);
     }
 
     // get the provider specification for the capability
@@ -117,43 +122,17 @@ public:
       // log
       RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "started capability: %s with provider: %s",
                   capability.c_str(), provider.c_str());
+
+      return value and true;
     }
     catch (const capabilities2_runner::runner_exception& e)
     {
       RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "could not start runner: %s", e.what());
+
+      return false;
     }
   }
 
-  /**
-   * @brief Start the dependencies of a capability. Internal function only. Do not used this function externally.
-   *
-   * @param node ros node pointer of the ros server
-   * @param bond_id bond_id for the capability
-   * @param capability capability name to be started
-   * @param provider provider of the capability
-   */
-  void start_dependencies(rclcpp::Node::SharedPtr node, const std::string& bond_id, const std::string& capability,
-                          const std::string& provider)
-  {
-    // Create bond id
-    bond_cache_.add_bond(capability, bond_id);
-
-    // get the running model from the db
-    models::running_model_t running = cap_db_->get_running(provider);
-
-    // start all dependencies
-    // go through the running model and start the necessary dependencies
-    for (const auto& run : running.dependencies)
-    {
-      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "found dependency: %s", run.interface.c_str());
-
-      // make an internal 'use' bond for the capability dependency
-      bind_dependency(run.interface);
-
-      // add the runner to the cache
-      start_capability(node, run.interface, run.provider);
-    }
-  }
   /**
    * @brief trigger a capability
    *
@@ -258,15 +237,17 @@ public:
    * @param capability capability name to be started
    * @param provider provider of the capability
    * @param bond_id bond_id for the capability
+   * 
+   * @return `true` if capability started successfully. else returns `false`
    */
-  void use_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
+  bool use_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
                       const std::string& bond_id)
   {
     // add bond to cache for capability
     bond_cache_.add_bond(capability, bond_id);
 
     // start the capability with the provider
-    start_capability(node, capability, provider);
+    return start_capability(node, capability, provider);
   }
 
   /**

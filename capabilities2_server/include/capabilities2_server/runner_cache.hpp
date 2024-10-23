@@ -293,35 +293,6 @@ public:
     return runner_cache_.find(capability) != runner_cache_.end();
   }
 
-  /**
-   * @brief Callback function for 'on_started' event
-   *
-   * @param cb callback function pointer
-   */
-  // void set_on_started(std::function<void(const std::string&)> cb)
-  // {
-  //   on_started = cb;
-  // }
-
-  /**
-   * @brief Callback function for 'on_stopped' event
-   *
-   * @param cb callback function pointer
-   */
-  // void set_on_stopped(std::function<void(const std::string&)> cb)
-  // {
-  //   on_stopped = cb;
-  // }
-
-  /**
-   * @brief Callback function for 'on_failure' event
-   *
-   * @param cb callback function pointer
-   */
-  // void set_on_terminated(std::function<void(const std::string&)> cb)
-  // {
-  //   on_failure = cb;
-  // }
 
 private:
   // map capability to running model
@@ -333,12 +304,6 @@ private:
 
   // runner plugin loader
   pluginlib::ClassLoader<capabilities2_runner::RunnerBase> runner_loader_;
-
-  // event callbacks
-  // std::function<void(const std::string&)> on_started;
-  // std::function<void(const std::string&)> on_stopped;
-  // std::function<void(const std::string&)> on_failure;
-  // std::function<void(const std::string&)> on_success;
 };
 
 }  // namespace capabilities2_server

@@ -422,29 +422,59 @@ private:
   void launch_fabric(
       const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Connections>> goal_handle)
   {
-    const auto goal = goal_handle->get_goal();
+    auto goal = goal_handle->get_goal();
+    auto result = std::make_shared<capabilities2_msgs::action::Connections::Result>();
 
     // start all runners and interfaces that the connections depend on
     for (const auto& connection : goal->connections)
     {
-      start_dependencies(shared_from_this(), goal->bond_id, connection.source.capability, connection.source.provider);
+      // start the capability with bond id.
+      if (use_capability(shared_from_this(), connection.source.capability, connection.source.provider, goal->bond_id))
+      {
+        // capability started succeesfully
+        RCLCPP_INFO(get_logger(), "Capability started: %s", connection.source.capability.c_str());
+      }
+      else
+      {
+        //capability failed. so add it to failed connections to be sent to the action client
+        result->failed_connections.push_back(connection);
+        RCLCPP_ERROR(get_logger(), "Capability failed: %s", connection.source.capability.c_str());
+      }
     }
 
-    // establish relationships for all the connections received
+    // check if there are any failed connections
+    if (result->failed_connections.size() > 0)
+    {
+      // there are failed connections. so cancel the action server process. and let the action
+      // client know that about the failed connection
+      goal_handle->canceled(result);
+
+      // free the capabilites that were started since action execution failed
+      for (const auto& connection : goal->connections)
+      {
+        free_capability(connection.source.capability, goal->bond_id);
+        RCLCPP_ERROR(get_logger(), "Capability freed due to failure: %s", connection.source.capability.c_str());
+      }
+    }
+
+    // establish relationships for all the connections received.
     for (const auto& connection : goal->connections)
     {
       set_triggers(connection.source.capability, connection.target_on_start.capability,
                    connection.target_on_start.parameters, connection.target_on_failure.capability,
-                   connection.target_on_failure.parameters, connection.target_on_success.capability, 
+                   connection.target_on_failure.parameters, connection.target_on_success.capability,
                    connection.target_on_success.parameters, connection.target_on_stop.capability,
                    connection.target_on_stop.parameters);
     }
 
+    // identify the first capability in the fabric
     auto first_node = goal->connections[0];
 
+    // trigger the first node so fabric starts rippling
     trigger_capability(first_node.source.capability, first_node.source.parameters);
 
-    // response is empty
+    // return success and let the action client know that the fabric was launched.
+    goal_handle->succeed(result);
   }
 
   void load_capabilities(const std::string& package_path)
