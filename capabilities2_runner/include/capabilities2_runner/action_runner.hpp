@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <tinyxml2.h>
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
@@ -117,10 +118,6 @@ public:
   virtual std::optional<std::function<void(tinyxml2::XMLElement*)>>
   trigger(tinyxml2::XMLElement* parameters = nullptr) override
   {
-    // the action is being triggered out of order
-    // if (!goal_handle_)
-    //   throw runner_exception("cannot trigger action that was not started");
-
     // if parameters are not provided then cannot proceed
     if (!parameters)
       throw runner_exception("cannot trigger action without parameters");
