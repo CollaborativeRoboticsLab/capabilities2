@@ -136,8 +136,8 @@ public:
     // store node pointer and opts
     node_ = node;
     run_config_ = run_config;
-    insert_tracker_id = 0;
-    execute_tracker_id = 0;
+    insert_id = 0;
+    execute_id = 0;
   }
 
   /**
@@ -147,8 +147,8 @@ public:
    */
   void attach_events(capabilities2_runner::event_opts& event_option)
   {
-    event_tracker[insert_tracker_id] = event_option;
-    insert_tracker_id += 1;
+    events[insert_id] = event_option;
+    insert_id += 1;
   }
 
   /**
@@ -192,7 +192,6 @@ public:
   }
 
 protected:
-
   /**
    * @brief Update on_started event parameters with new data if avaible.
    *
@@ -404,17 +403,17 @@ protected:
   /**
    * @brief dictionary of events
    */
-  std::map<int, event_opts> event_tracker;
+  std::map<int, event_opts> events;
 
   /**
    * @brief Last tracker id to be inserted
    */
-  int insert_tracker_id;
+  int insert_id;
 
   /**
    * @brief Last tracker id to be executed
    */
-  int execute_tracker_id;
+  int execute_id;
 };
 
 }  // namespace capabilities2_runner

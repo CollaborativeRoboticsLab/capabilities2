@@ -88,11 +88,10 @@ public:
               }
 
               // publish event
-              if (event_tracker[execute_tracker_id].on_stopped)
+              if (events[execute_id].on_stopped)
               {
-                event_tracker[execute_tracker_id].on_stopped(
-                    update_on_stopped(event_tracker[execute_tracker_id].on_stopped_param));
-                execute_tracker_id += 1;
+                events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
+                execute_id += 1;
               }
             });
 
@@ -131,11 +130,10 @@ public:
         [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
           // publish event
           if (goal_handle)
-            if (event_tracker[execute_tracker_id].on_started)
+            if (events[execute_id].on_started)
             {
-              event_tracker[execute_tracker_id].on_started(
-                  update_on_started(event_tracker[execute_tracker_id].on_started_param));
-              execute_tracker_id += 1;
+              events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
+              execute_id += 1;
             }
 
           // store goal handle to be used with stop funtion
@@ -148,21 +146,19 @@ public:
           if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
           {
             // send success event
-            if (event_tracker[execute_tracker_id].on_success)
+            if (events[execute_id].on_success)
             {
-              event_tracker[execute_tracker_id].on_success(
-                  update_on_success(event_tracker[execute_tracker_id].on_success_param));
-              execute_tracker_id += 1;
+              events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));
+              execute_id += 1;
             }
           }
           else
           {
             // send terminated event
-            if (event_tracker[execute_tracker_id].on_failure)
+            if (events[execute_id].on_failure)
             {
-              event_tracker[execute_tracker_id].on_failure(
-                  update_on_failure(event_tracker[execute_tracker_id].on_failure_param));
-              execute_tracker_id += 1;
+              events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));
+              execute_id += 1;
             }
           }
         };

@@ -1,4 +1,4 @@
-
+#pragma once
 #include <tinyxml2.h>
 #include <memory>
 
@@ -39,8 +39,9 @@ public:
     init_base(node, run_config);
 
     // create an service client
-    subscription_ = node_->create_subscription<TopicT>(topic_name, 1,
-                                                       std::bind(&TopicRunner::callback, this, std::placeholders::_1));
+    subscription_ =
+        node_->create_subscription<TopicT>(topic_name, 1,
+                                           [this](const typename TopicT::SharedPtr msg) { this->callback(msg); });
   }
 
   /**
@@ -56,42 +57,38 @@ public:
     if (!parameters)
       throw runner_exception("cannot grab data without parameters");
 
-    if (event_tracker[execute_tracker_id].on_started)
+    if (events[execute_id].on_started)
     {
-      event_tracker[execute_tracker_id].on_started(
-          update_on_started(event_tracker[execute_tracker_id].on_started_param));
-      execute_tracker_id += 1;
+      events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
+      execute_id += 1;
+    }
+
+    if (!latest_message_)
+    {
+      // send success event
+      if (events[execute_id].on_success)
+      {
+        events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));
+        execute_id += 1;
+      }
+    }
+    else
+    {
+      RCLCPP_ERROR(node_->get_logger(), "get result call failed");
+
+      // send terminated event
+      if (events[execute_id].on_failure)
+      {
+        events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));
+        execute_id += 1;
+      }
     }
 
     // create a function to call for the result. the future will be returned to the caller and the caller
     // can provide a conversion function to handle the result
 
     std::function<void(tinyxml2::XMLElement*)> result_callback = [this](tinyxml2::XMLElement* result) {
-      if (!latest_message_)
-      {
-        // send success event
-        if (event_tracker[execute_tracker_id].on_success)
-        {
-          event_tracker[execute_tracker_id].on_success(
-              update_on_success(event_tracker[execute_tracker_id].on_success_param));
-          execute_tracker_id += 1;
-        }
-
-        // generate result
-        result = generate_message(latest_message_);
-      }
-      else
-      {
-        RCLCPP_ERROR(node_->get_logger(), "get result call failed");
-
-        // send terminated event
-        if (event_tracker[execute_tracker_id].on_failure)
-        {
-          event_tracker[execute_tracker_id].on_failure(
-              update_on_failure(event_tracker[execute_tracker_id].on_failure_param));
-          execute_tracker_id += 1;
-        }
-      }
+      result = generate_message(latest_message_);
     };
 
     return result_callback;
@@ -116,11 +113,10 @@ public:
       throw runner_exception("cannot stop runner subscriber that was not started");
 
     // publish event
-    if (event_tracker[execute_tracker_id].on_stopped)
+    if (events[execute_id].on_stopped)
     {
-      event_tracker[execute_tracker_id].on_stopped(
-          update_on_stopped(event_tracker[execute_tracker_id].on_stopped_param));
-      execute_tracker_id += 1;
+      events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
+      execute_id += 1;
     }
   }
 
@@ -133,7 +129,7 @@ protected:
    *
    * @param msg message parameter
    */
-  void callback(const typename TopicT::SharedPtr msg) const
+  void callback(const typename TopicT::SharedPtr& msg) const
   {
     latest_message_ = msg;
   }
@@ -149,10 +145,10 @@ protected:
    * @param wrapped_result
    * @return tinyxml2::XMLElement*
    */
-  virtual tinyxml2::XMLElement* generate_message(const typename ServiceT::Result::SharedPtr& result) = 0;
+  virtual tinyxml2::XMLElement* generate_message(typename TopicT::SharedPtr& result) = 0;
 
   typename rclcpp::Subscription<TopicT>::SharedPtr subscription_;
 
-  typename TopicT::SharedPtr latest_message_ = nullptr;
+  mutable typename TopicT::SharedPtr latest_message_ = nullptr;
 };
 }  // namespace capabilities2_runner

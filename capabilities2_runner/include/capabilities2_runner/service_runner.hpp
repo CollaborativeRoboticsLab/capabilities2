@@ -1,4 +1,4 @@
-
+#pragma once
 #include <tinyxml2.h>
 
 #include "rclcpp/rclcpp.hpp"
@@ -71,41 +71,38 @@ public:
 
     auto result_future = service_client_->async_send_request(request_msg);
 
-    if (event_tracker[execute_tracker_id].on_started)
+    if (events[execute_id].on_started)
     {
-      event_tracker[execute_tracker_id].on_started(
-          update_on_started(event_tracker[execute_tracker_id].on_started_param));
-      execute_tracker_id += 1;
+      events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
+      execute_id += 1;
+    }
+
+    if (rclcpp::spin_until_future_complete(node_, result_future) == rclcpp::FutureReturnCode::SUCCESS)
+    {
+      // send success event
+      if (events[execute_id].on_success)
+      {
+        events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));
+        execute_id += 1;
+      }
+    }
+    else
+    {
+      RCLCPP_ERROR(node_->get_logger(), "get result call failed");
+
+      // send terminated event
+      if (events[execute_id].on_failure)
+      {
+        events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));
+        execute_id += 1;
+      }
     }
 
     // create a function to call for the result. the future will be returned to the caller and the caller
     // can provide a conversion function to handle the result
 
     std::function<void(tinyxml2::XMLElement*)> result_callback = [this, result_future](tinyxml2::XMLElement* result) {
-      if (rclcpp::spin_until_future_complete(node_, result_future) == rclcpp::FutureReturnCode::SUCCESS)
-      {
-        // send success event
-        if (event_tracker[execute_tracker_id].on_success)
-        {
-          event_tracker[execute_tracker_id].on_success(
-              update_on_success(event_tracker[execute_tracker_id].on_success_param));
-          execute_tracker_id += 1;
-        }
-
-        result = generate_response(result_future.get());
-      }
-      else
-      {
-        RCLCPP_ERROR(node_->get_logger(), "get result call failed");
-
-        // send terminated event
-        if (event_tracker[execute_tracker_id].on_failure)
-        {
-          event_tracker[execute_tracker_id].on_failure(
-              update_on_failure(event_tracker[execute_tracker_id].on_failure_param));
-          execute_tracker_id += 1;
-        }
-      }
+      result = generate_response(result_future.get());
     };
 
     return result_callback;
@@ -130,11 +127,10 @@ public:
       throw runner_exception("cannot stop runner action that was not started");
 
     // publish event
-    if (event_tracker[execute_tracker_id].on_stopped)
+    if (events[execute_id].on_stopped)
     {
-      event_tracker[execute_tracker_id].on_stopped(
-          update_on_stopped(event_tracker[execute_tracker_id].on_stopped_param));
-      execute_tracker_id += 1;
+      events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
+      execute_id += 1;
     }
   }
 

@@ -15,7 +15,7 @@ namespace capabilities2_runner
 {
 
 /**
- * @brief action runner base class
+ * @brief waypoint runner class
  *
  * Class to run waypointfollower action based capability
  *

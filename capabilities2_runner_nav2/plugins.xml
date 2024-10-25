@@ -4,4 +4,14 @@
             A plugin that provide nav2 waypoint navigation capability
         </description>
     </class>
+    <class type="capabilities2_runner::RobotPoseRunner" base_class_type="capabilities2_runner::TopicRunner">
+        <description>
+            A plugin that provide robot pose extraction capability
+        </description>
+    </class>
+    <class type="capabilities2_runner::OccupancyGridRunner" base_class_type="capabilities2_runner::TopicRunner">
+        <description>
+            A plugin that provide occupancy grid map extraction capability
+        </description>
+    </class>
 </library>
