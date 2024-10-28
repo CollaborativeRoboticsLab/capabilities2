@@ -31,7 +31,27 @@
       interfaces/follow_waypoints.yaml
     </capability_interface>
 
+        <!-- interfaces -->
+    <capability_interface>
+      interfaces/map.yaml
+    </capability_interface>
+
+        <!-- interfaces -->
+    <capability_interface>
+      interfaces/pose.yaml
+    </capability_interface>
+
     <!-- providers -->
+    <capability_provider>
+      providers/RobotPoseRunner.yaml
+    </capability_provider>
+
+    <!-- providers -->
+    <capability_provider>
+      providers/OccupancyGridRunner.yaml
+    </capability_provider>
+
+      <!-- providers -->
     <capability_provider>
       providers/WaypointRunner.yaml
     </capability_provider>

@@ -79,7 +79,7 @@ protected:
    */
   virtual tinyxml2::XMLElement* update_on_success(tinyxml2::XMLElement* parameters)
   {
-    parameters->SetAttribute("type", "geometry_msgs/Pose");
+    parameters->SetAttribute("type", "geometry_msgs/msgs/Pose");
     parameters->SetAttribute("position.x", latest_message_->pose.pose.position.x);
     parameters->SetAttribute("position.y", latest_message_->pose.pose.position.y);
     parameters->SetAttribute("position.z", latest_message_->pose.pose.position.z);

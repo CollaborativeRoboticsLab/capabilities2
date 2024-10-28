@@ -13,7 +13,7 @@ namespace capabilities2_runner
 /**
  * @brief odometry runner class
  *
- * Capability Class to grab odometry data
+ * Capability Class to grab occupancy grid data
  *
  */
 class OccupancyGridRunner : public TopicRunner<nav_msgs::msg::OccupancyGrid>
@@ -93,7 +93,7 @@ protected:
     for (const auto& data : latest_message_->data)
       data_text += std::to_string(data) + " ";
 
-    parameters->SetAttribute("type", "nav_msgs/OccupancyGrid");
+    parameters->SetAttribute("type", "nav_msgs/msgs/OccupancyGrid");
 
     parameters->SetAttribute("info.resolution", latest_message_->info.resolution);
     parameters->SetAttribute("info.width", latest_message_->info.width);
