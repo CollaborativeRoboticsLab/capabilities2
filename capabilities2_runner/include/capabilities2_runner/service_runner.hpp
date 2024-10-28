@@ -67,7 +67,7 @@ public:
       throw runner_exception("cannot trigger service without parameters");
 
     // generate a goal from parameters if provided
-    typename ServiceT::Request request_msg = generate_request(parameters);
+    auto request_msg = std::make_shared<typename ServiceT::Request>(generate_request(parameters));
 
     auto result_future = service_client_->async_send_request(request_msg);
 
@@ -101,8 +101,9 @@ public:
     // create a function to call for the result. the future will be returned to the caller and the caller
     // can provide a conversion function to handle the result
 
-    std::function<void(tinyxml2::XMLElement*)> result_callback = [this, result_future](tinyxml2::XMLElement* result) {
-      result = generate_response(result_future.get());
+    std::function<void(tinyxml2::XMLElement*)> result_callback = [this, &result_future](tinyxml2::XMLElement* result) mutable {
+      auto response = result_future.get();
+      result = generate_response(response);
     };
 
     return result_callback;
@@ -139,7 +140,7 @@ protected:
    * @brief Generate a request from parameters
    *
    * This function is used in conjunction with the trigger function to inject type erased parameters
-   * into the typed action
+   * into the typed service
    *
    * A pattern needs to be implemented in the derived class
    *
@@ -151,7 +152,7 @@ protected:
   /**
    * @brief generate a typed erased response
    *
-   * this method is used in a callback passed to the trigger caller to get type erased result
+   * This method is used in a callback passed to the trigger caller to get type erased result
    * from the service the reponse can be passed by the caller or ignored
    *
    * The pattern needs to be implemented in the derived class
@@ -159,7 +160,7 @@ protected:
    * @param wrapped_result
    * @return tinyxml2::XMLElement*
    */
-  virtual tinyxml2::XMLElement* generate_response(const typename ServiceT::Result::SharedPtr& result) = 0;
+  virtual tinyxml2::XMLElement* generate_response(const typename ServiceT::Response::SharedPtr& result) const = 0;
 
   typename rclcpp::Client<ServiceT>::SharedPtr service_client_;
 };

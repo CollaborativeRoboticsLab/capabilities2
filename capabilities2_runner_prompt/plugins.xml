@@ -1,0 +1,7 @@
+<library path="capabilities2_runner">
+    <class type="capabilities2_runner::PromptRunner" base_class_type="capabilities2_runner::ActionRunner">
+        <description>
+            A plugin that provide prompting capability
+        </description>
+    </class>
+</library>

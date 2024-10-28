@@ -1,0 +1,19 @@
+%YAML 1.1
+---
+name: Prompt
+spec_version: 1
+spec_type: interface
+description: "This interface describes the basic ROS interface for interacting with the Prompt Bridge."
+interface:
+  topics:
+    "/history":
+      type: "prompt_msgs/msg/PromptHistory"
+      description: "The history of prompts sent to the Prompt Bridge using the service interface"
+  services:
+    "/prompt":
+      type: "prompt_msgs/srv/Prompt"
+      description: "The prompt to send to the Prompt Bridge. returns the generated response"
+  actions:
+    "/prompt":
+      type: "prompt_msgs/action/Prompt"
+      description: "The prompt goal that requires a response, the action interface publishes partial results. returns the generated response"

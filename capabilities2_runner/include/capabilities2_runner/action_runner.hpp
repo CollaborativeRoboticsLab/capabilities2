@@ -235,9 +235,6 @@ protected:
    */
   virtual tinyxml2::XMLElement* generate_result(const typename ActionT::Result::SharedPtr& result) = 0;
 
-  /**< pointer to XMLElement which contain parameters */
-  tinyxml2::XMLElement* parameters_;
-
   /**< action client */
   typename rclcpp_action::Client<ActionT>::SharedPtr action_client_;
 

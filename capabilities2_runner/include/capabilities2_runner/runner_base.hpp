@@ -414,6 +414,11 @@ protected:
    * @brief Last tracker id to be executed
    */
   int execute_id;
+
+  /**
+   * @brief pointer to XMLElement which contain parameters
+   * */
+  tinyxml2::XMLElement* parameters_;
 };
 
 }  // namespace capabilities2_runner
