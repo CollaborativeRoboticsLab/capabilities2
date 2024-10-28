@@ -44,26 +44,51 @@ protected:
   virtual tinyxml2::XMLElement*
   generate_message(typename geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr& result) override
   {
-    tinyxml2::XMLDocument* document = new tinyxml2::XMLDocument();
-    tinyxml2::XMLNode* robot_pose = document->InsertEndChild(document->NewElement("RobotPose"));
+    tinyxml2::XMLDocument doc;
 
-    tinyxml2::XMLElement* pose_element = document->NewElement("Pose");
+    // Root element
+    tinyxml2::XMLElement* poseElement = doc.NewElement("Pose");
+    doc.InsertFirstChild(poseElement);
 
-    pose_element->SetAttribute("x", result->pose.pose.position.x);
-    pose_element->SetAttribute("y", result->pose.pose.position.y);
-    pose_element->SetAttribute("z", result->pose.pose.position.z);
+    // Position element
+    tinyxml2::XMLElement* positionElement = doc.NewElement("position");
+    poseElement->InsertEndChild(positionElement);
 
-    tinyxml2::XMLElement* orie_element = document->NewElement("Orientation");
+    // Position x, y, z
+    tinyxml2::XMLElement* posX = doc.NewElement("x");
+    posX->SetText(result->pose.pose.position.x);  // Set x position value
+    positionElement->InsertEndChild(posX);
 
-    orie_element->SetAttribute("x", result->pose.pose.orientation.x);
-    orie_element->SetAttribute("y", result->pose.pose.orientation.y);
-    orie_element->SetAttribute("z", result->pose.pose.orientation.z);
-    orie_element->SetAttribute("w", result->pose.pose.orientation.w);
+    tinyxml2::XMLElement* posY = doc.NewElement("y");
+    posY->SetText(result->pose.pose.position.y);  // Set y position value
+    positionElement->InsertEndChild(posY);
 
-    robot_pose->InsertFirstChild(pose_element);
-    robot_pose->InsertEndChild(orie_element);
+    tinyxml2::XMLElement* posZ = doc.NewElement("z");
+    posZ->SetText(result->pose.pose.position.z);  // Set z position value
+    positionElement->InsertEndChild(posZ);
 
-    return document->FirstChildElement("RobotPose");
+    // Orientation element
+    tinyxml2::XMLElement* orientationElement = doc.NewElement("orientation");
+    poseElement->InsertEndChild(orientationElement);
+
+    // Orientation x, y, z, w
+    tinyxml2::XMLElement* oriX = doc.NewElement("x");
+    oriX->SetText(result->pose.pose.orientation.x);  // Set orientation x value
+    orientationElement->InsertEndChild(oriX);
+
+    tinyxml2::XMLElement* oriY = doc.NewElement("y");
+    oriY->SetText(result->pose.pose.orientation.y);  // Set orientation y value
+    orientationElement->InsertEndChild(oriY);
+
+    tinyxml2::XMLElement* oriZ = doc.NewElement("z");
+    oriZ->SetText(result->pose.pose.orientation.z);  // Set orientation z value
+    orientationElement->InsertEndChild(oriZ);
+
+    tinyxml2::XMLElement* oriW = doc.NewElement("w");
+    oriW->SetText(result->pose.pose.orientation.w);  // Set orientation w value
+    orientationElement->InsertEndChild(oriW);
+
+    return doc.FirstChildElement("Pose");
   }
 
   /**
@@ -79,15 +104,49 @@ protected:
    */
   virtual tinyxml2::XMLElement* update_on_success(tinyxml2::XMLElement* parameters)
   {
-    parameters->SetAttribute("type", "geometry_msgs/msgs/Pose");
-    parameters->SetAttribute("position.x", latest_message_->pose.pose.position.x);
-    parameters->SetAttribute("position.y", latest_message_->pose.pose.position.y);
-    parameters->SetAttribute("position.z", latest_message_->pose.pose.position.z);
-    parameters->SetAttribute("orientation.x", latest_message_->pose.pose.orientation.x);
-    parameters->SetAttribute("orientation.y", latest_message_->pose.pose.orientation.y);
-    parameters->SetAttribute("orientation.z", latest_message_->pose.pose.orientation.z);
-    parameters->SetAttribute("orientation.x", latest_message_->pose.pose.orientation.w);
+    // Create the Pose element as a child of the existing parameters element
+    tinyxml2::XMLElement* poseElement = parameters->GetDocument()->NewElement("Pose");
+    parameters->InsertEndChild(poseElement);
 
+    // Position element
+    tinyxml2::XMLElement* positionElement = parameters->GetDocument()->NewElement("position");
+    poseElement->InsertEndChild(positionElement);
+
+    // Position x, y, z
+    tinyxml2::XMLElement* posX = parameters->GetDocument()->NewElement("x");
+    posX->SetText(latest_message_->pose.pose.position.x);  // Set x position value
+    positionElement->InsertEndChild(posX);
+
+    tinyxml2::XMLElement* posY = parameters->GetDocument()->NewElement("y");
+    posY->SetText(latest_message_->pose.pose.position.y);  // Set y position value
+    positionElement->InsertEndChild(posY);
+
+    tinyxml2::XMLElement* posZ = parameters->GetDocument()->NewElement("z");
+    posZ->SetText(latest_message_->pose.pose.position.z);  // Set z position value
+    positionElement->InsertEndChild(posZ);
+
+    // Orientation element
+    tinyxml2::XMLElement* orientationElement = parameters->GetDocument()->NewElement("orientation");
+    poseElement->InsertEndChild(orientationElement);
+
+    // Orientation x, y, z, w
+    tinyxml2::XMLElement* oriX = parameters->GetDocument()->NewElement("x");
+    oriX->SetText(latest_message_->pose.pose.orientation.x);  // Set orientation x value
+    orientationElement->InsertEndChild(oriX);
+
+    tinyxml2::XMLElement* oriY = parameters->GetDocument()->NewElement("y");
+    oriY->SetText(latest_message_->pose.pose.orientation.y);  // Set orientation y value
+    orientationElement->InsertEndChild(oriY);
+
+    tinyxml2::XMLElement* oriZ = parameters->GetDocument()->NewElement("z");
+    oriZ->SetText(latest_message_->pose.pose.orientation.z);  // Set orientation z value
+    orientationElement->InsertEndChild(oriZ);
+
+    tinyxml2::XMLElement* oriW = parameters->GetDocument()->NewElement("w");
+    oriW->SetText(latest_message_->pose.pose.orientation.w);  // Set orientation w value
+    orientationElement->InsertEndChild(oriW);
+
+    // Return the updated parameters element with Pose added
     return parameters;
   };
 };

@@ -1,0 +1,14 @@
+# redefine the empty interface
+%YAML 1.1
+---
+name: prompt_semantic_interface
+spec_type: semantic_interface
+spec_version: 1.1
+description: semantic interface for prompt_tools related runners that allow for multiple impletation towards prompt service
+redefines: capabilities2_runner_prompt/prompt
+global_namespace: 
+remappings:
+  services:
+    "prompt": "prompt_text"
+    "prompt": "prompt_pose"
+    "prompt": "prompt_occupancy"

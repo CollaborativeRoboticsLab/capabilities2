@@ -13,5 +13,5 @@ interface:
                     the decision making authority to understand the position and orientation of the robot. This can be triggered with a 
                     '<Event name=pose provider=RobotPoseRunner/>' command. This generally needs to be followed by with a prompting tool 
                     event that allows for transfer of data to the decision making authority. This runner will populate the prompting tool's 
-                    execution parameters with the relavent data. As an example if this is followed by prompt_message runner provided by 
-                    PromptToolsRunner provider, such as '<Event name=prompt_pose provider=PromptToolsRunner />'
+                    execution parameters with the relavent data. As an example if this is followed by prompt_pose runner provided by 
+                    PromptPoseRunner provider, such as '<Event name=prompt_pose provider=PromptPoseRunner />'

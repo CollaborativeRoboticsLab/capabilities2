@@ -1,7 +1,17 @@
 <library path="capabilities2_runner">
-    <class type="capabilities2_runner::PromptRunner" base_class_type="capabilities2_runner::ActionRunner">
+    <class type="capabilities2_runner::PromptTextRunner" base_class_type="capabilities2_runner::ServiceRunner">
         <description>
-            A plugin that provide prompting capability
+            A plugin that provide text prompting capability
+        </description>
+    </class>
+    <class type="capabilities2_runner::PromptPoseRunner" base_class_type="capabilities2_runner::ServiceRunner">
+        <description>
+            A plugin that provide pose prompting capability
+        </description>
+    </class>
+    <class type="capabilities2_runner::PromptOccupancyRunner" base_class_type="capabilities2_runner::ServiceRunner">
+        <description>
+            A plugin that provide occupancy grid map prompting capability
         </description>
     </class>
 </library>

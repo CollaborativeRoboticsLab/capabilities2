@@ -11,13 +11,14 @@ namespace capabilities2_runner
 /**
  * @brief prompt capability runner
  *
- * This class is a wrapper around the capabilities2 service runner that is used to
- * call on the prompt_tools/prompt service, providing it as a capability
+ * This class is a wrapper around the capabilities2 service runner and is used to
+ * call on the prompt_tools/prompt service, providing it as a capability that prompts
+ * text values
  */
-class PromptRunner : public ServiceRunner<prompt_msgs::srv::Prompt>
+class PromptTextRunner : public ServiceRunner<prompt_msgs::srv::Prompt>
 {
 public:
-  PromptRunner() : ServiceRunner()
+  PromptTextRunner() : ServiceRunner()
   {
   }
 
@@ -29,7 +30,7 @@ public:
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
-    init_service(node, run_config, "prompt");
+    init_service(node, run_config, "prompt_text");
   }
 
   /**
@@ -47,15 +48,16 @@ public:
   {
     parameters_ = parameters;
 
-    const char** text;
+    tinyxml2::XMLElement* textElement = parameters->FirstChildElement("Text");
 
-    parameters_->QueryStringAttribute("text", text);
+    tinyxml2::XMLPrinter printer;
+    textElement->Accept(&printer);
 
-    std::string text_data(*text);
+    std::string data(printer.CStr());
 
     prompt_msgs::srv::Prompt::Request request;
 
-    request.prompt.prompt = "The person responded with " + text_data;
+    request.prompt.prompt = "The response was " + data;
 
     prompt_msgs::msg::ModelOption modelOption1;
     modelOption1.key = "model";

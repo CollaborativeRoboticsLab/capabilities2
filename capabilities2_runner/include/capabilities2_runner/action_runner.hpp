@@ -148,6 +148,7 @@ public:
             // send success event
             if (events[execute_id].on_success)
             {
+              result_ = wrapped_result.result;
               events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));
               execute_id += 1;
             }
@@ -244,6 +245,9 @@ protected:
 
   /** goal handle parameter to capture goal response from goal_response_callback */
   typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle_;
+
+  /** Result */
+  typename ActionT::Result::SharedPtr result_;
 };
 
 }  // namespace capabilities2_runner

@@ -30,9 +30,22 @@
       interfaces/prompt.yaml
     </capability_interface>
 
+    <!-- semantic interfaces -->
+    <semantic_capability_interface>
+      semantic_interfaces/semantic_interfaces.yaml
+    </semantic_capability_interface>
+
     <!-- providers -->
     <capability_provider>
-      providers/PromptRunner.yaml
+      providers/PromptTextRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/PromptPoseRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/PromptOccupancyRunner.yaml
     </capability_provider>
   </export>
 </package>
