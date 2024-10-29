@@ -30,7 +30,7 @@ public:
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
-    init_service(node, run_config, "prompt_occupancy");
+    init_service(node, run_config, "prompt");
   }
 
   /**

@@ -30,11 +30,6 @@
       interfaces/prompt.yaml
     </capability_interface>
 
-    <!-- semantic interfaces -->
-    <semantic_capability_interface>
-      semantic_interfaces/semantic_interfaces.yaml
-    </semantic_capability_interface>
-
     <!-- providers -->
     <capability_provider>
       providers/PromptTextRunner.yaml

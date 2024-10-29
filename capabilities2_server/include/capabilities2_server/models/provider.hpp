@@ -6,6 +6,7 @@
 #include <capabilities2_server/models/remappable_base.hpp>
 #include <capabilities2_server/models/predicateable_base.hpp>
 #include <capabilities2_server/models/defineable_base.hpp>
+#include <capabilities2_server/sanitizer/sql_safe.hpp>
 
 namespace capabilities2_server
 {
@@ -75,8 +76,9 @@ struct provider_model_t : public remappable_base_t, predicateable_base_t, public
   {
     YAML::Node deps;
     deps["depends_on"] = depends_on;
-    return header.to_sql_values() + ", '" + implements + "', '" + YAML::Dump(deps["depends_on"]) + "', '" +
-           YAML::Dump(remappings.to_yaml()) + "', '" + runner + "', '" + definition_str + "'";
+    
+    return header.to_sql_values() + ", '" + implements + "', '" + to_sql_safe(YAML::Dump(deps["depends_on"])) + "', '" +
+           to_sql_safe(YAML::Dump(remappings.to_yaml())) + "', '" + runner + "', '" + definition_str + "'";
   }
 };
 

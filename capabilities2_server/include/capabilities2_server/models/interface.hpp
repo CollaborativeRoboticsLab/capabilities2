@@ -5,6 +5,7 @@
 #include <capabilities2_server/models/header.hpp>
 #include <capabilities2_server/models/resource.hpp>
 #include <capabilities2_server/models/predicateable_base.hpp>
+#include <capabilities2_server/sanitizer/sql_safe.hpp>
 
 namespace capabilities2_server
 {
@@ -164,7 +165,7 @@ struct interface_model_t : public predicateable_base_t
 
   const std::string to_sql_values() const
   {
-    return header.to_sql_values() + ", '" + YAML::Dump(interface.to_yaml()) + "'";
+    return header.to_sql_values() + ", '" + to_sql_safe(YAML::Dump(interface.to_yaml())) + "'";
   }
 };
 

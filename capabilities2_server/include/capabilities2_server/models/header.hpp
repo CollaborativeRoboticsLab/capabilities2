@@ -2,6 +2,7 @@
 
 #include <string>
 #include <yaml-cpp/yaml.h>
+#include <capabilities2_server/sanitizer/sql_safe.hpp>
 
 namespace capabilities2_server
 {
@@ -70,7 +71,7 @@ struct header_model_t : identifiable_base_t, soft_deleteable_base_t, modifiable_
 
   const std::string to_sql_values() const
   {
-    return "'" + name + "', '" + version + "', '" + type + "', '" + description + "'";
+    return "'" + name + "', '" + version + "', '" + type + "', '" + to_sql_safe(description) + "'";
   }
 };
 

@@ -4,6 +4,7 @@
 #include <capabilities2_server/models/header.hpp>
 #include <capabilities2_server/models/remappable_base.hpp>
 #include <capabilities2_server/models/predicateable_base.hpp>
+#include <capabilities2_server/sanitizer/sql_safe.hpp>
 
 namespace capabilities2_server
 {
@@ -58,7 +59,7 @@ struct semantic_interface_model_t : public remappable_base_t, predicateable_base
   std::string to_sql_values() const
   {
     return header.to_sql_values() + ", '" + redefines + "', '" + global_namespace + "', '" +
-           YAML::Dump(remappings.to_yaml()) + "'";
+           to_sql_safe(YAML::Dump(remappings.to_yaml())) + "'";
   }
 };
 

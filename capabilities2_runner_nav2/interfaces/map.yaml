@@ -8,7 +8,8 @@ interface:
   topics:
     "/map":
       type: "nav_msgs::msg::OccupancyGrid"
-      description: "This system allows the extraction of the occupancy grid map produced by the robot's mapping or localization system. 
+      description: |
+                   "This system allows the extraction of the occupancy grid map produced by the robot's mapping or localization system. 
                     which enables the decision making authority to understand the environment around the robot. This can be triggered with a 
                     '<Event name=map provider=OccupancyGridRunner/>' command. This generally needs to be followed by with a prompting tool 
                     event that allows for transfer of data to the decision making authority. This runner will populate the prompting tool's 

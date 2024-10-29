@@ -4,6 +4,6 @@
 name: WaypointRunner
 spec_type: provider
 spec_version: 1.1
-description: The capability provider for the follow_waypoint interface
+description: "The capability provider for the follow_waypoint interface"
 implements: capabilities2_runner_nav2/WaypointRunner
 runner: capabilities2_runner::WayPointRunner
