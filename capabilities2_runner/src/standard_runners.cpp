@@ -13,6 +13,7 @@ public:
     init_base(node, run_config);
 
     // do nothing
+    RCLCPP_INFO(node_->get_logger(), "Dummy runner started");
   }
 
   void stop() override
@@ -22,11 +23,13 @@ public:
       throw runner_exception("node not initialized");
 
     // stop the runner
+    RCLCPP_INFO(node_->get_logger(), "Dummy runner stopped");
   }
 
   std::optional<std::function<void(tinyxml2::XMLElement*)>>
   trigger(tinyxml2::XMLElement* parameters) override
   {
+    RCLCPP_INFO(node_->get_logger(), "Dummy runner cannot trigger");
     return std::nullopt;
   }
 };

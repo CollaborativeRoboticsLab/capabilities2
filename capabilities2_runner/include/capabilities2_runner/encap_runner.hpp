@@ -1,6 +1,6 @@
 #pragma once
 
-#include <capabilities2_runner/action_runner.hpp>
+#include <capabilities2_runner/notrigger_action_runner.hpp>
 #include <capabilities2_msgs/action/capability.hpp>
 
 namespace capabilities2_runner
@@ -18,10 +18,10 @@ namespace capabilities2_runner
  *
  */
 template <typename ActionT>
-class EnCapRunner : public ActionRunner<ActionT>
+class EnCapRunner : public NoTriggerActionRunner<ActionT>
 {
 public:
-  EnCapRunner() : ActionRunner()
+  EnCapRunner() : NoTriggerActionRunner()
   {
   }
 
@@ -67,32 +67,40 @@ public:
     ActionRunner::stop();
   }
 
-  /**
-   * @brief the trigger method is deleted
-   * this is because there is an action server available
-   * to run the encapsulated action
-   *
-   * @param parameters
-   * @return std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
-   */
-  virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
-  trigger(std::shared_ptr<tinyxml2::XMLElement> parameters) override = delete;
-
   // encapsulated action server related functions
-  /** */
-  void handle_goal(const rclcpp_action::GoalUUID& uuid,
-                   std::shared_ptr<const capabilities2_msgs::action::Capability::Goal> goal);
-  /** */
-  void handle_cancel(
+  /**
+   * @brief handle encap action goal
+   *
+   * @param uuid
+   * @param goal
+   */
+  virtual void handle_goal(const rclcpp_action::GoalUUID& uuid,
+                           std::shared_ptr<const capabilities2_msgs::action::Capability::Goal> goal);
+
+  /**
+   * @brief handle encap action cancel goal
+   *
+   * @param goal_handle
+   */
+  virtual void handle_cancel(
       const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Capability>> goal_handle);
-  /** */
-  void handle_accepted(
+
+  /**
+   * @brief handle encap action accepted
+   *
+   * @param goal_handle
+   */
+  virtual void handle_accepted(
       const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Capability>> goal_handle);
-  /** */
+
+  /**
+   * @brief execute the encapsulated action request
+   *
+   */
   virtual void execute();
 
 private:
-  /**< encap action server */
+  /** encap action server */
   std::shared_ptr<rclcpp_action::Server<capabilities2_msgs::action::Capability>> encap_action_;
 };
 

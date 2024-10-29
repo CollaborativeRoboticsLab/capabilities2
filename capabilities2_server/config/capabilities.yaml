@@ -4,7 +4,10 @@
     db_file: ~/.ros/capabilities/capabilities.sqlite3
     rebuild: true # Set to true to rebuild the database
     package_paths: # paths to search for capabilities
+      - /opt/ros/humble/share
       - /opt/ros/jazzy/share
+      - /home/$USER/capabilities_ws/src
+      - /home/$USER/capabilities_ws/src/capabilities2
       - /home/ubuntu/colcon_ws/src
       - /home/ubuntu/colcon_ws/src/capabilities2
       - /home/kalana/ROS/capabilities_ws/src/capabilities2

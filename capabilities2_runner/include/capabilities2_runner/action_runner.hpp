@@ -80,12 +80,13 @@ public:
     {
       try
       {
-        auto cancel_future = action_client_->async_cancel_goal(
-            goal_handle_, [this](action_msgs::srv::CancelGoal_Response::SharedPtr response) {
-              if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE)
-              {
-                // throw runner_exception("failed to cancel runner");
-              }
+        std::shared_future<typename ActionT::Impl::CancelGoalService::Response::SharedPtr> cancel_future =
+            action_client_->async_cancel_goal(
+                goal_handle_, [this](action_msgs::srv::CancelGoal_Response::SharedPtr response) {
+                  if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE)
+                  {
+                    // throw runner_exception("failed to cancel runner");
+                  }
 
               // publish event
               if (events[execute_id].on_stopped)
@@ -96,7 +97,14 @@ public:
             });
 
         // wait for action to be stopped. hold the thread for 2 seconds to help keep callbacks in scope
-        rclcpp::spin_until_future_complete(node_, cancel_future, std::chrono::seconds(2));
+        // BUG: the line below does not work in jazzy build, so a workaround is used
+        // rclcpp::spin_until_future_complete(node_->get_node_base_interface(), cancel_future, std::chrono::seconds(2));
+        auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+        while (std::chrono::steady_clock::now() < timeout)
+        {
+          if (cancel_future.wait_for(std::chrono::milliseconds(100)) == std::future_status::ready)
+            break;
+        }
       }
       catch (const rclcpp_action::exceptions::UnknownGoalHandleError& e)
       {

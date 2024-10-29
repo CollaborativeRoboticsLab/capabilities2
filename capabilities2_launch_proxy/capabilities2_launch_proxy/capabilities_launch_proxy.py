@@ -30,6 +30,7 @@ from launch.actions import ExecuteProcess
 from launch.actions import EmitEvent
 from launch.actions import RegisterEventHandler
 from launch.launch_description_sources import AnyLaunchDescriptionSource
+# from launch.some_entities_type import SomeEntitiesType
 from capabilities2_msgs.action import Launch
 from capabilities2_msgs.msg import CapabilityEvent
 

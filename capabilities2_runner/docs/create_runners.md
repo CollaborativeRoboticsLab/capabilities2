@@ -4,15 +4,15 @@ The runner API is designed to be extensible, so that specific runners can be cre
 
 ## Inheritance
 
-A runner is a plugin that inherits from the `RunnerBase` class. The `RunnerBase` class is a pure virtual class that defines the interface for a runner. The `RunnerBase` class has the following methods:
+A runner is a plugin that inherits from the `capabilities2_runner::RunnerBase` class. The `RunnerBase` class is a pure virtual class that defines the interface for a runner. The `RunnerBase` class has the following methods:
 
 1. `start` - starts the runner
 1. `stop` - stops the runner
 1. `trigger` - triggers the runner
 
-Multiple classes are provided to inherit from, depending on the type of runner you want to create. A notable example is the `ActionRunner` class, which is used to create runners that run actions.
+Multiple classes are provided to inherit from, depending on the type of runner you want to create. A notable example is the `capabilities2_runner::ActionRunner` class, which is used to create runners that run actions.
 
-### Export with Pluginlib
+## Export with Pluginlib
 
 The runner should be exported as a plugin using the `PLUGINLIB_EXPORT_CLASS` macro.
 
@@ -25,20 +25,22 @@ The runner should be exported as a plugin using the `PLUGINLIB_EXPORT_CLASS` mac
 PLUGINLIB_EXPORT_CLASS(capabilities2_runner::MyRunner, capabilities2_runner::RunnerBase)
 ```
 
-## Runner Execution Patterns
+## Expose with plugins.xml
 
-### Start -> Stop
+The runner should be exposed as a plugin in the `plugins.xml` file.
 
-The simplest runner execution pattern is to start the runner and then stop it. An example of this is the `LaunchRunner`. This pattern represents a ***self-contained*** capability. An example might be the action of a robot following another entity. This skill could be self-contained and runs continuously until stopped. This case assumes that the skill is continuously running and does not require any external triggers. ROS **Topic** subscriptions and **Launch** files are like this type.
+```xml
+<library path="capabilities2_runner">
+    <class type="capabilities2_runner::MyRunner" base_class_type="capabilities2_runner::RunnerBase">
+        <description>
+            A plugin that provides a  my-runner to test capabilities2
+        </description>
+    </class>
+</library>
+```
 
-### Start -> Trigger -> Stop
+`plugin.xml` needs to be included in the `CMakeLists.txt`.
 
-A more complex runner execution pattern is to start the runner, trigger it, and then stop it. This pattern represents a ***one-shot*** capability. An example might be the action of a robot moving to a waypoint. This skill is triggered once and then stops.
-
-### Start -> Trigger -> Trigger -> ... -> Stop
-
-An even more complex runner execution pattern is to start the runner, trigger it multiple times, and then stop it. This pattern represents a ***repeating*** capability. An example might be the action of a robot completing a state-machine or tree. This skill is triggered multiple times and then stops. This pattern (and the previous one) often implies that data is passed to and from the runner.
-
-### Start -> End (no Stop)
-
-The final runner execution pattern is to start the runner and then end it without stopping. This pattern represents a challenge for the runner API, as it is not clear when the runner should be stopped. ROS communications patterns including **Services** and **Actions** are like this type.
+```cmake
+pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
+```

@@ -415,9 +415,9 @@ public:
 
 private:
   /**
-   * @brief execute the plan
+   * @brief Load capabilities from a package path
    *
-   * @param server_goal_handle goal handle of the server
+   * @param package_path
    */
   void launch_fabric(
       const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Connections>> goal_handle)
@@ -480,14 +480,12 @@ private:
   void load_capabilities(const std::string& package_path)
   {
     RCLCPP_DEBUG(get_logger(), "Loading capabilities from package path: %s", package_path.c_str());
-
     // check if path exists
     if (!std::filesystem::exists(package_path))
     {
       RCLCPP_ERROR(get_logger(), "package path does not exist: %s", package_path.c_str());
       return;
     }
-
     // find packages in path
     std::vector<std::string> packages;
     for (const auto& entry : std::filesystem::directory_iterator(package_path))
@@ -497,22 +495,18 @@ private:
         packages.push_back(entry.path().filename());
       }
     }
-
     // load capabilities from packages
     for (const auto& package : packages)
     {
       RCLCPP_DEBUG(get_logger(), "loading capabilities from package: %s", package.c_str());
-
       // package.xml exports
       std::string package_xml = package_path + "/" + package + "/package.xml";
-
       // check if package.xml exists
       if (!std::filesystem::exists(package_xml))
       {
         RCLCPP_DEBUG(get_logger(), "package.xml does not exist: %s", package_xml.c_str());
         continue;
       }
-
       // parse package.xml
       tinyxml2::XMLDocument doc;
       try
@@ -524,7 +518,6 @@ private:
         RCLCPP_ERROR(get_logger(), "failed to parse package.xml file: %s", e.what());
         continue;
       }
-
       // get exports
       tinyxml2::XMLElement* exports = doc.FirstChildElement("package")->FirstChildElement("export");
       if (exports == nullptr)
@@ -532,7 +525,6 @@ private:
         RCLCPP_DEBUG(get_logger(), "No exports found in package.xml file: %s", package_xml.c_str());
         continue;
       }
-
       // get capability specs of each type using a lambda
       auto get_capability_specs = [&](const std::string& spec_type) {
         // get capability spec
@@ -548,20 +540,16 @@ private:
           {
             spec_path = spec_path.substr(1);
           }
-
           // create a spec message
           capabilities2_msgs::msg::CapabilitySpec capability_spec;
-
           // add package details
           capability_spec.package = package;
           capability_spec.type = spec_type;
-
           // try load spec file
           try
           {
             // read spec file
             load_spec_content(package_path + "/" + package + "/" + spec_path, capability_spec);
-
             // add capability to db
             RCLCPP_INFO(get_logger(), "adding capability: %s", (package + "/" + spec_path).c_str());
             add_capability(capability_spec);
@@ -572,7 +560,6 @@ private:
           }
         }
       };
-
       // get interface specs
       get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_INTERFACE);
       // get semantic interface specs
