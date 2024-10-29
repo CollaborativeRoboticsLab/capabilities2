@@ -13,6 +13,7 @@
 #include <capabilities2_server/models/provider.hpp>
 #include <capabilities2_server/models/running.hpp>
 #include <capabilities2_server/models/run_config.hpp>
+#include <capabilities2_server/sanitizer/sql_safe.hpp>
 
 namespace capabilities2_server
 {
@@ -475,10 +476,10 @@ private:
     interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
     interface.header.version = sqlite3_column_int(stmt, 1);
     interface.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-    interface.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+    interface.header.description = from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
 
     models::specification_model_t spec;
-    spec.from_yaml(YAML::Load(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)))));
+    spec.from_yaml(YAML::Load(from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4))))));
     interface.interface = spec;
 
     return interface;
@@ -490,11 +491,11 @@ private:
     semantic_interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
     semantic_interface.header.version = sqlite3_column_int(stmt, 1);
     semantic_interface.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-    semantic_interface.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+    semantic_interface.header.description = from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
     semantic_interface.redefines = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
     semantic_interface.global_namespace = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
     semantic_interface.remappings.from_yaml(
-        YAML::Load(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)))));
+        YAML::Load(from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6))))));
 
     return semantic_interface;
   }
@@ -505,11 +506,11 @@ private:
     provider.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
     provider.header.version = sqlite3_column_int(stmt, 1);
     provider.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-    provider.header.description = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+    provider.header.description = from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
     provider.implements = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
-    provider.depends_on = YAML::Load(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5))))
+    provider.depends_on = YAML::Load(from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)))))
                               .as<std::map<std::string, std::string>>();
-    provider.remappings.from_yaml(YAML::Load(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)))));
+    provider.remappings.from_yaml(YAML::Load(from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6))))));
     provider.runner = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 7)));
 
     return provider;
