@@ -28,10 +28,10 @@
     <build_type>ament_cmake</build_type>
     <!-- interfaces -->
     <capability_interface>
-      interfaces/speech_to_text.yaml
+      interfaces/ListenerRunner.yaml
     </capability_interface>
     <capability_interface>
-      interfaces/text_to_speech.yaml
+      interfaces/SpeakerRunner.yaml
     </capability_interface>
 
     <!-- providers -->

@@ -1,6 +1,6 @@
 %YAML 1.1
 ---
-name: TextToSpeech
+name: SpeakerRunner
 spec_version: 1.1
 spec_type: interface
 description: "Text to Speech capabilities using Audio stack"
@@ -9,7 +9,7 @@ interface:
     "/text_to_speech":
       type: "hri_audio_msgs::action::TextToSpeech"
       description: "This system allow the robot to speak a given text. The system can triggered via 
-                    '<Event name=text_to_speech provider=SpeakerRunner text=$value/>' command. where 
+                    '<Event name=SpeakerRunner provider=SpeakerRunner text=$value/>' command. where 
                     '$value' represents what the robot has to speak. if the robot recieves an command
-                    '<Event name=text_to_speech provider=SpeakerRunner text='how are you'/>', the robot 
+                    '<Event name=SpeakerRunner provider=SpeakerRunner text='how are you'/>', the robot 
                     will speak 'how are you'."

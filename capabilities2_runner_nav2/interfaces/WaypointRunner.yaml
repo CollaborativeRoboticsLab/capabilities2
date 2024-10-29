@@ -1,6 +1,6 @@
 %YAML 1.1
 ---
-name: FollowWaypoints
+name: WaypointRunner
 spec_version: 1.1
 spec_type: interface
 description: "Waypoint follower capabilities using Nav2 stack"
@@ -9,6 +9,6 @@ interface:
     "/follow_waypoints":
       type: "nav2_msgs::action::FollowWaypoints"
       description: "This system allow the robot to navigate to a given two dimensional coordinate 
-                    given via '<Event name=follow_waypoints provider=WaypointRunner x='$value' y='$value' />' command. '$value' represents 
-                    a value in meters. As an example '<Event name=follow_waypoints provider=WaypointRunner x='1.2' y='0.8' /> means the 
+                    given via '<Event name=WaypointRunner provider=WaypointRunner x='$value' y='$value' />' command. '$value' represents 
+                    a value in meters. As an example '<Event name=WaypointRunner provider=WaypointRunner x='1.2' y='0.8' /> means the 
                     robot will move 1.2 meters forward and 0.8 meters to the right side."

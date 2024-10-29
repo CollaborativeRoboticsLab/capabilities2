@@ -28,17 +28,17 @@
     
     <!-- interfaces -->
     <capability_interface>
-      interfaces/follow_waypoints.yaml
+      interfaces/WaypointRunner.yaml
     </capability_interface>
 
         <!-- interfaces -->
     <capability_interface>
-      interfaces/map.yaml
+      interfaces/OccupancyGridRunner.yaml
     </capability_interface>
 
         <!-- interfaces -->
     <capability_interface>
-      interfaces/pose.yaml
+      interfaces/RobotPoseRunner.yaml
     </capability_interface>
 
     <!-- providers -->

@@ -30,6 +30,19 @@
       interfaces/prompt.yaml
     </capability_interface>
 
+    <!-- interfaces -->
+    <capability_interface>
+      interfaces/PromptTextRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/PromptPoseRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/PromptOccupancyRunner.yaml
+    </capability_interface>
+
     <!-- providers -->
     <capability_provider>
       providers/PromptTextRunner.yaml

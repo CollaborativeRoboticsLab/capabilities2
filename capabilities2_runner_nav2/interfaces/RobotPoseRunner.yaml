@@ -1,6 +1,6 @@
 %YAML 1.1
 ---
-name: Pose
+name: RobotPoseRunner
 spec_version: 1.1
 spec_type: interface
 description: "data extraction capability to extract pose of the robot"
@@ -10,7 +10,7 @@ interface:
       type: "geometry_msgs::msg::PoseWithCovarianceStamped"
       description: "This system allows the extraction of the pose of the robot from the odoemtry or localization system. which enables 
                     the decision making authority to understand the position and orientation of the robot. This can be triggered with a 
-                    '<Event name=pose provider=RobotPoseRunner/>' command. This generally needs to be followed by with a prompting tool 
+                    '<Event name=RobotPoseRunner provider=RobotPoseRunner/>' command. This generally needs to be followed by with a prompting tool 
                     event that allows for transfer of data to the decision making authority. This runner will populate the prompting tool's 
                     execution parameters with the relavent data. As an example if this is followed by prompt_pose runner provided by 
-                    PromptPoseRunner provider, such as '<Event name=prompt_pose provider=PromptPoseRunner />'"
+                    PromptPoseRunner provider, such as '<Event name=PromptPoseRunner provider=PromptPoseRunner/>'"
