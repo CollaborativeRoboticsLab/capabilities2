@@ -20,6 +20,8 @@
   <!-- system dependency -->
   <depend>tinyxml2</depend>
 
+  <exec_depend>ros2launch</exec_depend>
+
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
@@ -31,14 +33,16 @@
       interfaces/WaypointRunner.yaml
     </capability_interface>
 
-        <!-- interfaces -->
     <capability_interface>
       interfaces/OccupancyGridRunner.yaml
     </capability_interface>
 
-        <!-- interfaces -->
     <capability_interface>
       interfaces/RobotPoseRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/Nav2Runner.yaml
     </capability_interface>
 
     <!-- providers -->
@@ -46,14 +50,16 @@
       providers/RobotPoseRunner.yaml
     </capability_provider>
 
-    <!-- providers -->
     <capability_provider>
       providers/OccupancyGridRunner.yaml
     </capability_provider>
 
-      <!-- providers -->
     <capability_provider>
       providers/WaypointRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/Nav2Runner.yaml
     </capability_provider>
   </export>
 </package>

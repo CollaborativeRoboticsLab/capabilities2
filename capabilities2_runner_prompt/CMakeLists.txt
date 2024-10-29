@@ -60,6 +60,11 @@ install(DIRECTORY interfaces
   DESTINATION share/${PROJECT_NAME}
 )
 
+# install launch files
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
 # install providers files
 install(DIRECTORY providers
   DESTINATION share/${PROJECT_NAME}

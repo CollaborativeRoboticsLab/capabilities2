@@ -3,11 +3,11 @@
 name: PromptTextRunner
 spec_version: 1.1
 spec_type: interface
-description: "This capability focuses on capturing speech towards robot as text and transfering them to decision making authority."
+description: "The service can be trigged with an command such as '<Event name=PromptTextRunner provider=PromptTextRunner/>'
+              This needs to be trigged after an '<Event name=ListenerRunner provider=ListenerRunner/>' command so that data
+              extracted in the ListenerRunner can be prompted using PromptTextRunner to decision making authority."
 interface:
   services:
     "/prompt":
       type: "prompt_msgs/srv/Prompt"
-      description: "The service can be trigged with an xml command such as '<Event name=PromptTextRunner provider=PromptTextRunner/>'
-                    This needs to be trigged after an '<Event name=ListenerRunner provider=ListenerRunner/>' command so that data
-                    extracted in the ListenerRunner can be prompted using PromptTextRunner to decision making authority."
+      description: "This capability focuses on capturing speech towards robot as text and transfering them to decision making authority."

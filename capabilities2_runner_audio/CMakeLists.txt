@@ -56,6 +56,10 @@ install(DIRECTORY include/
   DESTINATION include
 )
 
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
 install(DIRECTORY interfaces
   DESTINATION share/${PROJECT_NAME}
 )

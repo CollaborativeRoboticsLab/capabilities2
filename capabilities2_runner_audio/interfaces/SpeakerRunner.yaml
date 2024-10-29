@@ -3,13 +3,11 @@
 name: SpeakerRunner
 spec_version: 1.1
 spec_type: interface
-description: "Text to Speech capabilities using Audio stack"
+description: "This capability allow the robot to speak a given text and can be triggered via '<Event name=SpeakerRunner provider=SpeakerRunner text=$value/>' 
+              command. The '$value' represents what the robot has to speak. As an example, if the robot recieves an command in the format of
+              '<Event name=SpeakerRunner provider=SpeakerRunner text='how are you'/>', the robot will speak 'how are you'."
 interface:
   actions:
     "/text_to_speech":
       type: "hri_audio_msgs::action::TextToSpeech"
-      description: "This system allow the robot to speak a given text. The system can triggered via 
-                    '<Event name=SpeakerRunner provider=SpeakerRunner text=$value/>' command. where 
-                    '$value' represents what the robot has to speak. if the robot recieves an command
-                    '<Event name=SpeakerRunner provider=SpeakerRunner text='how are you'/>', the robot 
-                    will speak 'how are you'."
+      description: "Text to Speech action that allows speaking the text given"

@@ -21,6 +21,8 @@
   <!-- system dependency -->
   <depend>tinyxml2</depend>
 
+  <exec_depend>ros2launch</exec_depend>
+
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
@@ -30,17 +32,34 @@
     <capability_interface>
       interfaces/ListenerRunner.yaml
     </capability_interface>
+
     <capability_interface>
       interfaces/SpeakerRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/AudioListenRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/AudioSpeakRunner.yaml
     </capability_interface>
 
     <!-- providers -->
     <capability_provider>
       providers/ListenerRunner.yaml
     </capability_provider>
+
     <capability_provider>
       providers/SpeakerRunner.yaml
     </capability_provider>
 
+    <capability_provider>
+      providers/AudioListenRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/AudioSpeakRunner.yaml
+    </capability_provider>
   </export>
 </package>

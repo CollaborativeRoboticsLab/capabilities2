@@ -27,10 +27,9 @@
 
     <!-- interfaces -->
     <capability_interface>
-      interfaces/prompt.yaml
+      interfaces/PromptRunner.yaml
     </capability_interface>
 
-    <!-- interfaces -->
     <capability_interface>
       interfaces/PromptTextRunner.yaml
     </capability_interface>
@@ -54,6 +53,10 @@
 
     <capability_provider>
       providers/PromptOccupancyRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/PromptRunner.yaml
     </capability_provider>
   </export>
 </package>

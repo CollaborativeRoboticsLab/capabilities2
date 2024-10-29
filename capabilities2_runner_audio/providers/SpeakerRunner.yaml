@@ -7,3 +7,6 @@ spec_version: 1.1
 description: The capability provider for the text_to_speech interface
 implements: capabilities2_runner_nav2/SpeakerRunner
 runner: capabilities2_runner::SpeakerRunner
+depends_on:
+  "capabilities2_runner_audio/AudioSpeakRunner":
+    provider: "capabilities2_runner_audio/AudioSpeakRunner"
