@@ -1,13 +1,12 @@
-# standardised nav2 interface specification
 %YAML 1.1
 ---
-name: follow_waypoints
-spec_version: 1
+name: FollowWaypoints
+spec_version: 1.1
 spec_type: interface
 description: "Waypoint follower capabilities using Nav2 stack"
 interface:
   actions:
-    "follow_waypoints":
+    "/follow_waypoints":
       type: "nav2_msgs::action::FollowWaypoints"
       description: "This system allow the robot to navigate to a given two dimensional coordinate 
                     given via '<Event name=follow_waypoints provider=WaypointRunner x='$value' y='$value' />' command. '$value' represents 

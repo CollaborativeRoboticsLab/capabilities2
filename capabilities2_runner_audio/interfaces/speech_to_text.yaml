@@ -1,17 +1,16 @@
-# standardised nav2 interface specification
 %YAML 1.1
 ---
-name: speech_to_text
-spec_version: 1
+name: SpeechToText
+spec_version: 1.1
 spec_type: interface
 description: "Speech to text capabilities using Audio stack"
 interface:
   actions:
-    "speech_to_text":
+    "/speech_to_text":
       type: "hri_audio_msgs::action::SpeechToText"
       description: "This system allow the robot to listen to sounds in the environment and then interpret that in the text format. This enables 
                     the decision making authority to understand the surrounding sounds, discussions regarding or with the robot.The system can 
                     triggered via '<Event name=speech_to_text provider=ListenerRunner/>' command.This generally needs to be followed by with a 
                     prompting tool event that allows for transfer of data to the decision making authority. This runner will populate the prompting 
                     tool's execution parameters with the relavent data. As an example if this is followed by prompt_text runner provided by 
-                    PromptTextRunner provider, such as '<Event name=prompt_text provider=PromptTextRunner />'
+                    PromptTextRunner provider, such as '<Event name=prompt_text provider=PromptTextRunner />'"

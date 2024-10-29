@@ -1,7 +1,7 @@
 %YAML 1.1
 ---
 name: Prompt
-spec_version: 1
+spec_version: 1.1
 spec_type: interface
 description: "This interface describes the basic ROS interface for interacting with the Prompt Bridge."
 interface:

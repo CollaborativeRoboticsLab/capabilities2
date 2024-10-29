@@ -9,6 +9,6 @@ redefines: capabilities2_runner_prompt/prompt
 global_namespace: 
 remappings:
   services:
-    "prompt": "prompt_text"
-    "prompt": "prompt_pose"
-    "prompt": "prompt_occupancy"
+    "prompt_text": "prompt"
+    "prompt_pose": "prompt"
+    "prompt_occupancy": "prompt"

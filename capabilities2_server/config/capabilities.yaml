@@ -2,8 +2,9 @@
   ros__parameters:
     loop_rate: 5.0 # Hz
     db_file: ~/.ros/capabilities/capabilities.sqlite3
-    rebuild: false # Set to true to rebuild the database
+    rebuild: true # Set to true to rebuild the database
     package_paths: # paths to search for capabilities
       - /opt/ros/jazzy/share
       - /home/ubuntu/colcon_ws/src
       - /home/ubuntu/colcon_ws/src/capabilities2
+      - /home/kalana/ROS/capabilities_ws/src/capabilities2
