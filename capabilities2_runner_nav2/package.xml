@@ -42,7 +42,7 @@
     </capability_interface>
 
     <capability_interface>
-      interfaces/Nav2Runner.yaml
+      interfaces/Nav2LaunchRunner.yaml
     </capability_interface>
 
     <!-- providers -->
@@ -59,7 +59,7 @@
     </capability_provider>
 
     <capability_provider>
-      providers/Nav2Runner.yaml
+      providers/Nav2LaunchRunner.yaml
     </capability_provider>
   </export>
 </package>

@@ -1,9 +1,9 @@
 # the empty provider
 %YAML 1.1
 ---
-name: AudioListenRunner
+name: ListenerLaunchRunner
 spec_type: provider
 spec_version: 1.1
 description: "The capability provider for the audio stack"
-implements: capabilities2_runner_audio/AudioListenRunner
+implements: capabilities2_runner_audio/ListenerLaunchRunner
 runner: launch/listen.launch.py

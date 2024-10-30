@@ -27,7 +27,7 @@
 
     <!-- interfaces -->
     <capability_interface>
-      interfaces/PromptRunner.yaml
+      interfaces/PromptLaunchRunner.yaml
     </capability_interface>
 
     <capability_interface>
@@ -56,7 +56,7 @@
     </capability_provider>
 
     <capability_provider>
-      providers/PromptRunner.yaml
+      providers/PromptLaunchRunner.yaml
     </capability_provider>
   </export>
 </package>

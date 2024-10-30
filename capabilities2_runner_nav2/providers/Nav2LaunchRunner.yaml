@@ -1,9 +1,9 @@
 # the base provider
 %YAML 1.1
 ---
-name: Nav2Runner
+name: Nav2LaunchRunner
 spec_type: provider
 spec_version: 1.1
 description: "The capability provider for the nav2 stack"
-implements: capabilities2_runner_nav2/Nav2Runner
+implements: capabilities2_runner_nav2/Nav2LaunchRunner
 runner: launch/nav2stack.launch.py

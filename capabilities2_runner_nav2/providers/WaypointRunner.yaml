@@ -8,5 +8,5 @@ description: "The capability provider for the follow_waypoint interface"
 implements: capabilities2_runner_nav2/WaypointRunner
 runner: capabilities2_runner::WayPointRunner
 depends_on:
-  "capabilities2_runner_nav2/Nav2Runner":
-    provider: "capabilities2_runner_nav2/Nav2Runner"
+  "capabilities2_runner_nav2/Nav2LaunchRunner":
+    provider: "capabilities2_runner_nav2/Nav2LaunchRunner"

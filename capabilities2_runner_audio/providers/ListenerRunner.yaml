@@ -8,5 +8,5 @@ description: The capability provider for the speech_to_text interface
 implements: capabilities2_runner_audio/ListenerRunner
 runner: capabilities2_runner::ListenerRunner
 depends_on:
-  "capabilities2_runner_audio/AudioListenRunner":
-    provider: "capabilities2_runner_audio/AudioListenRunner"
+  "capabilities2_runner_audio/ListenerLaunchRunner":
+    provider: "capabilities2_runner_audio/ListenerLaunchRunner"

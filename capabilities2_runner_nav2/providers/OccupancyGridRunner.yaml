@@ -8,5 +8,5 @@ description: "The capability provider for the robot's occupancy grid map interfa
 implements: capabilities2_runner_nav2/OccupancyGridRunner
 runner: capabilities2_runner::OccupancyGridRunner
 depends_on:
-  "capabilities2_runner_nav2/Nav2Runner":
-    provider: "capabilities2_runner_nav2/Nav2Runner"
+  "capabilities2_runner_nav2/Nav2LaunchRunner":
+    provider: "capabilities2_runner_nav2/Nav2LaunchRunner"

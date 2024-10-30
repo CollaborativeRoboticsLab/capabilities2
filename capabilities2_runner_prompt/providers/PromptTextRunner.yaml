@@ -8,5 +8,5 @@ description: "The capability provider for the prompting interface from prompt to
 implements: capabilities2_runner_prompt/PromptTextRunner
 runner: capabilities2_runner::PromptTextRunner
 depends_on:
-  "capabilities2_runner_prompt/PromptRunner":
-    provider: "capabilities2_runner_prompt/PromptRunner"
+  "capabilities2_runner_prompt/PromptLaunchRunner":
+    provider: "capabilities2_runner_prompt/PromptLaunchRunner"

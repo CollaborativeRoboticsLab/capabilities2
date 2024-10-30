@@ -38,11 +38,11 @@
     </capability_interface>
 
     <capability_interface>
-      interfaces/AudioListenRunner.yaml
+      interfaces/ListenerLaunchRunner.yaml
     </capability_interface>
 
     <capability_interface>
-      interfaces/AudioSpeakRunner.yaml
+      interfaces/SpeakerLaunchRunner.yaml
     </capability_interface>
 
     <!-- providers -->
@@ -55,11 +55,11 @@
     </capability_provider>
 
     <capability_provider>
-      providers/AudioListenRunner.yaml
+      providers/ListenerLaunchRunner.yaml
     </capability_provider>
 
     <capability_provider>
-      providers/AudioSpeakRunner.yaml
+      providers/SpeakerLaunchRunner.yaml
     </capability_provider>
   </export>
 </package>
