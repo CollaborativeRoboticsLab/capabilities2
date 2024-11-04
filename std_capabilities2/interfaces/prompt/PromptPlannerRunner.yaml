@@ -1,0 +1,22 @@
+%YAML 1.1
+---
+name: PromptPlannerRunner
+spec_version: 1.1
+spec_type: interface
+description: "The service can be trigged with an command such as '<Event name=PromptPlannerRunner provider=PromptPlannerRunner/>'.
+              This needs to be trigged at the end of each plan so that decision making authority such as an LLM can be informed to 
+              create a new execution plan depending on the state of the robot. This needs to be followed by another event to transfer the
+              calculated new plan to the exeutor. An example for that event is '<Event name=ExecutorRunner provider=ExecutorRunner/>'.
+                Any and all execution plans calculated by this capability need to be within <Plan> and </Plan> xml tags. 
+                Various events within the plan can be organised using sqeuntial, parallel and recovery control flows. Sqeuntial 
+              control flow means events in the sequential control flow will be triggered one after the other on preceding event's success. 
+              Events under sequential control flow need to come within <Control name=sequential> </Control> xml tags. 
+                Parallel control flow means events in the parallel control flow will be triggered all at once. Events under parallel
+              control flow need to come within <Control name=parallel> </Control> xml tags. 
+                Recovery control flow means second or additional events will be triggered upon the first event's failure. Events under 
+              recovery control flow need to come within <Control name=recovery> </Control> xml tags."
+interface:
+  services:
+    "/prompt":
+      type: "prompt_msgs/srv/Prompt"
+      description: "This capability focuses on capturing speech towards robot as text and transfering them to decision making authority."

@@ -13,7 +13,7 @@ namespace capabilities2_runner
  *
  * This class is a wrapper around the capabilities2 service runner and is used to
  * call on the prompt_tools/prompt service, providing it as a capability that prompts
- * text values
+ * robot pose values
  */
 class PromptPoseRunner : public ServiceRunner<prompt_msgs::srv::Prompt>
 {

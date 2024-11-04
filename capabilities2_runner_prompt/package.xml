@@ -24,39 +24,5 @@
 
   <export>
     <build_type>ament_cmake</build_type>
-
-    <!-- interfaces -->
-    <capability_interface>
-      interfaces/PromptLaunchRunner.yaml
-    </capability_interface>
-
-    <capability_interface>
-      interfaces/PromptTextRunner.yaml
-    </capability_interface>
-
-    <capability_interface>
-      interfaces/PromptPoseRunner.yaml
-    </capability_interface>
-
-    <capability_interface>
-      interfaces/PromptOccupancyRunner.yaml
-    </capability_interface>
-
-    <!-- providers -->
-    <capability_provider>
-      providers/PromptTextRunner.yaml
-    </capability_provider>
-
-    <capability_provider>
-      providers/PromptPoseRunner.yaml
-    </capability_provider>
-
-    <capability_provider>
-      providers/PromptOccupancyRunner.yaml
-    </capability_provider>
-
-    <capability_provider>
-      providers/PromptLaunchRunner.yaml
-    </capability_provider>
   </export>
 </package>

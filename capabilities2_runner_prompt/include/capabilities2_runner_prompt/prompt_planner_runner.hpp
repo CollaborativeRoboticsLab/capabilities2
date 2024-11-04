@@ -13,12 +13,12 @@ namespace capabilities2_runner
  *
  * This class is a wrapper around the capabilities2 service runner and is used to
  * call on the prompt_tools/prompt service, providing it as a capability that prompts
- * occupancy grid map values
+ * capabilitie plans values
  */
-class PromptOccupancyRunner : public ServiceRunner<prompt_msgs::srv::Prompt>
+class PromptPlannerRunner : public ServiceRunner<prompt_msgs::srv::Prompt>
 {
 public:
-  PromptOccupancyRunner() : ServiceRunner()
+  PromptPlannerRunner() : ServiceRunner()
   {
   }
 
@@ -33,6 +33,7 @@ public:
     init_service(node, run_config, "prompt");
   }
 
+protected:
   /**
    * @brief Generate a request from parameters given.
    *
@@ -48,17 +49,17 @@ public:
   {
     parameters_ = parameters;
 
-    tinyxml2::XMLElement* occupancyElement = parameters->FirstChildElement("OccupancyGrid");
+    tinyxml2::XMLElement* textElement = parameters->FirstChildElement("Text");
 
     tinyxml2::XMLPrinter printer;
-    occupancyElement->Accept(&printer);
+    textElement->Accept(&printer);
 
     std::string data(printer.CStr());
 
     prompt_msgs::srv::Prompt::Request request;
 
-    request.prompt.prompt =
-        "The OccupancyGrid of the robot is given as a ros2 nav_msgs/occupancy_grid of which the content are " + data;
+    request.prompt.prompt = "Build a xml plan based on the availbale capabilities to acheive mentioned task. Just "  //
+                            " give the xml plan without explanations";
 
     prompt_msgs::msg::ModelOption modelOption1;
     modelOption1.key = "model";
@@ -88,10 +89,39 @@ public:
    * @return tinyxml2::XMLElement*
    */
   virtual tinyxml2::XMLElement*
-  generate_response(const typename prompt_msgs::srv::Prompt::Response::SharedPtr& result) const override
+  generate_response(const prompt_msgs::srv::Prompt::Response::SharedPtr& result) const override
   {
+    document_string = result->response.response;
+
     return nullptr;
   }
+
+  /**
+   * @brief Update on_success event parameters with new data if avaible.
+   *
+   * This function is used to inject new data into the XMLElement containing
+   * parameters related to the on_success trigger event
+   *
+   * A pattern needs to be implemented in the derived class
+   *
+   * @param parameters pointer to the XMLElement containing parameters
+   * @return pointer to the XMLElement containing updated parameters
+   */
+  virtual tinyxml2::XMLElement* update_on_success(tinyxml2::XMLElement* parameters)
+  {
+    // Create the Pose element as a child of the existing parameters element
+    tinyxml2::XMLElement* textElement = parameters->GetDocument()->NewElement("ReceievdPlan");
+    parameters->InsertEndChild(textElement);
+    textElement->SetText(document_string.c_str());
+
+    // Return the updated parameters element with Pose added
+    return parameters;
+  };
+
+  /**
+   * Document holder for received xml plan
+   */
+  mutable std::string document_string;
 };
 
 }  // namespace capabilities2_runner

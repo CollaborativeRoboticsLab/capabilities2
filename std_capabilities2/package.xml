@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>std_capabilities2</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="kalanaratnayake95@gmail.com">kalana</maintainer>
+  <license>TODO: License declaration</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+
+    <!-- Nav2 interfaces -->
+    <capability_interface>
+      interfaces/nav2/WaypointRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/nav2/OccupancyGridRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/nav2/RobotPoseRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/nav2/Nav2LaunchRunner.yaml
+    </capability_interface>
+
+    <!-- PromptTools interfaces -->
+    <capability_interface>
+      interfaces/prompt/PromptLaunchRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/prompt/PromptTextRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/prompt/PromptPoseRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/prompt/PromptOccupancyRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/prompt/PromptPlannerRunner.yaml
+    </capability_interface>
+
+    <!-- Audio interfaces -->
+    <capability_interface>
+      interfaces/audio/ListenerRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/audio/SpeakerRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/audio/ListenerLaunchRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/audio/SpeakerLaunchRunner.yaml
+    </capability_interface>
+
+    <!-- Nav2 providers -->
+    <capability_provider>
+      providers/nav2/RobotPoseRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/nav2/OccupancyGridRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/nav2/WaypointRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/nav2/Nav2LaunchRunner.yaml
+    </capability_provider>
+
+    <!-- PromptTools providers -->
+    <capability_provider>
+      providers/prompt/PromptLaunchRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/prompt/PromptTextRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/prompt/PromptPoseRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/prompt/PromptOccupancyRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/prompt/PromptPlannerRunner.yaml
+    </capability_provider>
+
+    <!-- Audio providers -->
+    <capability_provider>
+      providers/audio/ListenerRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/audio/SpeakerRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/audio/ListenerLaunchRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/audio/SpeakerLaunchRunner.yaml
+    </capability_provider>
+  </export>
+</package>

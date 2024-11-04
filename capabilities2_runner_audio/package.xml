@@ -28,38 +28,5 @@
 
   <export>
     <build_type>ament_cmake</build_type>
-    <!-- interfaces -->
-    <capability_interface>
-      interfaces/ListenerRunner.yaml
-    </capability_interface>
-
-    <capability_interface>
-      interfaces/SpeakerRunner.yaml
-    </capability_interface>
-
-    <capability_interface>
-      interfaces/ListenerLaunchRunner.yaml
-    </capability_interface>
-
-    <capability_interface>
-      interfaces/SpeakerLaunchRunner.yaml
-    </capability_interface>
-
-    <!-- providers -->
-    <capability_provider>
-      providers/ListenerRunner.yaml
-    </capability_provider>
-
-    <capability_provider>
-      providers/SpeakerRunner.yaml
-    </capability_provider>
-
-    <capability_provider>
-      providers/ListenerLaunchRunner.yaml
-    </capability_provider>
-
-    <capability_provider>
-      providers/SpeakerLaunchRunner.yaml
-    </capability_provider>
   </export>
 </package>

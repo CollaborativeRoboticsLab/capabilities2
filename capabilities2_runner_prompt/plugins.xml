@@ -14,4 +14,9 @@
             A plugin that provide occupancy grid map prompting capability
         </description>
     </class>
+    <class type="capabilities2_runner::PromptPlannerRunner" base_class_type="capabilities2_runner::ServiceRunner">
+        <description>
+            A plugin that provide execution plan requesting capability
+        </description>
+    </class>
 </library>
