@@ -15,10 +15,10 @@ namespace capabilities2_runner
  * call on the prompt_tools/prompt service, providing it as a capability that prompts
  * capabilitie plans values
  */
-class PromptPlannerRunner : public ServiceRunner<prompt_msgs::srv::Prompt>
+class PromptPlanRequestRunner : public ServiceRunner<prompt_msgs::srv::Prompt>
 {
 public:
-  PromptPlannerRunner() : ServiceRunner()
+  PromptPlanRequestRunner() : ServiceRunner()
   {
   }
 
@@ -49,17 +49,25 @@ protected:
   {
     parameters_ = parameters;
 
-    tinyxml2::XMLElement* textElement = parameters->FirstChildElement("Text");
-
-    tinyxml2::XMLPrinter printer;
-    textElement->Accept(&printer);
-
-    std::string data(printer.CStr());
+    bool replan;
+    parameters->QueryBoolAttribute("replan", &replan);
 
     prompt_msgs::srv::Prompt::Request request;
 
-    request.prompt.prompt = "Build a xml plan based on the availbale capabilities to acheive mentioned task. Just "  //
-                            " give the xml plan without explanations";
+    if (!replan)
+    {
+      request.prompt.prompt = "Build a xml plan based on the availbale capabilities to acheive mentioned  "  //
+                              "task. Return only the xml plan without explanations or comments";
+    }
+    else
+    {
+      tinyxml2::XMLElement* failedElements = parameters->FirstChildElement("FailedElements");
+
+      request.prompt.prompt = "Rebuild the xml plan based on the availbale capabilities to acheive mentioned  "     //
+                              "task. Just give the xml plan without explanations or comments. These XML elements "  //
+                              "had incompatibilities. " +
+                              std::string(failedElements->GetText()) + "Recorrect them as well";
+    }
 
     prompt_msgs::msg::ModelOption modelOption1;
     modelOption1.key = "model";
@@ -109,7 +117,7 @@ protected:
    */
   virtual tinyxml2::XMLElement* update_on_success(tinyxml2::XMLElement* parameters)
   {
-    // Create the Pose element as a child of the existing parameters element
+    // Create the plan element as a child of the existing parameters element
     tinyxml2::XMLElement* textElement = parameters->GetDocument()->NewElement("ReceievdPlan");
     parameters->InsertEndChild(textElement);
     textElement->SetText(document_string.c_str());

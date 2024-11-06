@@ -50,7 +50,11 @@
     </capability_interface>
 
     <capability_interface>
-      interfaces/prompt/PromptPlannerRunner.yaml
+      interfaces/prompt/PromptPlanRequestRunner.yaml
+    </capability_interface>
+
+    <capability_interface>
+      interfaces/prompt/PromptPlanResponseRunner.yaml
     </capability_interface>
 
     <!-- Audio interfaces -->
@@ -105,7 +109,11 @@
     </capability_provider>
 
     <capability_provider>
-      providers/prompt/PromptPlannerRunner.yaml
+      providers/prompt/PromptPlanRequestRunner.yaml
+    </capability_provider>
+
+    <capability_provider>
+      providers/prompt/PromptPlanResponseRunner.yaml
     </capability_provider>
 
     <!-- Audio providers -->

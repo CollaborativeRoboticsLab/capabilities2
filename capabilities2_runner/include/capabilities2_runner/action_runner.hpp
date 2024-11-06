@@ -166,6 +166,7 @@ public:
             // send terminated event
             if (events[execute_id].on_failure)
             {
+              result_ = wrapped_result.result;
               events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));
               execute_id += 1;
             }

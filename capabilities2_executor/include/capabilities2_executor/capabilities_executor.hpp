@@ -243,7 +243,7 @@ private:
     tinyxml2::XMLElement* plan = capabilities2_xml_parser::get_plan(document);
 
     // verify whether the plan is valid
-    if (!capabilities2_xml_parser::check_tags(plan, interface_list, providers_list, control_tag_list))
+    if (!capabilities2_xml_parser::check_tags(plan, interface_list, providers_list, control_tag_list, rejected_list))
     {
       RCLCPP_INFO(this->get_logger(), "Execution plan is faulty. Please recheck and update");
       return false;
@@ -307,9 +307,26 @@ private:
     {
       RCLCPP_INFO(this->get_logger(), "Plan verification failed");
 
-      // TODO: improve with error codes
-      result->success = false;
-      server_goal_handle->canceled(result);
+      if (rejected_list.size() > 0)
+      {
+        // TODO: improve with error codes
+        result->success = false;
+
+        for (const auto& rejected_element : rejected_list)
+        {
+          RCLCPP_ERROR(this->get_logger(), "Failed Events : %s", rejected_element.c_str());
+          result->failed_elements.push_back(rejected_element);
+        }
+
+        server_goal_handle->canceled(result);
+        RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
+      }
+      else
+      {
+        // TODO: improve with error codes
+        result->success = false;
+        server_goal_handle->canceled(result);
+      }
 
       RCLCPP_INFO(this->get_logger(), "Server Execution Cancelled");
     }
@@ -484,23 +501,7 @@ private:
               return;
           }
 
-          if (result.result->failed_connections.size() > 0)
-          {
-            // TODO: improve with error codes
-            result_out->success = false;
-
-            for (const auto& failed_connection : result.result->failed_connections)
-            {
-              RCLCPP_ERROR(this->get_logger(), "Failed Events : %s", failed_connection.source.parameters.c_str());
-
-              result_out->failed_elements.push_back(failed_connection.source.parameters);
-            }
-
-            server_goal_handle->canceled(result_out);
-
-            RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
-          }
-          else
+          if (result.result->failed_connections.size() == 0)
           {
             // TODO: improve with error codes
             result_out->success = true;
@@ -542,6 +543,9 @@ private:
 
   /** Control flow List */
   std::vector<std::string> control_tag_list;
+
+  /** Invalid events list */
+  std::vector<std::string> rejected_list;
 
   /** action client for connecting with capabilities server*/
   rclcpp_action::Client<capabilities2_msgs::action::Connections>::SharedPtr client_capabilities_;

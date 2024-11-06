@@ -103,14 +103,15 @@ std::string convert_to_string(tinyxml2::XMLDocument& document)
  * uses recursive approach to go through the plan
  *
  * @param element XML Element to be evaluated
- * @param events_list list containing valid event tags
- * @param providers_list list containing providers
- * @param control_list list containing valid control tags
+ * @param events list containing valid event tags
+ * @param providers list containing providers
+ * @param control list containing valid control tags
+ * @param rejected list containing invalid tags
  *
  * @return `true` if element valid and supported and `false` otherwise
  */
-bool check_tags(tinyxml2::XMLElement* element, std::vector<std::string>& events_list, std::vector<std::string>& providers_list,
-                std::vector<std::string>& control_list)
+bool check_tags(tinyxml2::XMLElement* element, std::vector<std::string>& events, std::vector<std::string>& providers,
+                std::vector<std::string>& control, std::vector<std::string>& rejected)
 {
   const char** name;
   const char** provider;
@@ -122,43 +123,56 @@ bool check_tags(tinyxml2::XMLElement* element, std::vector<std::string>& events_
   std::string nametag(*name);
   std::string providertag(*provider);
 
+  std::string parameter_string;
+  convert_to_string(element, parameter_string);
+
   bool hasChildren = !element->NoChildren();
   bool hasSiblings = !capabilities2_xml_parser::isLastElement(element);
-  bool foundInControl = capabilities2_xml_parser::search(control_list, nametag);
-  bool foundInEvents = capabilities2_xml_parser::search(events_list, nametag);
-  bool foundInProviders = capabilities2_xml_parser::search(providers_list, providertag);
+  bool foundInControl = capabilities2_xml_parser::search(control, nametag);
+  bool foundInEvents = capabilities2_xml_parser::search(events, nametag);
+  bool foundInProviders = capabilities2_xml_parser::search(providers, providertag);
   bool returnValue = true;
 
   if (typetag == "Control")
   {
     if (foundInControl and hasChildren)
-      returnValue = returnValue and capabilities2_xml_parser::check_tags(element->FirstChildElement(), events_list, providers_list, control_list);
+      returnValue = returnValue and capabilities2_xml_parser::check_tags(element->FirstChildElement(), events, providers, control, rejected);
 
     if (foundInControl and hasSiblings)
-      returnValue = returnValue and capabilities2_xml_parser::check_tags(element->NextSiblingElement(), events_list, providers_list, control_list);
+      returnValue = returnValue and capabilities2_xml_parser::check_tags(element->NextSiblingElement(), events, providers, control, rejected);
 
     if (foundInControl and !hasSiblings)
       returnValue = returnValue;
 
     if (!foundInControl)
+    {
+      rejected.push_back(parameter_string);
       return false;
+    }
   }
   else if (typetag == "Event")
   {
     if (foundInEvents and foundInProviders and hasSiblings)
-      returnValue = returnValue and capabilities2_xml_parser::check_tags(element->NextSiblingElement(), events_list, providers_list, control_list);
+      returnValue = returnValue and capabilities2_xml_parser::check_tags(element->NextSiblingElement(), events, providers, control, rejected);
 
     if (foundInEvents and foundInProviders and !hasSiblings)
       returnValue = returnValue;
 
     if (!foundInEvents)
+    {
+      rejected.push_back(parameter_string);
       return false;
+    }
 
     if (!foundInProviders)
+    {
+      rejected.push_back(parameter_string);
       return false;
+    }
   }
   else
   {
+    rejected.push_back(parameter_string);
     return false;
   }
 

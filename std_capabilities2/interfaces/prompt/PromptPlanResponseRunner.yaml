@@ -1,0 +1,13 @@
+%YAML 1.1
+---
+name: PromptPlanResponseRunner
+spec_version: 1.1
+spec_type: interface
+description: "The action can be trigged with an command such as '<Event name=PromptPlanResponseRunner provider=PromptPlanResponseRunner/>'.
+              This needs to be trigged at the end of each plan so that the plan created by the decision making authority such as an LLM can 
+              be transferred to the capabilities2 executor for connection extraction and future triggering. "
+interface:
+  services:
+    "/prompt":
+      type: "prompt_msgs/srv/Prompt"
+      description: "This capability focuses on capturing speech towards robot as text and transfering them to decision making authority."

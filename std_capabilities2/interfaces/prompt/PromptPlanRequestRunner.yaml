@@ -1,12 +1,12 @@
 %YAML 1.1
 ---
-name: PromptPlannerRunner
+name: PromptPlanRequestRunner
 spec_version: 1.1
 spec_type: interface
-description: "The service can be trigged with an command such as '<Event name=PromptPlannerRunner provider=PromptPlannerRunner/>'.
+description: "The service can be trigged with an command such as '<Event name=PromptPlanRequestRunner provider=PromptPlanRequestRunner replan=false/>'.
               This needs to be trigged at the end of each plan so that decision making authority such as an LLM can be informed to 
               create a new execution plan depending on the state of the robot. This needs to be followed by another event to transfer the
-              calculated new plan to the exeutor. An example for that event is '<Event name=ExecutorRunner provider=ExecutorRunner/>'.
+              calculated new plan to the exeutor. An example for that event is '<Event name=PromptPlanResponseRunner provider=PromptPlanResponseRunner/>'.
                 Any and all execution plans calculated by this capability need to be within <Plan> and </Plan> xml tags. 
                 Various events within the plan can be organised using sqeuntial, parallel and recovery control flows. Sqeuntial 
               control flow means events in the sequential control flow will be triggered one after the other on preceding event's success. 
