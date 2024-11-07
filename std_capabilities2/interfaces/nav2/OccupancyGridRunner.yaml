@@ -3,12 +3,13 @@
 name: OccupancyGridRunner
 spec_version: 1.1
 spec_type: interface
-description: "This capability allows the extraction of the occupancy grid map produced by the robot's mapping or localization system. 
-              which enables the decision making authority to understand the environment around the robot. This can be triggered with a 
-              '<Event name=OccupancyGridRunner provider=OccupancyGridRunner/>' command. This generally needs to be followed by with a
-              prompting tool event that allows for transfer of data to the decision making authority. This runner will populate the 
-              prompting tool's execution parameters with the relavent data. As an example if this is followed by prompt_occupancy  
-              runner provided by PromptOccupancyRunner provider, such as '<Event name=PromptOccupancyRunner provider=PromptOccupancyRunner/>'."
+description: "This capability depends on the navigation stack functionalities and allows the extraction of the occupancy grid map 
+              produced by the robot's mapping or localization system. This extracted map can be used by the decision making authority 
+              to understand the environment around the robot as well as possible navigation paths. This capability can be triggered 
+              with '<Event name=OccupancyGridRunner provider=OccupancyGridRunner/>' xml command. Upon the successful execution of this 
+              capability, another capability that allows occupancy grid data transfer to the decision making authority needs to be 
+              triggered. Such a capability can be triggered via '<Event name=PromptOccupancyRunner provider=PromptOccupancyRunner/>'
+              xml command."
 interface:
   topics:
     "/map":

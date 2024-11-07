@@ -3,12 +3,12 @@
 name: ListenerRunner
 spec_version: 1.1
 spec_type: interface
-description: "This capability allow the robot to listen to sounds in the environment and then interpret that in the text format. This enables 
-              the decision making authority to understand the surrounding sounds, discussions regarding or with the robot.The capability can 
-              ve triggered via '<Event name=ListenerRunner provider=ListenerRunner/>' command.This generally needs to be followed by with a 
-              prompting tool event that allows for transfer of data to the decision making authority. This runner will populate the prompting 
-              tool's execution parameters with the relavent data. As an example if this is followed by prompt_text runner provided by 
-              PromptTextRunner provider, such as '<Event name=PromptTextRunner provider=PromptTextRunner/>'"
+description: "This capability depends on the listener capability of the audio stack and allow the robot to listen to sounds in the 
+              environment and then interpret that in the text format. This enables the decision making authority such as an LLM to 
+              understand the surrounding sounds, discussions regarding or with the robot. The capability can be triggered via
+              '<Event name=ListenerRunner provider=ListenerRunner/>' xml command.This generally needs to be followed by with a text
+              prompting tool capability such as '<Event name=PromptTextRunner provider=PromptTextRunner/>' that allows for transfer
+              of identified audio data as text to the decision making authority so that they can be used for future decision making."
 interface:
   actions:
     "/speech_to_text":

@@ -3,18 +3,33 @@
 name: PromptPlanRequestRunner
 spec_version: 1.1
 spec_type: interface
-description: "The service can be trigged with an command such as '<Event name=PromptPlanRequestRunner provider=PromptPlanRequestRunner replan=false/>'.
-              This needs to be trigged at the end of each plan so that decision making authority such as an LLM can be informed to 
-              create a new execution plan depending on the state of the robot. This needs to be followed by another event to transfer the
-              calculated new plan to the exeutor. An example for that event is '<Event name=PromptPlanResponseRunner provider=PromptPlanResponseRunner/>'.
-                Any and all execution plans calculated by this capability need to be within <Plan> and </Plan> xml tags. 
-                Various events within the plan can be organised using sqeuntial, parallel and recovery control flows. Sqeuntial 
-              control flow means events in the sequential control flow will be triggered one after the other on preceding event's success. 
-              Events under sequential control flow need to come within <Control name=sequential> </Control> xml tags. 
-                Parallel control flow means events in the parallel control flow will be triggered all at once. Events under parallel
-              control flow need to come within <Control name=parallel> </Control> xml tags. 
-                Recovery control flow means second or additional events will be triggered upon the first event's failure. Events under 
-              recovery control flow need to come within <Control name=recovery> </Control> xml tags."
+description: "This capability depends on the prompt tools stack functionalities and allows an decision making authority such as an
+              LLM to recieve a request to create a new plan at the end of an execution plan. This capability can can be trigged with 
+              an xml command such as '<Event name=PromptPlanRequestRunner provider=PromptPlanRequestRunner replan=false/>'. This will
+              prompt the decision making authority to create a new execution plan either to continue the current plan or to focus on 
+              a new task depending on the state of the robot. This capability needs to be in every execution plan created and needs
+              be the capability before the last in any  plan. Any and all execution plans calculated by this capability need to be 
+              contained within <Plan> and </Plan> xml tags. Capabilities within the execution plan can be organised using sqeuntial, 
+              parallel and recovery control flows. Capabilities in the sequential control flow will be triggered one after the other 
+              depending on precceding capability's successful execution. Capabilities under sequential control flow need to be contained  
+              within <Control name=sequential> </Control> xml tags. Capabilities in the parallel control flow will be triggered all 
+              at once and will be executed parallely. Capabilities under parallel control flow needs to come within <Control name=parallel> 
+              </Control> xml tags. Capabilities in the recovery control flow will be triggered one after the other depending only on  
+              precceding capability's failed execution. Capabilities under recovery control flow need to come within <Control name=recovery>
+              </Control> xml tags. Upon the successful execution of this capability, another capability need to be executed for verifying 
+              and starting the execution. It can be done via '<Event name=PromptPlanResponseRunner provider=PromptPlanResponseRunner/>' 
+              xml command. A most basic plan with all compulsory runners is as follows,
+               <Plan>
+                <Control name=sequential>
+                  <Event name=OccupancyGridRunner provider=OccupancyGridRunner/>
+                  <Event name=RobotPoseRunner provider=RobotPoseRunner/>
+                  <Event name=PromptPoseRunner provider=PromptPoseRunner/>
+                  <Event name=PromptOccupancyRunner provider=PromptOccupancyRunner/>
+                  <Event name=PromptPlanRequestRunner provider=PromptPlanRequestRunner replan=false/>
+                  <Event name=PromptPlanResponseRunner provider=PromptPlanResponseRunner/>
+                </Control>
+              </Plan>
+              "
 interface:
   services:
     "/prompt":

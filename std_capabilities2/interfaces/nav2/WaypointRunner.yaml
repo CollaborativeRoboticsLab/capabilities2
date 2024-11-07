@@ -3,10 +3,12 @@
 name: WaypointRunner
 spec_version: 1.1
 spec_type: interface
-description: "This system allow the robot to navigate to a given two dimensional coordinate 
-              given via '<Event name=WaypointRunner provider=WaypointRunner x='$value' y='$value' />' command. '$value' represents 
-              a value in meters. As an example '<Event name=WaypointRunner provider=WaypointRunner x='1.2' y='0.8' /> means the 
-              robot will move 1.2 meters forward and 0.8 meters to the right side."
+description: "This capability depends on the navigation stack functionalities and allow the robot to navigate to a location given 
+              by two dimensional coordinates. This capability can be used by the decision making authority such as an LLM to move 
+              the robot to a required position and orientation. This capability can be triggered via the xml command
+              '<Event name=WaypointRunner provider=WaypointRunner x='$value' y='$value' />'. '$value' represents a value in meters. 
+              As an example '<Event name=WaypointRunner provider=WaypointRunner x='1.2' y='0.8' /> means the robot will move 1.2 
+              meters forward and 0.8 meters to the right side."
 interface:
   actions:
     "/follow_waypoints":
