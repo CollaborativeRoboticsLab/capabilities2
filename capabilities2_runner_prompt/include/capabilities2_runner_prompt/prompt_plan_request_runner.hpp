@@ -56,17 +56,13 @@ protected:
 
     if (!replan)
     {
-      request.prompt.prompt = "Build a xml plan based on the availbale capabilities to acheive mentioned  "  //
-                              "task. Return only the xml plan without explanations or comments";
+      request.prompt.prompt = "Build a xml plan based on the availbale capabilities to acheive mentioned task. Return only the xml plan without explanations or comments";
     }
     else
     {
       tinyxml2::XMLElement* failedElements = parameters->FirstChildElement("FailedElements");
 
-      request.prompt.prompt = "Rebuild the xml plan based on the availbale capabilities to acheive mentioned  "     //
-                              "task. Just give the xml plan without explanations or comments. These XML elements "  //
-                              "had incompatibilities. " +
-                              std::string(failedElements->GetText()) + "Recorrect them as well";
+      request.prompt.prompt = "Rebuild the xml plan based on the availbale capabilities to acheive mentioned task. Just give the xml plan without explanations or comments. These XML elements had incompatibilities. " + std::string(failedElements->GetText()) + "Recorrect them as well";
     }
 
     prompt_msgs::msg::ModelOption modelOption1;

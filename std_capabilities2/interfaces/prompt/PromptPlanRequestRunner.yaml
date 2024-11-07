@@ -19,15 +19,16 @@ description: "This capability depends on the prompt tools stack functionalities 
               </Control> xml tags. Upon the successful execution of this capability, another capability need to be executed for verifying 
               and starting the execution. It can be done via '<Event name=PromptPlanResponseRunner provider=PromptPlanResponseRunner/>' 
               xml command. A most basic plan with all compulsory runners is as follows,
-               <Plan>
-                <Control name=sequential>
-                  <Event name=OccupancyGridRunner provider=OccupancyGridRunner/>
-                  <Event name=RobotPoseRunner provider=RobotPoseRunner/>
-                  <Event name=PromptPoseRunner provider=PromptPoseRunner/>
-                  <Event name=PromptOccupancyRunner provider=PromptOccupancyRunner/>
-                  <Event name=PromptPlanRequestRunner provider=PromptPlanRequestRunner replan=false/>
-                  <Event name=PromptPlanResponseRunner provider=PromptPlanResponseRunner/>
-                </Control>
+              <?xml version=1.0 encoding=UTF-8?>
+              <Plan>
+                  <Control name=sequential>
+                      <Event name=OccupancyGridRunner provider=OccupancyGridRunner/>
+                      <Event name=PromptOccupancyRunner provider=PromptOccupancyRunner/>
+                      <Event name=RobotPoseRunner provider=RobotPoseRunner/>
+                      <Event name=PromptPoseRunner provider=PromptPoseRunner/>
+                      <Event name=PromptPlanRequestRunner provider=PromptPlanRequestRunner replan=false/>
+                      <Event name=PromptPlanResponseRunner provider=PromptPlanResponseRunner/>
+                  </Control>
               </Plan>
               "
 interface:

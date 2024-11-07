@@ -57,8 +57,7 @@ public:
 
     prompt_msgs::srv::Prompt::Request request;
 
-    request.prompt.prompt =
-        "The position of the robot is given as a standard ros2 geometry message of which the content are " + data;
+    request.prompt.prompt = "The position of the robot is given as a standard ros2 geometry message of which the content are " + data;
 
     prompt_msgs::msg::ModelOption modelOption1;
     modelOption1.key = "model";

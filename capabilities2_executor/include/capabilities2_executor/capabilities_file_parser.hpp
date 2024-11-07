@@ -25,7 +25,7 @@ class CapabilitiesFileParser : public rclcpp::Node
 public:
   CapabilitiesFileParser(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("Capabilities2_File_Parser", options)
   {
-    declare_parameter("plan_file_path", "plan.xml");
+    declare_parameter("plan_file_path", "install/capabilities2_executor/share/capabilities2_executor/plans/default.xml");
     plan_file_path = get_parameter("plan_file_path").as_string();
 
     this->client_ptr_ = rclcpp_action::create_client<capabilities2_msgs::action::Plan>(this, "~/capabilities");
@@ -75,42 +75,41 @@ public:
         };
 
     // result callback
-    send_goal_options.result_callback =
-        [this](const rclcpp_action::ClientGoalHandle<capabilities2_msgs::action::Plan>::WrappedResult& result) {
-          switch (result.code)
-          {
-            case rclcpp_action::ResultCode::SUCCEEDED:
-              break;
-            case rclcpp_action::ResultCode::ABORTED:
-              RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
-              return;
-            case rclcpp_action::ResultCode::CANCELED:
-              RCLCPP_ERROR(this->get_logger(), "Goal was canceled");
-              return;
-            default:
-              RCLCPP_ERROR(this->get_logger(), "Unknown result code");
-              return;
-          }
+    send_goal_options.result_callback = [this](const rclcpp_action::ClientGoalHandle<capabilities2_msgs::action::Plan>::WrappedResult& result) {
+      switch (result.code)
+      {
+        case rclcpp_action::ResultCode::SUCCEEDED:
+          break;
+        case rclcpp_action::ResultCode::ABORTED:
+          RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
+          return;
+        case rclcpp_action::ResultCode::CANCELED:
+          RCLCPP_ERROR(this->get_logger(), "Goal was canceled");
+          return;
+        default:
+          RCLCPP_ERROR(this->get_logger(), "Unknown result code");
+          return;
+      }
 
-          if (result.result->success)
-          {
-            RCLCPP_ERROR(this->get_logger(), "Plan executed successfully");
-          }
-          else
-          {
-            RCLCPP_ERROR(this->get_logger(), "Plan failed to complete");
+      if (result.result->success)
+      {
+        RCLCPP_ERROR(this->get_logger(), "Plan executed successfully");
+      }
+      else
+      {
+        RCLCPP_ERROR(this->get_logger(), "Plan failed to complete");
 
-            if (result.result->failed_elements.size() > 0)
-            {
-              RCLCPP_ERROR(this->get_logger(), "Plan failed due to incompatible XMLElements in the plan");
+        if (result.result->failed_elements.size() > 0)
+        {
+          RCLCPP_ERROR(this->get_logger(), "Plan failed due to incompatible XMLElements in the plan");
 
-              for (const auto& failed_element : result.result->failed_elements)
-                RCLCPP_ERROR(this->get_logger(), "Failed Elements : %s", failed_element.c_str());
-            }
-          }
+          for (const auto& failed_element : result.result->failed_elements)
+            RCLCPP_ERROR(this->get_logger(), "Failed Elements : %s", failed_element.c_str());
+        }
+      }
 
-          rclcpp::shutdown();
-        };
+      rclcpp::shutdown();
+    };
 
     this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
   }

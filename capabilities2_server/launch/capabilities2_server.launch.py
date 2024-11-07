@@ -17,11 +17,7 @@ def generate_launch_description():
         LaunchDescription: The launch description for capabilities2 server
     """
     # load config file
-    config = os.path.join(
-        get_package_share_directory('capabilities2_server'),
-        'config',
-        'capabilities.yaml'
-    )
+    server_config = os.path.join(get_package_share_directory('capabilities2_server'), 'config', 'capabilities.yaml')
 
     # create bridge composition
     capabilities = ComposableNodeContainer(
@@ -34,7 +30,7 @@ def generate_launch_description():
                 package='capabilities2_server',
                 plugin='capabilities2_server::CapabilitiesServer',
                 name='capabilities',
-                parameters=[config]
+                parameters=[server_config]
             )
         ]
     )

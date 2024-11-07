@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Plan>
+    <Control name="sequential">
+        <Event name="OccupancyGridRunner" provider="OccupancyGridRunner"/>
+        <Event name="PromptOccupancyRunner" provider="PromptOccupancyRunner"/>
+        <Event name="RobotPoseRunner" provider="RobotPoseRunner"/>
+        <Event name="PromptPoseRunner" provider="PromptPoseRunner"/>
+        <Event name="PromptPlanRequestRunner" provider="PromptPlanRequestRunner" replan="false"/>
+        <Event name="PromptPlanResponseRunner" provider="PromptPlanResponseRunner"/>
+    </Control>
+</Plan>

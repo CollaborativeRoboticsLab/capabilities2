@@ -24,7 +24,7 @@ include_directories(
   ${TINYXML2_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME} SHARED
+add_executable(${PROJECT_NAME}
   src/capabilities_executor.cpp
 )
 
@@ -39,7 +39,7 @@ ament_target_dependencies(${PROJECT_NAME}
   TINYXML2
 )
 
-add_library(${PROJECT_NAME}_file SHARED
+add_executable(${PROJECT_NAME}_file
   src/capabilities_file_parser.cpp
 )
 
@@ -65,5 +65,10 @@ install(DIRECTORY launch
 install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME}
 )
+
+install(DIRECTORY plans
+  DESTINATION share/${PROJECT_NAME}
+)
+
 
 ament_package()
