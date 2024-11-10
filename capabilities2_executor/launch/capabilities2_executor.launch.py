@@ -5,8 +5,6 @@ capabilities2_server launch file
 import os
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch_ros.actions import ComposableNodeContainer
-from launch_ros.descriptions import ComposableNode
 from ament_index_python.packages import get_package_share_directory
 
 
@@ -24,7 +22,7 @@ def generate_launch_description():
             namespace='',
             executable='capabilities2_executor',
             name='capabilities2_executor'
-        ),
+        )
     
     executor_file = Node(
             package='capabilities2_executor',
@@ -32,7 +30,7 @@ def generate_launch_description():
             executable='capabilities2_executor_file',
             name='capabilities2_executor_file',
             parameters=[executor_config]
-        ),
+        )
 
     # return
     return LaunchDescription([

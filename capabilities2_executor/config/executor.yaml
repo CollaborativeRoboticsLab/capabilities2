@@ -1,3 +1,4 @@
 /**:
   ros__parameters:
-    plan_file_path: "install/capabilities2_executor/share/capabilities2_executor/plans/default.xml"
+    plan_file_path: "install/capabilities2_executor/share/capabilities2_executor/plans/navigation_1.xml"
+    # plan_file_path: "install/capabilities2_executor/share/capabilities2_executor/plans/default.xml" 

@@ -39,6 +39,10 @@ ament_target_dependencies(${PROJECT_NAME}
   TINYXML2
 )
 
+install(TARGETS ${PROJECT_NAME}
+    DESTINATION lib/${PROJECT_NAME}
+)
+
 add_executable(${PROJECT_NAME}_file
   src/capabilities_file_parser.cpp
 )
@@ -52,6 +56,10 @@ ament_target_dependencies(${PROJECT_NAME}_file
   rclcpp_action
   capabilities2_msgs
   TINYXML2
+)
+
+install(TARGETS ${PROJECT_NAME}_file
+    DESTINATION lib/${PROJECT_NAME}
 )
 
 install(DIRECTORY include/
