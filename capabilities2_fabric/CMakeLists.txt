@@ -43,22 +43,22 @@ install(TARGETS ${PROJECT_NAME}
     DESTINATION lib/${PROJECT_NAME}
 )
 
-add_executable(capabilities_file_parser
+add_executable(capabilities2_file_parser
   src/capabilities_file_parser.cpp
 )
 
-target_link_libraries(capabilities_file_parser
+target_link_libraries(capabilities2_file_parser
   ${TINYXML2_LIBRARIES}
 )
 
-ament_target_dependencies(capabilities_file_parser
+ament_target_dependencies(capabilities2_file_parser
   rclcpp
   rclcpp_action
   capabilities2_msgs
   TINYXML2
 )
 
-install(TARGETS capabilities_file_parser
+install(TARGETS capabilities2_file_parser
     DESTINATION lib/${PROJECT_NAME}
 )
 
