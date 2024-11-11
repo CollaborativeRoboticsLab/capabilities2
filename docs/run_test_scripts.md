@@ -1,14 +1,23 @@
 # Run test scripts
 
-Capabilities features can be tested using the provided test scripts. The test scripts primarily test the capabilities2 server using service clients. Launch the capabilities2 server before running the test scripts [information here](../capabilities2_server/readme.md). The test scripts are written to test against the `std_capabilities` package. Make sure that the `std_capabilities` package is copied along with the `capabilities2` package to the `capabilities2_ws/src` folder and is built and sourced before running the test scripts.
+Capabilities features can be tested using the provided test scripts. The test scripts primarily test the capabilities2 server using service clients. Launch the capabilities2 server before running the test scripts using
 
-> **Note**: The test scripts use the `bondby` package. Make sure to install the `bondpy` package before running the test scripts.
-> sudo apt install ros-$ROS_DISTRO-bondy
+```bash
+source install/setup.bash
+ros2 launch capabilities2_server server.launch.py
+```
+
+The test scripts are written to test against the `std_capabilities` package. Make sure that the `std_capabilities` package is copied along with the `capabilities2` package to the `capabilities2_ws/src` folder and is built and sourced before running the test scripts.
+
+> **Note**: The test scripts use the `bondby` package. Make sure to install the `bondpy` package before running the test scripts. \
+> `sudo apt install ros-$ROS_DISTRO-bondy`
 
 Run the tests with python3. The test scripts are located in the `capabilities2_server/test` directory. Make sure to source the workspace before running the test.
 
 ```bash
 # example
+source install/setup.bash
+cd src/capabilities2/capabilities2_server/test
 python3 call_establish_bond.py
 ```
 
@@ -22,6 +31,13 @@ python3 call_establish_bond.py
 | [call_register_cap.py](../capabilities2_server/test/call_register_cap.py) | Register a new specification file |
 
 There is another test script in the `capabilities2_launch_proxy` package that tests using a capability.
+
+```bash
+# example
+source install/setup.bash
+cd src/capabilities2/capabilities2_launch_proxy/test
+python3 call_establish_bond.py
+```
 
 | Test Script | Description |
 | --- | --- |
