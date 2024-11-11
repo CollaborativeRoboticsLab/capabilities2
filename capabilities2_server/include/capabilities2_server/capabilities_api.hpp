@@ -18,7 +18,6 @@
 
 #include <capabilities2_msgs/msg/remapping.hpp>
 #include <capabilities2_msgs/msg/capability.hpp>
-#include <capabilities2_msgs/msg/capability_connection.hpp>
 #include <capabilities2_msgs/msg/capability_spec.hpp>
 #include <capabilities2_msgs/msg/capability_event.hpp>
 #include <capabilities2_msgs/srv/get_remappings.hpp>

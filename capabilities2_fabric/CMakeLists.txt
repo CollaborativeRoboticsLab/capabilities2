@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(capabilities2_executor)
+project(capabilities2_fabric)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -25,7 +25,7 @@ include_directories(
 )
 
 add_executable(${PROJECT_NAME}
-  src/capabilities_executor.cpp
+  src/capabilities_fabric.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -43,22 +43,22 @@ install(TARGETS ${PROJECT_NAME}
     DESTINATION lib/${PROJECT_NAME}
 )
 
-add_executable(${PROJECT_NAME}_file
+add_executable(capabilities_file_parser
   src/capabilities_file_parser.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}_file
+target_link_libraries(capabilities_file_parser
   ${TINYXML2_LIBRARIES}
 )
 
-ament_target_dependencies(${PROJECT_NAME}_file
+ament_target_dependencies(capabilities_file_parser
   rclcpp
   rclcpp_action
   capabilities2_msgs
   TINYXML2
 )
 
-install(TARGETS ${PROJECT_NAME}_file
+install(TARGETS capabilities_file_parser
     DESTINATION lib/${PROJECT_NAME}
 )
 

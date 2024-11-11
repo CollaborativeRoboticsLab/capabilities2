@@ -16,14 +16,17 @@
 #include <rclcpp_action/rclcpp_action.hpp>
 
 #include <capabilities2_server/capabilities_api.hpp>
+
 #include <capabilities2_msgs/msg/capability_event.hpp>
 #include <capabilities2_msgs/msg/capability_spec.hpp>
-#include <capabilities2_msgs/msg/capability_connection.hpp>
+
 #include <capabilities2_msgs/srv/establish_bond.hpp>
 #include <capabilities2_msgs/srv/start_capability.hpp>
 #include <capabilities2_msgs/srv/stop_capability.hpp>
 #include <capabilities2_msgs/srv/free_capability.hpp>
+#include <capabilities2_msgs/srv/trigger_capability.hpp>
 #include <capabilities2_msgs/srv/use_capability.hpp>
+#include <capabilities2_msgs/srv/configure_capability.hpp>
 #include <capabilities2_msgs/srv/register_capability.hpp>
 #include <capabilities2_msgs/srv/get_interfaces.hpp>
 #include <capabilities2_msgs/srv/get_semantic_interfaces.hpp>
@@ -32,7 +35,6 @@
 #include <capabilities2_msgs/srv/get_capability_specs.hpp>
 #include <capabilities2_msgs/srv/get_remappings.hpp>
 #include <capabilities2_msgs/srv/get_running_capabilities.hpp>
-#include <capabilities2_msgs/action/connections.hpp>
 
 namespace capabilities2_server
 {
@@ -134,10 +136,20 @@ public:
         "~/free_capability",
         std::bind(&CapabilitiesServer::free_capability_cb, this, std::placeholders::_1, std::placeholders::_2));
 
+    // trigger capability
+    trigger_capability_srv_ = create_service<capabilities2_msgs::srv::TriggerCapability>(
+        "~/trigger_capability",
+        std::bind(&CapabilitiesServer::trigger_capability_cb, this, std::placeholders::_1, std::placeholders::_2));
+
     // use capability
     use_capability_srv_ = create_service<capabilities2_msgs::srv::UseCapability>(
         "~/use_capability",
         std::bind(&CapabilitiesServer::use_capability_cb, this, std::placeholders::_1, std::placeholders::_2));
+
+    // configure capability
+    configure_capability_srv_ = create_service<capabilities2_msgs::srv::ConfigureCapability>(
+        "~/configure_capability",
+        std::bind(&CapabilitiesServer::configure_capability_cb, this, std::placeholders::_1, std::placeholders::_2));
 
     // register capability
     register_capability_srv_ = create_service<capabilities2_msgs::srv::RegisterCapability>(
@@ -172,12 +184,6 @@ public:
     get_running_capabilities_srv_ = create_service<capabilities2_msgs::srv::GetRunningCapabilities>(
         "~/get_running_capabilities", std::bind(&CapabilitiesServer::get_running_capabilities_cb, this,
                                                 std::placeholders::_1, std::placeholders::_2));
-
-    this->capabilities_fabric_server = rclcpp_action::create_server<capabilities2_msgs::action::Connections>(
-        this, "~/capabilities_fabric",
-        std::bind(&CapabilitiesServer::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&CapabilitiesServer::handle_cancel, this, std::placeholders::_1),
-        std::bind(&CapabilitiesServer::handle_accepted, this, std::placeholders::_1));
 
     // log ready
     RCLCPP_INFO(get_logger(), "capabilities server started");
@@ -219,6 +225,17 @@ public:
 
     // set response
     res->successful = true;
+  }
+
+  // trigger capability
+  void trigger_capability_cb(const std::shared_ptr<capabilities2_msgs::srv::TriggerCapability::Request> req,
+                             std::shared_ptr<capabilities2_msgs::srv::TriggerCapability::Response> res)
+  {
+    // try stopping capability
+    // TODO: handle errors
+    trigger_capability(req->capability, req->parameters);
+
+    // response is empty
   }
 
   // free capability
@@ -269,6 +286,19 @@ public:
 
     // use capability with this bond
     use_capability(shared_from_this(), req->capability, req->preferred_provider, req->bond_id);
+
+    // response is empty
+  }
+
+  // use capability
+  void configure_capability_cb(const std::shared_ptr<capabilities2_msgs::srv::ConfigureCapability::Request> req,
+                               std::shared_ptr<capabilities2_msgs::srv::ConfigureCapability::Response> res)
+  {
+    // setup triggers between parameters
+    set_triggers(req->source.capability, req->target_on_start.capability, req->target_on_start.parameters,
+                 req->target_on_failure.capability, req->target_on_failure.parameters,
+                 req->target_on_success.capability, req->target_on_success.parameters, req->target_on_stop.capability,
+                 req->target_on_stop.parameters);
 
     // response is empty
   }
@@ -370,112 +400,7 @@ public:
     res->running_capabilities = get_running_capabilities();
   }
 
-  /**
-   * @brief Handle the goal request that comes in from client. returns whether goal is accepted or rejected
-   *
-   * @param uuid uuid of the goal
-   * @param goal pointer to the action goal message with connections
-   * @return rclcpp_action::GoalResponse
-   */
-  rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
-                                          std::shared_ptr<const capabilities2_msgs::action::Connections::Goal> goal)
-  {
-    RCLCPP_INFO(this->get_logger(), "Received the goal request with connections");
-    (void)uuid;
-
-    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
-  }
-
-  /**
-   * @brief Handle the goal cancel request that comes in from client.
-   *
-   * @param goal_handle pointer to the action goal handle
-   * @return rclcpp_action::GoalResponse
-   */
-  rclcpp_action::CancelResponse handle_cancel(
-      const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Connections>> goal_handle)
-  {
-    RCLCPP_INFO(this->get_logger(), "Received the request to cancel the plan");
-    (void)goal_handle;
-
-    return rclcpp_action::CancelResponse::ACCEPT;
-  }
-
-  /**
-   * @brief Handle the goal accept event originating from handle_goal.
-   *
-   * @param goal_handle pointer to the action goal handle
-   */
-  void handle_accepted(
-      const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Connections>> goal_handle)
-  {
-    fabric_launch_thread = std::make_unique<std::thread>(
-        std::bind(&CapabilitiesServer::launch_fabric, this, std::placeholders::_1), goal_handle);
-  }
-
 private:
-  /**
-   * @brief Load capabilities from a package path
-   *
-   * @param package_path
-   */
-  void launch_fabric(
-      const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Connections>> goal_handle)
-  {
-    auto goal = goal_handle->get_goal();
-    auto result = std::make_shared<capabilities2_msgs::action::Connections::Result>();
-
-    // start all runners and interfaces that the connections depend on
-    for (const auto& connection : goal->connections)
-    {
-      // start the capability with bond id.
-      if (use_capability(shared_from_this(), connection.source.capability, connection.source.provider, goal->bond_id))
-      {
-        // capability started succeesfully
-        RCLCPP_INFO(get_logger(), "Capability started: %s", connection.source.capability.c_str());
-      }
-      else
-      {
-        //capability failed. so add it to failed connections to be sent to the action client
-        result->failed_connections.push_back(connection);
-        RCLCPP_ERROR(get_logger(), "Capability failed: %s", connection.source.capability.c_str());
-      }
-    }
-
-    // check if there are any failed connections
-    if (result->failed_connections.size() > 0)
-    {
-      // there are failed connections. so cancel the action server process. and let the action
-      // client know that about the failed connection
-      goal_handle->canceled(result);
-
-      // free the capabilites that were started since action execution failed
-      for (const auto& connection : goal->connections)
-      {
-        free_capability(connection.source.capability, goal->bond_id);
-        RCLCPP_ERROR(get_logger(), "Capability freed due to failure: %s", connection.source.capability.c_str());
-      }
-    }
-
-    // establish relationships for all the connections received.
-    for (const auto& connection : goal->connections)
-    {
-      set_triggers(connection.source.capability, connection.target_on_start.capability,
-                   connection.target_on_start.parameters, connection.target_on_failure.capability,
-                   connection.target_on_failure.parameters, connection.target_on_success.capability,
-                   connection.target_on_success.parameters, connection.target_on_stop.capability,
-                   connection.target_on_stop.parameters);
-    }
-
-    // identify the first capability in the fabric
-    auto first_node = goal->connections[0];
-
-    // trigger the first node so fabric starts rippling
-    trigger_capability(first_node.source.capability, first_node.source.parameters);
-
-    // return success and let the action client know that the fabric was launched.
-    goal_handle->succeed(result);
-  }
 
   void load_capabilities(const std::string& package_path)
   {
@@ -641,6 +566,10 @@ private:
   rclcpp::Service<capabilities2_msgs::srv::StopCapability>::SharedPtr stop_capability_srv_;
   // free capability
   rclcpp::Service<capabilities2_msgs::srv::FreeCapability>::SharedPtr free_capability_srv_;
+  // free capability
+  rclcpp::Service<capabilities2_msgs::srv::ConfigureCapability>::SharedPtr configure_capability_srv_;
+  // free capability
+  rclcpp::Service<capabilities2_msgs::srv::TriggerCapability>::SharedPtr trigger_capability_srv_;
   // use capability
   rclcpp::Service<capabilities2_msgs::srv::UseCapability>::SharedPtr use_capability_srv_;
   // register capability
@@ -659,9 +588,6 @@ private:
   rclcpp::Service<capabilities2_msgs::srv::GetRemappings>::SharedPtr get_remappings_srv_;
   // get running capabilities
   rclcpp::Service<capabilities2_msgs::srv::GetRunningCapabilities>::SharedPtr get_running_capabilities_srv_;
-
-  /** action server that exposes cabapilities fabric*/
-  std::shared_ptr<rclcpp_action::Server<capabilities2_msgs::action::Connections>> capabilities_fabric_server;
 };
 
 }  // namespace capabilities2_server

@@ -23,12 +23,12 @@
 class CapabilitiesFileParser : public rclcpp::Node
 {
 public:
-  CapabilitiesFileParser(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("Capabilities2_File_Parser", options)
+  CapabilitiesFileParser() : Node("Capabilities2_File_Parser")
   {
     declare_parameter("plan_file_path", "install/capabilities2_executor/share/capabilities2_executor/plans/default.xml");
     plan_file_path = get_parameter("plan_file_path").as_string();
 
-    this->client_ptr_ = rclcpp_action::create_client<capabilities2_msgs::action::Plan>(this, "~/capabilities");
+    this->client_ptr_ = rclcpp_action::create_client<capabilities2_msgs::action::Plan>(this, "~/capabilities_fabric");
 
     this->timer_ = this->create_wall_timer(std::chrono::milliseconds(500), std::bind(&CapabilitiesFileParser::send_goal, this));
   }
@@ -46,6 +46,8 @@ public:
       RCLCPP_INFO(this->get_logger(), "Loading the file from path : %s failed", plan_file_path.c_str());
       rclcpp::shutdown();
     }
+
+    RCLCPP_INFO(this->get_logger(), "Sucessfully loaded the file from path : %s", plan_file_path.c_str());
 
     if (!this->client_ptr_->wait_for_action_server())
     {
