@@ -90,12 +90,11 @@ bool convert_to_string(tinyxml2::XMLElement* element, std::string& paramters)
  *
  * @return std::string converted document
  */
-std::string convert_to_string(tinyxml2::XMLDocument& document)
+void convert_to_string(tinyxml2::XMLDocument& document_xml, std::string& document_string)
 {
   tinyxml2::XMLPrinter printer;
-  document.Accept(&printer);
-  std::string value = printer.CStr();
-  return value;
+  document_xml.Print(&printer);
+  document_string = printer.CStr();
 }
 
 /**

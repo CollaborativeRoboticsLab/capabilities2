@@ -17,11 +17,16 @@ find_package(pluginlib REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_runner REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
-find_package(PkgConfig)
-pkg_check_modules(TINYXML2 tinyxml2 REQUIRED)
+
+# Locate the static version of tinyxml2
+find_library(TINYXML2_LIB NAMES tinyxml2 PATHS /usr/local/lib NO_DEFAULT_PATH)
+
+if(NOT TINYXML2_LIB)
+  message(FATAL_ERROR "tinyxml2 library not found. Make sure it's installed as a static library.")
+endif()
 
 include_directories(include
-${TINYXML2_INCLUDE_DIRS}
+  /usr/local/include
 )
 
 add_library(${PROJECT_NAME} SHARED
@@ -29,7 +34,7 @@ add_library(${PROJECT_NAME} SHARED
 )
 
 target_link_libraries(${PROJECT_NAME}
-  ${TINYXML2_LIBRARIES}
+  ${TINYXML2_LIB}
 )
 
 ament_target_dependencies(${PROJECT_NAME}

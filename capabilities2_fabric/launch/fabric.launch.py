@@ -21,7 +21,8 @@ def generate_launch_description():
             package='capabilities2_fabric',
             namespace='',
             executable='capabilities2_fabric',
-            name='capabilities2_fabric'
+            name='capabilities2_fabric',
+            output='screen'
         )
     
     executor_file = Node(
@@ -29,7 +30,8 @@ def generate_launch_description():
             namespace='',
             executable='capabilities2_file_parser',
             name='capabilities2_file_parser',
-            parameters=[executor_config]
+            parameters=[executor_config],
+            output='screen'
         )
 
     # return

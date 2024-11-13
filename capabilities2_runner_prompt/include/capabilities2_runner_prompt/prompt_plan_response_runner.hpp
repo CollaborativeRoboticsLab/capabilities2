@@ -33,7 +33,7 @@ public:
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
-    init_action(node, run_config, "capabilities");
+    init_action(node, run_config, "capabilities_fabric");
   }
 
 protected:

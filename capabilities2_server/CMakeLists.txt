@@ -19,12 +19,16 @@ find_package(pluginlib REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_runner REQUIRED)
-# find_package(uuid REQUIRED)
-# find_package(TinyXML2 REQUIRED)
 
 find_package(PkgConfig)
-pkg_check_modules(TINYXML2 tinyxml2 REQUIRED)
 pkg_check_modules(UUID REQUIRED uuid)
+
+# Locate the static version of tinyxml2
+find_library(TINYXML2_LIB NAMES tinyxml2 PATHS /usr/local/lib NO_DEFAULT_PATH)
+
+if(NOT TINYXML2_LIB)
+  message(FATAL_ERROR "tinyxml2 library not found. Make sure it's installed as a static library.")
+endif()
 
 # Find SQLite3
 find_package(SQLite3)
@@ -32,11 +36,10 @@ find_package(SQLite3)
 # find yaml-cpp
 find_package(yaml-cpp REQUIRED)
 
-include_directories(
-  include
+include_directories(include
   ${SQLITE3_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
-  ${TINYXML2_INCLUDE_DIRS}
+  /usr/local/include
   ${UUID_INCLUDE_DIRS}
 )
 
@@ -47,7 +50,7 @@ add_library(${PROJECT_NAME} SHARED
 target_link_libraries(${PROJECT_NAME}
   ${SQLITE3_LIBRARIES}
   ${YAML_CPP_LIBRARIES}
-  ${TINYXML2_LIBRARIES}
+  ${TINYXML2_LIB}
   ${UUID_LIBRARIES}
 )
 
@@ -85,7 +88,7 @@ target_link_libraries(test_capabilities_server
   ${PROJECT_NAME}
   ${SQLITE3_LIBRARIES}
   ${YAML_CPP_LIBRARIES}
-  ${TINYXML2_LIBRARIES}
+  ${TINYXML2_LIB}
   ${UUID_LIBRARIES}
 )
 add_dependencies(test_capabilities_server ${PROJECT_NAME})
