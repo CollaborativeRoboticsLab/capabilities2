@@ -125,21 +125,6 @@ bool check_tags(rclcpp::Logger logger, tinyxml2::XMLElement* element, std::vecto
   std::string nametag;
   std::string providertag;
 
-  // // Check and retrieve "name" and "provider" attributes safely
-  // if (element->QueryStringAttribute("name", &name) != tinyxml2::XML_SUCCESS || name == nullptr)
-  // {
-  //   RCLCPP_ERROR(logger, "Missing 'name' attribute in XML element : %s", parameter_string.c_str());
-  //   rejected.push_back(parameter_string);
-  //   return false;
-  // }
-
-  // if (element->QueryStringAttribute("provider", &provider) != tinyxml2::XML_SUCCESS || provider == nullptr)
-  // {
-  //   RCLCPP_ERROR(logger, "Missing 'provider' attribute in XML element : %s", parameter_string.c_str());
-  //   rejected.push_back(parameter_string);
-  //   return false;
-  // }
-
   std::string typetag(element->Name());
 
   if (name)
@@ -224,15 +209,26 @@ void extract_connections(tinyxml2::XMLElement* element, std::map<int, capabiliti
 {
   int predecessor_id;
 
-  const char** name;
-  const char** provider;
+  const char* name;
+  const char* provider;
 
-  element->QueryStringAttribute("name", name);
-  element->QueryStringAttribute("provider", provider);
+  element->QueryStringAttribute("name", &name);
+  element->QueryStringAttribute("provider", &provider);
 
   std::string typetag(element->Name());
-  std::string nametag(*name);
-  std::string providertag(*provider);
+
+  std::string nametag;
+  std::string providertag;
+
+  if (name)
+    nametag = name;
+  else
+    nametag = "";
+
+  if (provider)
+    providertag = provider;
+  else
+    providertag = "";
 
   bool hasChildren = !element->NoChildren();
   bool hasSiblings = !capabilities2_xml_parser::isLastElement(element);

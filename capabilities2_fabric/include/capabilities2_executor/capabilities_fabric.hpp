@@ -463,7 +463,7 @@ private:
       return false;
     }
 
-    feedback->progress = "Plan tag checking successful";
+    feedback->progress = "'Plan' tag checking successful";
     goal_handle->publish_feedback(feedback);
     RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
