@@ -69,42 +69,56 @@ public:
     // generate a goal from parameters if provided
     auto request_msg = std::make_shared<typename ServiceT::Request>(generate_request(parameters));
 
-    auto result_future = service_client_->async_send_request(request_msg);
+    auto result_future = service_client_->async_send_request(
+        request_msg, [this](typename rclcpp::Client<ServiceT>::SharedFuture future) {
+          if (!future.valid())
+          {
+            RCLCPP_ERROR(node_->get_logger(), "get result call failed");
 
+            // Trigger failure event
+            if (events[execute_id].on_failure)
+            {
+              events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));
+              execute_id += 1;
+            }
+          }
+          else
+          {
+            RCLCPP_INFO(node_->get_logger(), "get result call succeeded");
+
+            // Trigger success event
+            if (events[execute_id].on_success)
+            {
+              events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));
+              execute_id += 1;
+            }
+          }
+        });
+
+    // Trigger started event if defined
     if (events[execute_id].on_started)
     {
       events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
       execute_id += 1;
     }
 
-    if (rclcpp::spin_until_future_complete(node_, result_future) == rclcpp::FutureReturnCode::SUCCESS)
-    {
-      // send success event
-      if (events[execute_id].on_success)
-      {
-        events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));
-        execute_id += 1;
-      }
-    }
-    else
-    {
-      RCLCPP_ERROR(node_->get_logger(), "get result call failed");
+    // Define a callback function to handle the result once it's ready
+    std::function<void(tinyxml2::XMLElement*)> result_callback =
+        [this, &result_future](tinyxml2::XMLElement* result) mutable {
+          auto response = result_future.get();
+          result = generate_response(response);
 
-      // send terminated event
-      if (events[execute_id].on_failure)
-      {
-        events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));
-        execute_id += 1;
-      }
-    }
-
-    // create a function to call for the result. the future will be returned to the caller and the caller
-    // can provide a conversion function to handle the result
-
-    std::function<void(tinyxml2::XMLElement*)> result_callback = [this, &result_future](tinyxml2::XMLElement* result) mutable {
-      auto response = result_future.get();
-      result = generate_response(response);
-    };
+          // Ensure the future is ready before accessing the result
+          if (result_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+          {
+            auto response = result_future.get();
+            result = generate_response(response);
+          }
+          else
+          {
+            RCLCPP_WARN(node_->get_logger(), "Result is not ready yet.");
+          }
+        };
 
     return result_callback;
   }

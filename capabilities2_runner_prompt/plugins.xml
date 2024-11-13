@@ -1,20 +1,20 @@
-<library path="capabilities2_runner">
-    <class type="capabilities2_runner::PromptTextRunner" base_class_type="capabilities2_runner::ServiceRunner">
+<library path="capabilities2_runner_prompt">
+    <class type="capabilities2_runner::PromptTextRunner" base_class_type="capabilities2_runner::RunnerBase">
         <description>
             A plugin that provide text prompting capability
         </description>
     </class>
-    <class type="capabilities2_runner::PromptPoseRunner" base_class_type="capabilities2_runner::ServiceRunner">
+    <class type="capabilities2_runner::PromptPoseRunner" base_class_type="capabilities2_runner::RunnerBase">
         <description>
             A plugin that provide pose prompting capability
         </description>
     </class>
-    <class type="capabilities2_runner::PromptOccupancyRunner" base_class_type="capabilities2_runner::ServiceRunner">
+    <class type="capabilities2_runner::PromptOccupancyRunner" base_class_type="capabilities2_runner::RunnerBase">
         <description>
             A plugin that provide occupancy grid map prompting capability
         </description>
     </class>
-    <class type="capabilities2_runner::PromptPlannerRunner" base_class_type="capabilities2_runner::ServiceRunner">
+    <class type="capabilities2_runner::PromptPlannerRunner" base_class_type="capabilities2_runner::RunnerBase">
         <description>
             A plugin that provide execution plan requesting capability
         </description>

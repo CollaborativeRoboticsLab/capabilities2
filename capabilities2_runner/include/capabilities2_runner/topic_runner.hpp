@@ -39,9 +39,8 @@ public:
     init_base(node, run_config);
 
     // create an service client
-    subscription_ =
-        node_->create_subscription<TopicT>(topic_name, 1,
-                                           [this](const typename TopicT::SharedPtr msg) { this->callback(msg); });
+    subscription_ = node_->create_subscription<TopicT>(
+        topic_name, 1, [this](const typename TopicT::SharedPtr msg) { this->callback(msg); });
   }
 
   /**
@@ -63,7 +62,7 @@ public:
       execute_id += 1;
     }
 
-    if (!latest_message_)
+    if (latest_message_)
     {
       // send success event
       if (events[execute_id].on_success)
@@ -88,7 +87,8 @@ public:
     // can provide a conversion function to handle the result
 
     std::function<void(tinyxml2::XMLElement*)> result_callback = [this](tinyxml2::XMLElement* result) {
-      result = generate_message(latest_message_);
+      if (latest_message_)
+        result = generate_message(latest_message_);
     };
 
     return result_callback;
@@ -149,6 +149,6 @@ protected:
 
   typename rclcpp::Subscription<TopicT>::SharedPtr subscription_;
 
-  mutable typename TopicT::SharedPtr latest_message_ = nullptr;
+  mutable typename TopicT::SharedPtr latest_message_{ nullptr };
 };
 }  // namespace capabilities2_runner

@@ -1,4 +1,4 @@
-<library path="capabilities2_runner">
+<library path="capabilities2_runner_bt">
     <class type="capabilities2_runner::BTActionRunner" base_class_type="capabilities2_runner::RunnerBase">
         <description>
         </description>

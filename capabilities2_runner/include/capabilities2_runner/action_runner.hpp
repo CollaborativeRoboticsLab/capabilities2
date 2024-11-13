@@ -49,7 +49,7 @@ public:
     // wait for action server
     RCLCPP_INFO(node_->get_logger(), "%s waiting for action: %s", run_config_.interface.c_str(), action_name.c_str());
 
-    if (!action_client_->wait_for_action_server(std::chrono::seconds(3)))
+    if (!action_client_->wait_for_action_server(std::chrono::seconds(1000)))
     {
       RCLCPP_ERROR(node_->get_logger(), "%s failed to connect to action: %s", run_config_.interface.c_str(),
                    action_name.c_str());
@@ -86,15 +86,16 @@ public:
                   if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE)
                   {
                     // throw runner_exception("failed to cancel runner");
+                    RCLCPP_WARN(node_->get_logger(), "Runner cancelation failed.");
                   }
 
-              // publish event
-              if (events[execute_id].on_stopped)
-              {
-                events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
-                execute_id += 1;
-              }
-            });
+                  // Trigger on_stopped event if defined
+                  if (events[execute_id].on_stopped)
+                  {
+                    events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
+                    execute_id += 1;
+                  }
+                });
 
         // wait for action to be stopped. hold the thread for 2 seconds to help keep callbacks in scope
         // BUG: the line below does not work in jazzy build, so a workaround is used
@@ -102,8 +103,12 @@ public:
         auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(2);
         while (std::chrono::steady_clock::now() < timeout)
         {
+          // Check if the cancel operation is complete
           if (cancel_future.wait_for(std::chrono::milliseconds(100)) == std::future_status::ready)
             break;
+
+          // Spin some work on the node to keep the callback within scope
+          rclcpp::spin_some(node_);
         }
       }
       catch (const rclcpp_action::exceptions::UnknownGoalHandleError& e)
@@ -136,14 +141,19 @@ public:
     // goal response callback
     send_goal_options_.goal_response_callback =
         [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
-          // publish event
           if (goal_handle)
+          {
+            // Trigger on_started event if defined
             if (events[execute_id].on_started)
             {
               events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
               execute_id += 1;
             }
-
+          }
+          else
+          {
+            RCLCPP_ERROR(node_->get_logger(), "Goal was rejected by server");
+          }
           // store goal handle to be used with stop funtion
           goal_handle_ = goal_handle;
         };
@@ -153,7 +163,7 @@ public:
         [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
           if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
           {
-            // send success event
+            // Trigger on_success event if defined
             if (events[execute_id].on_success)
             {
               result_ = wrapped_result.result;
@@ -163,7 +173,7 @@ public:
           }
           else
           {
-            // send terminated event
+            // Trigger on_failure event if defined
             if (events[execute_id].on_failure)
             {
               result_ = wrapped_result.result;
@@ -176,42 +186,29 @@ public:
     // trigger the action client with goal
     auto goal_handle_future = action_client_->async_send_goal(goal_msg, send_goal_options_);
 
-    // spin until send future completes
-    if (rclcpp::spin_until_future_complete(node_, goal_handle_future) != rclcpp::FutureReturnCode::SUCCESS)
-    {
-      RCLCPP_ERROR(node_->get_logger(), "send goal call failed");
-      return std::nullopt;
-    }
-
-    // get result future
-    typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle = goal_handle_future.get();
-    if (!goal_handle)
-    {
-      RCLCPP_ERROR(node_->get_logger(), "Goal was rejected by server");
-      return std::nullopt;
-    }
-
-    auto result_future = action_client_->async_get_result(goal_handle);
-
     // create a function to call for the result. the future will be returned to the caller and the caller
     // can provide a conversion function to handle the result
 
-    std::function<void(tinyxml2::XMLElement*)> result_callback = [this, result_future](tinyxml2::XMLElement* result) {
-      // wait for result
-      if (rclcpp::spin_until_future_complete(node_, result_future) != rclcpp::FutureReturnCode::SUCCESS)
+    std::function<void(tinyxml2::XMLElement*)> result_callback = [this,
+                                                                  goal_handle_future](tinyxml2::XMLElement* result) {
+      auto goal_handle = goal_handle_future.get();
+
+      if (!goal_handle)
       {
-        RCLCPP_ERROR(node_->get_logger(), "get result call failed");
+        RCLCPP_ERROR(node_->get_logger(), "Failed to send goal");
         return;
       }
 
-      // get wrapped result
-      typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult wrapped_result = result_future.get();
+      // Get the result asynchronously
+      auto result_future = action_client_->async_get_result(goal_handle);
+
+      // Wait for result future
+      auto wrapped_result = result_future.get();
 
       // convert the result
       if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
       {
         result = generate_result(wrapped_result.result);
-        return;
       }
     };
 

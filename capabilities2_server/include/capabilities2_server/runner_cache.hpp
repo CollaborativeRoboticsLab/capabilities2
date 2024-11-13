@@ -36,6 +36,17 @@ public:
   }
 
   /**
+   * @brief connect with ROS node logging interface
+   *
+   * @param node_logging_interface_ptr pointer to the ROS node logging interface
+   */
+  void connect(rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr node_logging_interface_ptr)
+  {
+    // set logger
+    node_logging_interface_ptr_ = node_logging_interface_ptr;
+  }
+
+  /**
    * @brief Add a runner to the cache
    *
    * @param node   pointer to the origin node, generally the capabilities2_server
@@ -126,8 +137,10 @@ public:
 
     if (on_started_capability != "")
     {
-      event_options.on_started = [this, &on_started_capability](tinyxml2::XMLElement* parameters) {
+      event_options.on_started = [this, &on_started_capability, &capability](tinyxml2::XMLElement* parameters) {
         runner_cache_[on_started_capability]->trigger(parameters);
+        RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s is triggering %s on_start", capability.c_str(),
+                    on_started_capability.c_str());
       };
 
       tinyxml2::XMLDocument doc;
@@ -142,8 +155,10 @@ public:
 
     if (on_failure_capability != "")
     {
-      event_options.on_failure = [this, &on_failure_capability](tinyxml2::XMLElement* parameters) {
+      event_options.on_failure = [this, &on_failure_capability, &capability](tinyxml2::XMLElement* parameters) {
         runner_cache_[on_failure_capability]->trigger(parameters);
+        RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s is triggering %s on_failure", capability.c_str(),
+                    on_failure_capability.c_str());
       };
 
       tinyxml2::XMLDocument doc;
@@ -158,8 +173,10 @@ public:
 
     if (on_success_capability != "")
     {
-      event_options.on_success = [this, &on_success_capability](tinyxml2::XMLElement* parameters) {
+      event_options.on_success = [this, &on_success_capability, &capability](tinyxml2::XMLElement* parameters) {
         runner_cache_[on_success_capability]->trigger(parameters);
+        RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s is triggering %s on_success", capability.c_str(),
+                    on_success_capability.c_str());
       };
 
       tinyxml2::XMLDocument doc;
@@ -174,8 +191,10 @@ public:
 
     if (on_stopped_capability != "")
     {
-      event_options.on_stopped = [this, &on_stopped_capability](tinyxml2::XMLElement* parameters) {
+      event_options.on_stopped = [this, &on_stopped_capability, &capability](tinyxml2::XMLElement* parameters) {
         runner_cache_[on_stopped_capability]->trigger(parameters);
+        RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s is triggering %s on_stopped", capability.c_str(),
+                    on_stopped_capability.c_str());
       };
 
       tinyxml2::XMLDocument doc;
@@ -294,7 +313,6 @@ public:
     return runner_cache_.find(capability) != runner_cache_.end();
   }
 
-
 private:
   // map capability to running model
   // capability / provider specs -> runner
@@ -305,6 +323,9 @@ private:
 
   // runner plugin loader
   pluginlib::ClassLoader<capabilities2_runner::RunnerBase> runner_loader_;
+
+  // logger
+  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr node_logging_interface_ptr_;
 };
 
 }  // namespace capabilities2_server

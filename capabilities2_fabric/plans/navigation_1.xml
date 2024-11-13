@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Plan>
     <Control name="sequential">
-        <Event name='std_capabilities2/WaypointRunner' provider='std_capabilities2/WaypointRunner' x='$value' y='$value' />
+        <Event name='std_capabilities2/WaypointRunner' provider='std_capabilities2/WaypointRunner' x='1.0' y='0.0' />
     </Control>
 </Plan>

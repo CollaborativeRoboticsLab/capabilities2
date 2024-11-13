@@ -32,8 +32,9 @@ Runners can be created using the runner API parent classes [here](./capabilities
 ## Setup Information
 - [Setup Instructions with devcontainer](./docs/setup_with_dev.md)
 - [Setup Instructions without devcontainer](./docs/setup.md)
+- [Dependency installation for Nav2 Runners](./docs/nav2_setup.md)
 
-## Startup information
+## Quick Startup information
 
 ### Starting the Capabilities2 server
 
