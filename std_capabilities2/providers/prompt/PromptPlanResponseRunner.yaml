@@ -5,8 +5,8 @@ name: PromptPlanResponseRunner
 spec_type: provider
 spec_version: 1.1
 description: "The capability provider for executing the received plan. This can be used to trigger the execution process of the new plan" 
-implements: capabilities2_runner_prompt/PromptPlanResponseRunner
+implements: std_capabilities2/PromptPlanResponseRunner
 runner: capabilities2_runner::PromptPlanResponseRunner
 depends_on:
-  "capabilities2_runner_prompt/PromptLaunchRunner":
-    provider: "capabilities2_runner_prompt/PromptLaunchRunner"
+  "std_capabilities2/PromptLaunchRunner":
+    provider: "std_capabilities2/PromptLaunchRunner"

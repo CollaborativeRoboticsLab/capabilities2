@@ -5,8 +5,8 @@ name: PromptOccupancyRunner
 spec_type: provider
 spec_version: 1.1
 description: "The capability provider for the prompting interface from prompt tools. This can be used for prompting the occupancy map around the robot."
-implements: capabilities2_runner_prompt/PromptOccupancyRunner
+implements: std_capabilities2/PromptOccupancyRunner
 runner: capabilities2_runner::PromptOccupancyRunner
 depends_on:
-  "capabilities2_runner_prompt/PromptLaunchRunner":
-    provider: "capabilities2_runner_prompt/PromptLaunchRunner"
+  "std_capabilities2/PromptLaunchRunner":
+    provider: "std_capabilities2/PromptLaunchRunner"

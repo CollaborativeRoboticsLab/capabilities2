@@ -215,10 +215,10 @@ private:
   void getInterfaces(const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
     auto feedback = std::make_shared<Plan::Feedback>();
-    feedback->progress = "Requesting Interface information...";
+    feedback->progress = "Requesting Interface information";
     goal_handle->publish_feedback(feedback);
 
-    RCLCPP_INFO(this->get_logger(), "Requesting Interface information...");
+    RCLCPP_INFO(this->get_logger(), "Requesting Interface information");
 
     auto request_interface = std::make_shared<GetInterfaces::Request>();
 
@@ -247,8 +247,6 @@ private:
           {
             getSemanticInterfaces(interface, goal_handle);
           }
-
-          RCLCPP_INFO(this->get_logger(), "Interface retreival successful");
         });
   }
 
@@ -283,12 +281,15 @@ private:
           }
 
           auto response = future.get();
-          RCLCPP_INFO(this->get_logger(), "Received Semantic Interface information");
 
           if (response->semantic_interfaces.size() > 0)
           {
             for (const auto& semantic_interface : response->semantic_interfaces)
             {
+              feedback->progress = "Received Semantic Interface information for " + interface + " as " + semantic_interface;
+              goal_handle->publish_feedback(feedback);
+              RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+
               expected_providers_++;
               interface_list.push_back(semantic_interface);
               getProvider(semantic_interface, goal_handle, true);
@@ -297,6 +298,10 @@ private:
           // if no semantic interfaces are availble for a given interface, add the interface instead
           else
           {
+            feedback->progress = "No Semantic Interface information for " + interface;
+            goal_handle->publish_feedback(feedback);
+            RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+
             expected_providers_++;
             interface_list.push_back(interface);
             getProvider(interface, goal_handle, false);
@@ -356,7 +361,7 @@ private:
           if (completed_providers_ == expected_providers_)
           {
             auto feedback = std::make_shared<Plan::Feedback>();
-            feedback->progress = "All requested provider data recieved";
+            feedback->progress = "All requested interface, semantic interface and provider data recieved";
             goal_handle->publish_feedback(feedback);
             RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
@@ -377,7 +382,7 @@ private:
     RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
     // verify the plan
-    if (!verify_plan())
+    if (!verify_plan(goal_handle))
     {
       feedback->progress = "Plan verification failed";
       goal_handle->publish_feedback(feedback);
@@ -406,6 +411,7 @@ private:
         result->success = false;
         result->message = "Plan verification failed.";
         goal_handle->abort(result);
+        RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
       }
 
       RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
@@ -438,8 +444,11 @@ private:
    *
    * @return `true` if interface retreival is successful,`false` otherwise
    */
-  bool verify_plan()
+  bool verify_plan(const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
+    auto feedback = std::make_shared<Plan::Feedback>();
+    auto result = std::make_shared<Plan::Result>();
+
     // intialize a vector to accomodate elements from both
     std::vector<std::string> tag_list(interface_list.size() + control_tag_list.size());
     std::merge(interface_list.begin(), interface_list.end(), control_tag_list.begin(), control_tag_list.end(), tag_list.begin());
@@ -447,20 +456,37 @@ private:
     // verify whether document got 'plan' tags
     if (!capabilities2_xml_parser::check_plan_tag(document))
     {
-      RCLCPP_INFO(this->get_logger(), "Execution plan is not compatible. Please recheck and update");
+      result->success = false;
+      result->message = "Execution plan is not compatible. Please recheck and update";
+      goal_handle->abort(result);
+      RCLCPP_ERROR(this->get_logger(), result->message.c_str());
       return false;
     }
+
+    feedback->progress = "Plan tag checking successful";
+    goal_handle->publish_feedback(feedback);
+    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
     // extract the components within the 'plan' tags
     tinyxml2::XMLElement* plan = capabilities2_xml_parser::get_plan(document);
 
+    feedback->progress = "Plan extraction complete";
+    goal_handle->publish_feedback(feedback);
+    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+
     // verify whether the plan is valid
-    if (!capabilities2_xml_parser::check_tags(plan, interface_list, providers_list, control_tag_list, rejected_list))
+    if (!capabilities2_xml_parser::check_tags(this->get_logger(), plan, interface_list, providers_list, control_tag_list, rejected_list))
     {
-      RCLCPP_INFO(this->get_logger(), "Execution plan is faulty. Please recheck and update");
+      result->success = false;
+      result->message = "Execution plan is faulty. Please recheck and update";
+      goal_handle->abort(result);
+      RCLCPP_ERROR(this->get_logger(), result->message.c_str());
       return false;
     }
 
+    feedback->progress = "Checking tags successful";
+    goal_handle->publish_feedback(feedback);
+    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
     return true;
   }
 
@@ -480,8 +506,8 @@ private:
     auto request_bond = std::make_shared<EstablishBond::Request>();
 
     // send the request
-    auto result_future = establish_bond_client_->async_send_request(
-        request_bond, [this, goal_handle, feedback](EstablishBondClient::SharedFuture future) {
+    auto result_future =
+        establish_bond_client_->async_send_request(request_bond, [this, goal_handle, feedback](EstablishBondClient::SharedFuture future) {
           if (!future.valid())
           {
             RCLCPP_ERROR(this->get_logger(), "Failed to receive the bond id");
@@ -625,7 +651,7 @@ private:
   void configure_capabilities(const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
     auto feedback = std::make_shared<Plan::Feedback>();
-    
+
     for (const auto& [key, value] : connection_map)
     {
       auto request_configure = std::make_shared<ConfigureCapability::Request>();
@@ -713,8 +739,7 @@ private:
 
       // send the request
       auto result_future = configure_capability_client_->async_send_request(
-          request_configure,
-          [this, goal_handle, value, feedback](ConfigureCapabilityClient::SharedFuture future) {
+          request_configure, [this, goal_handle, value, feedback](ConfigureCapabilityClient::SharedFuture future) {
             if (!future.valid())
             {
               auto result = std::make_shared<Plan::Result>();
@@ -766,8 +791,8 @@ private:
     request_trigger->parameters = parameter_string;
 
     // send the request
-    auto result_future = trigger_capability_client_->async_send_request(
-        request_trigger, [this, goal_handle, feedback](TriggerCapabilityClient::SharedFuture future) {
+    auto result_future =
+        trigger_capability_client_->async_send_request(request_trigger, [this, goal_handle, feedback](TriggerCapabilityClient::SharedFuture future) {
           if (!future.valid())
           {
             auto result = std::make_shared<Plan::Result>();

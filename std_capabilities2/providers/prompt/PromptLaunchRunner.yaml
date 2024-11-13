@@ -5,5 +5,5 @@ name: PromptLaunchRunner
 spec_type: provider
 spec_version: 1.1
 description: "The capability provider for the prompt tools"
-implements: capabilities2_runner_prompt/PromptLaunchRunner
+implements: std_capabilities2/PromptLaunchRunner
 runner: launch/prompt/prompttool.launch.py

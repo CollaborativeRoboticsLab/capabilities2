@@ -5,8 +5,8 @@ name: ListenerRunner
 spec_type: provider
 spec_version: 1.1
 description: The capability provider for the speech_to_text interface
-implements: capabilities2_runner_audio/ListenerRunner
+implements: std_capabilities2/ListenerRunner
 runner: capabilities2_runner::ListenerRunner
 depends_on:
-  "capabilities2_runner_audio/ListenerLaunchRunner":
-    provider: "capabilities2_runner_audio/ListenerLaunchRunner"
+  "std_capabilities2/ListenerLaunchRunner":
+    provider: "std_capabilities2/ListenerLaunchRunner"

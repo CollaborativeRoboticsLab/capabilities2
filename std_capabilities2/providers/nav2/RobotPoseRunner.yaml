@@ -5,8 +5,8 @@ name: RobotPoseRunner
 spec_type: provider
 spec_version: 1.1
 description: "The capability provider for the robot's odometry interface"
-implements: capabilities2_runner_nav2/RobotPoseRunner
+implements: std_capabilities2/RobotPoseRunner
 runner: capabilities2_runner::RobotPoseRunner
 depends_on:
-  "capabilities2_runner_nav2/Nav2LaunchRunner":
-    provider: "capabilities2_runner_nav2/Nav2LaunchRunner"
+  "std_capabilities2/Nav2LaunchRunner":
+    provider: "std_capabilities2/Nav2LaunchRunner"

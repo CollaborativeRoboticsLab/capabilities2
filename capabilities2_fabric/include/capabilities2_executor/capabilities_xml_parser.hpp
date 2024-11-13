@@ -1,6 +1,7 @@
 #include <tinyxml2.h>
 #include <string>
 #include <vector>
+#include <rclcpp/rclcpp.hpp>
 #include <capabilities2_executor/structs/connection.hpp>
 
 namespace capabilities2_xml_parser
@@ -14,7 +15,7 @@ namespace capabilities2_xml_parser
  */
 tinyxml2::XMLElement* get_plan(tinyxml2::XMLDocument& document)
 {
-  return document.FirstChildElement("Plan");
+  return document.FirstChildElement("Plan")->FirstChildElement();
 }
 
 /**
@@ -109,21 +110,47 @@ void convert_to_string(tinyxml2::XMLDocument& document_xml, std::string& documen
  *
  * @return `true` if element valid and supported and `false` otherwise
  */
-bool check_tags(tinyxml2::XMLElement* element, std::vector<std::string>& events, std::vector<std::string>& providers,
+bool check_tags(rclcpp::Logger logger, tinyxml2::XMLElement* element, std::vector<std::string>& events, std::vector<std::string>& providers,
                 std::vector<std::string>& control, std::vector<std::string>& rejected)
 {
-  const char** name;
-  const char** provider;
-
-  element->QueryStringAttribute("name", name);
-  element->QueryStringAttribute("provider", provider);
-
-  std::string typetag(element->Name());
-  std::string nametag(*name);
-  std::string providertag(*provider);
+  const char* name;
+  const char* provider;
 
   std::string parameter_string;
   convert_to_string(element, parameter_string);
+
+  element->QueryStringAttribute("name", &name);
+  element->QueryStringAttribute("provider", &provider);
+
+  std::string nametag;
+  std::string providertag;
+
+  // // Check and retrieve "name" and "provider" attributes safely
+  // if (element->QueryStringAttribute("name", &name) != tinyxml2::XML_SUCCESS || name == nullptr)
+  // {
+  //   RCLCPP_ERROR(logger, "Missing 'name' attribute in XML element : %s", parameter_string.c_str());
+  //   rejected.push_back(parameter_string);
+  //   return false;
+  // }
+
+  // if (element->QueryStringAttribute("provider", &provider) != tinyxml2::XML_SUCCESS || provider == nullptr)
+  // {
+  //   RCLCPP_ERROR(logger, "Missing 'provider' attribute in XML element : %s", parameter_string.c_str());
+  //   rejected.push_back(parameter_string);
+  //   return false;
+  // }
+
+  std::string typetag(element->Name());
+
+  if (name)
+    nametag = name;
+  else
+    nametag = "";
+
+  if (provider)
+    providertag = provider;
+  else
+    providertag = "";
 
   bool hasChildren = !element->NoChildren();
   bool hasSiblings = !capabilities2_xml_parser::isLastElement(element);
@@ -134,43 +161,34 @@ bool check_tags(tinyxml2::XMLElement* element, std::vector<std::string>& events,
 
   if (typetag == "Control")
   {
-    if (foundInControl and hasChildren)
-      returnValue = returnValue and capabilities2_xml_parser::check_tags(element->FirstChildElement(), events, providers, control, rejected);
-
-    if (foundInControl and hasSiblings)
-      returnValue = returnValue and capabilities2_xml_parser::check_tags(element->NextSiblingElement(), events, providers, control, rejected);
-
-    if (foundInControl and !hasSiblings)
-      returnValue = returnValue;
-
     if (!foundInControl)
     {
+      RCLCPP_ERROR(logger, "Control tag '%s' not available in the valid list", nametag.c_str());
       rejected.push_back(parameter_string);
       return false;
     }
+
+    if (hasChildren)
+      returnValue &= capabilities2_xml_parser::check_tags(logger, element->FirstChildElement(), events, providers, control, rejected);
+
+    if (hasSiblings)
+      returnValue &= capabilities2_xml_parser::check_tags(logger, element->NextSiblingElement(), events, providers, control, rejected);
   }
   else if (typetag == "Event")
   {
-    if (foundInEvents and foundInProviders and hasSiblings)
-      returnValue = returnValue and capabilities2_xml_parser::check_tags(element->NextSiblingElement(), events, providers, control, rejected);
-
-    if (foundInEvents and foundInProviders and !hasSiblings)
-      returnValue = returnValue;
-
-    if (!foundInEvents)
+    if (!foundInEvents || !foundInProviders)
     {
+      RCLCPP_ERROR(logger, "Event tag name '%s' or provider '%s' not available in the valid list", nametag.c_str(), providertag.c_str());
       rejected.push_back(parameter_string);
       return false;
     }
 
-    if (!foundInProviders)
-    {
-      rejected.push_back(parameter_string);
-      return false;
-    }
+    if (hasSiblings)
+      returnValue &= capabilities2_xml_parser::check_tags(logger, element->NextSiblingElement(), events, providers, control, rejected);
   }
   else
   {
+    RCLCPP_ERROR(logger, "xml element is not valid", parameter_string.c_str());
     rejected.push_back(parameter_string);
     return false;
   }

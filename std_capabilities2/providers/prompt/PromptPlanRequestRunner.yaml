@@ -6,8 +6,8 @@ spec_type: provider
 spec_version: 1.1
 description: "The capability provider for the prompting for an execution plan. This can be used requesting a new plan at the beginning or when 
               new data is available"
-implements: capabilities2_runner_prompt/PromptPlanRequestRunner
+implements: std_capabilities2/PromptPlanRequestRunner
 runner: capabilities2_runner::PromptPlanRequestRunner
 depends_on:
-  "capabilities2_runner_prompt/PromptLaunchRunner":
-    provider: "capabilities2_runner_prompt/PromptLaunchRunner"
+  "std_capabilities2/PromptLaunchRunner":
+    provider: "std_capabilities2/PromptLaunchRunner"
