@@ -7,7 +7,7 @@
 #include <rclcpp_action/rclcpp_action.hpp>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
-#include <nav2_msgs/action/follow_waypoints.hpp>
+#include <nav2_msgs/action/navigate_to_pose.hpp>
 
 #include <capabilities2_runner/action_runner.hpp>
 
@@ -20,7 +20,7 @@ namespace capabilities2_runner
  * Class to run waypointfollower action based capability
  *
  */
-class WayPointRunner : public ActionRunner<nav2_msgs::action::FollowWaypoints>
+class WayPointRunner : public ActionRunner<nav2_msgs::action::NavigateToPose>
 {
 public:
   WayPointRunner() : ActionRunner()
@@ -35,7 +35,7 @@ public:
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
-    init_action(node, run_config, "follow_waypoints");
+    init_action(node, run_config, "navigate_to_pose");
   }
 
 protected:
@@ -45,14 +45,16 @@ protected:
    '<Event name=follow_waypoints provider=WaypointRunner x='$value' y='$value' />'
    * @return ActionT::Goal the generated goal
    */
-  virtual nav2_msgs::action::FollowWaypoints::Goal generate_goal(tinyxml2::XMLElement* parameters) override
+  virtual nav2_msgs::action::NavigateToPose::Goal generate_goal(tinyxml2::XMLElement* parameters) override
   {
     parameters_ = parameters;
 
     parameters_->QueryDoubleAttribute("x", &x);
     parameters_->QueryDoubleAttribute("y", &y);
 
-    nav2_msgs::action::FollowWaypoints::Goal goal_msg;
+    RCLCPP_INFO(node_->get_logger(), "%s is triggered with x: %d and y: %d", run_config_.interface.c_str(), x, y);
+
+    nav2_msgs::action::NavigateToPose::Goal goal_msg;
     geometry_msgs::msg::PoseStamped pose_msg;
 
     global_frame_ = "map";
@@ -63,8 +65,9 @@ protected:
     pose_msg.pose.position.x = x;
     pose_msg.pose.position.y = y;
     pose_msg.pose.position.z = 0.0;
+    pose_msg.pose.orientation.w = 1.0;  // Set default orientation (facing forward)
 
-    goal_msg.poses.push_back(pose_msg);
+    goal_msg.pose = pose_msg;
 
     return goal_msg;
   }
@@ -76,7 +79,7 @@ protected:
    * @return nullptr
    */
   virtual tinyxml2::XMLElement*
-  generate_result(const nav2_msgs::action::FollowWaypoints::Result::SharedPtr& result) override
+  generate_result(const nav2_msgs::action::NavigateToPose::Result::SharedPtr& result) override
   {
     return nullptr;
   }

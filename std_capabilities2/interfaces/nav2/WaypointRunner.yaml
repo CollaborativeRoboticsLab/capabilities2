@@ -11,6 +11,6 @@ description: "This capability depends on the navigation stack functionalities an
               meters forward and 0.8 meters to the right side."
 interface:
   actions:
-    "/follow_waypoints":
-      type: "nav2_msgs::action::FollowWaypoints"
+    "/navigate_to_pose":
+      type: "nav2_msgs::action::NavigateToPose"
       description: "Waypoint follower interfacce of the Nav2 stack"

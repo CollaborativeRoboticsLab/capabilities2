@@ -55,6 +55,8 @@ public:
                    action_name.c_str());
       throw runner_exception("failed to connect to action server");
     }
+    RCLCPP_INFO(node_->get_logger(), "%s connected with action: %s", run_config_.interface.c_str(),
+                action_name.c_str());
   }
 
   /**
