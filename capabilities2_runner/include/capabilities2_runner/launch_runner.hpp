@@ -2,12 +2,9 @@
 
 #include <filesystem>
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include <capabilities2_runner/runner_base.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <string>
-#include <thread>
-#include <cstdlib>
-#include <memory>
+#include <std_msgs/msg/string.hpp>
+#include <capabilities2_msgs/action/launch.hpp>
+#include <capabilities2_runner/notrigger_action_runner.hpp>
 
 namespace capabilities2_runner
 {
@@ -17,13 +14,10 @@ namespace capabilities2_runner
  *
  * Create a launch file runner to run a launch file based capability
  */
-class LaunchRunner : public RunnerBase
+class LaunchRunner : public NoTriggerActionRunner<capabilities2_msgs::action::Launch>
 {
 public:
-  /**
-   * @brief Constructor which needs to be empty due to plugin semantics
-   */
-  LaunchRunner() : RunnerBase()
+  LaunchRunner() : NoTriggerActionRunner()
   {
   }
 
@@ -35,58 +29,42 @@ public:
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
-    // Start the launch file in a separate thread
-    launch_thread_ = std::thread(&LaunchRunner::startLaunchFile, this);
-  }
+    // store node pointer and run_config
+    init_action(node, run_config, "capabilities_launch_proxy/launch");
 
-  /**
-   * @brief stop function to cease functionality and shutdown
-   *
-   */
-  virtual void stop() override
-  {
-    // if the node pointer is empty then throw an error
-    // this means that the runner was not started and is being used out of order
-
-    if (!node_)
-      throw runner_exception("cannot stop runner that was not started");
-
-    // Join the thread and stop the launch if the node is shutting down
-    if (launch_thread_.joinable())
+    // get the package path from environment variable
+    std::string package_path;
+    try
     {
-      std::string command = "pkill -f 'ros2 launch " + get_package_name() + " " + run_config_.runner + "'";
-
-      // Kill the launch process if still running
-      std::system(command.c_str());
-      launch_thread_.join();
+      package_path = ament_index_cpp::get_package_share_directory(get_package_name());
     }
-  }
-
-  void startLaunchFile()
-  {
-    std::string command = "ros2 launch " + get_package_name() + " " + run_config_.runner;
-    RCLCPP_INFO(node_->get_logger(), "Executing command: %s", command.c_str());
-
-    // Run the command
-    int result = std::system(command.c_str());
-
-    if (result != 0)
+    catch (const std::exception& e)
     {
-      RCLCPP_ERROR(node_->get_logger(), "Failed to launch file with command: %s", command.c_str());
+      RCLCPP_ERROR(node_->get_logger(), "Failed to get package share directory: %s", e.what());
+      throw runner_exception("failed to get package share directory");
     }
-    else
-    {
-      RCLCPP_INFO(node_->get_logger(), "Successfully launched file: %s", run_config_.runner.c_str());
-    }
+
+    // resolve launch path
+    // get full path to launch file
+    // join package path with package name using path functions
+    std::string launch_file_path = std::filesystem::path(package_path).append(run_config_.runner).string();
+
+    // the launch file path
+    RCLCPP_DEBUG(node_->get_logger(), "launch file path: %s", launch_file_path.c_str());
+
+    // create a launch goal
+    capabilities2_msgs::action::Launch::Goal goal;
+    goal.launch_file_path = launch_file_path;
+
+    send_goal_options_.result_callback = nullptr;
+
+    // launch runner using action client
+    action_client_->async_send_goal(goal, send_goal_options_);
   }
 
-  // throw on trigger function
-  std::optional<std::function<void(tinyxml2::XMLElement*)>> trigger(tinyxml2::XMLElement* parameters) override
-  {
-    throw runner_exception("cannot trigger this is a no-trigger action runner");
-  }
-
-  std::thread launch_thread_;
+private:
+  /** launch file path */
+  std::string launch_file_path;
 };
 
 }  // namespace capabilities2_runner
