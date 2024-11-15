@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Plan>
     <Control name="sequential">
-        <Event name='std_capabilities2/Nav2LaunchRunner' provider='std_capabilities2/Nav2LaunchRunner' />
-        <!-- <Event name='std_capabilities2/WaypointRunner' provider='std_capabilities2/WaypointRunner' x='0.5' y='0.5' /> -->
+        <Event name="std_capabilities2/WaypointRunner" provider="std_capabilities2/WaypointRunner" x="0.5" y="0.5" />
     </Control>
 </Plan>

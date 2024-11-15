@@ -290,9 +290,7 @@ private:
               goal_handle->publish_feedback(feedback);
               RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
-              expected_providers_++;
-              interface_list.push_back(semantic_interface);
-              getProvider(semantic_interface, goal_handle, true);
+              interface_list_sem.push_back(semantic_interface);
             }
           }
           // if no semantic interfaces are availble for a given interface, add the interface instead
@@ -302,9 +300,20 @@ private:
             goal_handle->publish_feedback(feedback);
             RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
-            expected_providers_++;
             interface_list.push_back(interface);
+          }
+
+          expected_providers_ = interface_list.size() + interface_list_sem.size();
+
+          for (const auto& interface : interface_list)
+          {
             getProvider(interface, goal_handle, false);
+          }
+
+          for (const auto& sem_interface : interface_list_sem)
+          {
+            interface_list.push_back(sem_interface);
+            getProvider(interface, goal_handle, true);
           }
         });
   }
@@ -835,6 +844,9 @@ private:
 
   /** vector of connections */
   std::map<int, capabilities2_executor::node_t> connection_map;
+
+  /** Interface List */
+  std::vector<std::string> interface_list_sem;
 
   /** Interface List */
   std::vector<std::string> interface_list;
