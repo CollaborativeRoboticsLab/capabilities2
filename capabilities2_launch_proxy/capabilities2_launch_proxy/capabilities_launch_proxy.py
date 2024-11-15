@@ -260,6 +260,7 @@ def main():
         # spin node in new thread
         executor = MultiThreadedExecutor()
         executor.add_node(capabilities_launch_proxy)
+        
         executor_thread = threading.Thread(target=executor.spin)
         executor_thread.start()
 

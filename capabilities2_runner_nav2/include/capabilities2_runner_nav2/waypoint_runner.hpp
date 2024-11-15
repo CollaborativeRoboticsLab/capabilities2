@@ -52,16 +52,12 @@ protected:
     parameters_->QueryDoubleAttribute("x", &x);
     parameters_->QueryDoubleAttribute("y", &y);
 
-    RCLCPP_INFO(node_->get_logger(), "%s is triggered with x: %d and y: %d", run_config_.interface.c_str(), x, y);
+    RCLCPP_INFO(node_->get_logger(), "%s is triggered with x: %f and y: %f", run_config_.interface.c_str(), x, y);
 
     nav2_msgs::action::NavigateToPose::Goal goal_msg;
     geometry_msgs::msg::PoseStamped pose_msg;
 
-    global_frame_ = "map";
-    robot_base_frame_ = "base_link";
-
-    pose_msg.header.stamp = node_->get_clock()->now();
-    pose_msg.header.frame_id = global_frame_;
+    pose_msg.header.frame_id = "map";
     pose_msg.pose.position.x = x;
     pose_msg.pose.position.y = y;
     pose_msg.pose.position.z = 0.0;
