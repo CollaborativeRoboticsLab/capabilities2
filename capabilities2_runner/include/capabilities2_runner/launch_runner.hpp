@@ -1,10 +1,14 @@
 #pragma once
 
 #include <filesystem>
-#include <ament_index_cpp/get_package_share_directory.hpp>
-#include <std_msgs/msg/string.hpp>
-#include <capabilities2_msgs/action/launch.hpp>
-#include <capabilities2_runner/notrigger_action_runner.hpp>
+#include <capabilities2_runner/runner_base.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <iostream>
+#include <sys/types.h>
+#include <unistd.h>
+#include <signal.h>
+#include <cstring>
+#include <sys/wait.h>
 
 namespace capabilities2_runner
 {
@@ -14,10 +18,13 @@ namespace capabilities2_runner
  *
  * Create a launch file runner to run a launch file based capability
  */
-class LaunchRunner : public NoTriggerActionRunner<capabilities2_msgs::action::Launch>
+class LaunchRunner : public RunnerBase
 {
 public:
-  LaunchRunner() : NoTriggerActionRunner()
+  /**
+   * @brief Constructor which needs to be empty due to plugin semantics
+   */
+  LaunchRunner() : RunnerBase()
   {
   }
 
@@ -29,42 +36,56 @@ public:
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
-    // store node pointer and run_config
-    init_action(node, run_config, "capabilities_launch_proxy/launch");
+    init_base(node, run_config);
 
-    // get the package path from environment variable
-    std::string package_path;
-    try
+    package_name = run_config_.runner.substr(0, run_config_.runner.find("/"));
+    launch_name = run_config_.runner.substr(run_config_.runner.find("/") + 1);
+
+    std::string command = "source install/setup.bash && ros2 launch " + package_name + " " + launch_name;
+
+    int childPid = fork();
+
+    if (childPid == 0)
     {
-      package_path = ament_index_cpp::get_package_share_directory(get_package_name());
+      // Child process start
+      execlp("/bin/bash", "/bin/bash", "-c", command.c_str(), NULL);
+      perror("execlp");  // If execlp fails
+      exit(1);
+      // Child process end
     }
-    catch (const std::exception& e)
-    {
-      RCLCPP_ERROR(node_->get_logger(), "Failed to get package share directory: %s", e.what());
-      throw runner_exception("failed to get package share directory");
-    }
 
-    // resolve launch path
-    // get full path to launch file
-    // join package path with package name using path functions
-    std::string launch_file_path = std::filesystem::path(package_path).append(run_config_.runner).string();
-
-    // the launch file path
-    RCLCPP_DEBUG(node_->get_logger(), "launch file path: %s", launch_file_path.c_str());
-
-    // create a launch goal
-    capabilities2_msgs::action::Launch::Goal goal;
-    goal.launch_file_path = launch_file_path;
-
-    send_goal_options_.result_callback = nullptr;
-
-    // launch runner using action client
-    action_client_->async_send_goal(goal, send_goal_options_);
+    if (childPid == -1)
+      RCLCPP_ERROR(node_->get_logger(), "%s launch file from %s failed", launch_name.c_str(), package_name.c_str());
+    else
+      RCLCPP_INFO(node_->get_logger(), "%s launch file from %s started with PID : %d", launch_name.c_str(),
+                  package_name.c_str(), childPid);
   }
 
-private:
-  /** launch file path */
-  std::string launch_file_path;
+  /**
+   * @brief stop function to cease functionality and shutdown
+   *
+   */
+  virtual void stop() override
+  {
+    if (childPid != -1)
+    {
+      kill(childPid, SIGTERM);     // Send termination signal to child
+      waitpid(childPid, NULL, 0);  // Wait for child to terminate
+      RCLCPP_INFO(node_->get_logger(), "%s launch file from %s stopped : %d", launch_name.c_str(),
+                  package_name.c_str());
+      childPid = -1;
+    }
+  }
+
+  // throw on trigger function
+  std::optional<std::function<void(tinyxml2::XMLElement*)>> trigger(tinyxml2::XMLElement* parameters) override
+  {
+    throw runner_exception("No Trigger as this is launch runner");
+  }
+
+  pid_t childPid = -1;
+  std::string launch_name;
+  std::string package_name;
 };
 
 }  // namespace capabilities2_runner

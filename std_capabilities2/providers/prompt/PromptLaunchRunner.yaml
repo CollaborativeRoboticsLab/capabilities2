@@ -1,9 +1,0 @@
-# the base provider
-%YAML 1.1
----
-name: PromptLaunchRunner
-spec_type: provider
-spec_version: 1.1
-description: "The capability provider for the prompt tools"
-implements: std_capabilities2/PromptLaunchRunner
-runner: launch/prompt/prompttool.launch.py
