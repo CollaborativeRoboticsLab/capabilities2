@@ -31,7 +31,8 @@ RUN apt-get clean
 WORKDIR ${WORKSPACE_ROOT}/src
 
 RUN git clone -b capabilities2-server-fabric https://github.com/CollaborativeRoboticsLab/capabilities2.git
-RUN git clone https://github.com/AIResearchLab/nav_stack.git
+RUN git clone -b develop https://github.com/CollaborativeRoboticsLab/nav_stack.git
+RUN git clone https://github.com/CollaborativeRoboticsLab/nav_stack.git
 
 RUN rm /etc/ros/rosdep/sources.list.d/20-default.list
 
@@ -46,11 +47,9 @@ RUN rosdep init && rosdep update && rosdep install --from-paths ${WORKSPACE_ROOT
 
 WORKDIR ${WORKSPACE_ROOT}
 
-RUN . /opt/ros/humble/setup.sh && colcon build
+RUN . /opt/ros/jazzy/setup.sh && colcon build
 
 WORKDIR /
-
-COPY ${WORKSPACE_ROOT}/src/capabilities2/docker/workspace_entrypoint.sh /workspace_entrypoint.sh
 
 #############################################################################################################################
 #####
@@ -77,10 +76,12 @@ RUN apt-get clean
 FROM ros:jazzy-ros-base-noble as final
 
 ## Parameters
-ENV WORKSPACE_ROOT=/navstack
+ENV WORKSPACE_ROOT=/capabilities2
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 COPY --from=base / /
+
+COPY docker/workspace_entrypoint.sh /workspace_entrypoint.sh
 
 RUN chmod +x /workspace_entrypoint.sh
 

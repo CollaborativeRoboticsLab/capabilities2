@@ -1,5 +1,5 @@
 services:
-  navigation:
+  capabilities2:
     image: ghcr.io/collaborativeroboticslab/capabilities2:jazzy
     restart: unless-stopped
     privileged: true

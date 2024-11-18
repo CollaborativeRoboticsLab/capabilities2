@@ -5,7 +5,7 @@
 Pull and start the docker container
 
 ```bash
-cd docker
+cd src/capabilities2/docker
 docker compose pull 
 docker compose up -d
 ```
@@ -15,7 +15,7 @@ docker compose up -d
 On the host computer, same terminal or a new one
 
 ```bash
-docker exec -it capabilities2:jazzy bash
+docker run -it capabilities2 bash
 ros2 launch capabilities2_server server.launch.py
 ```
 
