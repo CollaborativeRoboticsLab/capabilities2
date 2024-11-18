@@ -1,0 +1,8 @@
+services:
+  navigation:
+    image: ghcr.io/collaborativeroboticslab/capabilities2:jazzy
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    volumes:
+      - /dev:/dev

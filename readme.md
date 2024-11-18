@@ -58,6 +58,7 @@ ros2 launch capabilities2_fabric fabric.launch.py
 - [Registering a capability](./capabilities2_server/docs/register.md)
 - [Terminal based capability usage](./capabilities2_server/docs/terminal_usage.md)
 - [Running test scripts](./docs/run_test_scripts.md)
+- [Using with Docker](./docker/docs/startup.md)
 
 ## Acknowledgements
 

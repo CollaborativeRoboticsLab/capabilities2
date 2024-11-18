@@ -1,0 +1,87 @@
+FROM ros:jazzy-ros-base-noble as base
+
+## Parameters
+ENV WORKSPACE_ROOT=/capabilities2
+
+#############################################################################################################################
+#####
+#####   Install Dependencies
+#####
+#############################################################################################################################
+
+WORKDIR /
+
+RUN apt-get update -y
+RUN apt-get install -y --no-install-recommends ros-dev-tools \
+    ros-$ROS_DISTRO-tf2-eigen \
+    ros-$ROS_DISTRO-rmw-cyclonedds-cpp \
+    ros-$ROS_DISTRO-navigation2 \
+    ros-$ROS_DISTRO-nav2-bringup \
+    ros-$ROS_DISTRO-slam-toolbox
+
+RUN apt-get clean
+
+
+#############################################################################################################################
+#####
+#####   Clone packages and setup dependencies
+#####
+#############################################################################################################################
+
+WORKDIR ${WORKSPACE_ROOT}/src
+
+RUN git clone -b capabilities2-server-fabric https://github.com/CollaborativeRoboticsLab/capabilities2.git
+RUN git clone https://github.com/AIResearchLab/nav_stack.git
+
+RUN rm /etc/ros/rosdep/sources.list.d/20-default.list
+
+RUN rosdep init && rosdep update && rosdep install --from-paths ${WORKSPACE_ROOT}/src -y --ignore-src
+
+
+#############################################################################################################################
+#####
+#####   Build Capabilities packages
+#####
+#############################################################################################################################
+
+WORKDIR ${WORKSPACE_ROOT}
+
+RUN . /opt/ros/humble/setup.sh && colcon build
+
+WORKDIR /
+
+COPY ${WORKSPACE_ROOT}/src/capabilities2/docker/workspace_entrypoint.sh /workspace_entrypoint.sh
+
+#############################################################################################################################
+#####
+#####   Remove workspace source and build files that are not relevent to running the system
+#####
+#############################################################################################################################
+
+RUN rm -rf ${WORKSPACE_ROOT}/src
+RUN rm -rf ${WORKSPACE_ROOT}/log
+RUN rm -rf ${WORKSPACE_ROOT}/build
+
+RUN rm -rf /var/lib/apt/lists/*
+RUN rm -rf /tmp/*
+RUN apt-get clean
+
+
+#---------------------------------------------------------------------------------------------------------------------------
+#----
+#----   Start final release image
+#----
+#---------------------------------------------------------------------------------------------------------------------------
+
+
+FROM ros:jazzy-ros-base-noble as final
+
+## Parameters
+ENV WORKSPACE_ROOT=/navstack
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+COPY --from=base / /
+
+RUN chmod +x /workspace_entrypoint.sh
+
+ENTRYPOINT [ "/workspace_entrypoint.sh" ]
