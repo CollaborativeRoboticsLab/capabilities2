@@ -45,7 +45,6 @@ ament_target_dependencies(${PROJECT_NAME}
   hri_audio_msgs
   capabilities2_msgs
   capabilities2_runner
-  TINYXML2
 )
 
 pluginlib_export_plugin_description_file(capabilities2_runner plugins.xml)
