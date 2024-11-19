@@ -2,10 +2,9 @@ import os
 import signal
 import subprocess
 import rclpy
+import copy
 from rclpy.node import Node
 from capabilities2_msgs.srv import LaunchStart, LaunchStop
-
-DETACHED_PROCESS = 0x00000008
 
 class LaunchServer(Node):
     def __init__(self):
@@ -41,7 +40,9 @@ class LaunchServer(Node):
 
         # Start the process
         try:
-            process = subprocess.Popen(command, shell=True, preexec_fn=os.setsid, close_fds=True, creationflags=DETACHED_PROCESS)
+            env = copy.deepcopy(os.environ)
+            env['PYTHONUNBUFFERED'] = 'x'
+            process = subprocess.Popen(command, shell=True, preexec_fn=os.setsid, close_fds=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
             self.processes[process.pid] = process  # Track the process
 
             self.get_logger().info(f'Started {launch_name} from {package_name} with PID: {process.pid}')
