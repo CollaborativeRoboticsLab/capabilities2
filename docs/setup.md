@@ -17,7 +17,7 @@ Clone the package using Git
 
 ```bash
 git clone -b capabilities2-server-fabric https://github.com/CollaborativeRoboticsLab/capabilities2.git
-git clone -b develop https://github.com/CollaborativeRoboticsLab/nav_stack.git
+git clone -b develop https://github.com/CollaborativeRoboticsLab/std_capabilities.git
 git clone https://github.com/AIResearchLab/nav_stack.git
 ```
 
