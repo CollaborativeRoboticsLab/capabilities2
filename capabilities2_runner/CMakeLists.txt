@@ -42,7 +42,6 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp_action
   pluginlib
   capabilities2_msgs
-  TINYXML2
 )
 
 pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
