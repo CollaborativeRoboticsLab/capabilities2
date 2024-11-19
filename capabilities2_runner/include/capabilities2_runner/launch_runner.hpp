@@ -49,16 +49,23 @@ public:
     {
       // Child process start
       execlp("/bin/bash", "/bin/bash", "-c", command.c_str(), NULL);
-      perror("execlp");  // If execlp fails
-      exit(1);
+      perror("execlp failed to execute ROS 2 launch file");  // If execlp fails
+      exit(EXIT_FAILURE);
       // Child process end
     }
 
     if (childPid == -1)
-      RCLCPP_ERROR(node_->get_logger(), "%s launch file from %s failed", launch_name.c_str(), package_name.c_str());
+    {
+      std::string error_msg = "Failed to start " + launch_name + " from " + package_name;
+      RCLCPP_ERROR(node_->get_logger(), error_msg.c_str());
+      throw std::runtime_error(error_msg);
+    }
     else
-      RCLCPP_INFO(node_->get_logger(), "%s launch file from %s started with PID : %d", launch_name.c_str(),
-                  package_name.c_str(), childPid);
+    {
+      std::string info_msg =
+          "Started " + launch_name + " from " + package_name + " with PID : " + std::to_string(childPid);
+      RCLCPP_INFO(node_->get_logger(), info_msg.c_str());
+    }
   }
 
   /**
@@ -74,6 +81,15 @@ public:
       RCLCPP_INFO(node_->get_logger(), "%s launch file from %s stopped : %d", launch_name.c_str(),
                   package_name.c_str());
       childPid = -1;
+
+      if (kill(childPid, SIGTERM) == 0)
+      {
+        if (waitpid(childPid, NULL, 0) != childPid)
+        {
+          RCLCPP_WARN(node_->get_logger(), "%s in process %d did not terminate; sending SIGKILL", launch_name.c_str(), childPid);
+          kill(childPid, SIGKILL);
+        }
+      }
     }
   }
 
