@@ -37,9 +37,9 @@ def generate_launch_description():
 
     # create launch proxy node
     launch_proxy = Node(
-        package='capabilities2_launch_proxy',
-        executable='capabilities_launch_proxy',
-        name='capabilities_launch_proxy'
+        package='capabilities2_launch',
+        executable='capabilities2_launch',
+        name='capabilities2_launch'
     )
 
     # return

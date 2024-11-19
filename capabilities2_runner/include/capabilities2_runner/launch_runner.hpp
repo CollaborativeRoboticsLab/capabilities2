@@ -1,14 +1,8 @@
 #pragma once
 
-#include <filesystem>
 #include <capabilities2_runner/runner_base.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <iostream>
-#include <sys/types.h>
-#include <unistd.h>
-#include <signal.h>
-#include <cstring>
-#include <sys/wait.h>
+#include <capabilities2_msgs/srv/launch_start.hpp>
+#include <capabilities2_msgs/srv/launch_stop.hpp>
 
 namespace capabilities2_runner
 {
@@ -21,6 +15,9 @@ namespace capabilities2_runner
 class LaunchRunner : public RunnerBase
 {
 public:
+  using LaunchStart = capabilities2_msgs::srv::LaunchStart;
+  using LaunchStop = capabilities2_msgs::srv::LaunchStop;
+
   /**
    * @brief Constructor which needs to be empty due to plugin semantics
    */
@@ -41,31 +38,61 @@ public:
     package_name = run_config_.runner.substr(0, run_config_.runner.find("/"));
     launch_name = run_config_.runner.substr(run_config_.runner.find("/") + 1);
 
-    std::string command = "source install/setup.bash && ros2 launch " + package_name + " " + launch_name;
+    // create an service client
+    start_service_client_ = node_->create_client<LaunchStart>("/capabilities/launch_start");
 
-    int childPid = fork();
+    RCLCPP_INFO(node_->get_logger(), "%s waiting for service: /capabilities/launch_start",
+                run_config_.interface.c_str());
 
-    if (childPid == 0)
+    if (!start_service_client_->wait_for_service(std::chrono::seconds(3)))
     {
-      // Child process start
-      execlp("/bin/bash", "/bin/bash", "-c", command.c_str(), NULL);
-      perror("execlp failed to execute ROS 2 launch file");  // If execlp fails
-      exit(EXIT_FAILURE);
-      // Child process end
+      RCLCPP_ERROR(node_->get_logger(), "%s failed to connect to service: /capabilities/launch_start",
+                   run_config_.interface.c_str());
+      throw runner_exception("Failed to connect to server: /capabilities/launch_start");
     }
 
-    if (childPid == -1)
+    RCLCPP_INFO(node_->get_logger(), "%s connected to service: /capabilities/launch_start",
+                run_config_.interface.c_str());
+
+    // create an service client
+    stop_service_client_ = node_->create_client<LaunchStop>("/capabilities/launch_stop");
+
+    // wait for action server
+    RCLCPP_INFO(node_->get_logger(), "%s waiting for service: /capabilities/launch_stop",
+                run_config_.interface.c_str());
+
+    if (!stop_service_client_->wait_for_service(std::chrono::seconds(3)))
     {
-      std::string error_msg = "Failed to start " + launch_name + " from " + package_name;
-      RCLCPP_ERROR(node_->get_logger(), error_msg.c_str());
-      throw std::runtime_error(error_msg);
+      RCLCPP_ERROR(node_->get_logger(), "%s failed to connect to service: /capabilities/launch_stop",
+                   run_config_.interface.c_str());
+      throw runner_exception("Failed to connect to server: /capabilities/launch_stop");
     }
-    else
-    {
-      std::string info_msg =
-          "Started " + launch_name + " from " + package_name + " with PID : " + std::to_string(childPid);
-      RCLCPP_INFO(node_->get_logger(), info_msg.c_str());
-    }
+
+    RCLCPP_INFO(node_->get_logger(), "%s connected to service: /capabilities/launch_stop",
+                run_config_.interface.c_str());
+
+    // generate a reequest from launch_name and package_name
+    auto request_msg = std::make_shared<LaunchStart::Request>();
+
+    request_msg->package_name = package_name;
+    request_msg->launch_file_name = launch_name;
+
+    RCLCPP_INFO(node_->get_logger(), "Requesting to launch %s from %s", launch_name.c_str(), package_name.c_str());
+
+    auto result_future = start_service_client_->async_send_request(
+        request_msg, [this](typename rclcpp::Client<LaunchStart>::SharedFuture future) {
+          if (!future.valid())
+          {
+            RCLCPP_ERROR(node_->get_logger(), "Request to launch %s from %s failed", launch_name.c_str(), package_name.c_str());
+            return;
+          }
+
+          RCLCPP_INFO(node_->get_logger(), "Request to launch %s from %s succeeded", launch_name.c_str(), package_name.c_str());
+
+          auto response = future.get();
+
+          childPid = response->pid;
+        });
   }
 
   /**
@@ -74,23 +101,29 @@ public:
    */
   virtual void stop() override
   {
-    if (childPid != -1)
-    {
-      kill(childPid, SIGTERM);     // Send termination signal to child
-      waitpid(childPid, NULL, 0);  // Wait for child to terminate
-      RCLCPP_INFO(node_->get_logger(), "%s launch file from %s stopped : %d", launch_name.c_str(),
-                  package_name.c_str());
-      childPid = -1;
+    // if the node pointer is empty then throw an error
+    // this means that the runner was not started and is being used out of order
 
-      if (kill(childPid, SIGTERM) == 0)
-      {
-        if (waitpid(childPid, NULL, 0) != childPid)
-        {
-          RCLCPP_WARN(node_->get_logger(), "%s in process %d did not terminate; sending SIGKILL", launch_name.c_str(), childPid);
-          kill(childPid, SIGKILL);
-        }
-      }
-    }
+    if (!node_)
+      throw runner_exception("cannot stop runner that was not started");
+
+    // generate a reequest from launch_name and package_name
+    auto request_msg = std::make_shared<LaunchStop::Request>();
+
+    request_msg->pid = childPid;
+
+    RCLCPP_INFO(node_->get_logger(), "Requesting to stop %s with PID %d", launch_name.c_str(), childPid);
+
+    auto result_future = stop_service_client_->async_send_request(
+        request_msg, [this](typename rclcpp::Client<LaunchStop>::SharedFuture future) {
+          if (!future.valid())
+          {
+            RCLCPP_ERROR(node_->get_logger(), "Request to stop %s from %s failed ", launch_name.c_str(), package_name.c_str());
+            return;
+          }
+
+          RCLCPP_INFO(node_->get_logger(), "Request to launch %s from %s succeeded ", launch_name.c_str(), package_name.c_str());
+        });
   }
 
   // throw on trigger function
@@ -99,9 +132,12 @@ public:
     throw runner_exception("No Trigger as this is launch runner");
   }
 
-  pid_t childPid = -1;
+  int childPid = -1;
   std::string launch_name;
   std::string package_name;
+
+  rclcpp::Client<LaunchStart>::SharedPtr start_service_client_;
+  rclcpp::Client<LaunchStop>::SharedPtr stop_service_client_;
 };
 
 }  // namespace capabilities2_runner
