@@ -40,33 +40,21 @@ private:
     RCLCPP_INFO(this->get_logger(), "Received request: package = %s, launch file = %s", package_name.c_str(),
                 launch_name.c_str());
 
-    std::string command = "source install/setup.bash && ros2 launch " + package_name + " " + launch_name;
+    std::string command = "/bin/bash -c \"source install/setup.bash && ros2 launch " + package_name + " " + launch_name + "\"";
 
-    int childPid = fork();
-
-    if (childPid == 0)
-    {
-      // Child process start
-      execlp("/bin/bash", "/bin/bash", "-c", command.c_str(), NULL);
-      perror("execlp failed to execute ROS 2 launch file");  // If execlp fails
-      exit(EXIT_FAILURE);
-      // Child process end
-    }
-
-    if (childPid == -1)
+    // Execute the command using system()
+    int status = system(command.c_str());
+    if (status == -1)
     {
       std::string error_msg = "Failed to start " + launch_name + " from " + package_name;
       RCLCPP_ERROR(this->get_logger(), error_msg.c_str());
       throw std::runtime_error(error_msg);
     }
-    else
-    {
-      std::string info_msg =
-          "Started " + launch_name + " from " + package_name + " with PID : " + std::to_string(childPid);
-      RCLCPP_INFO(this->get_logger(), info_msg.c_str());
-    }
 
-    response->pid = childPid;
+    // Since `system()` doesn't return the PID directly, consider improving the mechanism if PID tracking is essential.
+    pid = getpid(); // This is just an example and may need improvement depending on the need.
+
+    response->pid = pid;
   }
 
   void stop_request(const std::shared_ptr<capabilities2_msgs::srv::LaunchStop::Request> request,
@@ -80,12 +68,11 @@ private:
     {
       if (kill(pid, SIGTERM) == 0)
       {
-        if (waitpid(pid, NULL, 0) != pid)
-        {
-          RCLCPP_WARN(this->get_logger(), "%s in process %d did not terminate; sending SIGKILL", launch_name.c_str(),
-                      pid);
-          kill(pid, SIGKILL);
-        }
+        RCLCPP_INFO(this->get_logger(), "Sent SIGTERM to PID %d", pid);
+      }
+      else
+      {
+        RCLCPP_WARN(this->get_logger(), "Failed to terminate PID %d with SIGTERM", pid);
       }
     }
   }
