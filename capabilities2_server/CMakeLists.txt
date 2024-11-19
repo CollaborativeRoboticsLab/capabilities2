@@ -64,7 +64,6 @@ ament_target_dependencies(${PROJECT_NAME}
   capabilities2_runner
   SQLite3
   yaml-cpp
-  TINYXML2
   UUID
 )
 
