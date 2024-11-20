@@ -24,6 +24,11 @@ RUN apt-get install -y --no-install-recommends ros-dev-tools \
 
 RUN apt-get clean
 
+RUN git clone https://github.com/leethomason/tinyxml2.git
+
+WORKDIR /tinyxml2
+RUN make install
+
 
 #############################################################################################################################
 #####
@@ -34,7 +39,7 @@ RUN apt-get clean
 WORKDIR ${WORKSPACE_ROOT}/src
 
 RUN git clone -b capabilities2-server-fabric https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/CollaborativeRoboticsLab/capabilities2.git
-RUN git clone -b develop https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/CollaborativeRoboticsLab/nav_stack.git
+RUN git clone -b develop https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/CollaborativeRoboticsLab/std_capabilities.git
 RUN git clone https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/CollaborativeRoboticsLab/nav_stack.git
 
 RUN rm /etc/ros/rosdep/sources.list.d/20-default.list
