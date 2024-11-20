@@ -96,3 +96,5 @@ COPY docker/workspace_entrypoint.sh /workspace_entrypoint.sh
 RUN chmod +x /workspace_entrypoint.sh
 
 ENTRYPOINT [ "/workspace_entrypoint.sh" ]
+
+CMD ["/bin/bash"]
