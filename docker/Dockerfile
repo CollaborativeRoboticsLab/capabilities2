@@ -41,6 +41,8 @@ WORKDIR ${WORKSPACE_ROOT}/src
 RUN git clone -b capabilities2-server-fabric https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/CollaborativeRoboticsLab/capabilities2.git
 RUN git clone -b develop https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/CollaborativeRoboticsLab/std_capabilities.git
 RUN git clone https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/CollaborativeRoboticsLab/nav_stack.git
+RUN git clone -b ros2/devel https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/CollaborativeRoboticsLab/prompt_tools.git
+RUN git clone https://github.com/CollaborativeRoboticsLab/hri_audio_msgs.git
 
 RUN rm /etc/ros/rosdep/sources.list.d/20-default.list
 
