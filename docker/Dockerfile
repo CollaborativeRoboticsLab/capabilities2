@@ -3,6 +3,9 @@ FROM ros:jazzy-ros-base-noble as base
 ## Parameters
 ENV WORKSPACE_ROOT=/capabilities2
 
+ARG GITHUB_USERNAME
+ARG GITHUB_PAT
+
 #############################################################################################################################
 #####
 #####   Install Dependencies
@@ -30,9 +33,9 @@ RUN apt-get clean
 
 WORKDIR ${WORKSPACE_ROOT}/src
 
-RUN git clone -b capabilities2-server-fabric https://github.com/CollaborativeRoboticsLab/capabilities2.git
-RUN git clone -b develop https://github.com/CollaborativeRoboticsLab/nav_stack.git
-RUN git clone https://github.com/CollaborativeRoboticsLab/nav_stack.git
+RUN git clone -b capabilities2-server-fabric https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/CollaborativeRoboticsLab/capabilities2.git
+RUN git clone -b develop https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/CollaborativeRoboticsLab/nav_stack.git
+RUN git clone https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/CollaborativeRoboticsLab/nav_stack.git
 
 RUN rm /etc/ros/rosdep/sources.list.d/20-default.list
 

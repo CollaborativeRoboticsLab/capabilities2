@@ -65,3 +65,6 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:jazzy
+          build-args: |
+            GITHUB_USERNAME=${{ github.actor }}
+            GITHUB_PAT=${{ secrets.GH_PAT }}
