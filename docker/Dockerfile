@@ -97,4 +97,4 @@ RUN chmod +x /workspace_entrypoint.sh
 
 ENTRYPOINT [ "/workspace_entrypoint.sh" ]
 
-CMD ["bash"]
+CMD ["/bin/sh", "-c", "bash"]
