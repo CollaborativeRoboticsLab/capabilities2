@@ -42,8 +42,7 @@ set(srv_files
   "srv/UseCapability.srv"
   "srv/ConfigureCapability.srv"
   "srv/TriggerCapability.srv"
-  "srv/LaunchStart.srv"
-  "srv/LaunchStop.srv"
+  "srv/Launch.srv"
 )
 
 set(action_files

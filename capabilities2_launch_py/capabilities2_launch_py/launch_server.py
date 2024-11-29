@@ -1,10 +1,9 @@
 import os
 import signal
-import subprocess
 import rclpy
-import copy
+from launch_process import launch_process
 from rclpy.node import Node
-from capabilities2_msgs.srv import LaunchStart, LaunchStop
+from capabilities2_msgs.srv import Launch
 
 class LaunchServer(Node):
     def __init__(self):
@@ -12,14 +11,14 @@ class LaunchServer(Node):
 
         # Service for starting a launch file
         self.start_server = self.create_service(
-            LaunchStart,
+            Launch,
             '/capabilities/launch_start',
             self.start_request
         )
 
         # Service for stopping a launch file
         self.stop_server = self.create_service(
-            LaunchStop,
+            Launch,
             '/capabilities/launch_stop',
             self.stop_request
         )
@@ -33,41 +32,25 @@ class LaunchServer(Node):
         package_name = request.package_name
         launch_name = request.launch_file_name
 
-        self.get_logger().info(f'Received request: package = {package_name}, launch file = {launch_name}')
+        self.get_logger().info(f'Received launch start request: package = {package_name}, launch file = {launch_name}')
 
-        # Construct the command to execute
-        command = f'/bin/bash -c "source install/setup.bash && ros2 launch {package_name} {launch_name}"'
+        name = package_name + "/" + launch_name
 
-        # Start the process
-        try:
-            env = copy.deepcopy(os.environ)
-            env['PYTHONUNBUFFERED'] = 'x'
-            process = subprocess.Popen(command, shell=True, preexec_fn=os.setsid, close_fds=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
-            self.processes[process.pid] = process  # Track the process
-
-            self.get_logger().info(f'Started {launch_name} from {package_name} with PID: {process.pid}')
-            response.pid = process.pid
-        except Exception as e:
-            self.get_logger().error(f'Failed to start {launch_name} from {package_name}: {str(e)}')
-            response.pid = -1
+        self.processes[name] = launch_process.LaunchProcess(package_name=package_name, launch_file_name=launch_name)
+        self.processes[name].start()
 
         return response
 
     def stop_request(self, request, response):
-        pid = request.pid
-        self.get_logger().info(f'Received request: stopping PID = {pid}')
+        package_name = request.package_name
+        launch_name = request.launch_file_name
 
-        if pid in self.processes:
-            try:
-                # Kill the process group to stop all child processes
-                os.killpg(os.getpgid(pid), signal.SIGTERM)
-                self.processes[pid].wait()  # Wait for the process to terminate
-                del self.processes[pid]
-                self.get_logger().info(f'Successfully stopped process with PID: {pid}')
-            except Exception as e:
-                self.get_logger().warn(f'Failed to terminate PID {pid}: {str(e)}')
-        else:
-            self.get_logger().warn(f'No process found with PID {pid}')
+        self.get_logger().info(f'Received launch stop request: package = {package_name}, launch file = {launch_name}')
+
+        name = package_name + "/" + launch_name
+
+        self.processes[name].stop()
+        self.processes[name].join()
 
         return response
 

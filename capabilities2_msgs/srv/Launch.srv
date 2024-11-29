@@ -1,4 +1,5 @@
 std_msgs/Header header
-int32 pid
+string package_name
+string launch_file_name
 ---
 std_msgs/Header header
