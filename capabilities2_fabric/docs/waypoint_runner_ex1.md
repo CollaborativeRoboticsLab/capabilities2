@@ -42,11 +42,18 @@ export TURTLEBOT3_MODEL=waffle
 ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py
 ```
 
+### Start the Navigation2 stack
+
+```bash
+source install/setup.bash
+ros2 launch nav_stack system.launch.py
+```
+
 ### Start the Capabilities2 Server
 
 ```bash
 source install/setup.bash
-ros2 launch capabilities2_server system.launch.py
+ros2 launch capabilities2_server server.launch.py
 ```
 
 ### Start the fabric
