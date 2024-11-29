@@ -46,7 +46,7 @@ ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py
 
 ```bash
 source install/setup.bash
-ros2 launch capabilities2_server server.launch.py
+ros2 launch capabilities2_server system.launch.py
 ```
 
 ### Start the fabric
