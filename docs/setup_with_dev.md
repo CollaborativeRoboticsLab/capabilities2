@@ -23,7 +23,21 @@ git clone https://github.com/AIResearchLab/nav_stack.git
 
 ### Devcontainer
 
-A `devcontainer` is provided for developing the capabilities2 meta-package. The container can be used with [Microsoft Visual Studio Code](https://code.visualstudio.com/) and [Remote Development Extention](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack). Dependencies need to be installed in the container. Install the dependencies with rosdep:
+A `devcontainer` is provided for developing the capabilities2 meta-package. The container can be used with [Microsoft Visual Studio Code](https://code.visualstudio.com/) and [Remote Development Extention](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack). 
+
+If there are multiple packages in the workspace as with the usual case, move the `.devcontainer` folder into the parent folder such that it is located as follows,
+```txt
+colcon_ws
+--> build
+--> install
+--> log
+--> src
+    --> .devcontainer
+    --> capabilities2
+    --> pakcage ..
+```
+
+Close and reopen the vs code editor so that devcontainer is automatically detected. After that, Dependencies need to be installed in the container. Install the dependencies with rosdep:
 
 ```bash
 # in the devcontainer
