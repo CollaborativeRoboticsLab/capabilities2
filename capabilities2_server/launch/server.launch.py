@@ -24,8 +24,8 @@ def generate_launch_description():
         name='capabilities2_container',
         namespace='',
         package='rclcpp_components',
-        executable='component_container_isolated',
-        prefix=['xterm -e gdb -ex run --args'],  # Add GDB debugging prefix
+        executable='component_container_mt',
+        # prefix=['xterm -e gdb -ex run --args'],  # Add GDB debugging prefix
         arguments=['--ros-args', '--log-level', 'info'],
         composable_node_descriptions=[
             ComposableNode(
