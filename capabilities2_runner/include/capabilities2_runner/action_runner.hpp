@@ -92,11 +92,7 @@ public:
                   }
 
                   // Trigger on_stopped event if defined
-                  if (events[execute_id].on_stopped)
-                  {
-                    events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
-                    execute_id += 1;
-                  }
+                  events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
                 });
 
         // wait for action to be stopped. hold the thread for 2 seconds to help keep callbacks in scope
@@ -132,6 +128,8 @@ public:
   virtual std::optional<std::function<void(tinyxml2::XMLElement*)>>
   trigger(tinyxml2::XMLElement* parameters = nullptr) override
   {
+    execute_id += 1;
+
     // if parameters are not provided then cannot proceed
     if (!parameters)
       throw runner_exception("cannot trigger action without parameters");
@@ -144,18 +142,12 @@ public:
     send_goal_options_.goal_response_callback =
         [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
           if (goal_handle)
-          {
-            // Trigger on_started event if defined
-            if (events[execute_id].on_started)
-            {
-              events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
-              execute_id += 1;
-            }
-          }
+            events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
           else
           {
             RCLCPP_ERROR(node_->get_logger(), "Goal was rejected by server");
           }
+
           // store goal handle to be used with stop funtion
           goal_handle_ = goal_handle;
         };
@@ -163,26 +155,12 @@ public:
     // result callback
     send_goal_options_.result_callback =
         [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
-          if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
-          {
-            // Trigger on_success event if defined
-            if (events[execute_id].on_success)
-            {
-              result_ = wrapped_result.result;
-              events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));
-              execute_id += 1;
-            }
-          }
-          else
-          {
-            // Trigger on_failure event if defined
-            if (events[execute_id].on_failure)
-            {
-              result_ = wrapped_result.result;
-              events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));
-              execute_id += 1;
-            }
-          }
+          if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)  
+            events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));   // Trigger on_success event if defined
+          else          
+            events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));   // Trigger on_failure event if defined
+
+          result_ = wrapped_result.result;
         };
 
     // trigger the action client with goal

@@ -210,6 +210,12 @@ private:
     expected_interfaces_ = 0;
     completed_interfaces_ = 0;
 
+    expected_capabilities_ = 0;
+    completed_capabilities_ = 0;
+
+    expected_configurations_ = 0;
+    completed_configurations_ = 0;
+
     getInterfaces(goal_handle);
   }
 
@@ -402,8 +408,8 @@ private:
           }
           else
           {
-            feedback->progress = std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : No providers for " +
-                                 requested_interface;
+            feedback->progress =
+                std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : No providers for " + requested_interface;
             goal_handle->publish_feedback(feedback);
             RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
           }
@@ -588,16 +594,9 @@ private:
 
           expected_capabilities_ = connection_map.size();
 
-          // start all runners and interfaces that the connections depend on
-          for (const auto& [key, value] : connection_map)
-          {
-            RCLCPP_INFO(this->get_logger(), "");
-            feedback->progress = "Starting capability of Node " + std::to_string(key) + " named " + value.source.runner;
-            goal_handle->publish_feedback(feedback);
-            RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+          RCLCPP_INFO(this->get_logger(), "Requsting use of %d capabilities", expected_capabilities_);
 
-            use_capability(value.source.runner, value.source.provider, goal_handle);
-          }
+          use_capability(connection_map, goal_handle);
         });
   }
 
@@ -608,64 +607,82 @@ private:
    * @param provider provider of the capability
    * @param bond_id bond_id for the capability
    */
-  void use_capability(const std::string& capability, const std::string& provider, const std::shared_ptr<GoalHandlePlan> goal_handle)
+  void use_capability(std::map<int, capabilities2_executor::node_t>& capabilities, const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
     auto feedback = std::make_shared<Plan::Feedback>();
+
+    std::string capability = capabilities[completed_capabilities_].source.runner;
+    std::string provider = capabilities[completed_capabilities_].source.provider;
 
     auto request_use = std::make_shared<UseCapability::Request>();
     request_use->capability = capability;
     request_use->preferred_provider = provider;
     request_use->bond_id = bond_id;
 
+    feedback->progress =
+        "Using capability of Node " + std::to_string(completed_capabilities_) + " named " + capabilities[completed_capabilities_].source.runner;
+    goal_handle->publish_feedback(feedback);
+    RCLCPP_INFO(this->get_logger(), "");
+    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+
     // send the request
-    auto result_future = use_capability_client_->async_send_request(
-        request_use, [this, goal_handle, feedback, capability, provider](UseCapabilityClient::SharedFuture future) {
-          if (!future.valid())
-          {
-            auto result = std::make_shared<Plan::Result>();
-            result->success = false;
-            result->message = "Failed to Use capability " + capability + " from " + provider;
-            goal_handle->abort(result);
+    auto result_future = use_capability_client_->async_send_request(request_use, [this, goal_handle, feedback, capability,
+                                                                                  provider](UseCapabilityClient::SharedFuture future) {
+      if (!future.valid())
+      {
+        auto result = std::make_shared<Plan::Result>();
+        result->success = false;
+        result->message = "Failed to Use capability " + capability + " from " + provider;
+        goal_handle->abort(result);
 
-            RCLCPP_ERROR(this->get_logger(), result->message.c_str());
-            RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
-            return;
-          }
+        RCLCPP_ERROR(this->get_logger(), result->message.c_str());
+        RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
 
-          completed_capabilities_++;
-
-          auto response = future.get();
-          feedback->progress = "Successfully started capability " + capability + " from " + provider;
+        // release all capabilities that were used since not all started successfully
+        for (const auto& [key, value] : connection_map)
+        {
+          feedback->progress = "Freeing capability of Node " + std::to_string(key) + " named " + value.source.runner;
           goal_handle->publish_feedback(feedback);
           RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
-          // Check if all expected calls are completed before calling verify_plan
-          if (completed_capabilities_ == expected_capabilities_)
-          {
-            RCLCPP_INFO(this->get_logger(), "");
-            feedback->progress = "All requested capabilities have started";
-            goal_handle->publish_feedback(feedback);
-            RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+          free_capability(value.source.runner, goal_handle);
+        }
 
-            feedback->progress = "Configuring the capabilities with events";
-            goal_handle->publish_feedback(feedback);
-            RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+        return;
+      }
 
-            configure_capabilities(goal_handle);
-          }
-          else
-          {
-            // release all capabilities that were used since not all started successfully
-            for (const auto& [key, value] : connection_map)
-            {
-              feedback->progress = "Freeing capability of Node " + std::to_string(key) + " named " + value.source.runner;
-              goal_handle->publish_feedback(feedback);
-              RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+      completed_capabilities_++;
 
-              free_capability(value.source.runner, goal_handle);
-            }
-          }
-        });
+      auto response = future.get();
+
+      feedback->progress = std::to_string(completed_capabilities_) + "/" + std::to_string(expected_capabilities_) + " : Capability use succeessgul";
+      goal_handle->publish_feedback(feedback);
+      RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+
+      // Check if all expected calls are completed before calling verify_plan
+      if (completed_capabilities_ == expected_capabilities_)
+      {
+        RCLCPP_INFO(this->get_logger(), "");
+        feedback->progress = "All requested capabilities have been used";
+        goal_handle->publish_feedback(feedback);
+        RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+
+        feedback->progress = "Configuring the capabilities with events";
+        goal_handle->publish_feedback(feedback);
+        RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+
+        expected_configurations_ = connection_map.size();
+
+        RCLCPP_INFO(this->get_logger(), "");
+        RCLCPP_INFO(this->get_logger(), "Requsting capability configuration for %d capabilities", expected_configurations_);
+
+        configure_capabilities(connection_map, goal_handle);
+      }
+      else
+      {
+        use_capability(connection_map, goal_handle);
+      }
+    });
   }
 
   /**
@@ -705,130 +722,137 @@ private:
   /**
    * @brief Request use of capability from capabilities2 server
    */
-  void configure_capabilities(const std::shared_ptr<GoalHandlePlan> goal_handle)
+  void configure_capabilities(std::map<int, capabilities2_executor::node_t>& capabilities, const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
     auto feedback = std::make_shared<Plan::Feedback>();
+    auto request_configure = std::make_shared<ConfigureCapability::Request>();
 
-    for (const auto& [key, value] : connection_map)
+    RCLCPP_INFO(this->get_logger(), "");
+    feedback->progress = "Configuring capability of Node " + std::to_string(completed_configurations_) + " named " +
+                         capabilities[completed_configurations_].source.runner;
+    goal_handle->publish_feedback(feedback);
+    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+
+    if (capabilities2_xml_parser::convert_to_string(capabilities[completed_configurations_].source.parameters, request_configure->source.parameters))
     {
-      auto request_configure = std::make_shared<ConfigureCapability::Request>();
+      request_configure->source.capability = capabilities[completed_configurations_].source.runner;
+      request_configure->source.provider = capabilities[completed_configurations_].source.provider;
 
-      RCLCPP_INFO(this->get_logger(), "");
-      feedback->progress = "Configuring capability of Node " + std::to_string(key) + " named " + value.source.runner;
-      goal_handle->publish_feedback(feedback);
-      RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+      RCLCPP_INFO(this->get_logger(), "Source capability : %s, provider   : %s", request_configure->source.capability.c_str(),
+                  request_configure->source.provider.c_str());
+    }
+    else
+    {
+      request_configure->source.capability = "";
+      request_configure->source.provider = "";
+    }
 
-      if (capabilities2_xml_parser::convert_to_string(value.source.parameters, request_configure->source.parameters))
-      {
-        request_configure->source.capability = value.source.runner;
-        request_configure->source.provider = value.source.provider;
+    if (capabilities2_xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_start.parameters,
+                                                    request_configure->target_on_start.parameters))
+    {
+      request_configure->target_on_start.capability = capabilities[completed_configurations_].target_on_start.runner;
+      request_configure->target_on_start.provider = capabilities[completed_configurations_].target_on_start.provider;
 
-        RCLCPP_INFO(this->get_logger(), "Source capability : %s, provider   : %s", request_configure->source.capability.c_str(),
-                    request_configure->source.provider.c_str());
-      }
-      else
-      {
-        request_configure->source.capability = "";
-        request_configure->source.provider = "";
-      }
+      RCLCPP_INFO(this->get_logger(), "--> on_start capability : %s provider : %s", request_configure->target_on_start.capability.c_str(),
+                  request_configure->target_on_start.provider.c_str());
+    }
+    else
+    {
+      request_configure->target_on_start.capability = "";
+      request_configure->target_on_start.provider = "";
+    }
 
-      if (capabilities2_xml_parser::convert_to_string(value.target_on_start.parameters, request_configure->target_on_start.parameters))
-      {
-        request_configure->target_on_start.capability = value.target_on_start.runner;
-        request_configure->target_on_start.provider = value.target_on_start.provider;
+    if (capabilities2_xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_stop.parameters,
+                                                    request_configure->target_on_stop.parameters))
+    {
+      request_configure->target_on_stop.capability = capabilities[completed_configurations_].target_on_stop.runner;
+      request_configure->target_on_stop.provider = capabilities[completed_configurations_].target_on_stop.provider;
 
-        RCLCPP_INFO(this->get_logger(), "Triggered on start capability : %s provider : %s", request_configure->target_on_start.capability.c_str(),
-                    request_configure->target_on_start.provider.c_str());
-      }
-      else
-      {
-        request_configure->target_on_start.capability = "";
-        request_configure->target_on_start.provider = "";
-      }
+      RCLCPP_INFO(this->get_logger(), "--> on stop capability : %s provider : %s", request_configure->target_on_stop.capability.c_str(),
+                  request_configure->target_on_stop.provider.c_str());
+    }
+    else
+    {
+      request_configure->target_on_stop.capability = "";
+      request_configure->target_on_stop.provider = "";
+    }
 
-      if (capabilities2_xml_parser::convert_to_string(value.target_on_stop.parameters, request_configure->target_on_stop.parameters))
-      {
-        request_configure->target_on_stop.capability = value.target_on_stop.runner;
-        request_configure->target_on_stop.provider = value.target_on_stop.provider;
+    if (capabilities2_xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_success.parameters,
+                                                    request_configure->target_on_success.parameters))
+    {
+      request_configure->target_on_success.capability = capabilities[completed_configurations_].target_on_success.runner;
+      request_configure->target_on_success.provider = capabilities[completed_configurations_].target_on_success.provider;
 
-        RCLCPP_INFO(this->get_logger(), "Triggered on stop capability : %s provider : %s", request_configure->target_on_stop.capability.c_str(),
-                    request_configure->target_on_stop.provider.c_str());
-      }
-      else
-      {
-        request_configure->target_on_stop.capability = "";
-        request_configure->target_on_stop.provider = "";
-      }
+      RCLCPP_INFO(this->get_logger(), "--> on success capability : %s provider : %s", request_configure->target_on_success.capability.c_str(),
+                  request_configure->target_on_success.provider.c_str());
+    }
+    else
+    {
+      request_configure->target_on_success.capability = "";
+      request_configure->target_on_success.provider = "";
+    }
 
-      if (capabilities2_xml_parser::convert_to_string(value.target_on_success.parameters, request_configure->target_on_success.parameters))
-      {
-        request_configure->target_on_success.capability = value.target_on_success.runner;
-        request_configure->target_on_success.provider = value.target_on_success.provider;
+    if (capabilities2_xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_failure.parameters,
+                                                    request_configure->target_on_failure.parameters))
+    {
+      request_configure->target_on_failure.capability = capabilities[completed_configurations_].target_on_failure.runner;
+      request_configure->target_on_failure.provider = capabilities[completed_configurations_].target_on_failure.provider;
 
-        RCLCPP_INFO(this->get_logger(), "Triggered on success capability : %s provider : %s", request_configure->target_on_success.capability.c_str(),
-                    request_configure->target_on_success.provider.c_str());
-      }
-      else
-      {
-        request_configure->target_on_success.capability = "";
-        request_configure->target_on_success.provider = "";
-      }
+      RCLCPP_INFO(this->get_logger(), "--> on failure capability : %s provider : %s", request_configure->target_on_failure.capability.c_str(),
+                  request_configure->target_on_failure.provider.c_str());
+    }
+    else
+    {
+      request_configure->target_on_failure.capability = "";
+      request_configure->target_on_failure.provider = "";
+    }
 
-      if (capabilities2_xml_parser::convert_to_string(value.target_on_failure.parameters, request_configure->target_on_failure.parameters))
-      {
-        request_configure->target_on_failure.capability = value.target_on_failure.runner;
-        request_configure->target_on_failure.provider = value.target_on_failure.provider;
+    std::string source_capability = capabilities[completed_configurations_].source.runner;
 
-        RCLCPP_INFO(this->get_logger(), "Triggered on failure capability : %s provider : %s", request_configure->target_on_failure.capability.c_str(),
-                    request_configure->target_on_failure.provider.c_str());
-      }
-      else
-      {
-        request_configure->target_on_failure.capability = "";
-        request_configure->target_on_failure.provider = "";
-      }
+    // send the request
+    auto result_future = configure_capability_client_->async_send_request(
+        request_configure, [this, goal_handle, source_capability, feedback](ConfigureCapabilityClient::SharedFuture future) {
+          if (!future.valid())
+          {
+            auto result = std::make_shared<Plan::Result>();
+            result->success = false;
+            result->message = "Failed to configure capability :" + source_capability;
+            goal_handle->abort(result);
 
-      expected_configurations_++;
+            RCLCPP_ERROR(this->get_logger(), result->message.c_str());
+            RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
+            return;
+          }
 
-      // send the request
-      auto result_future = configure_capability_client_->async_send_request(
-          request_configure, [this, goal_handle, value, feedback](ConfigureCapabilityClient::SharedFuture future) {
-            if (!future.valid())
-            {
-              auto result = std::make_shared<Plan::Result>();
-              result->success = false;
-              result->message = "Failed to configure capability :" + value.source.runner;
-              goal_handle->abort(result);
+          completed_configurations_++;
 
-              RCLCPP_ERROR(this->get_logger(), result->message.c_str());
-              RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
-              return;
-            }
+          auto response = future.get();
 
-            completed_configurations_++;
+          feedback->progress = std::to_string(completed_configurations_) + "/" + std::to_string(expected_configurations_) +
+                               " : Successfully configured capability : " + source_capability;
+          goal_handle->publish_feedback(feedback);
+          RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
-            auto response = future.get();
-            feedback->progress = "Successfully configured capability :" + value.source.runner;
+          // Check if all expected calls are completed before calling verify_plan
+          if (completed_configurations_ == expected_configurations_)
+          {
+            RCLCPP_INFO(this->get_logger(), "");
+            feedback->progress = "All requested capabilities have been configured";
             goal_handle->publish_feedback(feedback);
             RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
-            // Check if all expected calls are completed before calling verify_plan
-            if (completed_configurations_ == expected_configurations_)
-            {
-              RCLCPP_INFO(this->get_logger(), "");
-              feedback->progress = "All requested capabilities have been configured";
-              goal_handle->publish_feedback(feedback);
-              RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+            RCLCPP_INFO(this->get_logger(), "");
+            feedback->progress = "Triggering the first capability";
+            goal_handle->publish_feedback(feedback);
+            RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
-              RCLCPP_INFO(this->get_logger(), "");
-              feedback->progress = "Triggering the first capability";
-              goal_handle->publish_feedback(feedback);
-              RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
-
-              trigger_first_node(goal_handle);
-            }
-          });
-    }
+            trigger_first_node(goal_handle);
+          }
+          else
+          {
+            configure_capabilities(connection_map, goal_handle);
+          }
+        });
   }
 
   /**

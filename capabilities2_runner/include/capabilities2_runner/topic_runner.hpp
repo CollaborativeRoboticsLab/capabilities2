@@ -52,35 +52,22 @@ public:
   virtual std::optional<std::function<void(tinyxml2::XMLElement*)>>
   trigger(tinyxml2::XMLElement* parameters = nullptr) override
   {
+    execute_id += 1;
+
     // if parameters are not provided then cannot proceed
     if (!parameters)
       throw runner_exception("cannot grab data without parameters");
 
-    if (events[execute_id].on_started)
-    {
-      events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
-      execute_id += 1;
-    }
+    events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
 
     if (latest_message_)
     {
-      // send success event
-      if (events[execute_id].on_success)
-      {
-        events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));
-        execute_id += 1;
-      }
+      events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));
     }
     else
     {
       RCLCPP_ERROR(node_->get_logger(), "get result call failed");
-
-      // send terminated event
-      if (events[execute_id].on_failure)
-      {
-        events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));
-        execute_id += 1;
-      }
+      events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));
     }
 
     // create a function to call for the result. the future will be returned to the caller and the caller
@@ -113,11 +100,7 @@ public:
       throw runner_exception("cannot stop runner subscriber that was not started");
 
     // publish event
-    if (events[execute_id].on_stopped)
-    {
-      events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
-      execute_id += 1;
-    }
+    events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
   }
 
 protected:

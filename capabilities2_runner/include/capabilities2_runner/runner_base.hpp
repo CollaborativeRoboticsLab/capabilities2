@@ -137,18 +137,24 @@ public:
     node_ = node;
     run_config_ = run_config;
     insert_id = 0;
-    execute_id = 0;
+    execute_id = -1;
   }
 
   /**
    * @brief attach events to the runner
    *
    * @param event_option event_options related for the action
+   * 
+   * @return number of attached events
    */
-  void attach_events(capabilities2_runner::event_opts& event_option)
+  int attach_events(capabilities2_runner::event_opts& event_option)
   {
+    RCLCPP_INFO(node_->get_logger(), "%s accepted event options with ID : %d ", run_config_.interface.c_str(), insert_id);
+    
     events[insert_id] = event_option;
     insert_id += 1;
+
+    return insert_id;
   }
 
   /**

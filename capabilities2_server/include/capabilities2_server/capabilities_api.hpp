@@ -52,6 +52,8 @@ public:
     // set logger
     node_logging_interface_ptr_ = node_logging_interface_ptr;
 
+    runner_cache_.connect(node_logging_interface_ptr);
+
     // connect db
     cap_db_ = std::make_unique<CapabilitiesDB>(db_file);
 

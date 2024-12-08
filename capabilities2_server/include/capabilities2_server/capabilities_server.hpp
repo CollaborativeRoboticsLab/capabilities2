@@ -102,6 +102,7 @@ public:
 
     // init capabilities api
     connect(db_file, get_node_logging_interface());
+  
 
     // load capabilities from package paths
     for (const auto& package_path : package_paths)

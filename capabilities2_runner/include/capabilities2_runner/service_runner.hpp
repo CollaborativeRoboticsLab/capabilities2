@@ -62,6 +62,8 @@ public:
   virtual std::optional<std::function<void(tinyxml2::XMLElement*)>>
   trigger(tinyxml2::XMLElement* parameters = nullptr) override
   {
+    execute_id += 1;
+
     // if parameters are not provided then cannot proceed
     if (!parameters)
       throw runner_exception("cannot trigger service without parameters");
@@ -74,33 +76,17 @@ public:
           if (!future.valid())
           {
             RCLCPP_ERROR(node_->get_logger(), "get result call failed");
-
-            // Trigger failure event
-            if (events[execute_id].on_failure)
-            {
-              events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));
-              execute_id += 1;
-            }
+            events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));
           }
           else
           {
             RCLCPP_INFO(node_->get_logger(), "get result call succeeded");
-
-            // Trigger success event
-            if (events[execute_id].on_success)
-            {
-              events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));
-              execute_id += 1;
-            }
+            events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));
           }
         });
 
     // Trigger started event if defined
-    if (events[execute_id].on_started)
-    {
-      events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
-      execute_id += 1;
-    }
+    events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
 
     // Define a callback function to handle the result once it's ready
     std::function<void(tinyxml2::XMLElement*)> result_callback =
@@ -142,11 +128,7 @@ public:
       throw runner_exception("cannot stop runner action that was not started");
 
     // publish event
-    if (events[execute_id].on_stopped)
-    {
-      events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
-      execute_id += 1;
-    }
+    events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
   }
 
 protected:
