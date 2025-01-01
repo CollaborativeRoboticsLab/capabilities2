@@ -588,13 +588,13 @@ private:
           auto response = future.get();
           bond_id = response->bond_id;
 
-          feedback->progress = "Received the bond id";
+          feedback->progress = "Received the bond id : " + bond_id.c_str() ;
           goal_handle->publish_feedback(feedback);
           RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
           expected_capabilities_ = connection_map.size();
 
-          RCLCPP_INFO(this->get_logger(), "Requsting use of %d capabilities", expected_capabilities_);
+          RCLCPP_INFO(this->get_logger(), "Requsting use (start) of %d capabilities", expected_capabilities_);
 
           use_capability(connection_map, goal_handle);
         });
@@ -620,7 +620,7 @@ private:
     request_use->bond_id = bond_id;
 
     feedback->progress =
-        "Using capability of Node " + std::to_string(completed_capabilities_) + " named " + capabilities[completed_capabilities_].source.runner;
+        "Using (starting) capability of Node " + std::to_string(completed_capabilities_) + " named " + capabilities[completed_capabilities_].source.runner;
     goal_handle->publish_feedback(feedback);
     RCLCPP_INFO(this->get_logger(), "");
     RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
@@ -655,7 +655,7 @@ private:
 
       auto response = future.get();
 
-      feedback->progress = std::to_string(completed_capabilities_) + "/" + std::to_string(expected_capabilities_) + " : Capability use succeessgul";
+      feedback->progress = std::to_string(completed_capabilities_) + "/" + std::to_string(expected_capabilities_) + " : Capability use (start) succeessful";
       goal_handle->publish_feedback(feedback);
       RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
@@ -738,7 +738,7 @@ private:
       request_configure->source.capability = capabilities[completed_configurations_].source.runner;
       request_configure->source.provider = capabilities[completed_configurations_].source.provider;
 
-      RCLCPP_INFO(this->get_logger(), "Source capability : %s, provider   : %s", request_configure->source.capability.c_str(),
+      RCLCPP_INFO(this->get_logger(), "Source capability : %s from provider : %s", request_configure->source.capability.c_str(),
                   request_configure->source.provider.c_str());
     }
     else
@@ -753,7 +753,7 @@ private:
       request_configure->target_on_start.capability = capabilities[completed_configurations_].target_on_start.runner;
       request_configure->target_on_start.provider = capabilities[completed_configurations_].target_on_start.provider;
 
-      RCLCPP_INFO(this->get_logger(), "--> on_start capability : %s provider : %s", request_configure->target_on_start.capability.c_str(),
+      RCLCPP_INFO(this->get_logger(), "--> on_start capability : %s from provider : %s", request_configure->target_on_start.capability.c_str(),
                   request_configure->target_on_start.provider.c_str());
     }
     else
@@ -768,7 +768,7 @@ private:
       request_configure->target_on_stop.capability = capabilities[completed_configurations_].target_on_stop.runner;
       request_configure->target_on_stop.provider = capabilities[completed_configurations_].target_on_stop.provider;
 
-      RCLCPP_INFO(this->get_logger(), "--> on stop capability : %s provider : %s", request_configure->target_on_stop.capability.c_str(),
+      RCLCPP_INFO(this->get_logger(), "--> on stop capability : %s from provider : %s", request_configure->target_on_stop.capability.c_str(),
                   request_configure->target_on_stop.provider.c_str());
     }
     else
@@ -783,7 +783,7 @@ private:
       request_configure->target_on_success.capability = capabilities[completed_configurations_].target_on_success.runner;
       request_configure->target_on_success.provider = capabilities[completed_configurations_].target_on_success.provider;
 
-      RCLCPP_INFO(this->get_logger(), "--> on success capability : %s provider : %s", request_configure->target_on_success.capability.c_str(),
+      RCLCPP_INFO(this->get_logger(), "--> on success capability : %s from provider : %s", request_configure->target_on_success.capability.c_str(),
                   request_configure->target_on_success.provider.c_str());
     }
     else
@@ -798,7 +798,7 @@ private:
       request_configure->target_on_failure.capability = capabilities[completed_configurations_].target_on_failure.runner;
       request_configure->target_on_failure.provider = capabilities[completed_configurations_].target_on_failure.provider;
 
-      RCLCPP_INFO(this->get_logger(), "--> on failure capability : %s provider : %s", request_configure->target_on_failure.capability.c_str(),
+      RCLCPP_INFO(this->get_logger(), "--> on failure capability : %s from provider : %s", request_configure->target_on_failure.capability.c_str(),
                   request_configure->target_on_failure.provider.c_str());
     }
     else
@@ -831,6 +831,7 @@ private:
           feedback->progress = std::to_string(completed_configurations_) + "/" + std::to_string(expected_configurations_) +
                                " : Successfully configured capability : " + source_capability;
           goal_handle->publish_feedback(feedback);
+          RCLCPP_INFO(this->get_logger(), "");
           RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
           // Check if all expected calls are completed before calling verify_plan

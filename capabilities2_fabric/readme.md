@@ -73,3 +73,7 @@ Below is an example XML plan for configuring a set of capabilities:
 ### Navigation
 
 1. [WaypointRunner Example 1](./docs/waypoint_runner_ex1.md)
+Implements at the very basic fabric triggering that moves the robot from one point to another
+
+2. [WaypointRunner Example 2](./docs/waypoint_runner_ex2.md)
+Implements navigating through 2 points using 'sequential' control functionality

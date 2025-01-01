@@ -84,7 +84,7 @@ public:
    * @param node ros node pointer of the ros server
    * @param capability capability name to be started
    * @param provider provider of the capability
-   * 
+   *
    * @return `true` if capability started successfully. else returns `false`
    */
   bool start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider)
@@ -238,7 +238,7 @@ public:
    * @param capability capability name to be started
    * @param provider provider of the capability
    * @param bond_id bond_id for the capability
-   * 
+   *
    * @return `true` if capability started successfully. else returns `false`
    */
   bool use_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
@@ -272,12 +272,15 @@ public:
   {
     try
     {
+      // log
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "");
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "setting triggers for capability: %s", capability.c_str());
+
       runner_cache_.set_runner_triggers(capability, on_started_capability, on_started_parameters, on_failure_capability,
                                         on_failure_parameters, on_success_capability, on_success_parameters,
                                         on_stopped_capability, on_stopped_parameters);
 
-      // log
-      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "setting triggers for capability: %s", capability.c_str());
+      RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "successfully set triggers");
     }
     catch (const capabilities2_runner::runner_exception& e)
     {

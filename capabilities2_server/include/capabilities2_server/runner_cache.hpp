@@ -152,7 +152,9 @@ public:
       event_options.on_started = [this, &capability](tinyxml2::XMLElement* parameters) {
         RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s does not implement on_start event",
                     capability.c_str());
-      } event_options.on_started_param = nullptr;
+      };
+      
+      event_options.on_started_param = nullptr;
     }
 
     if (on_failure_capability != "")
@@ -172,7 +174,8 @@ public:
       event_options.on_failure = [this, &capability](tinyxml2::XMLElement* parameters) {
         RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s does not implement on_failure event",
                     capability.c_str());
-      } 
+      } ;
+
       event_options.on_failure_param = nullptr;
     }
 
@@ -193,7 +196,8 @@ public:
       event_options.on_success = [this, &capability](tinyxml2::XMLElement* parameters) {
         RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s does not implement on_success event",
                     capability.c_str());
-      } 
+      } ;
+
       event_options.on_success_param = nullptr;
     }
 
@@ -214,7 +218,8 @@ public:
       event_options.on_stopped = [this, &capability](tinyxml2::XMLElement* parameters) {
         RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s does not implement on_stopped event",
                     capability.c_str());
-      } 
+      } ;
+      
       event_options.on_stopped_param = nullptr;
     }
 
