@@ -88,11 +88,17 @@ public:
                   if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE)
                   {
                     // throw runner_exception("failed to cancel runner");
-                    RCLCPP_WARN(node_->get_logger(), "Runner cancelation failed.");
+                    RCLCPP_WARN(node_->get_logger(), "Runner cancellation failed.");
                   }
 
                   // Trigger on_stopped event if defined
-                  events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
+                  if (events[execute_id].on_stopped != "")
+                  {
+                    RCLCPP_INFO(node_->get_logger(), "[%s] on_stopped event available. Triggering",
+                          run_config_.interface.c_str());
+                    triggerFunction_(events[execute_id].on_stopped,
+                                     update_on_stopped(events[execute_id].on_stopped_param));
+                  }
                 });
 
         // wait for action to be stopped. hold the thread for 2 seconds to help keep callbacks in scope
@@ -118,34 +124,42 @@ public:
   }
 
   /**
-   * @brief the trigger function on the action runner is used to trigger an action.
-   * this method provides a mechanism for injecting parameters or a goal into the action
-   * and then trigger the action
+   * @brief Trigger process to be executed.
    *
-   * @param parameters
-   * @return std::optional<std::function<void(tinyxml2::XMLElement*)>>
+   * This method utilizes paramters set via the trigger() function
+   *
+   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    */
-  virtual std::optional<std::function<void(tinyxml2::XMLElement*)>>
-  trigger(tinyxml2::XMLElement* parameters = nullptr) override
+  virtual void triggerExecution() override
   {
     execute_id += 1;
 
     // if parameters are not provided then cannot proceed
-    if (!parameters)
+    if (!parameters_)
       throw runner_exception("cannot trigger action without parameters");
 
     // generate a goal from parameters if provided
-    typename ActionT::Goal goal_msg = generate_goal(parameters);
+    typename ActionT::Goal goal_msg = generate_goal(parameters_);
+
+    RCLCPP_INFO(node_->get_logger(), "[%s] goal generated.", run_config_.interface.c_str());
 
     // send goal options
     // goal response callback
     send_goal_options_.goal_response_callback =
         [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
           if (goal_handle)
-            events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
+          {
+            // trigger the events related to on_started state
+            if (events[execute_id].on_started != "")
+            {
+              RCLCPP_INFO(node_->get_logger(), "[%s] on_started event available. Triggering",
+                          run_config_.interface.c_str());
+              triggerFunction_(events[execute_id].on_started, update_on_started(events[execute_id].on_started_param));
+            }
+          }
           else
           {
-            RCLCPP_ERROR(node_->get_logger(), "Goal was rejected by server");
+            RCLCPP_ERROR(node_->get_logger(), "[%s] goal rejected", run_config_.interface.c_str());
           }
 
           // store goal handle to be used with stop funtion
@@ -155,10 +169,26 @@ public:
     // result callback
     send_goal_options_.result_callback =
         [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
-          if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)  
-            events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));   // Trigger on_success event if defined
-          else          
-            events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));   // Trigger on_failure event if defined
+          if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
+          {
+            // trigger the events related to on_success state
+            if (events[execute_id].on_success != "")
+            {
+              RCLCPP_INFO(node_->get_logger(), "[%s] on_success event available. Triggering",
+                          run_config_.interface.c_str());
+              triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
+            }
+          }
+          else
+          {
+            // trigger the events related to on_failure state
+            if (events[execute_id].on_failure != "")
+            {
+              RCLCPP_INFO(node_->get_logger(), "[%s] on_failure event available. Triggering",
+                          run_config_.interface.c_str());
+              triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
+            }
+          }
 
           result_ = wrapped_result.result;
         };
@@ -166,33 +196,20 @@ public:
     // trigger the action client with goal
     auto goal_handle_future = action_client_->async_send_goal(goal_msg, send_goal_options_);
 
+    RCLCPP_INFO(node_->get_logger(), "[%s] goal sent. Waiting for acceptance", run_config_.interface.c_str());
+
     // create a function to call for the result. the future will be returned to the caller and the caller
     // can provide a conversion function to handle the result
 
-    std::function<void(tinyxml2::XMLElement*)> result_callback = [this,
-                                                                  goal_handle_future](tinyxml2::XMLElement* result) {
-      auto goal_handle = goal_handle_future.get();
+    auto goal_handle = goal_handle_future.get();
 
-      if (!goal_handle)
-      {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to send goal");
-        return;
-      }
+    RCLCPP_INFO(node_->get_logger(), "[%s] goal accepted. Waiting for result", run_config_.interface.c_str());
 
-      // Get the result asynchronously
-      auto result_future = action_client_->async_get_result(goal_handle);
-
-      // Wait for result future
-      auto wrapped_result = result_future.get();
-
-      // convert the result
-      if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
-      {
-        result = generate_result(wrapped_result.result);
-      }
-    };
-
-    return result_callback;
+    if (!goal_handle)
+    {
+      RCLCPP_INFO(node_->get_logger(), "[%s] goal rejected", run_config_.interface.c_str());
+      return;
+    }
   }
 
 protected:
@@ -208,19 +225,6 @@ protected:
    * @return ActionT::Goal the generated goal
    */
   virtual typename ActionT::Goal generate_goal(tinyxml2::XMLElement* parameters) = 0;
-
-  /**
-   * @brief generate a typed erased goal result
-   *
-   * this method is used in a callback passed to the trigger caller to get type erased result
-   * from the action the result can be passed by the caller or ignored
-   *
-   * The pattern needs to be implemented in the derived class
-   *
-   * @param wrapped_result
-   * @return tinyxml2::XMLElement*
-   */
-  virtual tinyxml2::XMLElement* generate_result(const typename ActionT::Result::SharedPtr& result) = 0;
 
   /**< action client */
   typename rclcpp_action::Client<ActionT>::SharedPtr action_client_;

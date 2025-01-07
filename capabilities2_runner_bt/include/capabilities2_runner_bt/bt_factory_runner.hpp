@@ -21,13 +21,10 @@ public:
   {
   }
 
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                     std::function<void(const std::string&)> on_started = nullptr,
-                     std::function<void(const std::string&)> on_terminated = nullptr,
-                     std::function<void(const std::string&)> on_stopped = nullptr)
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config)
   {
     // init the runner base
-    init_base(node, run_config, on_started, on_terminated, on_stopped);
+    init_base(node, run_config);
 
     // register (bt)actions from ROS plugins
     try
@@ -46,14 +43,14 @@ public:
     tree_.reset();
   }
 
+protected:
   /**
    * @brief trigger the behaviour factory with the input data
    *
    * @param parameters
    * @return std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
    */
-  virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
-  trigger(std::shared_ptr<tinyxml2::XMLElement> parameters)
+  virtual void trigger(tinyxml2::XMLElement* parameters = nullptr) override
   {
     // if parameters are not provided then cannot proceed
     if (!parameters)
@@ -63,25 +60,24 @@ public:
     tree_ = std::make_shared<BT::Tree>(this->createTreeFromText(parameters->GetText()));
 
     // return the tick function
-    // the caller can call this function to tick the tree
-    std::function<void(std::shared_ptr<tinyxml2::XMLElement>)> result_callback =
-        [this](std::shared_ptr<tinyxml2::XMLElement> result) {
-          // tick the tree
-          BT::NodeStatus status = tree_->tickWhileRunning();
+    // // the caller can call this function to tick the tree
+    // std::function<void(std::shared_ptr<tinyxml2::XMLElement>)> result_callback =
+    //     [this](std::shared_ptr<tinyxml2::XMLElement> result) {
+    //       // tick the tree
+    //       BT::NodeStatus status = tree_->tickWhileRunning();
 
-          // fill the result
-          if (status == BT::NodeStatus::SUCCESS)
-            result->SetText("OK");
-          else
-            result->SetText("FAIL");
+    //       // fill the result
+    //       if (status == BT::NodeStatus::SUCCESS)
+    //         result->SetText("OK");
+    //       else
+    //         result->SetText("FAIL");
 
-          return;
-        };
+    //       return;
+    //     };
 
-    return result_callback;
+    // return result_callback;
   }
 
-protected:
   // the tree
   std::shared_ptr<BT::Tree> tree_;
 };

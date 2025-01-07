@@ -122,9 +122,16 @@ public:
   }
 
   // throw on trigger function
-  std::optional<std::function<void(tinyxml2::XMLElement*)>> trigger(tinyxml2::XMLElement* parameters) override
+  void trigger(const std::string& parameters) override
   {
     throw runner_exception("No Trigger as this is launch runner");
+  }
+
+protected:
+  // throw on triggerExecution function
+  void triggerExecution() override
+  {
+    throw runner_exception("no triggerExecution() this is a no-trigger action runner");
   }
 
   std::string launch_name;

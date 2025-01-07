@@ -59,19 +59,6 @@ protected:
     return goal_msg;
   }
 
-  /**
-   * @brief This generate_result function overrides the generate_result() function from ActionRunner(). Since this does not
-   * return a value, return value is nullptr
-   * 
-   * @param result message from SpeechToText action
-   * @return nullptr
-   */
-  virtual tinyxml2::XMLElement*
-  generate_result(const hri_audio_msgs::action::TextToSpeech::Result::SharedPtr& result) override
-  {
-    return nullptr;
-  }
-
 };
 
 }  // namespace capabilities2_runner

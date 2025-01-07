@@ -98,17 +98,15 @@ public:
    */
   void trigger_runner(const std::string& capability, const std::string& parameters)
   {
-    tinyxml2::XMLDocument doc;
-    doc.Parse(parameters.c_str());
-    tinyxml2::XMLElement* xml_parameters = doc.FirstChildElement();
-
     // is the runner in the cache
     if (running(capability))
     {
-      runner_cache_[capability]->trigger(xml_parameters);
+      runner_cache_[capability]->trigger(parameters);
     }
     else
     {
+      RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "Runner not found for capability: %s",
+                   capability.c_str());
       throw capabilities2_runner::runner_exception("capability runner not found: " + capability);
     }
   }
@@ -135,98 +133,25 @@ public:
   {
     capabilities2_runner::event_opts event_options;
 
-    if (on_started_capability != "")
-    {
-      event_options.on_started = [this, &on_started_capability, &capability](tinyxml2::XMLElement* parameters) {
-        RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s is triggering %s on_start", capability.c_str(),
-                    on_started_capability.c_str());
-        runner_cache_[on_started_capability]->trigger(parameters);
-      };
+    event_options.on_started = on_started_capability;
+    event_options.on_failure = on_failure_capability;
+    event_options.on_success = on_success_capability;
+    event_options.on_stopped = on_stopped_capability;
 
-      tinyxml2::XMLDocument doc;
-      doc.Parse(on_started_parameters.c_str());
-      event_options.on_started_param = doc.FirstChildElement();
-    }
-    else
-    {
-      event_options.on_started = [this, &capability](tinyxml2::XMLElement* parameters) {
-        RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s does not implement on_start event",
-                    capability.c_str());
-      };
-      
-      event_options.on_started_param = nullptr;
-    }
+    event_options.on_started_param = on_started_parameters;
+    event_options.on_failure_param = on_failure_parameters;
+    event_options.on_success_param = on_success_parameters;
+    event_options.on_stopped_param = on_stopped_parameters;
 
-    if (on_failure_capability != "")
-    {
-      event_options.on_failure = [this, &on_failure_capability, &capability](tinyxml2::XMLElement* parameters) {
-        RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s is triggering %s on_failure", capability.c_str(),
-                    on_failure_capability.c_str());
-        runner_cache_[on_failure_capability]->trigger(parameters);
-      };
+    int event_count = runner_cache_[capability]->attach_events(
+        event_options, std::bind(&capabilities2_server::RunnerCache::trigger_runner, this, std::placeholders::_1,
+                                 std::placeholders::_2));
 
-      tinyxml2::XMLDocument doc;
-      doc.Parse(on_failure_parameters.c_str());
-      event_options.on_failure_param = doc.FirstChildElement();
-    }
-    else
-    {
-      event_options.on_failure = [this, &capability](tinyxml2::XMLElement* parameters) {
-        RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s does not implement on_failure event",
-                    capability.c_str());
-      } ;
-
-      event_options.on_failure_param = nullptr;
-    }
-
-    if (on_success_capability != "")
-    {
-      event_options.on_success = [this, &on_success_capability, &capability](tinyxml2::XMLElement* parameters) {
-        runner_cache_[on_success_capability]->trigger(parameters);
-        RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s is triggering %s on_success", capability.c_str(),
-                    on_success_capability.c_str());
-      };
-
-      tinyxml2::XMLDocument doc;
-      doc.Parse(on_success_parameters.c_str());
-      event_options.on_success_param = doc.FirstChildElement();
-    }
-    else
-    {
-      event_options.on_success = [this, &capability](tinyxml2::XMLElement* parameters) {
-        RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s does not implement on_success event",
-                    capability.c_str());
-      } ;
-
-      event_options.on_success_param = nullptr;
-    }
-
-    if (on_stopped_capability != "")
-    {
-      event_options.on_stopped = [this, &on_stopped_capability, &capability](tinyxml2::XMLElement* parameters) {
-        runner_cache_[on_stopped_capability]->trigger(parameters);
-        RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s is triggering %s on_stopped", capability.c_str(),
-                    on_stopped_capability.c_str());
-      };
-
-      tinyxml2::XMLDocument doc;
-      doc.Parse(on_stopped_parameters.c_str());
-      event_options.on_stopped_param = doc.FirstChildElement();
-    }
-    else
-    {
-      event_options.on_stopped = [this, &capability](tinyxml2::XMLElement* parameters) {
-        RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "%s does not implement on_stopped event",
-                    capability.c_str());
-      } ;
-      
-      event_options.on_stopped_param = nullptr;
-    }
-
-    int event_count = runner_cache_[capability]->attach_events(event_options);
-
-    std::string event_name = capability + "_" + std::to_string(event_count);
-    event_cache_[event_name] = event_options;
+    RCLCPP_INFO(node_logging_interface_ptr_->get_logger(),
+                "Configured triggers for capability %s: \n\tStarted: %s \n\tFailure: %s \n\tSuccess: %s \n\tStopped: "
+                "%s\n",
+                capability.c_str(), on_started_capability.c_str(), on_failure_capability.c_str(),
+                on_success_capability.c_str(), on_stopped_capability.c_str());
   }
 
   /**
@@ -335,9 +260,6 @@ private:
   // map capability to running model
   // capability / provider specs -> runner
   std::map<std::string, std::shared_ptr<capabilities2_runner::RunnerBase>> runner_cache_;
-
-  // map events to capabilities
-  std::map<std::string, capabilities2_runner::event_opts> event_cache_;
 
   // runner plugin loader
   pluginlib::ClassLoader<capabilities2_runner::RunnerBase> runner_loader_;

@@ -588,13 +588,13 @@ private:
           auto response = future.get();
           bond_id = response->bond_id;
 
-          feedback->progress = "Received the bond id : " + bond_id.c_str() ;
+          feedback->progress = "Received the bond id : " + bond_id ;
           goal_handle->publish_feedback(feedback);
           RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
           expected_capabilities_ = connection_map.size();
 
-          RCLCPP_INFO(this->get_logger(), "Requsting use (start) of %d capabilities", expected_capabilities_);
+          RCLCPP_INFO(this->get_logger(), "Requsting start of %d capabilities", expected_capabilities_);
 
           use_capability(connection_map, goal_handle);
         });
@@ -620,7 +620,7 @@ private:
     request_use->bond_id = bond_id;
 
     feedback->progress =
-        "Using (starting) capability of Node " + std::to_string(completed_capabilities_) + " named " + capabilities[completed_capabilities_].source.runner;
+        "Starting capability of Node " + std::to_string(completed_capabilities_) + " named " + capabilities[completed_capabilities_].source.runner;
     goal_handle->publish_feedback(feedback);
     RCLCPP_INFO(this->get_logger(), "");
     RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
@@ -655,7 +655,7 @@ private:
 
       auto response = future.get();
 
-      feedback->progress = std::to_string(completed_capabilities_) + "/" + std::to_string(expected_capabilities_) + " : Capability use (start) succeessful";
+      feedback->progress = std::to_string(completed_capabilities_) + "/" + std::to_string(expected_capabilities_) + " : Capability start succeessful";
       goal_handle->publish_feedback(feedback);
       RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 

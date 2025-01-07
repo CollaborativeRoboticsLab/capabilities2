@@ -74,23 +74,6 @@ public:
 
     return request;
   }
-
-  /**
-   * @brief generate a typed erased response
-   *
-   * this method is used in a callback passed to the trigger caller to get type erased result
-   * from the service the reponse can be passed by the caller or ignored
-   *
-   * The pattern needs to be implemented in the derived class
-   *
-   * @param wrapped_result
-   * @return tinyxml2::XMLElement*
-   */
-  virtual tinyxml2::XMLElement*
-  generate_response(const typename prompt_msgs::srv::Prompt::Response::SharedPtr& result) const override
-  {
-    return nullptr;
-  }
 };
 
 }  // namespace capabilities2_runner

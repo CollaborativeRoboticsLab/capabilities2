@@ -56,25 +56,6 @@ protected:
   }
 
   /**
-   * @brief This generate_result function overrides the generate_result() function from ActionRunner(). Since
-   *
-   * @param result message from SpeechToText action
-   * @return tinyxml2::XMLElement* in the format '<Event name=speech_to_text provider=ListenerRunner text=$value/>'
-   */
-  virtual tinyxml2::XMLElement*
-  generate_result(const hri_audio_msgs::action::SpeechToText::Result::SharedPtr& result) override
-  {
-    tinyxml2::XMLDocument doc;
-
-    // Root element
-    tinyxml2::XMLElement* textElement = doc.NewElement("Text");
-    doc.InsertEndChild(textElement);
-    textElement->SetText(result->stt_text.c_str());
-
-    return doc.FirstChildElement("Text");
-  }
-
-  /**
    * @brief Update on_success event parameters with new data if avaible.
    *
    * This function is used to inject new data into the XMLElement containing
@@ -85,15 +66,19 @@ protected:
    * @param parameters pointer to the XMLElement containing parameters
    * @return pointer to the XMLElement containing updated parameters
    */
-  virtual tinyxml2::XMLElement* update_on_success(tinyxml2::XMLElement* parameters)
+  virtual std::string update_on_success(std::string& parameters)
   {
+    tinyxml2::XMLElement* element = convert_to_xml(parameters);
+    
     // Create the Pose element as a child of the existing parameters element
-    tinyxml2::XMLElement* textElement = parameters->GetDocument()->NewElement("Text");
-    parameters->InsertEndChild(textElement);
+    tinyxml2::XMLElement* textElement = element->GetDocument()->NewElement("Text");
+    element->InsertEndChild(textElement);
     textElement->SetText(result_->stt_text.c_str());
 
-    // Return the updated parameters element with Pose added
-    return parameters;
+    // Return the updated parameters element with Pose added as string
+    std::string result = convert_to_string(element);
+
+    return result;
   };
 };
 

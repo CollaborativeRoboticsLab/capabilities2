@@ -61,18 +61,6 @@ protected:
   }
 
   /**
-   * @brief This generate result function overrides the generate_result() function from ActionRunner(). Since
-   * this is not used in this context, this returns nullptr
-   * @param result message from FollowWaypoints action
-   * @return nullptr
-   */
-  virtual tinyxml2::XMLElement*
-  generate_result(const capabilities2_msgs::action::Plan::Result::SharedPtr& result) override
-  {
-    return nullptr;
-  }
-
-  /**
    * @brief Update on_failure event parameters with new data if avaible.
    *
    * This function is used to inject new data into the XMLElement containing
@@ -83,13 +71,15 @@ protected:
    * @param parameters pointer to the XMLElement containing parameters
    * @return pointer to the XMLElement containing updated parameters
    */
-  virtual tinyxml2::XMLElement* update_on_failure(tinyxml2::XMLElement* parameters)
+  virtual std::string update_on_failure(std::string& parameters)
   {
-    parameters->SetAttribute("replan", true);
+    tinyxml2::XMLElement* element = convert_to_xml(parameters);
+
+    element->SetAttribute("replan", true);
 
     // Create the failed elements element as a child of the existing parameters element
-    tinyxml2::XMLElement* failedElements = parameters->GetDocument()->NewElement("FailedElements");
-    parameters->InsertEndChild(failedElements);
+    tinyxml2::XMLElement* failedElements = element->GetDocument()->NewElement("FailedElements");
+    element->InsertEndChild(failedElements);
 
     std::string failedElementsString = "";
 
@@ -98,7 +88,9 @@ protected:
 
     failedElements->SetText(failedElementsString.c_str());
 
-    return parameters;
+    std::string result = convert_to_string(element);
+
+    return result;
   };
 };
 

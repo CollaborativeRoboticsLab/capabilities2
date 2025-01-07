@@ -68,18 +68,18 @@ bool check_plan_tag(tinyxml2::XMLDocument& document)
  *
  * @return `true` if element is not nullptr and conversion successful, `false` if element is nullptr
  */
-bool convert_to_string(tinyxml2::XMLElement* element, std::string& paramters)
+bool convert_to_string(tinyxml2::XMLElement* element, std::string& parameters)
 {
   if (element)
   {
     tinyxml2::XMLPrinter printer;
     element->Accept(&printer);
-    paramters = printer.CStr();
+    parameters = printer.CStr();
     return true;
   }
   else
   {
-    paramters = "";
+    parameters = "";
     return false;
   }
 }

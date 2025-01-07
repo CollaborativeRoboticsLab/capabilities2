@@ -52,7 +52,7 @@ protected:
     parameters_->QueryDoubleAttribute("x", &x);
     parameters_->QueryDoubleAttribute("y", &y);
 
-    RCLCPP_INFO(node_->get_logger(), "%s is triggered with x: %f and y: %f", run_config_.interface.c_str(), x, y);
+    RCLCPP_INFO(node_->get_logger(), "[%s] goal consist of x: %f and y: %f", run_config_.interface.c_str(), x, y);
 
     nav2_msgs::action::NavigateToPose::Goal goal_msg;
     geometry_msgs::msg::PoseStamped pose_msg;
@@ -66,18 +66,6 @@ protected:
     goal_msg.pose = pose_msg;
 
     return goal_msg;
-  }
-
-  /**
-   * @brief This generate result function overrides the generate_result() function from ActionRunner(). Since
-   * this is not used in this context, this returns nullptr
-   * @param result message from FollowWaypoints action
-   * @return nullptr
-   */
-  virtual tinyxml2::XMLElement*
-  generate_result(const nav2_msgs::action::NavigateToPose::Result::SharedPtr& result) override
-  {
-    return nullptr;
   }
 
 protected:
