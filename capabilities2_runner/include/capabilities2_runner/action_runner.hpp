@@ -47,15 +47,15 @@ public:
     action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name);
 
     // wait for action server
-    RCLCPP_INFO(node_->get_logger(), "%s waiting for action: %s", run_config_.interface.c_str(), action_name.c_str());
+    RCLCPP_INFO(node_->get_logger(), "[%s] waiting for action: %s", run_config_.interface.c_str(), action_name.c_str());
 
     if (!action_client_->wait_for_action_server(std::chrono::seconds(1000)))
     {
-      RCLCPP_ERROR(node_->get_logger(), "%s failed to connect to action: %s", run_config_.interface.c_str(),
+      RCLCPP_ERROR(node_->get_logger(), "[%s] failed to connect to action: %s", run_config_.interface.c_str(),
                    action_name.c_str());
       throw runner_exception("failed to connect to action server");
     }
-    RCLCPP_INFO(node_->get_logger(), "%s connected with action: %s", run_config_.interface.c_str(),
+    RCLCPP_INFO(node_->get_logger(), "[%s] connected with action: %s", run_config_.interface.c_str(),
                 action_name.c_str());
   }
 
@@ -92,6 +92,10 @@ public:
                   }
 
                   // Trigger on_stopped event if defined
+
+                  RCLCPP_INFO(node_->get_logger(), "[%s] on_stopped event available. Triggering",
+                              run_config_.interface.c_str());
+
                   events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
                 });
 
@@ -137,15 +141,21 @@ public:
     // generate a goal from parameters if provided
     typename ActionT::Goal goal_msg = generate_goal(parameters);
 
+    RCLCPP_INFO(node_->get_logger(), "[%s] goal generated.", run_config_.interface.c_str());
+
     // send goal options
     // goal response callback
     send_goal_options_.goal_response_callback =
         [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
           if (goal_handle)
+          {
+            RCLCPP_INFO(node_->get_logger(), "[%s] on_started event available. Triggering",
+                        run_config_.interface.c_str());
             events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
+          }
           else
           {
-            RCLCPP_ERROR(node_->get_logger(), "Goal was rejected by server");
+            RCLCPP_ERROR(node_->get_logger(), "[%s] goal rejected", run_config_.interface.c_str());
           }
 
           // store goal handle to be used with stop funtion
@@ -155,16 +165,29 @@ public:
     // result callback
     send_goal_options_.result_callback =
         [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
-          if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)  
-            events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));   // Trigger on_success event if defined
-          else          
-            events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));   // Trigger on_failure event if defined
+          if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
+          {
+            // Trigger on_success event if defined
+            RCLCPP_INFO(node_->get_logger(), "[%s] on_success event available. Triggering",
+                        run_config_.interface.c_str());
+            events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));
+          }
+          else
+          {
+            // Trigger on_failure event if defined
+            RCLCPP_INFO(node_->get_logger(), "[%s] on_failure event available. Triggering",
+                        run_config_.interface.c_str());
+
+            events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));
+          }
 
           result_ = wrapped_result.result;
         };
 
     // trigger the action client with goal
     auto goal_handle_future = action_client_->async_send_goal(goal_msg, send_goal_options_);
+
+    RCLCPP_INFO(node_->get_logger(), "[%s] goal sent. Waiting for acceptance", run_config_.interface.c_str());
 
     // create a function to call for the result. the future will be returned to the caller and the caller
     // can provide a conversion function to handle the result
@@ -173,9 +196,11 @@ public:
                                                                   goal_handle_future](tinyxml2::XMLElement* result) {
       auto goal_handle = goal_handle_future.get();
 
+      RCLCPP_INFO(node_->get_logger(), "[%s] goal accepted. Waiting for result", run_config_.interface.c_str());
+
       if (!goal_handle)
       {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to send goal");
+        RCLCPP_INFO(node_->get_logger(), "[%s] goal rejected", run_config_.interface.c_str());
         return;
       }
 

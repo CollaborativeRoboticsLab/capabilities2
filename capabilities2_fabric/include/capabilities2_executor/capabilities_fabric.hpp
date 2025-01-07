@@ -588,7 +588,7 @@ private:
           auto response = future.get();
           bond_id = response->bond_id;
 
-          feedback->progress = "Received the bond id : " + bond_id.c_str() ;
+          feedback->progress = "Received the bond id : " + bond_id;
           goal_handle->publish_feedback(feedback);
           RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
