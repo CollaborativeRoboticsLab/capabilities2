@@ -124,7 +124,7 @@ public:
   {
     parameters_ = convert_to_xml(parameters);
 
-    executionThread = std::thread(&RunnerBase::triggerExecution, this);
+    executionThread = std::thread(&RunnerBase::execution, this);
   }
 
   /**
@@ -152,7 +152,7 @@ public:
   int attach_events(capabilities2_runner::event_opts& event_option,
                     std::function<void(const std::string&, const std::string&)> triggerFunction)
   {
-    RCLCPP_INFO(node_->get_logger(), "%s accepted event options with ID : %d ", run_config_.interface.c_str(),
+    RCLCPP_INFO(node_->get_logger(), "[%s] accepted event options with ID : %d ", run_config_.interface.c_str(),
                 insert_id);
 
     triggerFunction_ = triggerFunction;
@@ -212,7 +212,7 @@ protected:
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    *
    */
-  virtual void triggerExecution() = 0;
+  virtual void execution() = 0;
 
   /**
    * @brief Update on_started event parameters with new data if avaible.

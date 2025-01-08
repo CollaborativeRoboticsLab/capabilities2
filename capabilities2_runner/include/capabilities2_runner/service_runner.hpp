@@ -58,7 +58,7 @@ public:
    *
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    */
-  virtual void triggerExecution() override
+  virtual void execution() override
   {
     execute_id += 1;
 

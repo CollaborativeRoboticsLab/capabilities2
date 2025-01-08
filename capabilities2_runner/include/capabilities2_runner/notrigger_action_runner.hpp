@@ -26,7 +26,7 @@ public:
 protected:
 
   // throw on triggerExecution function
-  void triggerExecution() override
+  void execution() override
   {
     throw runner_exception("no triggerExecution() this is a no-trigger action runner");
   }

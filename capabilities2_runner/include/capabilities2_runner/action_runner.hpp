@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <chrono>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -47,15 +48,15 @@ public:
     action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name);
 
     // wait for action server
-    RCLCPP_INFO(node_->get_logger(), "%s waiting for action: %s", run_config_.interface.c_str(), action_name.c_str());
+    RCLCPP_INFO(node_->get_logger(), "[%s] waiting for action: %s", run_config_.interface.c_str(), action_name.c_str());
 
     if (!action_client_->wait_for_action_server(std::chrono::seconds(1000)))
     {
-      RCLCPP_ERROR(node_->get_logger(), "%s failed to connect to action: %s", run_config_.interface.c_str(),
+      RCLCPP_ERROR(node_->get_logger(), "[%s] failed to connect to action: %s", run_config_.interface.c_str(),
                    action_name.c_str());
       throw runner_exception("failed to connect to action server");
     }
-    RCLCPP_INFO(node_->get_logger(), "%s connected with action: %s", run_config_.interface.c_str(),
+    RCLCPP_INFO(node_->get_logger(), "[%s] connected with action: %s", run_config_.interface.c_str(),
                 action_name.c_str());
   }
 
@@ -82,28 +83,11 @@ public:
     {
       try
       {
-        std::shared_future<typename ActionT::Impl::CancelGoalService::Response::SharedPtr> cancel_future =
-            action_client_->async_cancel_goal(
-                goal_handle_, [this](action_msgs::srv::CancelGoal_Response::SharedPtr response) {
-                  if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE)
-                  {
-                    // throw runner_exception("failed to cancel runner");
-                    RCLCPP_WARN(node_->get_logger(), "Runner cancellation failed.");
-                  }
-
-                  // Trigger on_stopped event if defined
-                  if (events[execute_id].on_stopped != "")
-                  {
-                    RCLCPP_INFO(node_->get_logger(), "[%s] on_stopped event available. Triggering",
-                          run_config_.interface.c_str());
-                    triggerFunction_(events[execute_id].on_stopped,
-                                     update_on_stopped(events[execute_id].on_stopped_param));
-                  }
-                });
+        auto cancel_future = action_client_->async_cancel_goal(
+            goal_handle_, std::bind(&ActionRunner::cancellationCallback, this, std::placeholders::_1));
 
         // wait for action to be stopped. hold the thread for 2 seconds to help keep callbacks in scope
         // BUG: the line below does not work in jazzy build, so a workaround is used
-        // rclcpp::spin_until_future_complete(node_->get_node_base_interface(), cancel_future, std::chrono::seconds(2));
         auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(2);
         while (std::chrono::steady_clock::now() < timeout)
         {
@@ -130,7 +114,7 @@ public:
    *
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    */
-  virtual void triggerExecution() override
+  virtual void execution() override
   {
     execute_id += 1;
 
@@ -139,80 +123,135 @@ public:
       throw runner_exception("cannot trigger action without parameters");
 
     // generate a goal from parameters if provided
-    typename ActionT::Goal goal_msg = generate_goal(parameters_);
+    goal_msg_ = generate_goal(parameters_);
 
     RCLCPP_INFO(node_->get_logger(), "[%s] goal generated.", run_config_.interface.c_str());
 
-    // send goal options
-    // goal response callback
-    send_goal_options_.goal_response_callback =
-        [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
-          if (goal_handle)
-          {
-            // trigger the events related to on_started state
-            if (events[execute_id].on_started != "")
-            {
-              RCLCPP_INFO(node_->get_logger(), "[%s] on_started event available. Triggering",
-                          run_config_.interface.c_str());
-              triggerFunction_(events[execute_id].on_started, update_on_started(events[execute_id].on_started_param));
-            }
-          }
-          else
-          {
-            RCLCPP_ERROR(node_->get_logger(), "[%s] goal rejected", run_config_.interface.c_str());
-          }
-
-          // store goal handle to be used with stop funtion
-          goal_handle_ = goal_handle;
-        };
-
-    // result callback
-    send_goal_options_.result_callback =
-        [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
-          if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
-          {
-            // trigger the events related to on_success state
-            if (events[execute_id].on_success != "")
-            {
-              RCLCPP_INFO(node_->get_logger(), "[%s] on_success event available. Triggering",
-                          run_config_.interface.c_str());
-              triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
-            }
-          }
-          else
-          {
-            // trigger the events related to on_failure state
-            if (events[execute_id].on_failure != "")
-            {
-              RCLCPP_INFO(node_->get_logger(), "[%s] on_failure event available. Triggering",
-                          run_config_.interface.c_str());
-              triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
-            }
-          }
-
-          result_ = wrapped_result.result;
-        };
+    // Synchronization tools
+    action_completed_ = false;
 
     // trigger the action client with goal
-    auto goal_handle_future = action_client_->async_send_goal(goal_msg, send_goal_options_);
+    goal_handle_future_ = action_client_->async_send_goal(goal_msg_);
 
     RCLCPP_INFO(node_->get_logger(), "[%s] goal sent. Waiting for acceptance", run_config_.interface.c_str());
 
     // create a function to call for the result. the future will be returned to the caller and the caller
     // can provide a conversion function to handle the result
 
-    auto goal_handle = goal_handle_future.get();
+    goal_handle_ = goal_handle_future_.get();
 
     RCLCPP_INFO(node_->get_logger(), "[%s] goal accepted. Waiting for result", run_config_.interface.c_str());
 
-    if (!goal_handle)
+    if (!goal_handle_)
     {
       RCLCPP_INFO(node_->get_logger(), "[%s] goal rejected", run_config_.interface.c_str());
       return;
     }
+
+    // Get the result asynchronously
+    result_future_ = action_client_->async_get_result(goal_handle_);
+
+    while (true)
+    {
+      // Check if the cancel operation is complete
+      if (result_future_.wait_for(std::chrono::milliseconds(200)) == std::future_status::ready)
+        break;
+
+      RCLCPP_INFO(node_->get_logger(), "[%s] waiting for result..", run_config_.interface.c_str());
+    }
+
+    RCLCPP_INFO(node_->get_logger(), "[%s] received result", run_config_.interface.c_str());
+
+    // Wait for result future
+    wrapped_result_ = result_future_.get();
+
+    // convert the result
+    if (wrapped_result_.code == rclcpp_action::ResultCode::SUCCEEDED)
+    {
+      RCLCPP_INFO(node_->get_logger(), "[%s] successfully completed", run_config_.interface.c_str());
+    }
+    else
+    {
+      RCLCPP_INFO(node_->get_logger(), "[%s] failed to complete", run_config_.interface.c_str());
+    }
+
+    auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(20);
+
+    // std::unique_lock<std::mutex> lock(mutex_);
+    // cv_.wait(lock, [&action_completed] { return action_completed; });
   }
 
 protected:
+  // virtual void goalResponseCallback(const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle)
+  // {
+  //   if (goal_handle)
+  //   {
+  //     RCLCPP_INFO(node_->get_logger(), "[%s] goal accepted. Waiting for result", run_config_.interface.c_str());
+
+  //     // trigger the events related to on_started state
+  //     if (events[execute_id].on_started != "")
+  //     {
+  //       RCLCPP_INFO(node_->get_logger(), "[%s] on_started event available. Triggering",
+  //       run_config_.interface.c_str()); triggerFunction_(events[execute_id].on_started,
+  //       update_on_started(events[execute_id].on_started_param));
+  //     }
+  //   }
+  //   else
+  //   {
+  //     RCLCPP_ERROR(node_->get_logger(), "[%s] goal rejected", run_config_.interface.c_str());
+  //   }
+
+  //   // store goal handle to be used with stop funtion
+  //   goal_handle_ = goal_handle;
+  // };
+
+  // virtual void resultCallback(const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result)
+  // {
+  //   std::lock_guard<std::mutex> lock(mutex_);
+
+  //   if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
+  //   {
+  //     // trigger the events related to on_success state
+  //     if (events[execute_id].on_success != "")
+  //     {
+  //       RCLCPP_INFO(node_->get_logger(), "[%s] on_success event available. Triggering",
+  //       run_config_.interface.c_str()); triggerFunction_(events[execute_id].on_success,
+  //       update_on_success(events[execute_id].on_success_param));
+  //     }
+  //   }
+  //   else
+  //   {
+  //     // trigger the events related to on_failure state
+  //     if (events[execute_id].on_failure != "")
+  //     {
+  //       RCLCPP_INFO(node_->get_logger(), "[%s] on_failure event available. Triggering",
+  //       run_config_.interface.c_str()); triggerFunction_(events[execute_id].on_failure,
+  //       update_on_failure(events[execute_id].on_failure_param));
+  //     }
+  //   }
+
+  //   result_ = wrapped_result.result;
+
+  //   action_completed_ = true;  // Mark action as completed
+  //   cv_.notify_one();          // Notify the waiting thread
+  // };
+
+  virtual void cancellationCallback(action_msgs::srv::CancelGoal_Response::SharedPtr response)
+  {
+    if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE)
+    {
+      // throw runner_exception("failed to cancel runner");
+      RCLCPP_WARN(node_->get_logger(), "Runner cancellation failed.");
+    }
+
+    // Trigger on_stopped event if defined
+    if (events[execute_id].on_stopped != "")
+    {
+      RCLCPP_INFO(node_->get_logger(), "[%s] on_stopped event available. Triggering", run_config_.interface.c_str());
+      triggerFunction_(events[execute_id].on_stopped, update_on_stopped(events[execute_id].on_stopped_param));
+    }
+  }
+
   /**
    * @brief Generate a goal from parameters
    *
@@ -236,8 +275,25 @@ protected:
   /** goal handle parameter to capture goal response from goal_response_callback */
   typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle_;
 
+  /** Wrapped Result */
+  typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult wrapped_result_;
+
   /** Result */
   typename ActionT::Result::SharedPtr result_;
+
+  /** Goal message */
+  typename ActionT::Goal goal_msg_;
+
+  /** Goal Handle Future message */
+  std::shared_future<typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr> goal_handle_future_;
+
+  /** Result Future*/
+  std::shared_future<typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult> result_future_;
+
+  // Synchronization tools
+  std::mutex mutex_;
+  std::condition_variable cv_;
+  bool action_completed_;
 };
 
 }  // namespace capabilities2_runner

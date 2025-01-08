@@ -39,7 +39,7 @@ colcon build
 
 ```bash
 export TURTLEBOT3_MODEL=waffle
-ros2 launch turtlebot3_gazebo turtlebot3_empty_world.launch.py
+ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py
 ```
 
 ### Start the Navigation2 stack
