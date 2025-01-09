@@ -164,7 +164,7 @@ private:
     // check if the file parsing failed
     if (xml_status != tinyxml2::XMLError::XML_SUCCESS)
     {
-      RCLCPP_INFO(this->get_logger(), "Parsing the plan from goal message failed");
+      RCLCPP_ERROR(this->get_logger(), "Parsing the plan from goal message failed");
       return rclcpp_action::GoalResponse::REJECT;
     }
 
@@ -181,7 +181,7 @@ private:
    */
   rclcpp_action::CancelResponse handle_cancel(const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
-    RCLCPP_INFO(this->get_logger(), "Received the request to cancel the plan");
+    RCLCPP_ERROR(this->get_logger(), "Received the request to cancel the plan");
     (void)goal_handle;
 
     return rclcpp_action::CancelResponse::ACCEPT;
@@ -202,7 +202,11 @@ private:
    */
   void execution(const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
-    RCLCPP_INFO(this->get_logger(), "Execution started");
+    auto feedback = std::make_shared<Plan::Feedback>();
+
+    feedback->progress = "Execution started";
+    goal_handle->publish_feedback(feedback);
+    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
     expected_providers_ = 0;
     completed_providers_ = 0;
@@ -228,8 +232,7 @@ private:
 
     feedback->progress = "Requesting Interface information";
     goal_handle->publish_feedback(feedback);
-
-    RCLCPP_INFO(this->get_logger(), "Requesting Interface information");
+    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
     auto request_interface = std::make_shared<GetInterfaces::Request>();
 
@@ -240,18 +243,20 @@ private:
 
           if (!future.valid())
           {
-            RCLCPP_ERROR(this->get_logger(), "Failed to get Interface information");
-
             result->success = false;
             result->message = "Failed to get Interface information";
             goal_handle->abort(result);
+            RCLCPP_ERROR(this->get_logger(), result->message.c_str());
 
-            RCLCPP_INFO(this->get_logger(), "Server Execution Cancelled");
+            RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
             return;
           }
 
           auto response = future.get();
-          RCLCPP_INFO(this->get_logger(), "Received Interface information");
+
+          feedback->progress = "Received Interface information";
+          goal_handle->publish_feedback(feedback);
+          RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
           expected_interfaces_ = response->interfaces.size();
 
@@ -274,7 +279,6 @@ private:
     RCLCPP_INFO(this->get_logger(), "");
     feedback->progress = "Requesting semantic interfaces for " + requested_interface;
     goal_handle->publish_feedback(feedback);
-
     RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
     auto request_semantic = std::make_shared<GetSemanticInterfaces::Request>();
@@ -290,7 +294,7 @@ private:
             result->message = "Failed to get Semantic Interface information";
             goal_handle->abort(result);
 
-            RCLCPP_INFO(this->get_logger(), "Failed to get Semantic Interface information. Server Execution Cancelled");
+            RCLCPP_ERROR(this->get_logger(), "Failed to get Semantic Interface information. Server Execution Cancelled");
             return;
           }
 
@@ -320,7 +324,6 @@ private:
             feedback->progress = std::to_string(completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received none for " +
                                  requested_interface + ". So added " + requested_interface;
             goal_handle->publish_feedback(feedback);
-
             RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
           }
 
@@ -331,8 +334,10 @@ private:
           }
           else
           {
+            feedback->progress = "Received all requested Interface information";
+            goal_handle->publish_feedback(feedback);
             RCLCPP_INFO(this->get_logger(), "");
-            RCLCPP_INFO(this->get_logger(), "Received all requested Interface information");
+            RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
             expected_providers_ = interface_list.size();
 
@@ -588,7 +593,7 @@ private:
           auto response = future.get();
           bond_id = response->bond_id;
 
-          feedback->progress = "Received the bond id : " + bond_id ;
+          feedback->progress = "Received the bond id : " + bond_id;
           goal_handle->publish_feedback(feedback);
           RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
@@ -888,6 +893,12 @@ private:
           feedback->progress = "Successfully triggered capability " + connection_map[0].source.runner;
           goal_handle->publish_feedback(feedback);
           RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+
+          auto result = std::make_shared<Plan::Result>();
+          result->success = true;
+          result->message = "Successfully launched capabilities2 fabric";
+          goal_handle->succeed(result);
+          RCLCPP_INFO(this->get_logger(), result->message.c_str());
         });
   }
 
