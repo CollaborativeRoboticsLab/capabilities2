@@ -59,6 +59,19 @@ protected:
     return goal_msg;
   }
 
+  /**
+   * @brief This generate feedback function overrides the generate_feedback() function from ActionRunner()
+   *
+   * @param msg feedback message from the action server
+   * @return std::string of feedback information
+   */
+  virtual std::string
+  generate_feedback(const typename hri_audio_msgs::action::TextToSpeech::Feedback::ConstSharedPtr msg) override
+  {
+    std::string feedback = "";
+    return feedback;
+  }
+
 };
 
 }  // namespace capabilities2_runner

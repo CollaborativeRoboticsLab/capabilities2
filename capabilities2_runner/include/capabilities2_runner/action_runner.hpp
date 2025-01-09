@@ -124,117 +124,82 @@ public:
 
     // generate a goal from parameters if provided
     goal_msg_ = generate_goal(parameters_);
-
     RCLCPP_INFO(node_->get_logger(), "[%s] goal generated.", run_config_.interface.c_str());
 
-    // Synchronization tools
-    action_completed_ = false;
-
     // trigger the action client with goal
-    goal_handle_future_ = action_client_->async_send_goal(goal_msg_);
+    send_goal_options_.goal_response_callback =
+        std::bind(&ActionRunner::goalResponseCallback, this, std::placeholders::_1);
+    send_goal_options_.feedback_callback =
+        std::bind(&ActionRunner::feedbackCallback, this, std::placeholders::_1, std::placeholders::_2);
+    send_goal_options_.result_callback = std::bind(&ActionRunner::resultCallback, this, std::placeholders::_1);
+
+    goal_handle_future_ = action_client_->async_send_goal(goal_msg_, send_goal_options_);
 
     RCLCPP_INFO(node_->get_logger(), "[%s] goal sent. Waiting for acceptance", run_config_.interface.c_str());
-
-    // create a function to call for the result. the future will be returned to the caller and the caller
-    // can provide a conversion function to handle the result
-
-    goal_handle_ = goal_handle_future_.get();
-
-    RCLCPP_INFO(node_->get_logger(), "[%s] goal accepted. Waiting for result", run_config_.interface.c_str());
-
-    if (!goal_handle_)
-    {
-      RCLCPP_INFO(node_->get_logger(), "[%s] goal rejected", run_config_.interface.c_str());
-      return;
-    }
-
-    // Get the result asynchronously
-    result_future_ = action_client_->async_get_result(goal_handle_);
-
-    while (true)
-    {
-      // Check if the cancel operation is complete
-      if (result_future_.wait_for(std::chrono::milliseconds(200)) == std::future_status::ready)
-        break;
-
-      RCLCPP_INFO(node_->get_logger(), "[%s] waiting for result..", run_config_.interface.c_str());
-    }
-
-    RCLCPP_INFO(node_->get_logger(), "[%s] received result", run_config_.interface.c_str());
-
-    // Wait for result future
-    wrapped_result_ = result_future_.get();
-
-    // convert the result
-    if (wrapped_result_.code == rclcpp_action::ResultCode::SUCCEEDED)
-    {
-      RCLCPP_INFO(node_->get_logger(), "[%s] successfully completed", run_config_.interface.c_str());
-    }
-    else
-    {
-      RCLCPP_INFO(node_->get_logger(), "[%s] failed to complete", run_config_.interface.c_str());
-    }
-
-    auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(20);
-
-    // std::unique_lock<std::mutex> lock(mutex_);
-    // cv_.wait(lock, [&action_completed] { return action_completed; });
   }
 
 protected:
-  // virtual void goalResponseCallback(const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle)
-  // {
-  //   if (goal_handle)
-  //   {
-  //     RCLCPP_INFO(node_->get_logger(), "[%s] goal accepted. Waiting for result", run_config_.interface.c_str());
+  virtual void goalResponseCallback(const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle)
+  {
+    if (goal_handle)
+    {
+      RCLCPP_INFO(node_->get_logger(), "[%s] goal accepted. Waiting for result", run_config_.interface.c_str());
 
-  //     // trigger the events related to on_started state
-  //     if (events[execute_id].on_started != "")
-  //     {
-  //       RCLCPP_INFO(node_->get_logger(), "[%s] on_started event available. Triggering",
-  //       run_config_.interface.c_str()); triggerFunction_(events[execute_id].on_started,
-  //       update_on_started(events[execute_id].on_started_param));
-  //     }
-  //   }
-  //   else
-  //   {
-  //     RCLCPP_ERROR(node_->get_logger(), "[%s] goal rejected", run_config_.interface.c_str());
-  //   }
+      // trigger the events related to on_started state
+      if (events[execute_id].on_started != "")
+      {
+        RCLCPP_INFO(node_->get_logger(), "[%s] on_started event available. Triggering", run_config_.interface.c_str());
+        // triggerFunction_(events[execute_id].on_started, update_on_started(events[execute_id].on_started_param));
+      }
+    }
+    else
+    {
+      RCLCPP_ERROR(node_->get_logger(), "[%s] goal rejected", run_config_.interface.c_str());
+    }
 
-  //   // store goal handle to be used with stop funtion
-  //   goal_handle_ = goal_handle;
-  // };
+    // store goal handle to be used with stop funtion
+    goal_handle_ = goal_handle;
+  };
 
-  // virtual void resultCallback(const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result)
-  // {
-  //   std::lock_guard<std::mutex> lock(mutex_);
+  virtual void resultCallback(const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result)
+  {
+    RCLCPP_INFO(node_->get_logger(), "[%s] received result", run_config_.interface.c_str());
 
-  //   if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
-  //   {
-  //     // trigger the events related to on_success state
-  //     if (events[execute_id].on_success != "")
-  //     {
-  //       RCLCPP_INFO(node_->get_logger(), "[%s] on_success event available. Triggering",
-  //       run_config_.interface.c_str()); triggerFunction_(events[execute_id].on_success,
-  //       update_on_success(events[execute_id].on_success_param));
-  //     }
-  //   }
-  //   else
-  //   {
-  //     // trigger the events related to on_failure state
-  //     if (events[execute_id].on_failure != "")
-  //     {
-  //       RCLCPP_INFO(node_->get_logger(), "[%s] on_failure event available. Triggering",
-  //       run_config_.interface.c_str()); triggerFunction_(events[execute_id].on_failure,
-  //       update_on_failure(events[execute_id].on_failure_param));
-  //     }
-  //   }
+    if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
+    {
+      RCLCPP_INFO(node_->get_logger(), "[%s] action succeeded.", run_config_.interface.c_str());
 
-  //   result_ = wrapped_result.result;
+      // trigger the events related to on_success state
+      if (events[execute_id].on_success != "")
+      {
+        RCLCPP_INFO(node_->get_logger(), "[%s] on_success event available. Triggering", run_config_.interface.c_str());
+        // triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
+      }
+    }
+    else
+    {
+      RCLCPP_ERROR(node_->get_logger(), "[%s] action failed.", run_config_.interface.c_str());
+      RCLCPP_ERROR(node_->get_logger(), "[%s] error code: %d", run_config_.interface.c_str(),
+                   static_cast<int>(wrapped_result.code));
 
-  //   action_completed_ = true;  // Mark action as completed
-  //   cv_.notify_one();          // Notify the waiting thread
-  // };
+      // trigger the events related to on_failure state
+      if (events[execute_id].on_failure != "")
+      {
+        RCLCPP_INFO(node_->get_logger(), "[%s] on_failure event available. Triggering", run_config_.interface.c_str());
+        // triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
+      }
+    }
+
+    result_ = wrapped_result.result;
+  };
+
+  virtual void feedbackCallback(typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle,
+                                const typename ActionT::Feedback::ConstSharedPtr feedback_msg)
+  {
+    std::string feedback = generate_feedback(feedback_msg);
+
+    RCLCPP_INFO(node_->get_logger(), "[%s] received feedback: %s", run_config_.interface.c_str(), feedback.c_str());
+  };
 
   virtual void cancellationCallback(action_msgs::srv::CancelGoal_Response::SharedPtr response)
   {
@@ -248,7 +213,7 @@ protected:
     if (events[execute_id].on_stopped != "")
     {
       RCLCPP_INFO(node_->get_logger(), "[%s] on_stopped event available. Triggering", run_config_.interface.c_str());
-      triggerFunction_(events[execute_id].on_stopped, update_on_stopped(events[execute_id].on_stopped_param));
+      // triggerFunction_(events[execute_id].on_stopped, update_on_stopped(events[execute_id].on_stopped_param));
     }
   }
 
@@ -264,6 +229,18 @@ protected:
    * @return ActionT::Goal the generated goal
    */
   virtual typename ActionT::Goal generate_goal(tinyxml2::XMLElement* parameters) = 0;
+
+  /**
+   * @brief Generate a std::string from feedback message
+   *
+   * This function is used to convert feedback messages into generic strings
+   *
+   * A pattern needs to be implemented in the derived class
+   *
+   * @param parameters
+   * @return ActionT::Feedback the received feedback
+   */
+  virtual std::string generate_feedback(const typename ActionT::Feedback::ConstSharedPtr msg) = 0;
 
   /**< action client */
   typename rclcpp_action::Client<ActionT>::SharedPtr action_client_;

@@ -56,6 +56,19 @@ protected:
   }
 
   /**
+   * @brief This generate feedback function overrides the generate_feedback() function from ActionRunner()
+   *
+   * @param msg feedback message from the action server
+   * @return std::string of feedback information
+   */
+  virtual std::string
+  generate_feedback(const typename hri_audio_msgs::action::SpeechToText::Feedback::ConstSharedPtr msg) override
+  {
+    std::string feedback = "";
+    return feedback;
+  }
+
+  /**
    * @brief Update on_success event parameters with new data if avaible.
    *
    * This function is used to inject new data into the XMLElement containing
@@ -69,7 +82,7 @@ protected:
   virtual std::string update_on_success(std::string& parameters)
   {
     tinyxml2::XMLElement* element = convert_to_xml(parameters);
-    
+
     // Create the Pose element as a child of the existing parameters element
     tinyxml2::XMLElement* textElement = element->GetDocument()->NewElement("Text");
     element->InsertEndChild(textElement);

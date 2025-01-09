@@ -2,6 +2,7 @@
 
 #include <thread>
 #include <chrono>
+#include <string>
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
@@ -66,6 +67,20 @@ protected:
     goal_msg.pose = pose_msg;
 
     return goal_msg;
+  }
+
+  /**
+   * @brief This generate feedback function overrides the generate_feedback() function from ActionRunner()
+   *
+   * @param msg feedback message from the action server
+   * @return std::string of feedback information
+   */
+  virtual std::string
+  generate_feedback(const typename nav2_msgs::action::NavigateToPose::Feedback::ConstSharedPtr msg) override
+  {
+    std::string feedback = "x: " + std::to_string(msg->current_pose.pose.position.x) +
+                           " y: " + std::to_string(msg->current_pose.pose.position.y);
+    return feedback;
   }
 
 protected:

@@ -61,6 +61,19 @@ protected:
   }
 
   /**
+   * @brief This generate feedback function overrides the generate_feedback() function from ActionRunner()
+   *
+   * @param msg feedback message from the action server
+   * @return std::string of feedback information
+   */
+  virtual std::string
+  generate_feedback(const typename capabilities2_msgs::action::Plan::Feedback::ConstSharedPtr msg) override
+  {
+    std::string feedback = msg->progress;
+    return feedback;
+  }
+
+  /**
    * @brief Update on_failure event parameters with new data if avaible.
    *
    * This function is used to inject new data into the XMLElement containing
