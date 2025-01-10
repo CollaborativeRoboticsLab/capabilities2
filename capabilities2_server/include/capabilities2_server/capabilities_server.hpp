@@ -60,7 +60,7 @@ class CapabilitiesServer : public rclcpp::Node, public CapabilitiesAPI
 {
 public:
   CapabilitiesServer(const rclcpp::NodeOptions& options = rclcpp::NodeOptions())
-    : Node("capabilities", options), CapabilitiesAPI()
+    : Node("capabilities2", options), CapabilitiesAPI()
   {
     // params interface
     // loop rate
