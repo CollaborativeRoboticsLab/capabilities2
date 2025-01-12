@@ -1,4 +1,4 @@
-#include <capabilities2_executor/capabilities_fabric.hpp>
+#include <capabilities2_fabric/capabilities_fabric.hpp>
 
 int main(int argc, char** argv)
 {

@@ -8,7 +8,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 
-#include <capabilities2_executor/capabilities_xml_parser.hpp>
+#include <capabilities2_fabric/capabilities_xml_parser.hpp>
+#include <capabilities2_fabric/structs/bond_client.hpp>
 
 #include <capabilities2_msgs/action/plan.hpp>
 
@@ -591,11 +592,14 @@ private:
           }
 
           auto response = future.get();
-          bond_id = response->bond_id;
+          bond_id_ = response->bond_id;
 
-          feedback->progress = "Received the bond id : " + bond_id;
+          feedback->progress = "Received the bond id : " + bond_id_;
           goal_handle->publish_feedback(feedback);
           RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+
+          bond_client_ = std::make_unique<BondClient>(shared_from_this(), bond_id_);
+          bond_client_->start();
 
           expected_capabilities_ = connection_map.size();
 
@@ -608,9 +612,8 @@ private:
   /**
    * @brief Request use of capability from capabilities2 server
    *
-   * @param capability capability name to be started
+   * @param capabilities capability list to be started
    * @param provider provider of the capability
-   * @param bond_id bond_id for the capability
    */
   void use_capability(std::map<int, capabilities2_executor::node_t>& capabilities, const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
@@ -622,7 +625,7 @@ private:
     auto request_use = std::make_shared<UseCapability::Request>();
     request_use->capability = capability;
     request_use->preferred_provider = provider;
-    request_use->bond_id = bond_id;
+    request_use->bond_id = bond_id_;
 
     feedback->progress =
         "Starting capability of Node " + std::to_string(completed_capabilities_) + " named " + capabilities[completed_capabilities_].source.runner;
@@ -701,7 +704,7 @@ private:
 
     auto request_free = std::make_shared<FreeCapability::Request>();
     request_free->capability = capability;
-    request_free->bond_id = bond_id;
+    request_free->bond_id = bond_id_;
 
     // send the request
     auto result_future = free_capability_client_->async_send_request(
@@ -721,6 +724,8 @@ private:
           feedback->progress = "Successfully freed capability " + capability;
           goal_handle->publish_feedback(feedback);
           RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+
+          bond_client_->stop();
         });
   }
 
@@ -921,8 +926,11 @@ private:
   int expected_configurations_;
   int completed_configurations_;
 
-  /** Bond ID between capabilities server and this client */
-  std::string bond_id;
+  /** Bond id */
+  std::string bond_id_;
+
+  /** Bond between capabilities server and this client */
+  std::shared_ptr<BondClient> bond_client_;
 
   /** XML Document */
   tinyxml2::XMLDocument document;

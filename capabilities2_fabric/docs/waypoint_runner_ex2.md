@@ -2,26 +2,7 @@
 
 ### Dependencies
 
-This example uses nav2 stack and turtlebot3. 
-
-Run the following commands to install nav2 stack
-
-```bash
-sudo apt install ros-humble-navigation2 ros-humble-nav2-bringup
-```
-
-Run the following commands to install turtlebot3
-
-```bash
-sudo apt install ros-humble-turtlebot3*
-```
-
-Clone the nav_stack default configuration and launch files to the same workspace if its not already availabe in the workspace. Capabilities2 Nav2 Runners are dependent on this package.
-
-```bash
-cd src
-git clone https://github.com/CollaborativeRoboticsLab/nav_stack.git
-```
+This example uses nav2 stack and turtlebot3. Follow instructions from [Nav2 Dependency Installation](../../docs/nav2_setup.md) to setup nav stack.
 
 ### Plan selection
 
