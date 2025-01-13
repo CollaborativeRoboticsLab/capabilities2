@@ -2,8 +2,16 @@
 
 ## Install nav2 stack
 
+Run the following commands to install nav2 stack
+
 ```bash
-sudo apt install ros-$ROS_DISTRO-navigation2 ros-$ROS_DISTRO-nav2-bringup ros-$ROS_DISTRO-slam-toolbox
+sudo apt install ros-humble-navigation2 ros-humble-nav2-bringup
+```
+
+## Install slam-toolbox
+
+```bash
+sudo apt install ros-$ROS_DISTRO-slam-toolbox
 ```
 
 ## Clone configuration
@@ -16,8 +24,17 @@ git clone https://github.com/CollaborativeRoboticsLab/nav_stack.git
 ```
 
 ## Turtlebot3 Simulation (Optional) 
+
 If using a simulated turtlebot3 for testing, install using following commands.
 
 ```bash
 sudo apt install ros-$ROS_DISTRO-turtlebot3*
+```
+
+## Dependency Installation
+
+Move to workspace root and run the following command to install dependencies
+
+```bash
+rosdep install --from-paths src --ignore-src -r -y
 ```

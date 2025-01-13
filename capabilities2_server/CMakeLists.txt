@@ -19,6 +19,7 @@ find_package(pluginlib REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_runner REQUIRED)
+find_package(backward_ros REQUIRED)
 
 find_package(PkgConfig)
 pkg_check_modules(UUID REQUIRED uuid)
@@ -43,8 +44,10 @@ include_directories(include
   ${UUID_INCLUDE_DIRS}
 )
 
+# Component based implementation that compiles as a library
+
 add_library(${PROJECT_NAME} SHARED
-  src/capabilities_server.cpp
+  src/capabilities_server_comp.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -69,19 +72,50 @@ ament_target_dependencies(${PROJECT_NAME}
 
 rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "capabilities2_server::CapabilitiesServer"
-  EXECUTABLE capabilities2_server_node
+  EXECUTABLE capabilities2_server_component_node
 )
 
-ament_export_targets(capabilities2_server_node)
+ament_export_targets(capabilities2_server_component_node)
 
 install(TARGETS ${PROJECT_NAME}
-  EXPORT capabilities2_server_node
+  EXPORT capabilities2_server_component_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
 
+# Non Component based implementation that compiles as a executable
+
+add_executable(${PROJECT_NAME}_node
+  src/capabilities_server_node.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_node
+  ${UUID_LIBRARIES}
+  ${TINYXML2_LIB}
+  ${SQLITE3_LIBRARIES}
+  ${YAML_CPP_LIBRARIES}
+)
+
+ament_target_dependencies(${PROJECT_NAME}_node
+  rclcpp
+  rclcpp_action
+  bondcpp
+  pluginlib
+  rclcpp_components
+  capabilities2_msgs
+  capabilities2_runner
+  SQLite3
+  yaml-cpp
+  UUID
+)
+
+install(TARGETS ${PROJECT_NAME}_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 # make test executable
+
 add_executable(test_capabilities_server test/test.cpp)
 target_link_libraries(test_capabilities_server
   ${PROJECT_NAME}

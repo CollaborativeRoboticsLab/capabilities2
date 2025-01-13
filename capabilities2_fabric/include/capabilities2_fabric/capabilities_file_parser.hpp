@@ -10,7 +10,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 
-#include <capabilities2_executor/capabilities_xml_parser.hpp>
+#include <capabilities2_fabric/capabilities_xml_parser.hpp>
 #include <capabilities2_msgs/action/plan.hpp>
 
 /**

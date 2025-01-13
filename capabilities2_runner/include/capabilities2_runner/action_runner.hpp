@@ -94,9 +94,6 @@ public:
           // Check if the cancel operation is complete
           if (cancel_future.wait_for(std::chrono::milliseconds(100)) == std::future_status::ready)
             break;
-
-          // Spin some work on the node to keep the callback within scope
-          rclcpp::spin_some(node_);
         }
       }
       catch (const rclcpp_action::exceptions::UnknownGoalHandleError& e)

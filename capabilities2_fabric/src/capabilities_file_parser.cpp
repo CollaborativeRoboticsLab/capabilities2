@@ -1,4 +1,4 @@
-#include <capabilities2_executor/capabilities_file_parser.hpp>
+#include <capabilities2_fabric/capabilities_file_parser.hpp>
 
 int main(int argc, char* argv[])
 {

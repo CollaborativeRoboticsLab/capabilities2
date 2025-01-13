@@ -1,6 +1,6 @@
-#include <capabilities2_executor/capabilities_fabric.hpp>
+#include <capabilities2_fabric/capabilities_fabric.hpp>
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
 
@@ -9,6 +9,7 @@ int main(int argc, char* argv[])
 
   // Initialize the node components after construction
   node->initialize();
+  
   rclcpp::spin(node);
   
   rclcpp::shutdown();

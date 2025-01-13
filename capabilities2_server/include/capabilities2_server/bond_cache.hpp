@@ -19,7 +19,7 @@ namespace capabilities2_server
 class BondCache
 {
 public:
-  BondCache(const std::string& bonds_topic = "~/bonds") : bonds_topic_(bonds_topic)
+  BondCache(const std::string& bonds_topic = "/capabilities/bond") : bonds_topic_(bonds_topic)
   {
   }
 
@@ -124,6 +124,8 @@ public:
     live_bonds_[bond_id] = std::make_unique<bond::Bond>(bonds_topic_, bond_id, node, on_broken, on_formed);
 
     // start the bond
+    live_bonds_[bond_id]->setHeartbeatPeriod(0.10);
+    live_bonds_[bond_id]->setHeartbeatTimeout(10.0);
     live_bonds_[bond_id]->start();
   }
 
