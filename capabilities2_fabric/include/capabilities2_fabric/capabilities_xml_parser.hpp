@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <rclcpp/rclcpp.hpp>
-#include <capabilities2_fabric/structs/connection.hpp>
+#include <capabilities2_fabric/utils/connection.hpp>
 
 namespace capabilities2_xml_parser
 {

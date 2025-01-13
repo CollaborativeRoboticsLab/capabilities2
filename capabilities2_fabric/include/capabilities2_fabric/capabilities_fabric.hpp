@@ -9,7 +9,7 @@
 #include <rclcpp_action/rclcpp_action.hpp>
 
 #include <capabilities2_fabric/capabilities_xml_parser.hpp>
-#include <capabilities2_fabric/structs/bond_client.hpp>
+#include <capabilities2_fabric/utils/bond_client.hpp>
 
 #include <capabilities2_msgs/action/plan.hpp>
 
@@ -76,73 +76,21 @@ public:
     establish_bond_client_ = this->create_client<EstablishBond>("/capabilities/establish_bond");
     use_capability_client_ = this->create_client<UseCapability>("/capabilities/use_capability");
     free_capability_client_ = this->create_client<FreeCapability>("/capabilities/free_capability");
-    trigger_capability_client_ = this->create_client<TriggerCapability>("/capabilities/trigger_capability");
-    configure_capability_client_ = this->create_client<ConfigureCapability>("/capabilities/configure_capability");
+    trig_capability_client_ = this->create_client<TriggerCapability>("/capabilities/trigger_capability");
+    conf_capability_client_ = this->create_client<ConfigureCapability>("/capabilities/configure_capability");
 
     // Wait for services to become available
-    while (!get_interfaces_client_->wait_for_service(std::chrono::seconds(1)))
-    {
-      RCLCPP_ERROR(this->get_logger(), "/capabilities/get_interfaces not available");
-      rclcpp::shutdown();
-      return;
-    }
-    RCLCPP_INFO(this->get_logger(), "/capabilities/get_interfaces connected");
+    check_service(!get_interfaces_client_->wait_for_service(std::chrono::seconds(1)), "/capabilities/get_interfaces");
+    check_service(!get_sem_interf_client_->wait_for_service(std::chrono::seconds(1)), "/capabilities/get_semantic_interfaces");
+    check_service(!get_providers_client_->wait_for_service(std::chrono::seconds(1)), "/capabilities/get_providers");
+    check_service(!establish_bond_client_->wait_for_service(std::chrono::seconds(1)), "/capabilities/establish_bond");
+    check_service(!use_capability_client_->wait_for_service(std::chrono::seconds(1)), "/capabilities/use_capability");
+    check_service(!free_capability_client_->wait_for_service(std::chrono::seconds(1)), "/capabilities/free_capability");
+    check_service(!trig_capability_client_->wait_for_service(std::chrono::seconds(1)), "/capabilities/trigger_capability");
+    check_service(!conf_capability_client_->wait_for_service(std::chrono::seconds(1)), "/capabilities/configure_capability");
 
-    while (!get_sem_interf_client_->wait_for_service(std::chrono::seconds(1)))
-    {
-      RCLCPP_ERROR(this->get_logger(), "/capabilities/get_semantic_interfaces not available");
-      rclcpp::shutdown();
-      return;
-    }
-    RCLCPP_INFO(this->get_logger(), "/capabilities/get_semantic_interfaces connected");
-
-    while (!get_providers_client_->wait_for_service(std::chrono::seconds(1)))
-    {
-      RCLCPP_ERROR(this->get_logger(), "/capabilities/get_providers not available");
-      rclcpp::shutdown();
-      return;
-    }
-    RCLCPP_INFO(this->get_logger(), "/capabilities/get_providers connected");
-
-    while (!establish_bond_client_->wait_for_service(std::chrono::seconds(1)))
-    {
-      RCLCPP_ERROR(this->get_logger(), "/capabilities/establish_bond not available");
-      rclcpp::shutdown();
-      return;
-    }
-    RCLCPP_INFO(this->get_logger(), "/capabilities/establish_bond connected");
-
-    while (!use_capability_client_->wait_for_service(std::chrono::seconds(1)))
-    {
-      RCLCPP_ERROR(this->get_logger(), "/capabilities/use_capability not available");
-      rclcpp::shutdown();
-      return;
-    }
-    RCLCPP_INFO(this->get_logger(), "/capabilities/use_capability connected");
-
-    while (!free_capability_client_->wait_for_service(std::chrono::seconds(1)))
-    {
-      RCLCPP_ERROR(this->get_logger(), "/capabilities/free_capability not available");
-      rclcpp::shutdown();
-      return;
-    }
-    RCLCPP_INFO(this->get_logger(), "/capabilities/free_capability connected");
-
-    while (!trigger_capability_client_->wait_for_service(std::chrono::seconds(1)))
-    {
-      RCLCPP_ERROR(this->get_logger(), "/capabilities/trigger_capability not available");
-      rclcpp::shutdown();
-      return;
-    }
-    RCLCPP_INFO(this->get_logger(), "/capabilities/trigger_capability connected");
-
-    while (!configure_capability_client_->wait_for_service(std::chrono::seconds(1)))
-    {
-      RCLCPP_ERROR(this->get_logger(), "/capabilities/configure_capability not available");
-      rclcpp::shutdown();
-      return;
-    }
-    RCLCPP_INFO(this->get_logger(), "/capabilities/configure_capability connected");
+    feedback_msg = std::make_shared<Plan::Feedback>();
+    result_msg = std::make_shared<Plan::Result>();
   }
 
 private:
@@ -203,11 +151,7 @@ private:
    */
   void execution(const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
-    auto feedback = std::make_shared<Plan::Feedback>();
-
-    feedback->progress = "Execution started";
-    goal_handle->publish_feedback(feedback);
-    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+    print_and_feedback(goal_handle, "Execution started", false);
 
     expected_providers_ = 0;
     completed_providers_ = 0;
@@ -229,43 +173,29 @@ private:
    */
   void getInterfaces(const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
-    auto feedback = std::make_shared<Plan::Feedback>();
-
-    feedback->progress = "Requesting Interface information";
-    goal_handle->publish_feedback(feedback);
-    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+    print_and_feedback(goal_handle, "Requesting Interface information", false);
 
     auto request_interface = std::make_shared<GetInterfaces::Request>();
 
     // request data from the server
-    auto result_future =
-        get_interfaces_client_->async_send_request(request_interface, [this, goal_handle, feedback](GetInterfacesClient::SharedFuture future) {
-          auto result = std::make_shared<Plan::Result>();
+    auto result_future = get_interfaces_client_->async_send_request(request_interface, [this, goal_handle](GetInterfacesClient::SharedFuture future) {
+      auto result = std::make_shared<Plan::Result>();
 
-          if (!future.valid())
-          {
-            result->success = false;
-            result->message = "Failed to get Interface information";
-            goal_handle->abort(result);
-            RCLCPP_ERROR(this->get_logger(), result->message.c_str());
+      if (!future.valid())
+      {
+        print_and_result(goal_handle, "Failed to get Interface information. Server execution cancelled", false);
+        return;
+      }
 
-            RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
-            return;
-          }
+      auto response = future.get();
+      expected_interfaces_ = response->interfaces.size();
 
-          auto response = future.get();
+      status = "Received Interfaces. Requsting " + std::to_string(expected_interfaces_) + " semantic interface information";
+      print_and_feedback(goal_handle, status, false);
 
-          feedback->progress = "Received Interface information";
-          goal_handle->publish_feedback(feedback);
-          RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
-
-          expected_interfaces_ = response->interfaces.size();
-
-          RCLCPP_INFO(this->get_logger(), "Requsting Semantic Interface information for %d interfaces", expected_interfaces_);
-
-          // Request each interface recursively for Semantic interfaces
-          getSemanticInterfaces(response->interfaces, goal_handle);
-        });
+      // Request each interface recursively for Semantic interfaces
+      getSemanticInterfaces(response->interfaces, goal_handle);
+    });
   }
 
   /**
@@ -273,29 +203,20 @@ private:
    */
   void getSemanticInterfaces(const std::vector<std::string>& interfaces, const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
-    auto feedback = std::make_shared<Plan::Feedback>();
-
     std::string requested_interface = interfaces[completed_interfaces_];
 
-    RCLCPP_INFO(this->get_logger(), "");
-    feedback->progress = "Requesting semantic interfaces for " + requested_interface;
-    goal_handle->publish_feedback(feedback);
-    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+    status = "Requesting semantic interfaces for " + requested_interface;
+    print_and_feedback(goal_handle, status, true);
 
     auto request_semantic = std::make_shared<GetSemanticInterfaces::Request>();
     request_semantic->interface = requested_interface;
 
     // request semantic interface from the server
     auto result_semantic_future = get_sem_interf_client_->async_send_request(
-        request_semantic, [this, goal_handle, feedback, interfaces, requested_interface](GetSemanticInterfacesClient::SharedFuture future) {
+        request_semantic, [this, goal_handle, interfaces, requested_interface](GetSemanticInterfacesClient::SharedFuture future) {
           if (!future.valid())
           {
-            auto result = std::make_shared<Plan::Result>();
-            result->success = false;
-            result->message = "Failed to get Semantic Interface information";
-            goal_handle->abort(result);
-
-            RCLCPP_ERROR(this->get_logger(), "Failed to get Semantic Interface information. Server Execution Cancelled");
+            print_and_result(goal_handle, "Failed to get Semantic Interface information. Server execution cancelled", false);
             return;
           }
 
@@ -310,10 +231,9 @@ private:
               interface_list.push_back(semantic_interface);
               is_semantic_list.push_back(true);
 
-              feedback->progress = std::to_string(completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received " +
-                                   semantic_interface + " for " + requested_interface + ". So added " + semantic_interface;
-              goal_handle->publish_feedback(feedback);
-              RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+              status = (completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received " + semantic_interface + " for " +
+                       requested_interface + ". So added " + semantic_interface;
+              print_and_feedback(goal_handle, status, false);
             }
           }
           // if no semantic interfaces are availble for a given interface, add the interface instead
@@ -322,10 +242,9 @@ private:
             interface_list.push_back(requested_interface);
             is_semantic_list.push_back(false);
 
-            feedback->progress = std::to_string(completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received none for " +
-                                 requested_interface + ". So added " + requested_interface;
-            goal_handle->publish_feedback(feedback);
-            RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+            status = std::to_string(completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received none for " +
+                     requested_interface + ". So added " + requested_interface;
+            print_and_feedback(goal_handle, status, false);
           }
 
           if (completed_interfaces_ != expected_interfaces_)
@@ -335,14 +254,12 @@ private:
           }
           else
           {
-            feedback->progress = "Received all requested Interface information";
-            goal_handle->publish_feedback(feedback);
-            RCLCPP_INFO(this->get_logger(), "");
-            RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+            print_and_feedback(goal_handle, "Received all requested Interface information", true);
 
             expected_providers_ = interface_list.size();
 
-            RCLCPP_INFO(this->get_logger(), "Requsting Provider information for %d providers", expected_providers_);
+            status = "Requsting Provider information for " + std::to_string(expected_providers_) + " providers";
+            print_and_feedback(goal_handle, status, false);
 
             // request providers from the interfaces in the interfaces_list
             getProvider(interface_list, is_semantic_list, goal_handle);
@@ -360,12 +277,8 @@ private:
     std::string requested_interface = interfaces[completed_providers_];
     bool semantic_flag = is_semantic[completed_providers_];
 
-    auto feedback = std::make_shared<Plan::Feedback>();
-
-    RCLCPP_INFO(this->get_logger(), "");
-    feedback->progress = "Requesting provider for " + requested_interface;
-    goal_handle->publish_feedback(feedback);
-    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+    status = "Requesting provider for " + requested_interface;
+    print_and_feedback(goal_handle, status, true);
 
     auto request_providers = std::make_shared<GetProviders::Request>();
 
@@ -374,15 +287,11 @@ private:
     request_providers->include_semantic = semantic_flag;
 
     auto result_providers_future = get_providers_client_->async_send_request(
-        request_providers, [this, is_semantic, requested_interface, interfaces, goal_handle, feedback](GetProvidersClient::SharedFuture future) {
+        request_providers, [this, is_semantic, requested_interface, interfaces, goal_handle](GetProvidersClient::SharedFuture future) {
           if (!future.valid())
           {
-            auto result = std::make_shared<Plan::Result>();
-            result->success = false;
-            result->message = "Did not retrieve providers for interface: " + requested_interface;
-            goal_handle->abort(result);
-
-            RCLCPP_ERROR(this->get_logger(), result->message.c_str());
+            status = "Did not retrieve providers for interface: " + requested_interface;
+            print_and_result(goal_handle, status, false);
             return;
           }
 
@@ -394,10 +303,9 @@ private:
             // add defualt provider to the list
             providers_list.push_back(response->default_provider);
 
-            feedback->progress = std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received " +
-                                 response->default_provider + " for " + requested_interface + ". So added " + response->default_provider;
-            goal_handle->publish_feedback(feedback);
-            RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+            status = std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received " + response->default_provider +
+                     " for " + requested_interface + ". So added " + response->default_provider;
+            print_and_feedback(goal_handle, status, false);
           }
 
           // add additional providers to the list if available
@@ -406,18 +314,16 @@ private:
             for (const auto& provider : response->providers)
             {
               providers_list.push_back(provider);
-              feedback->progress = std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received and added " +
-                                   provider + " for " + requested_interface;
-              goal_handle->publish_feedback(feedback);
-              RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+
+              status = std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received and added " + provider +
+                       " for " + requested_interface;
+              print_and_feedback(goal_handle, status, false);
             }
           }
           else
           {
-            feedback->progress =
-                std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : No providers for " + requested_interface;
-            goal_handle->publish_feedback(feedback);
-            RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+            status = std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : No providers for " + requested_interface;
+            print_and_feedback(goal_handle, status, false);
           }
 
           // Check if all expected calls are completed before calling verify_plan
@@ -428,12 +334,7 @@ private:
           }
           else
           {
-            auto feedback = std::make_shared<Plan::Feedback>();
-
-            RCLCPP_INFO(this->get_logger(), "");
-            feedback->progress = "All requested interface, semantic interface and provider data recieved";
-            goal_handle->publish_feedback(feedback);
-            RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+            print_and_feedback(goal_handle, "All requested interface, semantic interface and provider data recieved", true);
 
             verify_and_continue(goal_handle);
           }
@@ -446,23 +347,17 @@ private:
    */
   void verify_and_continue(const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
-    auto feedback = std::make_shared<Plan::Feedback>();
-    feedback->progress = "Verifying the plan";
-    goal_handle->publish_feedback(feedback);
-    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+    print_and_feedback(goal_handle, "Verifying the plan", false);
 
     // verify the plan
     if (!verify_plan(goal_handle))
     {
-      feedback->progress = "Plan verification failed";
-      goal_handle->publish_feedback(feedback);
-      RCLCPP_ERROR(this->get_logger(), feedback->progress.c_str());
-
-      auto result = std::make_shared<Plan::Result>();
+      print_and_feedback(goal_handle, "Plan verification failed", false);
 
       if (rejected_list.size() > 0)
       {
         // TODO: improve with error codes
+        auto result = std::make_shared<Plan::Result>();
         result->success = false;
         result->message = "Plan verification failed. There are mismatched events";
 
@@ -478,32 +373,23 @@ private:
       else
       {
         // TODO: improve with error codes
-        result->success = false;
-        result->message = "Plan verification failed.";
-        goal_handle->abort(result);
-        RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
+        print_and_result(goal_handle, "Plan verification failed. Server Execution Cancelled.", false);
       }
 
       RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
     }
 
-    feedback->progress = "Plan verification successful";
-    goal_handle->publish_feedback(feedback);
-    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+    print_and_feedback(goal_handle, "Plan verification successful", false);
 
     // extract the plan from the XMLDocument
     tinyxml2::XMLElement* plan = capabilities2_xml_parser::get_plan(document);
 
-    feedback->progress = "Plan conversion successful";
-    goal_handle->publish_feedback(feedback);
-    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+    print_and_feedback(goal_handle, "Plan conversion successful", false);
 
     // Extract the connections from the plan
     capabilities2_xml_parser::extract_connections(plan, connection_map);
 
-    feedback->progress = "Connection extraction successful";
-    goal_handle->publish_feedback(feedback);
-    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+    print_and_feedback(goal_handle, "Connection extraction successful", false);
 
     // estasblish the bond with the server
     establish_bond(goal_handle);
@@ -526,37 +412,25 @@ private:
     // verify whether document got 'plan' tags
     if (!capabilities2_xml_parser::check_plan_tag(document))
     {
-      result->success = false;
-      result->message = "Execution plan is not compatible. Please recheck and update";
-      goal_handle->abort(result);
-      RCLCPP_ERROR(this->get_logger(), result->message.c_str());
+      print_and_result(goal_handle, "Execution plan is not compatible. Please recheck and update", false);
       return false;
     }
 
-    feedback->progress = "'Plan' tag checking successful";
-    goal_handle->publish_feedback(feedback);
-    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+    print_and_feedback(goal_handle, "'Plan' tag checking successful", false);
 
     // extract the components within the 'plan' tags
     tinyxml2::XMLElement* plan = capabilities2_xml_parser::get_plan(document);
 
-    feedback->progress = "Plan extraction complete";
-    goal_handle->publish_feedback(feedback);
-    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+    print_and_feedback(goal_handle, "Plan extraction complete", false);
 
     // verify whether the plan is valid
     if (!capabilities2_xml_parser::check_tags(this->get_logger(), plan, interface_list, providers_list, control_tag_list, rejected_list))
     {
-      result->success = false;
-      result->message = "Execution plan is faulty. Please recheck and update";
-      goal_handle->abort(result);
-      RCLCPP_ERROR(this->get_logger(), result->message.c_str());
+      print_and_result(goal_handle, "Execution plan is faulty. Please recheck and update", false);
       return false;
     }
 
-    feedback->progress = "Checking tags successful";
-    goal_handle->publish_feedback(feedback);
-    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+    print_and_feedback(goal_handle, "Checking tags successful", false);
     return true;
   }
 
@@ -566,47 +440,35 @@ private:
    */
   void establish_bond(const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
-    auto feedback = std::make_shared<Plan::Feedback>();
-    feedback->progress = "Requesting bond id";
-    goal_handle->publish_feedback(feedback);
-
-    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+    print_and_feedback(goal_handle, "Requesting bond id", false);
 
     // create bond establishing server request
     auto request_bond = std::make_shared<EstablishBond::Request>();
 
     // send the request
-    auto result_future =
-        establish_bond_client_->async_send_request(request_bond, [this, goal_handle, feedback](EstablishBondClient::SharedFuture future) {
-          if (!future.valid())
-          {
-            RCLCPP_ERROR(this->get_logger(), "Failed to receive the bond id");
+    auto result_future = establish_bond_client_->async_send_request(request_bond, [this, goal_handle](EstablishBondClient::SharedFuture future) {
+      if (!future.valid())
+      {
+        print_and_result(goal_handle, "Failed to retrieve the bond id. Server execution cancelled", false);
+        return;
+      }
 
-            auto result = std::make_shared<Plan::Result>();
-            result->success = false;
-            result->message = "Failed to retrieve the bond id";
-            RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
+      auto response = future.get();
+      bond_id_ = response->bond_id;
 
-            goal_handle->abort(result);
-            return;
-          }
+      status = "Received the bond id : " + bond_id_;
+      print_and_feedback(goal_handle, status, false);
 
-          auto response = future.get();
-          bond_id_ = response->bond_id;
+      bond_client_ = std::make_unique<BondClient>(shared_from_this(), bond_id_);
+      bond_client_->start();
 
-          feedback->progress = "Received the bond id : " + bond_id_;
-          goal_handle->publish_feedback(feedback);
-          RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+      expected_capabilities_ = connection_map.size();
 
-          bond_client_ = std::make_unique<BondClient>(shared_from_this(), bond_id_);
-          bond_client_->start();
+      status = "Requsting start of " + std::to_string(expected_capabilities_) + "capabilities";
+      print_and_feedback(goal_handle, status, false);
 
-          expected_capabilities_ = connection_map.size();
-
-          RCLCPP_INFO(this->get_logger(), "Requsting start of %d capabilities", expected_capabilities_);
-
-          use_capability(connection_map, goal_handle);
-        });
+      use_capability(connection_map, goal_handle);
+    });
   }
 
   /**
@@ -617,8 +479,6 @@ private:
    */
   void use_capability(std::map<int, capabilities2_executor::node_t>& capabilities, const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
-    auto feedback = std::make_shared<Plan::Feedback>();
-
     std::string capability = capabilities[completed_capabilities_].source.runner;
     std::string provider = capabilities[completed_capabilities_].source.provider;
 
@@ -627,70 +487,53 @@ private:
     request_use->preferred_provider = provider;
     request_use->bond_id = bond_id_;
 
-    feedback->progress =
-        "Starting capability of Node " + std::to_string(completed_capabilities_) + " named " + capabilities[completed_capabilities_].source.runner;
-    goal_handle->publish_feedback(feedback);
-    RCLCPP_INFO(this->get_logger(), "");
-    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+    status = "Starting capability of Node " + std::to_string(completed_capabilities_) + " : " + capabilities[completed_capabilities_].source.runner;
+    print_and_feedback(goal_handle, status, true);
 
     // send the request
-    auto result_future = use_capability_client_->async_send_request(request_use, [this, goal_handle, feedback, capability,
-                                                                                  provider](UseCapabilityClient::SharedFuture future) {
-      if (!future.valid())
-      {
-        auto result = std::make_shared<Plan::Result>();
-        result->success = false;
-        result->message = "Failed to Use capability " + capability + " from " + provider;
-        goal_handle->abort(result);
+    auto result_future =
+        use_capability_client_->async_send_request(request_use, [this, goal_handle, capability, provider](UseCapabilityClient::SharedFuture future) {
+          if (!future.valid())
+          {
+            status = "Failed to Use capability " + capability + " from " + provider + ". Server Execution Cancelled";
+            print_and_result(goal_handle, status, false);
 
-        RCLCPP_ERROR(this->get_logger(), result->message.c_str());
-        RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
+            // release all capabilities that were used since not all started successfully
+            for (const auto& [key, value] : connection_map)
+            {
+              status = "Freeing capability of Node " + std::to_string(key) + " named " + value.source.runner;
+              print_and_feedback(goal_handle, status, false);
 
-        // release all capabilities that were used since not all started successfully
-        for (const auto& [key, value] : connection_map)
-        {
-          feedback->progress = "Freeing capability of Node " + std::to_string(key) + " named " + value.source.runner;
-          goal_handle->publish_feedback(feedback);
-          RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+              free_capability(value.source.runner, goal_handle);
+            }
 
-          free_capability(value.source.runner, goal_handle);
-        }
+            return;
+          }
 
-        return;
-      }
+          completed_capabilities_++;
 
-      completed_capabilities_++;
+          auto response = future.get();
 
-      auto response = future.get();
+          status = std::to_string(completed_capabilities_) + "/" + std::to_string(expected_capabilities_) + " : start succeessful";
+          print_and_feedback(goal_handle, status, true);
 
-      feedback->progress = std::to_string(completed_capabilities_) + "/" + std::to_string(expected_capabilities_) + " : Capability start succeessful";
-      goal_handle->publish_feedback(feedback);
-      RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+          // Check if all expected calls are completed before calling verify_plan
+          if (completed_capabilities_ == expected_capabilities_)
+          {
+            print_and_feedback(goal_handle, "All requested capabilities have been started. Configuring the capabilities with events", true);
 
-      // Check if all expected calls are completed before calling verify_plan
-      if (completed_capabilities_ == expected_capabilities_)
-      {
-        RCLCPP_INFO(this->get_logger(), "");
-        feedback->progress = "All requested capabilities have been used";
-        goal_handle->publish_feedback(feedback);
-        RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+            expected_configurations_ = connection_map.size();
 
-        feedback->progress = "Configuring the capabilities with events";
-        goal_handle->publish_feedback(feedback);
-        RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+            status = "Requsting capability configuration for " + std::to_string(expected_configurations_) + "capabilities";
+            print_and_feedback(goal_handle, status, true);
 
-        expected_configurations_ = connection_map.size();
-
-        RCLCPP_INFO(this->get_logger(), "");
-        RCLCPP_INFO(this->get_logger(), "Requsting capability configuration for %d capabilities", expected_configurations_);
-
-        configure_capabilities(connection_map, goal_handle);
-      }
-      else
-      {
-        use_capability(connection_map, goal_handle);
-      }
-    });
+            configure_capabilities(connection_map, goal_handle);
+          }
+          else
+          {
+            use_capability(connection_map, goal_handle);
+          }
+        });
   }
 
   /**
@@ -700,30 +543,24 @@ private:
    */
   void free_capability(const std::string& capability, const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
-    auto feedback = std::make_shared<Plan::Feedback>();
-
     auto request_free = std::make_shared<FreeCapability::Request>();
     request_free->capability = capability;
     request_free->bond_id = bond_id_;
 
     // send the request
-    auto result_future = free_capability_client_->async_send_request(
-        request_free, [this, goal_handle, capability, feedback](FreeCapabilityClient::SharedFuture future) {
+    auto result_future =
+        free_capability_client_->async_send_request(request_free, [this, goal_handle, capability](FreeCapabilityClient::SharedFuture future) {
           if (!future.valid())
           {
-            auto result = std::make_shared<Plan::Result>();
-            result->success = false;
-            result->message = "Failed to free capability " + capability;
-            goal_handle->abort(result);
-
-            RCLCPP_ERROR(this->get_logger(), result->message.c_str());
+            status = "Failed to free capability " + capability;
+            print_and_result(goal_handle, status, false);
             return;
           }
 
           auto response = future.get();
-          feedback->progress = "Successfully freed capability " + capability;
-          goal_handle->publish_feedback(feedback);
-          RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+
+          status = "Successfully freed capability " + capability;
+          print_and_feedback(goal_handle, status, true);
 
           bond_client_->stop();
         });
@@ -734,14 +571,11 @@ private:
    */
   void configure_capabilities(std::map<int, capabilities2_executor::node_t>& capabilities, const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
-    auto feedback = std::make_shared<Plan::Feedback>();
     auto request_configure = std::make_shared<ConfigureCapability::Request>();
 
-    RCLCPP_INFO(this->get_logger(), "");
-    feedback->progress = "Configuring capability of Node " + std::to_string(completed_configurations_) + " named " +
-                         capabilities[completed_configurations_].source.runner;
-    goal_handle->publish_feedback(feedback);
-    RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+    status = "Configuring capability of Node " + std::to_string(completed_configurations_) + " named " +
+             capabilities[completed_configurations_].source.runner;
+    print_and_feedback(goal_handle, status, true);
 
     if (capabilities2_xml_parser::convert_to_string(capabilities[completed_configurations_].source.parameters, request_configure->source.parameters))
     {
@@ -820,17 +654,12 @@ private:
     std::string source_capability = capabilities[completed_configurations_].source.runner;
 
     // send the request
-    auto result_future = configure_capability_client_->async_send_request(
-        request_configure, [this, goal_handle, source_capability, feedback](ConfigureCapabilityClient::SharedFuture future) {
+    auto result_future = conf_capability_client_->async_send_request(
+        request_configure, [this, goal_handle, source_capability](ConfigureCapabilityClient::SharedFuture future) {
           if (!future.valid())
           {
-            auto result = std::make_shared<Plan::Result>();
-            result->success = false;
-            result->message = "Failed to configure capability :" + source_capability;
-            goal_handle->abort(result);
-
-            RCLCPP_ERROR(this->get_logger(), result->message.c_str());
-            RCLCPP_ERROR(this->get_logger(), "Server Execution Cancelled");
+            status = "Failed to configure capability :" + source_capability + ". Server execution cancelled";
+            print_and_result(goal_handle, status, false);
             return;
           }
 
@@ -838,24 +667,14 @@ private:
 
           auto response = future.get();
 
-          feedback->progress = std::to_string(completed_configurations_) + "/" + std::to_string(expected_configurations_) +
-                               " : Successfully configured capability : " + source_capability;
-          goal_handle->publish_feedback(feedback);
-          RCLCPP_INFO(this->get_logger(), "");
-          RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+          status = std::to_string(completed_configurations_) + "/" + std::to_string(expected_configurations_) +
+                   " : Successfully configured capability : " + source_capability;
+          print_and_feedback(goal_handle, status, true);
 
           // Check if all expected calls are completed before calling verify_plan
           if (completed_configurations_ == expected_configurations_)
           {
-            RCLCPP_INFO(this->get_logger(), "");
-            feedback->progress = "All requested capabilities have been configured";
-            goal_handle->publish_feedback(feedback);
-            RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
-
-            RCLCPP_INFO(this->get_logger(), "");
-            feedback->progress = "Triggering the first capability";
-            goal_handle->publish_feedback(feedback);
-            RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
+            print_and_feedback(goal_handle, "All requested capabilities have been configured. Triggering the first capability", true);
 
             trigger_first_node(goal_handle);
           }
@@ -871,8 +690,6 @@ private:
    */
   void trigger_first_node(const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
-    auto feedback = std::make_shared<Plan::Feedback>();
-
     auto request_trigger = std::make_shared<TriggerCapability::Request>();
 
     std::string parameter_string;
@@ -882,29 +699,63 @@ private:
 
     // send the request
     auto result_future =
-        trigger_capability_client_->async_send_request(request_trigger, [this, goal_handle, feedback](TriggerCapabilityClient::SharedFuture future) {
+        trig_capability_client_->async_send_request(request_trigger, [this, goal_handle](TriggerCapabilityClient::SharedFuture future) {
           if (!future.valid())
           {
-            auto result = std::make_shared<Plan::Result>();
-            result->success = false;
-            result->message = "Failed to trigger capability " + connection_map[0].source.runner;
-            goal_handle->abort(result);
-
-            RCLCPP_ERROR(this->get_logger(), result->message.c_str());
+            status = "Failed to trigger capability " + connection_map[0].source.runner;
+            print_and_result(goal_handle, status, false);
             return;
           }
 
           auto response = future.get();
-          feedback->progress = "Successfully triggered capability " + connection_map[0].source.runner;
-          goal_handle->publish_feedback(feedback);
-          RCLCPP_INFO(this->get_logger(), feedback->progress.c_str());
 
-          auto result = std::make_shared<Plan::Result>();
-          result->success = true;
-          result->message = "Successfully launched capabilities2 fabric";
-          goal_handle->succeed(result);
-          RCLCPP_INFO(this->get_logger(), result->message.c_str());
+          status = "Successfully triggered capability " + connection_map[0].source.runner;
+          print_and_feedback(goal_handle, status, false);
+
+          print_and_result(goal_handle, "Successfully launched capabilities2 fabric", true);
         });
+  }
+
+  void check_service(bool wait_for_logic, const std::string& service_name)
+  {
+    while (wait_for_logic)
+    {
+      std::string failed = service_name + " not available";
+      RCLCPP_ERROR(this->get_logger(), failed.c_str());
+      rclcpp::shutdown();
+      return;
+    }
+
+    std::string success = service_name + " connected";
+    RCLCPP_INFO(this->get_logger(), success.c_str());
+  }
+
+  void print_and_feedback(const std::shared_ptr<GoalHandlePlan> goal_handle, const std::string& text, bool newline)
+  {
+    feedback_msg->progress = text;
+    goal_handle->publish_feedback(feedback_msg);
+
+    if (newline)
+      RCLCPP_INFO(this->get_logger(), "");
+
+    RCLCPP_INFO(this->get_logger(), feedback_msg->progress.c_str());
+  }
+
+  void print_and_result(const std::shared_ptr<GoalHandlePlan> goal_handle, const std::string& text, bool success)
+  {
+    result_msg->success = success;
+    result_msg->message = text;
+
+    if (success)
+    {
+      goal_handle->succeed(result_msg);
+      RCLCPP_INFO(this->get_logger(), result_msg->message.c_str());
+    }
+    else
+    {
+      goal_handle->abort(result_msg);
+      RCLCPP_ERROR(this->get_logger(), result_msg->message.c_str());
+    }
   }
 
 private:
@@ -925,6 +776,9 @@ private:
 
   int expected_configurations_;
   int completed_configurations_;
+
+  /** status message string */
+  std::string status;
 
   /** Bond id */
   std::string bond_id_;
@@ -953,6 +807,12 @@ private:
   /** Invalid events list */
   std::vector<std::string> rejected_list;
 
+  /** Feedback message for plan action server*/
+  std::shared_ptr<Plan::Feedback> feedback_msg;
+
+  /** Result message for plan action server*/
+  std::shared_ptr<Plan::Result> result_msg;
+
   /** action server that exposes executor*/
   std::shared_ptr<rclcpp_action::Server<Plan>> planner_server_;
 
@@ -978,8 +838,8 @@ private:
   FreeCapabilityClient::SharedPtr free_capability_client_;
 
   /** configure an selected capability */
-  ConfigureCapabilityClient::SharedPtr configure_capability_client_;
+  ConfigureCapabilityClient::SharedPtr conf_capability_client_;
 
   /** trigger an selected capability */
-  TriggerCapabilityClient::SharedPtr trigger_capability_client_;
+  TriggerCapabilityClient::SharedPtr trig_capability_client_;
 };
