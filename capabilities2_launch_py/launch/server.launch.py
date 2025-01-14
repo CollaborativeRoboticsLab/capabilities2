@@ -17,17 +17,16 @@ def generate_launch_description():
     # load config file
     server_config = os.path.join(get_package_share_directory('capabilities2_server'), 'config', 'capabilities.yaml')
 
-    # create bridge composition
-    capabilities2 = Node(
-        package='capabilities2_server',
-        executable='capabilities2_server_node',
-        name='capabilities',
-        parameters=[server_config],
+    # create launch proxy node
+    launch_proxy = Node(
+        package='capabilities2_launch_py',
+        executable='capabilities2_launch_py',
+        name='capabilities2_launch_py',
         output='screen',
         arguments=['--ros-args', '--log-level', 'info']
     )
 
     # return
     return LaunchDescription([
-        capabilities2
+        launch_proxy
     ])

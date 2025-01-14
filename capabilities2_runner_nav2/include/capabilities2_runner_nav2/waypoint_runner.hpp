@@ -78,9 +78,10 @@ protected:
   virtual std::string
   generate_feedback(const typename nav2_msgs::action::NavigateToPose::Feedback::ConstSharedPtr msg) override
   {
-    std::string feedback = "x: " + std::to_string(msg->current_pose.pose.position.x) +
-                           " y: " + std::to_string(msg->current_pose.pose.position.y);
-    return feedback;
+    // std::string feedback = "x: " + std::to_string(msg->current_pose.pose.position.x) +
+    //                        " y: " + std::to_string(msg->current_pose.pose.position.y);
+    // return feedback;
+    return "";
   }
 
 protected:

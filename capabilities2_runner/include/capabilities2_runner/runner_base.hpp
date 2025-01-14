@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <string>
 #include <functional>
+#include <mutex>
 #include <thread>
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
@@ -124,7 +125,22 @@ public:
   {
     parameters_ = convert_to_xml(parameters);
 
-    executionThread = std::thread(&RunnerBase::execution, this);
+    RCLCPP_INFO(node_->get_logger(), "[%s] received new parameters", run_config_.interface.c_str());
+
+    new_parameter = true;
+
+    if (!is_running)
+    {
+      RCLCPP_INFO(node_->get_logger(), "[%s] execution thread not active. Activating..",
+                  run_config_.interface.c_str());
+                  
+      executionThread = std::thread(&RunnerBase::execution, this);
+    } 
+    else
+    {
+      RCLCPP_INFO(node_->get_logger(), "[%s] execution thread running. Avoiding reactivation",
+                  run_config_.interface.c_str());
+    }
   }
 
   /**
@@ -140,6 +156,8 @@ public:
     run_config_ = run_config;
     insert_id = 0;
     execute_id = -1;
+    is_running = false;
+    new_parameter = false;
   }
 
   /**
@@ -472,15 +490,14 @@ protected:
   std::map<int, event_opts> events;
 
   /**
-   * @brief Last tracker id to be inserted
+   * @brief Last event tracker id to be inserted
    */
   int insert_id;
 
   /**
-   * @brief Last tracker id to be executed
+   * @brief Last parameter tracker id to be executed
    */
   int execute_id;
-
   /**
    * @brief pointer to XMLElement which contain parameters
    */
@@ -490,6 +507,16 @@ protected:
    * @brief thread that executes the triggerExecution functionality
    */
   std::thread executionThread;
+
+  /**
+   * @brief boolean flag for status of the thread.
+   */
+  bool is_running;
+
+  /**
+   * @brief boolean flag for new parameter availability.
+   */
+  bool new_parameter;
 
   /**
    * @brief external function that triggers capability runners

@@ -113,26 +113,33 @@ public:
    */
   virtual void execution() override
   {
-    execute_id += 1;
+    is_running = true;
 
-    // if parameters are not provided then cannot proceed
-    if (!parameters_)
-      throw runner_exception("cannot trigger action without parameters");
+    while (new_parameter)
+    {
+      new_parameter = false;
 
-    // generate a goal from parameters if provided
-    goal_msg_ = generate_goal(parameters_);
-    RCLCPP_INFO(node_->get_logger(), "[%s] goal generated.", run_config_.interface.c_str());
+      execute_id += 1;
 
-    // trigger the action client with goal
-    send_goal_options_.goal_response_callback =
-        std::bind(&ActionRunner::goalResponseCallback, this, std::placeholders::_1);
-    send_goal_options_.feedback_callback =
-        std::bind(&ActionRunner::feedbackCallback, this, std::placeholders::_1, std::placeholders::_2);
-    send_goal_options_.result_callback = std::bind(&ActionRunner::resultCallback, this, std::placeholders::_1);
+      // if parameters are not provided then cannot proceed
+      if (!parameters_)
+        throw runner_exception("cannot trigger action without parameters");
 
-    goal_handle_future_ = action_client_->async_send_goal(goal_msg_, send_goal_options_);
+      // generate a goal from parameters if provided
+      goal_msg_ = generate_goal(parameters_);
+      RCLCPP_INFO(node_->get_logger(), "[%s] goal generated.", run_config_.interface.c_str());
 
-    RCLCPP_INFO(node_->get_logger(), "[%s] goal sent. Waiting for acceptance", run_config_.interface.c_str());
+      // trigger the action client with goal
+      send_goal_options_.goal_response_callback =
+          std::bind(&ActionRunner::goalResponseCallback, this, std::placeholders::_1);
+      send_goal_options_.feedback_callback =
+          std::bind(&ActionRunner::feedbackCallback, this, std::placeholders::_1, std::placeholders::_2);
+      send_goal_options_.result_callback = std::bind(&ActionRunner::resultCallback, this, std::placeholders::_1);
+
+      goal_handle_future_ = action_client_->async_send_goal(goal_msg_, send_goal_options_);
+
+      RCLCPP_INFO(node_->get_logger(), "[%s] goal sent. Waiting for acceptance", run_config_.interface.c_str());
+    }
   }
 
 protected:
@@ -146,7 +153,7 @@ protected:
       if (events[execute_id].on_started != "")
       {
         RCLCPP_INFO(node_->get_logger(), "[%s] on_started event available. Triggering", run_config_.interface.c_str());
-        // triggerFunction_(events[execute_id].on_started, update_on_started(events[execute_id].on_started_param));
+        triggerFunction_(events[execute_id].on_started, update_on_started(events[execute_id].on_started_param));
       }
     }
     else
@@ -170,7 +177,7 @@ protected:
       if (events[execute_id].on_success != "")
       {
         RCLCPP_INFO(node_->get_logger(), "[%s] on_success event available. Triggering", run_config_.interface.c_str());
-        // triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
+        triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
       }
     }
     else
@@ -183,11 +190,12 @@ protected:
       if (events[execute_id].on_failure != "")
       {
         RCLCPP_INFO(node_->get_logger(), "[%s] on_failure event available. Triggering", run_config_.interface.c_str());
-        // triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
+        triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
       }
     }
 
     result_ = wrapped_result.result;
+    is_running = false;
   };
 
   virtual void feedbackCallback(typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle,
@@ -195,7 +203,10 @@ protected:
   {
     std::string feedback = generate_feedback(feedback_msg);
 
-    RCLCPP_INFO(node_->get_logger(), "[%s] received feedback: %s", run_config_.interface.c_str(), feedback.c_str());
+    if (feedback != "")
+    {
+      RCLCPP_INFO(node_->get_logger(), "[%s] received feedback: %s", run_config_.interface.c_str(), feedback.c_str());
+    }
   };
 
   virtual void cancellationCallback(action_msgs::srv::CancelGoal_Response::SharedPtr response)
@@ -210,7 +221,7 @@ protected:
     if (events[execute_id].on_stopped != "")
     {
       RCLCPP_INFO(node_->get_logger(), "[%s] on_stopped event available. Triggering", run_config_.interface.c_str());
-      // triggerFunction_(events[execute_id].on_stopped, update_on_stopped(events[execute_id].on_stopped_param));
+      triggerFunction_(events[execute_id].on_stopped, update_on_stopped(events[execute_id].on_stopped_param));
     }
   }
 
@@ -232,7 +243,8 @@ protected:
    *
    * This function is used to convert feedback messages into generic strings
    *
-   * A pattern needs to be implemented in the derived class
+   * A pattern needs to be implemented in the derived class. If the feedback string
+   * is empty, nothing will be printed on the screen
    *
    * @param parameters
    * @return ActionT::Feedback the received feedback
