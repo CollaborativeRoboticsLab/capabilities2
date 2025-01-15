@@ -50,12 +50,12 @@ public:
    *
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    */
-  virtual void execution() override
+  virtual void execution(int id) override
   {
     execute_id += 1;
 
     // if parameters are not provided then cannot proceed
-    if (!parameters_)
+    if (!parameters_[id])
       throw runner_exception("cannot grab data without parameters");
 
     // trigger the events related to on_started state

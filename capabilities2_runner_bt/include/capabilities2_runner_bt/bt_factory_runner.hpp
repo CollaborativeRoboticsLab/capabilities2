@@ -50,14 +50,16 @@ protected:
    * @param parameters
    * @return std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
    */
-  virtual void trigger(tinyxml2::XMLElement* parameters = nullptr) override
+  virtual void trigger(const std::string& parameters) override
   {
+    tinyxml2::XMLElement* parameters_xml = convert_to_xml(parameters);
+
     // if parameters are not provided then cannot proceed
-    if (!parameters)
+    if (!parameters_xml)
       throw runner_exception("cannot trigger action without parameters");
 
     // create the tree (ptr)
-    tree_ = std::make_shared<BT::Tree>(this->createTreeFromText(parameters->GetText()));
+    tree_ = std::make_shared<BT::Tree>(this->createTreeFromText(parameters_xml->GetText()));
 
     // return the tick function
     // // the caller can call this function to tick the tree

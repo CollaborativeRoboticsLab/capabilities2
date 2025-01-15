@@ -45,8 +45,6 @@ protected:
    */
   virtual capabilities2_msgs::action::Plan::Goal generate_goal(tinyxml2::XMLElement* parameters) override
   {
-    parameters_ = parameters;
-
     tinyxml2::XMLElement* planElement = parameters->FirstChildElement("ReceievdPlan");
 
     auto goal_msg = capabilities2_msgs::action::Plan::Goal();

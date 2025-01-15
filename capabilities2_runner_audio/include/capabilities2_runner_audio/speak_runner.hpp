@@ -45,10 +45,8 @@ protected:
    */
   virtual hri_audio_msgs::action::TextToSpeech::Goal generate_goal(tinyxml2::XMLElement* parameters) override
   {
-    parameters_ = parameters;
-
     const char **text;
-    parameters_->QueryStringAttribute("text", text);
+    parameters->QueryStringAttribute("text", text);
     std::string tts_text(*text);
 
     hri_audio_msgs::action::TextToSpeech::Goal goal_msg;

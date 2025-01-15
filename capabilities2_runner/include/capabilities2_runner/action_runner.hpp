@@ -84,7 +84,21 @@ public:
       try
       {
         auto cancel_future = action_client_->async_cancel_goal(
-            goal_handle_, std::bind(&ActionRunner::cancellationCallback, this, std::placeholders::_1));
+            goal_handle_, [this](action_msgs::srv::CancelGoal_Response::SharedPtr response) {
+              if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE)
+              {
+                // throw runner_exception("failed to cancel runner");
+                RCLCPP_WARN(node_->get_logger(), "Runner cancellation failed.");
+              }
+
+              // Trigger on_stopped event if defined
+              if (events[execute_id].on_stopped != "")
+              {
+                RCLCPP_INFO(node_->get_logger(), "[%s] on_stopped event available. Triggering",
+                            run_config_.interface.c_str());
+                triggerFunction_(events[execute_id].on_stopped, update_on_stopped(events[execute_id].on_stopped_param));
+              }
+            });
 
         // wait for action to be stopped. hold the thread for 2 seconds to help keep callbacks in scope
         // BUG: the line below does not work in jazzy build, so a workaround is used
@@ -111,120 +125,106 @@ public:
    *
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    */
-  virtual void execution() override
+  virtual void execution(int id) override
   {
-    is_running = true;
+    execute_id += 1;
 
-    while (new_parameter)
-    {
-      new_parameter = false;
+    // if parameters are not provided then cannot proceed
+    if (!parameters_[id])
+      throw runner_exception("cannot trigger action without parameters");
 
-      execute_id += 1;
+    // generate a goal from parameters if provided
+    goal_msg_ = generate_goal(parameters_[id]);
 
-      // if parameters are not provided then cannot proceed
-      if (!parameters_)
-        throw runner_exception("cannot trigger action without parameters");
+    RCLCPP_INFO(node_->get_logger(), "[%s/%d] goal generated.", run_config_.interface.c_str(), id);
 
-      // generate a goal from parameters if provided
-      goal_msg_ = generate_goal(parameters_);
-      RCLCPP_INFO(node_->get_logger(), "[%s] goal generated.", run_config_.interface.c_str());
+    std::unique_lock<std::mutex> lock(send_goal_mutex);
+    action_complete = false;
 
-      // trigger the action client with goal
-      send_goal_options_.goal_response_callback =
-          std::bind(&ActionRunner::goalResponseCallback, this, std::placeholders::_1);
-      send_goal_options_.feedback_callback =
-          std::bind(&ActionRunner::feedbackCallback, this, std::placeholders::_1, std::placeholders::_2);
-      send_goal_options_.result_callback = std::bind(&ActionRunner::resultCallback, this, std::placeholders::_1);
+    // trigger the action client with goal
+    send_goal_options_.goal_response_callback =
+        [this, id](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
+          if (goal_handle)
+          {
+            RCLCPP_INFO(node_->get_logger(), "[%s/%d] goal accepted. Waiting for result", run_config_.interface.c_str(),
+                        id);
 
-      goal_handle_future_ = action_client_->async_send_goal(goal_msg_, send_goal_options_);
+            // trigger the events related to on_started state
+            if (events[execute_id].on_started != "")
+            {
+              RCLCPP_INFO(node_->get_logger(), "[%s/%d] on_started event available. Triggering",
+                          run_config_.interface.c_str(), id);
 
-      RCLCPP_INFO(node_->get_logger(), "[%s] goal sent. Waiting for acceptance", run_config_.interface.c_str());
-    }
+              triggerFunction_(events[execute_id].on_started, update_on_started(events[execute_id].on_started_param));
+            }
+          }
+          else
+          {
+            RCLCPP_ERROR(node_->get_logger(), "[%s/%d] goal rejected", run_config_.interface.c_str(), id);
+          }
+
+          // store goal handle to be used with stop funtion
+          goal_handle_ = goal_handle;
+        };
+
+    send_goal_options_.feedback_callback =
+        [this, id](typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle,
+                   const typename ActionT::Feedback::ConstSharedPtr feedback_msg) {
+          std::string feedback = generate_feedback(feedback_msg);
+
+          if (feedback != "")
+          {
+            RCLCPP_INFO(node_->get_logger(), "[%s/%d] received feedback: %s", run_config_.interface.c_str(), id,
+                        feedback.c_str());
+          }
+        };
+
+    send_goal_options_.result_callback =
+        [this, id](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
+          RCLCPP_INFO(node_->get_logger(), "[%s/%d] received result", run_config_.interface.c_str(), id);
+
+          if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
+          {
+            RCLCPP_INFO(node_->get_logger(), "[%s/%d] action succeeded.", run_config_.interface.c_str(), id);
+
+            // trigger the events related to on_success state
+            if (events[execute_id].on_success != "")
+            {
+              RCLCPP_INFO(node_->get_logger(), "[%s/%d] on_success event available. Triggering",
+                          run_config_.interface.c_str(), id);
+              triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
+            }
+          }
+          else
+          {
+            RCLCPP_ERROR(node_->get_logger(), "[%s/%d] action failed.", run_config_.interface.c_str(), id);
+            RCLCPP_ERROR(node_->get_logger(), "[%s/%d] error code: %d", run_config_.interface.c_str(), id,
+                         static_cast<int>(wrapped_result.code));
+
+            // trigger the events related to on_failure state
+            if (events[execute_id].on_failure != "")
+            {
+              RCLCPP_INFO(node_->get_logger(), "[%s/%d] on_failure event available. Triggering",
+                          run_config_.interface.c_str(), id);
+              triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
+            }
+          }
+
+          result_ = wrapped_result.result;
+          action_complete = true;
+          send_goal_cv.notify_all();
+        };
+
+    goal_handle_future_ = action_client_->async_send_goal(goal_msg_, send_goal_options_);
+
+    RCLCPP_INFO(node_->get_logger(), "[%s/%d] goal sent. Waiting for acceptance", run_config_.interface.c_str(), id);
+
+    // Conditional wait
+    send_goal_cv.wait(lock, [this] { return action_complete; });
+    RCLCPP_INFO(node_->get_logger(), "[%s/%d] action complete. Thread closing.", run_config_.interface.c_str(), id);
   }
 
 protected:
-  virtual void goalResponseCallback(const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle)
-  {
-    if (goal_handle)
-    {
-      RCLCPP_INFO(node_->get_logger(), "[%s] goal accepted. Waiting for result", run_config_.interface.c_str());
-
-      // trigger the events related to on_started state
-      if (events[execute_id].on_started != "")
-      {
-        RCLCPP_INFO(node_->get_logger(), "[%s] on_started event available. Triggering", run_config_.interface.c_str());
-        triggerFunction_(events[execute_id].on_started, update_on_started(events[execute_id].on_started_param));
-      }
-    }
-    else
-    {
-      RCLCPP_ERROR(node_->get_logger(), "[%s] goal rejected", run_config_.interface.c_str());
-    }
-
-    // store goal handle to be used with stop funtion
-    goal_handle_ = goal_handle;
-  };
-
-  virtual void resultCallback(const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result)
-  {
-    RCLCPP_INFO(node_->get_logger(), "[%s] received result", run_config_.interface.c_str());
-
-    if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
-    {
-      RCLCPP_INFO(node_->get_logger(), "[%s] action succeeded.", run_config_.interface.c_str());
-
-      // trigger the events related to on_success state
-      if (events[execute_id].on_success != "")
-      {
-        RCLCPP_INFO(node_->get_logger(), "[%s] on_success event available. Triggering", run_config_.interface.c_str());
-        triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
-      }
-    }
-    else
-    {
-      RCLCPP_ERROR(node_->get_logger(), "[%s] action failed.", run_config_.interface.c_str());
-      RCLCPP_ERROR(node_->get_logger(), "[%s] error code: %d", run_config_.interface.c_str(),
-                   static_cast<int>(wrapped_result.code));
-
-      // trigger the events related to on_failure state
-      if (events[execute_id].on_failure != "")
-      {
-        RCLCPP_INFO(node_->get_logger(), "[%s] on_failure event available. Triggering", run_config_.interface.c_str());
-        triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
-      }
-    }
-
-    result_ = wrapped_result.result;
-    is_running = false;
-  };
-
-  virtual void feedbackCallback(typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle,
-                                const typename ActionT::Feedback::ConstSharedPtr feedback_msg)
-  {
-    std::string feedback = generate_feedback(feedback_msg);
-
-    if (feedback != "")
-    {
-      RCLCPP_INFO(node_->get_logger(), "[%s] received feedback: %s", run_config_.interface.c_str(), feedback.c_str());
-    }
-  };
-
-  virtual void cancellationCallback(action_msgs::srv::CancelGoal_Response::SharedPtr response)
-  {
-    if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE)
-    {
-      // throw runner_exception("failed to cancel runner");
-      RCLCPP_WARN(node_->get_logger(), "Runner cancellation failed.");
-    }
-
-    // Trigger on_stopped event if defined
-    if (events[execute_id].on_stopped != "")
-    {
-      RCLCPP_INFO(node_->get_logger(), "[%s] on_stopped event available. Triggering", run_config_.interface.c_str());
-      triggerFunction_(events[execute_id].on_stopped, update_on_stopped(events[execute_id].on_stopped_param));
-    }
-  }
-
   /**
    * @brief Generate a goal from parameters
    *

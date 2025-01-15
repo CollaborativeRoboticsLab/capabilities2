@@ -46,8 +46,6 @@ public:
    */
   virtual typename prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters) override
   {
-    parameters_ = parameters;
-
     tinyxml2::XMLElement* occupancyElement = parameters->FirstChildElement("OccupancyGrid");
 
     tinyxml2::XMLPrinter printer;

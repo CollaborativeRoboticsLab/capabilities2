@@ -47,8 +47,6 @@ protected:
    */
   virtual typename prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters) override
   {
-    parameters_ = parameters;
-
     bool replan;
     parameters->QueryBoolAttribute("replan", &replan);
 

@@ -48,10 +48,8 @@ protected:
    */
   virtual nav2_msgs::action::NavigateToPose::Goal generate_goal(tinyxml2::XMLElement* parameters) override
   {
-    parameters_ = parameters;
-
-    parameters_->QueryDoubleAttribute("x", &x);
-    parameters_->QueryDoubleAttribute("y", &y);
+    parameters->QueryDoubleAttribute("x", &x);
+    parameters->QueryDoubleAttribute("y", &y);
 
     RCLCPP_INFO(node_->get_logger(), "[%s] goal consist of x: %f and y: %f", run_config_.interface.c_str(), x, y);
 

@@ -46,8 +46,6 @@ protected:
    */
   virtual hri_audio_msgs::action::SpeechToText::Goal generate_goal(tinyxml2::XMLElement* parameters) override
   {
-    parameters_ = parameters;
-
     hri_audio_msgs::action::SpeechToText::Goal goal_msg;
 
     goal_msg.header.stamp = node_->get_clock()->now();

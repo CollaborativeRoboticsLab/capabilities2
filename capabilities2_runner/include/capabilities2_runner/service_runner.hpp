@@ -58,16 +58,16 @@ public:
    *
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    */
-  virtual void execution() override
+  virtual void execution(int id) override
   {
     execute_id += 1;
 
     // if parameters are not provided then cannot proceed
-    if (!parameters_)
+    if (!parameters_[id])
       throw runner_exception("cannot trigger service without parameters");
 
     // generate a goal from parameters if provided
-    auto request_msg = std::make_shared<typename ServiceT::Request>(generate_request(parameters_));
+    auto request_msg = std::make_shared<typename ServiceT::Request>(generate_request(parameters_[id]));
 
     auto result_future = service_client_->async_send_request(
         request_msg, [this](typename rclcpp::Client<ServiceT>::SharedFuture future) {

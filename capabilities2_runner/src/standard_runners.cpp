@@ -33,7 +33,7 @@ public:
 
 protected:
   // throw on triggerExecution function
-  void execution() override
+  void execution(int id) override
   {
     RCLCPP_INFO(node_->get_logger(), "Dummy runner does not have triggerExecution()");
   }

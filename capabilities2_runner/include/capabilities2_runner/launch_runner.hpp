@@ -129,7 +129,7 @@ public:
 
 protected:
   // throw on triggerExecution function
-  void execution() override
+  void execution(int id) override
   {
     throw runner_exception("no triggerExecution() this is a no-trigger action runner");
   }

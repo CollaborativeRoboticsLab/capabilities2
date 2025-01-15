@@ -123,24 +123,15 @@ public:
    */
   virtual void trigger(const std::string& parameters)
   {
-    parameters_ = convert_to_xml(parameters);
+    RCLCPP_INFO(node_->get_logger(), "[%s/%d] received new parameters", run_config_.interface.c_str(), thread_id);
 
-    RCLCPP_INFO(node_->get_logger(), "[%s] received new parameters", run_config_.interface.c_str());
+    parameters_[thread_id] = convert_to_xml(parameters);
 
-    new_parameter = true;
+    executionThreadPool[thread_id] = std::thread(&RunnerBase::execution, this, thread_id);
 
-    if (!is_running)
-    {
-      RCLCPP_INFO(node_->get_logger(), "[%s] execution thread not active. Activating..",
-                  run_config_.interface.c_str());
-                  
-      executionThread = std::thread(&RunnerBase::execution, this);
-    } 
-    else
-    {
-      RCLCPP_INFO(node_->get_logger(), "[%s] execution thread running. Avoiding reactivation",
-                  run_config_.interface.c_str());
-    }
+    RCLCPP_INFO(node_->get_logger(), "[%s/%d] started execution", run_config_.interface.c_str(), thread_id);
+
+    thread_id += 1;
   }
 
   /**
@@ -156,8 +147,7 @@ public:
     run_config_ = run_config;
     insert_id = 0;
     execute_id = -1;
-    is_running = false;
-    new_parameter = false;
+    thread_id = 0;
   }
 
   /**
@@ -230,7 +220,7 @@ protected:
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    *
    */
-  virtual void execution() = 0;
+  virtual void execution(int id) = 0;
 
   /**
    * @brief Update on_started event parameters with new data if avaible.
@@ -498,25 +488,32 @@ protected:
    * @brief Last parameter tracker id to be executed
    */
   int execute_id;
+
+  /**
+   * @brief Last parameter tracker id to be executed
+   */
+  int thread_id;
+
   /**
    * @brief pointer to XMLElement which contain parameters
    */
-  tinyxml2::XMLElement* parameters_;
+  std::map<int, tinyxml2::XMLElement*> parameters_;
 
   /**
-   * @brief thread that executes the triggerExecution functionality
+   * @brief dictionary of threads that executes the triggerExecution functionality
    */
-  std::thread executionThread;
+  std::map<int, std::thread> executionThreadPool;
 
   /**
-   * @brief boolean flag for status of the thread.
+   * @brief mutex and conditional variable for threadpool synchronisation.
    */
-  bool is_running;
+  std::mutex send_goal_mutex;
+  std::condition_variable send_goal_cv;
 
   /**
-   * @brief boolean flag for new parameter availability.
+   * @brief boolean flag for thread completion.
    */
-  bool new_parameter;
+  bool action_complete;
 
   /**
    * @brief external function that triggers capability runners
