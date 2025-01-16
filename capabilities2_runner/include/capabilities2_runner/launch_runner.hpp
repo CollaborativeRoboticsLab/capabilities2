@@ -37,36 +37,36 @@ public:
     launch_name = run_config_.runner.substr(run_config_.runner.find("/") + 1);
 
     // create an service client
-    start_service_client_ = node_->create_client<Launch>("/capabilities/launch_start");
+    start_service_client_ = node_->create_client<Launch>("/capabilities/launch/start");
 
-    RCLCPP_INFO(node_->get_logger(), "%s waiting for service: /capabilities/launch_start",
+    RCLCPP_INFO(node_->get_logger(), "%s waiting for service: /capabilities/launch/start",
                 run_config_.interface.c_str());
 
     if (!start_service_client_->wait_for_service(std::chrono::seconds(3)))
     {
-      RCLCPP_ERROR(node_->get_logger(), "%s failed to connect to service: /capabilities/launch_start",
+      RCLCPP_ERROR(node_->get_logger(), "%s failed to connect to service: /capabilities/launch/start",
                    run_config_.interface.c_str());
-      throw runner_exception("Failed to connect to server: /capabilities/launch_start");
+      throw runner_exception("Failed to connect to server: /capabilities/launch/start");
     }
 
-    RCLCPP_INFO(node_->get_logger(), "%s connected to service: /capabilities/launch_start",
+    RCLCPP_INFO(node_->get_logger(), "%s connected to service: /capabilities/launch/start",
                 run_config_.interface.c_str());
 
     // create an service client
-    stop_service_client_ = node_->create_client<Launch>("/capabilities/launch_stop");
+    stop_service_client_ = node_->create_client<Launch>("/capabilities/launch/stop");
 
     // wait for action server
-    RCLCPP_INFO(node_->get_logger(), "%s waiting for service: /capabilities/launch_stop",
+    RCLCPP_INFO(node_->get_logger(), "%s waiting for service: /capabilities/launch/stop",
                 run_config_.interface.c_str());
 
     if (!stop_service_client_->wait_for_service(std::chrono::seconds(3)))
     {
-      RCLCPP_ERROR(node_->get_logger(), "%s failed to connect to service: /capabilities/launch_stop",
+      RCLCPP_ERROR(node_->get_logger(), "%s failed to connect to service: /capabilities/launch/stop",
                    run_config_.interface.c_str());
-      throw runner_exception("Failed to connect to server: /capabilities/launch_stop");
+      throw runner_exception("Failed to connect to server: /capabilities/launch/stop");
     }
 
-    RCLCPP_INFO(node_->get_logger(), "%s connected to service: /capabilities/launch_stop",
+    RCLCPP_INFO(node_->get_logger(), "%s connected to service: /capabilities/launch/stop",
                 run_config_.interface.c_str());
 
     // generate a reequest from launch_name and package_name

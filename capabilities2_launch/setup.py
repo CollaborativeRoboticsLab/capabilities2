@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 import os
 from glob import glob
 
-package_name = 'capabilities2_launch_py'
+package_name = 'capabilities2_launch'
 
 setup(
     name=package_name,
@@ -12,6 +12,7 @@ setup(
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*launch.[pxy][yma]*'))),
+        (os.path.join('share', package_name, 'launch_server'), glob(os.path.join('launch_server', '*.py'))),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -22,7 +23,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'capabilities2_launch_py = capabilities2_launch_py.launch_server:main',
+            'capabilities2_launch = capabilities2_launch.capabilities2_launch:main',
         ],
     },
 )

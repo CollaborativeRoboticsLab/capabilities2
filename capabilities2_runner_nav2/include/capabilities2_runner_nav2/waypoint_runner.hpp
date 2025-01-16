@@ -6,11 +6,14 @@
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
+#include <lifecycle_msgs/srv/get_state.hpp>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav2_msgs/action/navigate_to_pose.hpp>
 
 #include <capabilities2_runner/action_runner.hpp>
+
+using namespace std::chrono_literals;
 
 namespace capabilities2_runner
 {
@@ -57,6 +60,9 @@ protected:
     geometry_msgs::msg::PoseStamped pose_msg;
 
     pose_msg.header.frame_id = "map";
+    pose_msg.header.stamp.sec = 0;
+    pose_msg.header.stamp.nanosec = 0;
+    
     pose_msg.pose.position.x = x;
     pose_msg.pose.position.y = y;
     pose_msg.pose.position.z = 0.0;
@@ -87,6 +93,8 @@ protected:
   std::string robot_base_frame_; /**The frame of the robot base*/
 
   double x, y; /**Coordinate frame parameters*/
+
+  rclcpp::Client<lifecycle_msgs::srv::GetState>::SharedPtr get_state_client_;
 };
 
 }  // namespace capabilities2_runner

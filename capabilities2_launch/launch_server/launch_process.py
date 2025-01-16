@@ -49,7 +49,7 @@ class LaunchProcess(Process):
             raise RuntimeError(str(exc))
 
     def run(self):
-        print(f"Launch file {self.launch_file_name} from package {self.package_name} started.")
+        print(f"Launch file {self.launch_file_name} from package {self.package_name} started with pid [{self.pid}")
 
         launch_service = launch.LaunchService(
             argv=self.launch_file_arguments,
@@ -78,6 +78,51 @@ class LaunchProcess(Process):
     def stop(self):
         print(f"Stopping Launch file {self.launch_file_name} from package {self.package_name}")
         self.kill()
+
+class LaunchManager:
+    def __init__(self):
+        self.processes = {}
+
+    def start(self, package_name, launch_file_name):
+        name = package_name + "/" + launch_file_name
+        
+        if name not in self.processes:
+            try:
+                self.processes[name] = LaunchProcess(package_name=package_name, launch_file_name=launch_file_name)
+                self.processes[name].start()
+            except:
+                return {"status": "error occured"}
+            else:
+                return {"status": "successfuly started"}
+        else:
+            return {"status": "already started. ignoring"}
+        
+    def status(self, package_name, launch_file_name):
+        name = package_name + "/" + launch_file_name
+
+        if name in self.processes:
+            if self.processes[name].is_alive():
+                return {"status": "running"}
+            else:
+                return {"status": "failed"}
+        else:
+            return {"status": "stopped"}
+        
+
+    def stop(self, package_name, launch_file_name):
+        name = package_name + "/" + launch_file_name
+
+        if name in self.processes:
+            try:
+                self.processes[name].stop()
+                self.processes[name].join()
+            except:
+                return {"status": "error occured"}
+            else:
+                return {"status": "successfuly stopped"}
+        else:
+            return {"status": "already stopped. ignoring"}
+
 
 if __name__ == "__main__":
     launch_process = LaunchProcess(
