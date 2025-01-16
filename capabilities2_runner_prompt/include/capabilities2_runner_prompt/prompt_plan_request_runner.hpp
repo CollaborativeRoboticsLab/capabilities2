@@ -47,8 +47,6 @@ protected:
    */
   virtual typename prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters) override
   {
-    parameters_ = parameters;
-
     bool replan;
     parameters->QueryBoolAttribute("replan", &replan);
 
@@ -56,13 +54,17 @@ protected:
 
     if (!replan)
     {
-      request.prompt.prompt = "Build a xml plan based on the availbale capabilities to acheive mentioned task. Return only the xml plan without explanations or comments";
+      request.prompt.prompt = "Build a xml plan based on the availbale capabilities to acheive mentioned task. Return "
+                              "only the xml plan without explanations or comments";
     }
     else
     {
       tinyxml2::XMLElement* failedElements = parameters->FirstChildElement("FailedElements");
 
-      request.prompt.prompt = "Rebuild the xml plan based on the availbale capabilities to acheive mentioned task. Just give the xml plan without explanations or comments. These XML elements had incompatibilities. " + std::string(failedElements->GetText()) + "Recorrect them as well";
+      request.prompt.prompt = "Rebuild the xml plan based on the availbale capabilities to acheive mentioned task. "
+                              "Just give the xml plan without explanations or comments. These XML elements had "
+                              "incompatibilities. " +
+                              std::string(failedElements->GetText()) + "Recorrect them as well";
     }
 
     prompt_msgs::msg::ModelOption modelOption1;
@@ -82,25 +84,6 @@ protected:
   }
 
   /**
-   * @brief generate a typed erased response
-   *
-   * this method is used in a callback passed to the trigger caller to get type erased result
-   * from the service the reponse can be passed by the caller or ignored
-   *
-   * The pattern needs to be implemented in the derived class
-   *
-   * @param wrapped_result
-   * @return tinyxml2::XMLElement*
-   */
-  virtual tinyxml2::XMLElement*
-  generate_response(const prompt_msgs::srv::Prompt::Response::SharedPtr& result) const override
-  {
-    document_string = result->response.response;
-
-    return nullptr;
-  }
-
-  /**
    * @brief Update on_success event parameters with new data if avaible.
    *
    * This function is used to inject new data into the XMLElement containing
@@ -111,21 +94,22 @@ protected:
    * @param parameters pointer to the XMLElement containing parameters
    * @return pointer to the XMLElement containing updated parameters
    */
-  virtual tinyxml2::XMLElement* update_on_success(tinyxml2::XMLElement* parameters)
+  virtual std::string update_on_success(std::string& parameters)
   {
+    tinyxml2::XMLElement* element = convert_to_xml(parameters);
+
+    std::string document_string = response_->response.response;
+
     // Create the plan element as a child of the existing parameters element
-    tinyxml2::XMLElement* textElement = parameters->GetDocument()->NewElement("ReceievdPlan");
-    parameters->InsertEndChild(textElement);
+    tinyxml2::XMLElement* textElement = element->GetDocument()->NewElement("ReceievdPlan");
+    element->InsertEndChild(textElement);
     textElement->SetText(document_string.c_str());
 
     // Return the updated parameters element with Pose added
-    return parameters;
-  };
+    std::string result = convert_to_string(element);
 
-  /**
-   * Document holder for received xml plan
-   */
-  mutable std::string document_string;
+    return result;
+  };
 };
 
 }  // namespace capabilities2_runner

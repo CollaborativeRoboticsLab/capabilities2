@@ -28,6 +28,7 @@
   <depend>tinyxml2</depend>
   <depend>libsqlite3-dev</depend>
   <depend>uuid</depend>
+  <depend>backward_ros</depend>
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>launch_ros</exec_depend>

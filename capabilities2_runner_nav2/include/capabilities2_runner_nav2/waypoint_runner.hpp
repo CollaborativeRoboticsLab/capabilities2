@@ -2,14 +2,18 @@
 
 #include <thread>
 #include <chrono>
+#include <string>
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
+#include <lifecycle_msgs/srv/get_state.hpp>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav2_msgs/action/navigate_to_pose.hpp>
 
 #include <capabilities2_runner/action_runner.hpp>
+
+using namespace std::chrono_literals;
 
 namespace capabilities2_runner
 {
@@ -47,17 +51,18 @@ protected:
    */
   virtual nav2_msgs::action::NavigateToPose::Goal generate_goal(tinyxml2::XMLElement* parameters) override
   {
-    parameters_ = parameters;
+    parameters->QueryDoubleAttribute("x", &x);
+    parameters->QueryDoubleAttribute("y", &y);
 
-    parameters_->QueryDoubleAttribute("x", &x);
-    parameters_->QueryDoubleAttribute("y", &y);
-
-    RCLCPP_INFO(node_->get_logger(), "%s is triggered with x: %f and y: %f", run_config_.interface.c_str(), x, y);
+    RCLCPP_INFO(node_->get_logger(), "[%s] goal consist of x: %f and y: %f", run_config_.interface.c_str(), x, y);
 
     nav2_msgs::action::NavigateToPose::Goal goal_msg;
     geometry_msgs::msg::PoseStamped pose_msg;
 
     pose_msg.header.frame_id = "map";
+    pose_msg.header.stamp.sec = 0;
+    pose_msg.header.stamp.nanosec = 0;
+    
     pose_msg.pose.position.x = x;
     pose_msg.pose.position.y = y;
     pose_msg.pose.position.z = 0.0;
@@ -69,15 +74,18 @@ protected:
   }
 
   /**
-   * @brief This generate result function overrides the generate_result() function from ActionRunner(). Since
-   * this is not used in this context, this returns nullptr
-   * @param result message from FollowWaypoints action
-   * @return nullptr
+   * @brief This generate feedback function overrides the generate_feedback() function from ActionRunner()
+   *
+   * @param msg feedback message from the action server
+   * @return std::string of feedback information
    */
-  virtual tinyxml2::XMLElement*
-  generate_result(const nav2_msgs::action::NavigateToPose::Result::SharedPtr& result) override
+  virtual std::string
+  generate_feedback(const typename nav2_msgs::action::NavigateToPose::Feedback::ConstSharedPtr msg) override
   {
-    return nullptr;
+    // std::string feedback = "x: " + std::to_string(msg->current_pose.pose.position.x) +
+    //                        " y: " + std::to_string(msg->current_pose.pose.position.y);
+    // return feedback;
+    return "";
   }
 
 protected:
@@ -85,6 +93,8 @@ protected:
   std::string robot_base_frame_; /**The frame of the robot base*/
 
   double x, y; /**Coordinate frame parameters*/
+
+  rclcpp::Client<lifecycle_msgs::srv::GetState>::SharedPtr get_state_client_;
 };
 
 }  // namespace capabilities2_runner

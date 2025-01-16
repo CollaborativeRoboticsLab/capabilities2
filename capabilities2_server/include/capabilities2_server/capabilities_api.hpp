@@ -280,7 +280,7 @@ public:
                                         on_failure_parameters, on_success_capability, on_success_parameters,
                                         on_stopped_capability, on_stopped_parameters);
 
-      RCLCPP_WARN(node_logging_interface_ptr_->get_logger(), "successfully set triggers");
+      RCLCPP_INFO(node_logging_interface_ptr_->get_logger(), "successfully set triggers");
     }
     catch (const capabilities2_runner::runner_exception& e)
     {

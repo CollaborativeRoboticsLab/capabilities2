@@ -52,61 +52,54 @@ public:
   }
 
   /**
-   * @brief the trigger function on the service runner is used to trigger an service.
-   * this method provides a mechanism for injecting parameters or a goal into a service
-   * and then trigger the service
+   * @brief Trigger process to be executed.
    *
-   * @param parameters
-   * @return std::optional<std::function<void(tinyxml2::XMLElement*)>>
+   * This method utilizes paramters set via the trigger() function
+   *
+   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    */
-  virtual std::optional<std::function<void(tinyxml2::XMLElement*)>>
-  trigger(tinyxml2::XMLElement* parameters = nullptr) override
+  virtual void execution(int id) override
   {
     execute_id += 1;
 
     // if parameters are not provided then cannot proceed
-    if (!parameters)
+    if (!parameters_[id])
       throw runner_exception("cannot trigger service without parameters");
 
     // generate a goal from parameters if provided
-    auto request_msg = std::make_shared<typename ServiceT::Request>(generate_request(parameters));
+    auto request_msg = std::make_shared<typename ServiceT::Request>(generate_request(parameters_[id]));
 
     auto result_future = service_client_->async_send_request(
         request_msg, [this](typename rclcpp::Client<ServiceT>::SharedFuture future) {
           if (!future.valid())
           {
             RCLCPP_ERROR(node_->get_logger(), "get result call failed");
-            events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));
+
+            // trigger the events related to on_failure state
+            if (events[execute_id].on_failure != "")
+            {
+              triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
+            }
           }
           else
           {
             RCLCPP_INFO(node_->get_logger(), "get result call succeeded");
-            events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));
+
+            response_ = future.get();
+
+            // trigger the events related to on_success state
+            if (events[execute_id].on_success != "")
+            {
+              triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
+            }
           }
         });
 
-    // Trigger started event if defined
-    events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
-
-    // Define a callback function to handle the result once it's ready
-    std::function<void(tinyxml2::XMLElement*)> result_callback =
-        [this, &result_future](tinyxml2::XMLElement* result) mutable {
-          auto response = result_future.get();
-          result = generate_response(response);
-
-          // Ensure the future is ready before accessing the result
-          if (result_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-          {
-            auto response = result_future.get();
-            result = generate_response(response);
-          }
-          else
-          {
-            RCLCPP_WARN(node_->get_logger(), "Result is not ready yet.");
-          }
-        };
-
-    return result_callback;
+    // trigger the events related to on_started state
+    if (events[execute_id].on_started != "")
+    {
+      triggerFunction_(events[execute_id].on_started, update_on_started(events[execute_id].on_started_param));
+    }
   }
 
   /**
@@ -127,8 +120,11 @@ public:
     if (!service_client_)
       throw runner_exception("cannot stop runner action that was not started");
 
-    // publish event
-    events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
+    // Trigger on_stopped event if defined
+    if (events[execute_id].on_stopped != "")
+    {
+      triggerFunction_(events[execute_id].on_stopped, update_on_stopped(events[execute_id].on_stopped_param));
+    }
   }
 
 protected:
@@ -145,19 +141,7 @@ protected:
    */
   virtual typename ServiceT::Request generate_request(tinyxml2::XMLElement* parameters) = 0;
 
-  /**
-   * @brief generate a typed erased response
-   *
-   * This method is used in a callback passed to the trigger caller to get type erased result
-   * from the service the reponse can be passed by the caller or ignored
-   *
-   * The pattern needs to be implemented in the derived class
-   *
-   * @param wrapped_result
-   * @return tinyxml2::XMLElement*
-   */
-  virtual tinyxml2::XMLElement* generate_response(const typename ServiceT::Response::SharedPtr& result) const = 0;
-
   typename rclcpp::Client<ServiceT>::SharedPtr service_client_;
+  typename ServiceT::Response::SharedPtr response_;
 };
 }  // namespace capabilities2_runner

@@ -45,10 +45,8 @@ protected:
    */
   virtual hri_audio_msgs::action::TextToSpeech::Goal generate_goal(tinyxml2::XMLElement* parameters) override
   {
-    parameters_ = parameters;
-
     const char **text;
-    parameters_->QueryStringAttribute("text", text);
+    parameters->QueryStringAttribute("text", text);
     std::string tts_text(*text);
 
     hri_audio_msgs::action::TextToSpeech::Goal goal_msg;
@@ -60,16 +58,16 @@ protected:
   }
 
   /**
-   * @brief This generate_result function overrides the generate_result() function from ActionRunner(). Since this does not
-   * return a value, return value is nullptr
-   * 
-   * @param result message from SpeechToText action
-   * @return nullptr
+   * @brief This generate feedback function overrides the generate_feedback() function from ActionRunner()
+   *
+   * @param msg feedback message from the action server
+   * @return std::string of feedback information
    */
-  virtual tinyxml2::XMLElement*
-  generate_result(const hri_audio_msgs::action::TextToSpeech::Result::SharedPtr& result) override
+  virtual std::string
+  generate_feedback(const typename hri_audio_msgs::action::TextToSpeech::Feedback::ConstSharedPtr msg) override
   {
-    return nullptr;
+    std::string feedback = "";
+    return feedback;
   }
 
 };

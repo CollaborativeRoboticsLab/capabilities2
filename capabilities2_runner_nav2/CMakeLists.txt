@@ -16,6 +16,7 @@ find_package(rclcpp_action REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_runner REQUIRED)
 
@@ -44,6 +45,7 @@ ament_target_dependencies(${PROJECT_NAME}
   pluginlib
   nav2_msgs
   geometry_msgs
+  lifecycle_msgs
   capabilities2_msgs
   capabilities2_runner
 )

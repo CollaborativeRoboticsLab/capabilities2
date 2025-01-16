@@ -10,7 +10,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 
-#include <capabilities2_executor/capabilities_xml_parser.hpp>
+#include <capabilities2_fabric/capabilities_xml_parser.hpp>
 #include <capabilities2_msgs/action/plan.hpp>
 
 /**
@@ -38,14 +38,20 @@ public:
     // Create the action client for capabilities_fabric after the node is fully constructed
     this->client_ptr_ = rclcpp_action::create_client<capabilities2_msgs::action::Plan>(shared_from_this(), "/capabilities_fabric");
 
-    // Set up a timer to call send_goal after a short delay
-    this->timer_ = this->create_wall_timer(std::chrono::milliseconds(500), std::bind(&CapabilitiesFileParser::send_goal, this));
+    if (!this->client_ptr_->wait_for_action_server(std::chrono::seconds(5)))
+    {
+      RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
+      rclcpp::shutdown();
+      return;
+    }
+
+    RCLCPP_INFO(this->get_logger(), "Sucessfully connected to the capabilities_fabric action server");
+
+    send_goal();
   }
 
   void send_goal()
   {
-    this->timer_->cancel();
-
     // try to load the file
     tinyxml2::XMLError xml_status = document.LoadFile(plan_file_path.c_str());
 
@@ -58,20 +64,11 @@ public:
 
     RCLCPP_INFO(this->get_logger(), "Plan loaded from : %s", plan_file_path.c_str());
 
-    if (!this->client_ptr_->wait_for_action_server(std::chrono::seconds(5)))
-    {
-      RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
-      rclcpp::shutdown();
-      return;
-    }
-
-    RCLCPP_INFO(this->get_logger(), "Sucessfully connected to the capabilities_fabric action server");
-
     auto goal_msg = capabilities2_msgs::action::Plan::Goal();
 
     capabilities2_xml_parser::convert_to_string(document, goal_msg.plan);
 
-    RCLCPP_INFO(this->get_logger(), "Following plan was read:\n\n%s ", goal_msg.plan.c_str());
+    RCLCPP_INFO(this->get_logger(), "Following plan was loaded :\n\n%s ", goal_msg.plan.c_str());
 
     RCLCPP_INFO(this->get_logger(), "Sending goal to the capabilities_fabric action server");
 
@@ -110,7 +107,7 @@ public:
 
       if (result.result->success)
       {
-        RCLCPP_ERROR(this->get_logger(), "Plan executed successfully");
+        RCLCPP_INFO(this->get_logger(), "Plan executed successfully");
       }
       else
       {
@@ -124,8 +121,6 @@ public:
             RCLCPP_ERROR(this->get_logger(), "Failed Elements : %s", failed_element.c_str());
         }
       }
-
-      rclcpp::shutdown();
     };
 
     this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
@@ -140,7 +135,4 @@ private:
 
   /** action client */
   rclcpp_action::Client<capabilities2_msgs::action::Plan>::SharedPtr client_ptr_;
-
-  /** action server */
-  rclcpp::TimerBase::SharedPtr timer_;
 };

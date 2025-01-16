@@ -26,11 +26,16 @@ public:
     RCLCPP_INFO(node_->get_logger(), "Dummy runner stopped");
   }
 
-  std::optional<std::function<void(tinyxml2::XMLElement*)>>
-  trigger(tinyxml2::XMLElement* parameters) override
+  void trigger(const std::string& parameters) override
   {
     RCLCPP_INFO(node_->get_logger(), "Dummy runner cannot trigger");
-    return std::nullopt;
+  }
+
+protected:
+  // throw on triggerExecution function
+  void execution(int id) override
+  {
+    RCLCPP_INFO(node_->get_logger(), "Dummy runner does not have triggerExecution()");
   }
 };
 

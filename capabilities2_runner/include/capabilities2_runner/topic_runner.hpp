@@ -44,41 +44,44 @@ public:
   }
 
   /**
-   * @brief the trigger function on the topic subscriber runner is used to trigger data retrival.
+   * @brief Trigger process to be executed.
    *
-   * @param parameters
-   * @return std::optional<std::function<void(tinyxml2::XMLElement*)>>
+   * This method utilizes paramters set via the trigger() function
+   *
+   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    */
-  virtual std::optional<std::function<void(tinyxml2::XMLElement*)>>
-  trigger(tinyxml2::XMLElement* parameters = nullptr) override
+  virtual void execution(int id) override
   {
     execute_id += 1;
 
     // if parameters are not provided then cannot proceed
-    if (!parameters)
+    if (!parameters_[id])
       throw runner_exception("cannot grab data without parameters");
 
-    events[execute_id].on_started(update_on_started(events[execute_id].on_started_param));
+    // trigger the events related to on_started state
+    if (events[execute_id].on_started != "")
+    {
+      triggerFunction_(events[execute_id].on_started, update_on_started(events[execute_id].on_started_param));
+    }
 
     if (latest_message_)
     {
-      events[execute_id].on_success(update_on_success(events[execute_id].on_success_param));
+      // trigger the events related to on_success state
+      if (events[execute_id].on_success != "")
+      {
+        triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
+      }
     }
     else
     {
       RCLCPP_ERROR(node_->get_logger(), "get result call failed");
-      events[execute_id].on_failure(update_on_failure(events[execute_id].on_failure_param));
+
+      // trigger the events related to on_failure state
+      if (events[execute_id].on_failure != "")
+      {
+        triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
+      }
     }
-
-    // create a function to call for the result. the future will be returned to the caller and the caller
-    // can provide a conversion function to handle the result
-
-    std::function<void(tinyxml2::XMLElement*)> result_callback = [this](tinyxml2::XMLElement* result) {
-      if (latest_message_)
-        result = generate_message(latest_message_);
-    };
-
-    return result_callback;
   }
 
   /**
@@ -99,8 +102,11 @@ public:
     if (!subscription_)
       throw runner_exception("cannot stop runner subscriber that was not started");
 
-    // publish event
-    events[execute_id].on_stopped(update_on_stopped(events[execute_id].on_stopped_param));
+    // Trigger on_stopped event if defined
+    if (events[execute_id].on_stopped != "")
+    {
+      triggerFunction_(events[execute_id].on_stopped, update_on_stopped(events[execute_id].on_stopped_param));
+    }
   }
 
 protected:
@@ -116,19 +122,6 @@ protected:
   {
     latest_message_ = msg;
   }
-
-  /**
-   * @brief generate xml data structure of the message
-   *
-   * this method is used in a callback passed to the trigger caller to get type erased result
-   * of the latest message can be passed by the caller or ignored
-   *
-   * The pattern needs to be implemented in the derived class
-   *
-   * @param wrapped_result
-   * @return tinyxml2::XMLElement*
-   */
-  virtual tinyxml2::XMLElement* generate_message(typename TopicT::SharedPtr& result) = 0;
 
   typename rclcpp::Subscription<TopicT>::SharedPtr subscription_;
 

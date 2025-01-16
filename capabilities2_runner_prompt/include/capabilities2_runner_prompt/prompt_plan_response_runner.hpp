@@ -45,8 +45,6 @@ protected:
    */
   virtual capabilities2_msgs::action::Plan::Goal generate_goal(tinyxml2::XMLElement* parameters) override
   {
-    parameters_ = parameters;
-
     tinyxml2::XMLElement* planElement = parameters->FirstChildElement("ReceievdPlan");
 
     auto goal_msg = capabilities2_msgs::action::Plan::Goal();
@@ -61,15 +59,16 @@ protected:
   }
 
   /**
-   * @brief This generate result function overrides the generate_result() function from ActionRunner(). Since
-   * this is not used in this context, this returns nullptr
-   * @param result message from FollowWaypoints action
-   * @return nullptr
+   * @brief This generate feedback function overrides the generate_feedback() function from ActionRunner()
+   *
+   * @param msg feedback message from the action server
+   * @return std::string of feedback information
    */
-  virtual tinyxml2::XMLElement*
-  generate_result(const capabilities2_msgs::action::Plan::Result::SharedPtr& result) override
+  virtual std::string
+  generate_feedback(const typename capabilities2_msgs::action::Plan::Feedback::ConstSharedPtr msg) override
   {
-    return nullptr;
+    std::string feedback = msg->progress;
+    return feedback;
   }
 
   /**
@@ -83,13 +82,15 @@ protected:
    * @param parameters pointer to the XMLElement containing parameters
    * @return pointer to the XMLElement containing updated parameters
    */
-  virtual tinyxml2::XMLElement* update_on_failure(tinyxml2::XMLElement* parameters)
+  virtual std::string update_on_failure(std::string& parameters)
   {
-    parameters->SetAttribute("replan", true);
+    tinyxml2::XMLElement* element = convert_to_xml(parameters);
+
+    element->SetAttribute("replan", true);
 
     // Create the failed elements element as a child of the existing parameters element
-    tinyxml2::XMLElement* failedElements = parameters->GetDocument()->NewElement("FailedElements");
-    parameters->InsertEndChild(failedElements);
+    tinyxml2::XMLElement* failedElements = element->GetDocument()->NewElement("FailedElements");
+    element->InsertEndChild(failedElements);
 
     std::string failedElementsString = "";
 
@@ -98,7 +99,9 @@ protected:
 
     failedElements->SetText(failedElementsString.c_str());
 
-    return parameters;
+    std::string result = convert_to_string(element);
+
+    return result;
   };
 };
 

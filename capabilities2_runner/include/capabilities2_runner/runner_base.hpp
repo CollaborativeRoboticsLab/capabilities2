@@ -3,7 +3,8 @@
 #include <stdexcept>
 #include <string>
 #include <functional>
-#include <optional>
+#include <mutex>
+#include <thread>
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 
@@ -63,25 +64,25 @@ struct runner_opts
  *
  * keeps track of events that are related to runner instances at various points of the
  * plan
- * @param on_started pointer to function to execute on start
- * @param on_success pointer to function to execute on success
- * @param on_failure pointer to function to execute on failure
- * @param on_stopped pointer to function to execute on stop
- * @param on_started_param parameters for the function to execute on start
- * @param on_success_param parameters for the function to execute on success
- * @param on_failure_param parameters for the function to execute on failure
- * @param on_stopped_param parameters for the function to execute on stop
+ * @param on_started name of the capability to execute on start
+ * @param on_success name of the capability to execute on success
+ * @param on_failure name of the capability to execute on failure
+ * @param on_stopped name of the capability to execute on stop
+ * @param on_started_param parameters for the capability to execute on start
+ * @param on_success_param parameters for the capability to execute on success
+ * @param on_failure_param parameters for the capability to execute on failure
+ * @param on_stopped_param parameters for the capability to execute on stop
  */
 struct event_opts
 {
-  std::function<void(tinyxml2::XMLElement*)> on_started;
-  std::function<void(tinyxml2::XMLElement*)> on_success;
-  std::function<void(tinyxml2::XMLElement*)> on_failure;
-  std::function<void(tinyxml2::XMLElement*)> on_stopped;
-  tinyxml2::XMLElement* on_started_param;
-  tinyxml2::XMLElement* on_success_param;
-  tinyxml2::XMLElement* on_failure_param;
-  tinyxml2::XMLElement* on_stopped_param;
+  std::string on_started;
+  std::string on_success;
+  std::string on_failure;
+  std::string on_stopped;
+  std::string on_started_param;
+  std::string on_success_param;
+  std::string on_failure_param;
+  std::string on_stopped_param;
 };
 
 class RunnerBase
@@ -112,18 +113,26 @@ public:
   virtual void stop() = 0;
 
   /**
-   * @brief trigger the runner
+   * @brief Trigger the runner
    *
-   * this method allows insertion of parameters in a runner after it has been initialized
-   * it is an approach to parameterise capabilities
+   * This method allows insertion of parameters in a runner after it has been initialized. it is an approach
+   * to parameterise capabilities. Internally starts up RunnerBase::triggerExecution in a thread
    *
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    *
-   * @return std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>> function pointer to invoke
-   * elsewhere such as an event callback
    */
-  virtual std::optional<std::function<void(tinyxml2::XMLElement*)>>
-  trigger(tinyxml2::XMLElement* parameters = nullptr) = 0;
+  virtual void trigger(const std::string& parameters)
+  {
+    RCLCPP_INFO(node_->get_logger(), "[%s/%d] received new parameters", run_config_.interface.c_str(), thread_id);
+
+    parameters_[thread_id] = convert_to_xml(parameters);
+
+    executionThreadPool[thread_id] = std::thread(&RunnerBase::execution, this, thread_id);
+
+    RCLCPP_INFO(node_->get_logger(), "[%s/%d] started execution", run_config_.interface.c_str(), thread_id);
+
+    thread_id += 1;
+  }
 
   /**
    * @brief Initializer function for initializing the base runner in place of constructor due to plugin semantics
@@ -138,19 +147,24 @@ public:
     run_config_ = run_config;
     insert_id = 0;
     execute_id = -1;
+    thread_id = 0;
   }
 
   /**
    * @brief attach events to the runner
    *
    * @param event_option event_options related for the action
-   * 
+   *
    * @return number of attached events
    */
-  int attach_events(capabilities2_runner::event_opts& event_option)
+  int attach_events(capabilities2_runner::event_opts& event_option,
+                    std::function<void(const std::string&, const std::string&)> triggerFunction)
   {
-    RCLCPP_INFO(node_->get_logger(), "%s accepted event options with ID : %d ", run_config_.interface.c_str(), insert_id);
-    
+    RCLCPP_INFO(node_->get_logger(), "[%s] accepted event options with ID : %d ", run_config_.interface.c_str(),
+                insert_id);
+
+    triggerFunction_ = triggerFunction;
+
     events[insert_id] = event_option;
     insert_id += 1;
 
@@ -199,6 +213,16 @@ public:
 
 protected:
   /**
+   * @brief Trigger process to be executed.
+   *
+   * This method utilizes paramters set via the trigger() function
+   *
+   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
+   *
+   */
+  virtual void execution(int id) = 0;
+
+  /**
    * @brief Update on_started event parameters with new data if avaible.
    *
    * This function is used to inject new data into the XMLElement containing
@@ -209,7 +233,7 @@ protected:
    * @param parameters pointer to the XMLElement containing parameters
    * @return pointer to the XMLElement containing updated parameters
    */
-  virtual tinyxml2::XMLElement* update_on_started(tinyxml2::XMLElement* parameters)
+  virtual std::string update_on_started(std::string& parameters)
   {
     return parameters;
   };
@@ -225,7 +249,7 @@ protected:
    * @param parameters pointer to the XMLElement containing parameters
    * @return pointer to the XMLElement containing updated parameters
    */
-  virtual tinyxml2::XMLElement* update_on_stopped(tinyxml2::XMLElement* parameters)
+  virtual std::string update_on_stopped(std::string& parameters)
   {
     return parameters;
   };
@@ -241,7 +265,7 @@ protected:
    * @param parameters pointer to the XMLElement containing parameters
    * @return pointer to the XMLElement containing updated parameters
    */
-  virtual tinyxml2::XMLElement* update_on_failure(tinyxml2::XMLElement* parameters)
+  virtual std::string update_on_failure(std::string& parameters)
   {
     return parameters;
   };
@@ -257,11 +281,55 @@ protected:
    * @param parameters pointer to the XMLElement containing parameters
    * @return pointer to the XMLElement containing updated parameters
    */
-  virtual tinyxml2::XMLElement* update_on_success(tinyxml2::XMLElement* parameters)
+  virtual std::string update_on_success(std::string& parameters)
   {
     return parameters;
   };
 
+  /**
+   * @brief convert an XMLElement to std::string
+   *
+   * @param element XMLElement element to be converted
+   * @param paramters parameter to hold std::string
+   *
+   * @return `true` if element is not nullptr and conversion successful, `false` if element is nullptr
+   */
+  std::string convert_to_string(tinyxml2::XMLElement* element)
+  {
+    if (element)
+    {
+      element->Accept(&printer);
+      std::string parameters = printer.CStr();
+      return parameters;
+    }
+    else
+    {
+      std::string parameters = "";
+      return parameters;
+    }
+  }
+
+  /**
+   * @brief convert an XMLElement to std::string
+   *
+   * @param element XMLElement element to be converted
+   * @param paramters parameter to hold std::string
+   *
+   * @return `true` if element is not nullptr and conversion successful, `false` if element is nullptr
+   */
+  tinyxml2::XMLElement* convert_to_xml(const std::string& parameters)
+  {
+    if (parameters != "")
+    {
+      doc.Parse(parameters.c_str());
+      tinyxml2::XMLElement* element = doc.FirstChildElement();
+      return element;
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
   // run config getters
 
   /**
@@ -412,19 +480,55 @@ protected:
   std::map<int, event_opts> events;
 
   /**
-   * @brief Last tracker id to be inserted
+   * @brief Last event tracker id to be inserted
    */
   int insert_id;
 
   /**
-   * @brief Last tracker id to be executed
+   * @brief Last parameter tracker id to be executed
    */
   int execute_id;
 
   /**
+   * @brief Last parameter tracker id to be executed
+   */
+  int thread_id;
+
+  /**
    * @brief pointer to XMLElement which contain parameters
-   * */
-  tinyxml2::XMLElement* parameters_;
+   */
+  std::map<int, tinyxml2::XMLElement*> parameters_;
+
+  /**
+   * @brief dictionary of threads that executes the triggerExecution functionality
+   */
+  std::map<int, std::thread> executionThreadPool;
+
+  /**
+   * @brief mutex and conditional variable for threadpool synchronisation.
+   */
+  std::mutex send_goal_mutex;
+  std::condition_variable send_goal_cv;
+
+  /**
+   * @brief boolean flag for thread completion.
+   */
+  bool action_complete;
+
+  /**
+   * @brief external function that triggers capability runners
+   */
+  std::function<void(const std::string, const std::string)> triggerFunction_;
+
+  /**
+   * @brief XMLElement that is used to convert xml strings to std::string
+   */
+  tinyxml2::XMLPrinter printer;
+
+  /**
+   * @brief XMLElement that is used to convert std::string to xml strings
+   */
+  tinyxml2::XMLDocument doc;
 };
 
 }  // namespace capabilities2_runner

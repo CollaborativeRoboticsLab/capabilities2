@@ -46,8 +46,6 @@ protected:
    */
   virtual hri_audio_msgs::action::SpeechToText::Goal generate_goal(tinyxml2::XMLElement* parameters) override
   {
-    parameters_ = parameters;
-
     hri_audio_msgs::action::SpeechToText::Goal goal_msg;
 
     goal_msg.header.stamp = node_->get_clock()->now();
@@ -56,22 +54,16 @@ protected:
   }
 
   /**
-   * @brief This generate_result function overrides the generate_result() function from ActionRunner(). Since
+   * @brief This generate feedback function overrides the generate_feedback() function from ActionRunner()
    *
-   * @param result message from SpeechToText action
-   * @return tinyxml2::XMLElement* in the format '<Event name=speech_to_text provider=ListenerRunner text=$value/>'
+   * @param msg feedback message from the action server
+   * @return std::string of feedback information
    */
-  virtual tinyxml2::XMLElement*
-  generate_result(const hri_audio_msgs::action::SpeechToText::Result::SharedPtr& result) override
+  virtual std::string
+  generate_feedback(const typename hri_audio_msgs::action::SpeechToText::Feedback::ConstSharedPtr msg) override
   {
-    tinyxml2::XMLDocument doc;
-
-    // Root element
-    tinyxml2::XMLElement* textElement = doc.NewElement("Text");
-    doc.InsertEndChild(textElement);
-    textElement->SetText(result->stt_text.c_str());
-
-    return doc.FirstChildElement("Text");
+    std::string feedback = "";
+    return feedback;
   }
 
   /**
@@ -85,15 +77,19 @@ protected:
    * @param parameters pointer to the XMLElement containing parameters
    * @return pointer to the XMLElement containing updated parameters
    */
-  virtual tinyxml2::XMLElement* update_on_success(tinyxml2::XMLElement* parameters)
+  virtual std::string update_on_success(std::string& parameters)
   {
+    tinyxml2::XMLElement* element = convert_to_xml(parameters);
+
     // Create the Pose element as a child of the existing parameters element
-    tinyxml2::XMLElement* textElement = parameters->GetDocument()->NewElement("Text");
-    parameters->InsertEndChild(textElement);
+    tinyxml2::XMLElement* textElement = element->GetDocument()->NewElement("Text");
+    element->InsertEndChild(textElement);
     textElement->SetText(result_->stt_text.c_str());
 
-    // Return the updated parameters element with Pose added
-    return parameters;
+    // Return the updated parameters element with Pose added as string
+    std::string result = convert_to_string(element);
+
+    return result;
   };
 };
 

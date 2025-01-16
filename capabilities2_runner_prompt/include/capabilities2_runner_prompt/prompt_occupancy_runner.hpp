@@ -46,8 +46,6 @@ public:
    */
   virtual typename prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters) override
   {
-    parameters_ = parameters;
-
     tinyxml2::XMLElement* occupancyElement = parameters->FirstChildElement("OccupancyGrid");
 
     tinyxml2::XMLPrinter printer;
@@ -73,23 +71,6 @@ public:
     request.prompt.options.push_back(modelOption2);
 
     return request;
-  }
-
-  /**
-   * @brief generate a typed erased response
-   *
-   * this method is used in a callback passed to the trigger caller to get type erased result
-   * from the service the reponse can be passed by the caller or ignored
-   *
-   * The pattern needs to be implemented in the derived class
-   *
-   * @param wrapped_result
-   * @return tinyxml2::XMLElement*
-   */
-  virtual tinyxml2::XMLElement*
-  generate_response(const typename prompt_msgs::srv::Prompt::Response::SharedPtr& result) const override
-  {
-    return nullptr;
   }
 };
 
