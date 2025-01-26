@@ -4,7 +4,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <capabilities2_fabric/utils/connection.hpp>
 
-namespace capabilities2_xml_parser
+namespace xml_parser
 {
 /**
  * @brief extract elements related plan
@@ -138,10 +138,10 @@ bool check_tags(rclcpp::Logger logger, tinyxml2::XMLElement* element, std::vecto
     providertag = "";
 
   bool hasChildren = !element->NoChildren();
-  bool hasSiblings = !capabilities2_xml_parser::isLastElement(element);
-  bool foundInControl = capabilities2_xml_parser::search(control, nametag);
-  bool foundInEvents = capabilities2_xml_parser::search(events, nametag);
-  bool foundInProviders = capabilities2_xml_parser::search(providers, providertag);
+  bool hasSiblings = !xml_parser::isLastElement(element);
+  bool foundInControl = xml_parser::search(control, nametag);
+  bool foundInEvents = xml_parser::search(events, nametag);
+  bool foundInProviders = xml_parser::search(providers, providertag);
   bool returnValue = true;
 
   if (typetag == "Control")
@@ -154,10 +154,10 @@ bool check_tags(rclcpp::Logger logger, tinyxml2::XMLElement* element, std::vecto
     }
 
     if (hasChildren)
-      returnValue &= capabilities2_xml_parser::check_tags(logger, element->FirstChildElement(), events, providers, control, rejected);
+      returnValue &= xml_parser::check_tags(logger, element->FirstChildElement(), events, providers, control, rejected);
 
     if (hasSiblings)
-      returnValue &= capabilities2_xml_parser::check_tags(logger, element->NextSiblingElement(), events, providers, control, rejected);
+      returnValue &= xml_parser::check_tags(logger, element->NextSiblingElement(), events, providers, control, rejected);
   }
   else if (typetag == "Event")
   {
@@ -169,7 +169,7 @@ bool check_tags(rclcpp::Logger logger, tinyxml2::XMLElement* element, std::vecto
     }
 
     if (hasSiblings)
-      returnValue &= capabilities2_xml_parser::check_tags(logger, element->NextSiblingElement(), events, providers, control, rejected);
+      returnValue &= xml_parser::check_tags(logger, element->NextSiblingElement(), events, providers, control, rejected);
   }
   else
   {
@@ -204,8 +204,8 @@ std::vector<std::string> get_control_list()
  * @param connection_id numerical id of the connection
  * @param connection_type the type of connection
  */
-void extract_connections(tinyxml2::XMLElement* element, std::map<int, capabilities2_executor::node_t>& connections, int connection_id = 0,
-                         capabilities2_executor::connection_type_t connection_type = capabilities2_executor::connection_type_t::ON_SUCCESS)
+void extract_connections(tinyxml2::XMLElement* element, std::map<int, capabilities2::node_t>& connections, int connection_id = 0,
+                         capabilities2::connection_type_t connection_type = capabilities2::connection_type_t::ON_SUCCESS)
 {
   int predecessor_id;
 
@@ -231,38 +231,35 @@ void extract_connections(tinyxml2::XMLElement* element, std::map<int, capabiliti
     providertag = "";
 
   bool hasChildren = !element->NoChildren();
-  bool hasSiblings = !capabilities2_xml_parser::isLastElement(element);
+  bool hasSiblings = !xml_parser::isLastElement(element);
 
   if ((typetag == "Control") and (nametag == "sequential"))
   {
     if (hasChildren)
-      capabilities2_xml_parser::extract_connections(element->FirstChildElement(), connections, connection_id,
-                                                    capabilities2_executor::connection_type_t::ON_SUCCESS);
+      xml_parser::extract_connections(element->FirstChildElement(), connections, connection_id, capabilities2::connection_type_t::ON_SUCCESS);
 
     if (hasSiblings)
-      capabilities2_xml_parser::extract_connections(element->NextSiblingElement(), connections, connection_id, connection_type);
+      xml_parser::extract_connections(element->NextSiblingElement(), connections, connection_id, connection_type);
   }
   else if ((typetag == "Control") and (nametag == "parallel"))
   {
     if (hasChildren)
-      capabilities2_xml_parser::extract_connections(element->FirstChildElement(), connections, connection_id,
-                                                    capabilities2_executor::connection_type_t::ON_START);
+      xml_parser::extract_connections(element->FirstChildElement(), connections, connection_id, capabilities2::connection_type_t::ON_START);
 
     if (hasSiblings)
-      capabilities2_xml_parser::extract_connections(element->NextSiblingElement(), connections, connection_id, connection_type);
+      xml_parser::extract_connections(element->NextSiblingElement(), connections, connection_id, connection_type);
   }
   else if ((typetag == "Control") and (nametag == "recovery"))
   {
     if (hasChildren)
-      capabilities2_xml_parser::extract_connections(element->FirstChildElement(), connections, connection_id,
-                                                    capabilities2_executor::connection_type_t::ON_FAILURE);
+      xml_parser::extract_connections(element->FirstChildElement(), connections, connection_id, capabilities2::connection_type_t::ON_FAILURE);
 
     if (hasSiblings)
-      capabilities2_xml_parser::extract_connections(element->NextSiblingElement(), connections, connection_id, connection_type);
+      xml_parser::extract_connections(element->NextSiblingElement(), connections, connection_id, connection_type);
   }
   else if (typetag == "Event")
   {
-    capabilities2_executor::node_t node;
+    capabilities2::node_t node;
 
     node.source.runner = nametag;
     node.source.provider = providertag;
@@ -275,18 +272,18 @@ void extract_connections(tinyxml2::XMLElement* element, std::map<int, capabiliti
 
     connections[connection_id] = node;
 
-    if ((connection_type == capabilities2_executor::connection_type_t::ON_SUCCESS) and (connection_id != 0))
+    if ((connection_type == capabilities2::connection_type_t::ON_SUCCESS) and (connection_id != 0))
       connections[predecessor_id].target_on_success = connections[connection_id].source;
 
-    else if ((connection_type == capabilities2_executor::connection_type_t::ON_START) and (connection_id != 0))
+    else if ((connection_type == capabilities2::connection_type_t::ON_START) and (connection_id != 0))
       connections[predecessor_id].target_on_start = connections[connection_id].source;
 
-    else if ((connection_type == capabilities2_executor::connection_type_t::ON_FAILURE) and (connection_id != 0))
+    else if ((connection_type == capabilities2::connection_type_t::ON_FAILURE) and (connection_id != 0))
       connections[predecessor_id].target_on_failure = connections[connection_id].source;
 
     if (hasSiblings)
-      capabilities2_xml_parser::extract_connections(element->NextSiblingElement(), connections, connection_id + 1, connection_type);
+      xml_parser::extract_connections(element->NextSiblingElement(), connections, connection_id + 1, connection_type);
   }
 }
 
-}  // namespace capabilities2_xml_parser
+}  // namespace xml_parser

@@ -1,4 +1,4 @@
-capabilities2_file_parser:
+fabric_client:
   ros__parameters:
     plan_file_path: "install/capabilities2_fabric/share/capabilities2_fabric/plans/navigation_2.xml" # WaypointRunner Example 2
     # plan_file_path: "install/capabilities2_fabric/share/capabilities2_fabric/plans/navigation_1.xml" # WaypointRunner Example 1

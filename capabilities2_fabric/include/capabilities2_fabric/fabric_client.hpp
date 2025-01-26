@@ -10,7 +10,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 
-#include <capabilities2_fabric/capabilities_xml_parser.hpp>
+#include <capabilities2_fabric/utils/xml_parser.hpp>
 #include <capabilities2_msgs/action/plan.hpp>
 
 /**
@@ -20,10 +20,10 @@
  * Will read an XML file that implements a plan and send it to the server
  */
 
-class CapabilitiesFileParser : public rclcpp::Node
+class CapabilitiesFabricClient : public rclcpp::Node
 {
 public:
-  CapabilitiesFileParser() : Node("Capabilities2_File_Parser")
+  CapabilitiesFabricClient() : Node("Capabilities2_Fabric_Client")
   {
     declare_parameter("plan_file_path", "install/capabilities2_fabric/share/capabilities2_fabric/plans/default.xml");
     plan_file_path = get_parameter("plan_file_path").as_string();
@@ -66,7 +66,7 @@ public:
 
     auto goal_msg = capabilities2_msgs::action::Plan::Goal();
 
-    capabilities2_xml_parser::convert_to_string(document, goal_msg.plan);
+    xml_parser::convert_to_string(document, goal_msg.plan);
 
     RCLCPP_INFO(this->get_logger(), "Following plan was loaded :\n\n%s ", goal_msg.plan.c_str());
 

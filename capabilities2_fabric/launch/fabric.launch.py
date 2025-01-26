@@ -28,8 +28,8 @@ def generate_launch_description():
     executor_file = Node(
             package='capabilities2_fabric',
             namespace='',
-            executable='capabilities2_file_parser',
-            name='capabilities2_file_parser',
+            executable='fabric_client',
+            name='fabric_client',
             parameters=[executor_config],
             output='screen'
         )

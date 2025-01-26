@@ -1,7 +1,7 @@
 #include <string>
 #include <tinyxml2.h>
 
-namespace capabilities2_executor
+namespace capabilities2
 {
 	enum connection_type_t
 	{
@@ -26,4 +26,4 @@ namespace capabilities2_executor
 		connection_t target_on_failure;
 	};
 
-} // namespace capabilities2_executor
+} // namespace capabilities2

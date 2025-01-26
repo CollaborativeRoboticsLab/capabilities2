@@ -48,21 +48,21 @@ install(TARGETS ${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME}
 )
 
-add_executable(capabilities2_file_parser
-  src/capabilities_file_parser.cpp
+add_executable(fabric_client
+  src/fabric_client.cpp
 )
 
-target_link_libraries(capabilities2_file_parser
+target_link_libraries(fabric_client
   ${TINYXML2_LIB}
 )
 
-ament_target_dependencies(capabilities2_file_parser
+ament_target_dependencies(fabric_client
   rclcpp
   rclcpp_action
   capabilities2_msgs
 )
 
-install(TARGETS capabilities2_file_parser
+install(TARGETS fabric_client
     DESTINATION lib/${PROJECT_NAME}
 )
 

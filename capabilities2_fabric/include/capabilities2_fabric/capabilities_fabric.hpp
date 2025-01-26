@@ -8,7 +8,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 
-#include <capabilities2_fabric/capabilities_xml_parser.hpp>
+#include <capabilities2_fabric/utils/xml_parser.hpp>
 #include <capabilities2_fabric/utils/bond_client.hpp>
 
 #include <capabilities2_msgs/action/plan.hpp>
@@ -56,7 +56,7 @@ public:
 
   CapabilitiesFabric() : Node("Capabilities2_Fabric")
   {
-    control_tag_list = capabilities2_xml_parser::get_control_list();
+    control_tag_list = xml_parser::get_control_list();
   }
 
   /**
@@ -382,12 +382,12 @@ private:
     print_and_feedback(goal_handle, "Plan verification successful", false);
 
     // extract the plan from the XMLDocument
-    tinyxml2::XMLElement* plan = capabilities2_xml_parser::get_plan(document);
+    tinyxml2::XMLElement* plan = xml_parser::get_plan(document);
 
     print_and_feedback(goal_handle, "Plan conversion successful", false);
 
     // Extract the connections from the plan
-    capabilities2_xml_parser::extract_connections(plan, connection_map);
+    xml_parser::extract_connections(plan, connection_map);
 
     print_and_feedback(goal_handle, "Connection extraction successful", false);
 
@@ -410,7 +410,7 @@ private:
     std::merge(interface_list.begin(), interface_list.end(), control_tag_list.begin(), control_tag_list.end(), tag_list.begin());
 
     // verify whether document got 'plan' tags
-    if (!capabilities2_xml_parser::check_plan_tag(document))
+    if (!xml_parser::check_plan_tag(document))
     {
       print_and_result(goal_handle, "Execution plan is not compatible. Please recheck and update", false);
       return false;
@@ -419,12 +419,12 @@ private:
     print_and_feedback(goal_handle, "'Plan' tag checking successful", false);
 
     // extract the components within the 'plan' tags
-    tinyxml2::XMLElement* plan = capabilities2_xml_parser::get_plan(document);
+    tinyxml2::XMLElement* plan = xml_parser::get_plan(document);
 
     print_and_feedback(goal_handle, "Plan extraction complete", false);
 
     // verify whether the plan is valid
-    if (!capabilities2_xml_parser::check_tags(this->get_logger(), plan, interface_list, providers_list, control_tag_list, rejected_list))
+    if (!xml_parser::check_tags(this->get_logger(), plan, interface_list, providers_list, control_tag_list, rejected_list))
     {
       print_and_result(goal_handle, "Execution plan is faulty. Please recheck and update", false);
       return false;
@@ -477,7 +477,7 @@ private:
    * @param capabilities capability list to be started
    * @param provider provider of the capability
    */
-  void use_capability(std::map<int, capabilities2_executor::node_t>& capabilities, const std::shared_ptr<GoalHandlePlan> goal_handle)
+  void use_capability(std::map<int, capabilities2::node_t>& capabilities, const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
     std::string capability = capabilities[completed_capabilities_].source.runner;
     std::string provider = capabilities[completed_capabilities_].source.provider;
@@ -569,7 +569,7 @@ private:
   /**
    * @brief Request use of capability from capabilities2 server
    */
-  void configure_capabilities(std::map<int, capabilities2_executor::node_t>& capabilities, const std::shared_ptr<GoalHandlePlan> goal_handle)
+  void configure_capabilities(std::map<int, capabilities2::node_t>& capabilities, const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
     auto request_configure = std::make_shared<ConfigureCapability::Request>();
 
@@ -577,7 +577,7 @@ private:
              capabilities[completed_configurations_].source.runner;
     print_and_feedback(goal_handle, status, true);
 
-    if (capabilities2_xml_parser::convert_to_string(capabilities[completed_configurations_].source.parameters, request_configure->source.parameters))
+    if (xml_parser::convert_to_string(capabilities[completed_configurations_].source.parameters, request_configure->source.parameters))
     {
       request_configure->source.capability = capabilities[completed_configurations_].source.runner;
       request_configure->source.provider = capabilities[completed_configurations_].source.provider;
@@ -591,7 +591,7 @@ private:
       request_configure->source.provider = "";
     }
 
-    if (capabilities2_xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_start.parameters,
+    if (xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_start.parameters,
                                                     request_configure->target_on_start.parameters))
     {
       request_configure->target_on_start.capability = capabilities[completed_configurations_].target_on_start.runner;
@@ -606,7 +606,7 @@ private:
       request_configure->target_on_start.provider = "";
     }
 
-    if (capabilities2_xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_stop.parameters,
+    if (xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_stop.parameters,
                                                     request_configure->target_on_stop.parameters))
     {
       request_configure->target_on_stop.capability = capabilities[completed_configurations_].target_on_stop.runner;
@@ -621,7 +621,7 @@ private:
       request_configure->target_on_stop.provider = "";
     }
 
-    if (capabilities2_xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_success.parameters,
+    if (xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_success.parameters,
                                                     request_configure->target_on_success.parameters))
     {
       request_configure->target_on_success.capability = capabilities[completed_configurations_].target_on_success.runner;
@@ -636,7 +636,7 @@ private:
       request_configure->target_on_success.provider = "";
     }
 
-    if (capabilities2_xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_failure.parameters,
+    if (xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_failure.parameters,
                                                     request_configure->target_on_failure.parameters))
     {
       request_configure->target_on_failure.capability = capabilities[completed_configurations_].target_on_failure.runner;
@@ -693,7 +693,7 @@ private:
     auto request_trigger = std::make_shared<TriggerCapability::Request>();
 
     std::string parameter_string;
-    capabilities2_xml_parser::convert_to_string(connection_map[0].source.parameters, parameter_string);
+    xml_parser::convert_to_string(connection_map[0].source.parameters, parameter_string);
     request_trigger->capability = connection_map[0].source.runner;
     request_trigger->parameters = parameter_string;
 
@@ -790,7 +790,7 @@ private:
   tinyxml2::XMLDocument document;
 
   /** vector of connections */
-  std::map<int, capabilities2_executor::node_t> connection_map;
+  std::map<int, capabilities2::node_t> connection_map;
 
   /** Interface List */
   std::vector<bool> is_semantic_list;
