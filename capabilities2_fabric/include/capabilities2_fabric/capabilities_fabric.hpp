@@ -387,16 +387,13 @@ private:
         result->success = false;
         result->message = "Plan verification failed. There are mismatched events";
 
-        process_feedback(result->message);
-
         for (const auto& rejected_element : rejected_list)
         {
-          status_->error_element(rejected_element);
           result->failed_elements.push_back(rejected_element);
         }
-
         goal_handle_->abort(result);
-        status_->error("Server Execution Cancelled");
+
+        process_feedback(result->message);
       }
       else
       {
@@ -666,8 +663,8 @@ private:
     std::string source_capability = capabilities[completed_configurations_].source.runner;
 
     // send the request
-    auto result_future = conf_capability_client_->async_send_request(
-        request_configure, [this, source_capability](ConfigureCapabilityClient::SharedFuture future) {
+    auto result_future =
+        conf_capability_client_->async_send_request(request_configure, [this, source_capability](ConfigureCapabilityClient::SharedFuture future) {
           if (!future.valid())
           {
             status = "Failed to configure capability :" + source_capability + ". Server execution cancelled";
@@ -710,22 +707,21 @@ private:
     request_trigger->parameters = parameter_string;
 
     // send the request
-    auto result_future =
-        trig_capability_client_->async_send_request(request_trigger, [this](TriggerCapabilityClient::SharedFuture future) {
-          if (!future.valid())
-          {
-            status = "Failed to trigger capability " + connection_map[0].source.runner;
-            process_result(status);
-            return;
-          }
+    auto result_future = trig_capability_client_->async_send_request(request_trigger, [this](TriggerCapabilityClient::SharedFuture future) {
+      if (!future.valid())
+      {
+        status = "Failed to trigger capability " + connection_map[0].source.runner;
+        process_result(status);
+        return;
+      }
 
-          auto response = future.get();
+      auto response = future.get();
 
-          status = "Successfully triggered capability " + connection_map[0].source.runner;
-          process_feedback(status);
+      status = "Successfully triggered capability " + connection_map[0].source.runner;
+      process_feedback(status);
 
-          process_result("Successfully launched capabilities2 fabric", true);
-        });
+      process_result("Successfully launched capabilities2 fabric", true);
+    });
   }
 
   void check_service(bool wait_for_logic, const std::string& service_name)
