@@ -22,6 +22,7 @@
   <depend>rclcpp_components</depend>
   <depend>capabilities2_msgs</depend>
   <depend>capabilities2_runner</depend>
+  <depend>capabilities2_utils</depend>
 
   <!-- system dependency -->
   <depend>yaml-cpp</depend>

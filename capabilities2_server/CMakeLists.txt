@@ -19,6 +19,7 @@ find_package(pluginlib REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_runner REQUIRED)
+find_package(capabilities2_utils REQUIRED)
 find_package(backward_ros REQUIRED)
 
 find_package(PkgConfig)
@@ -68,6 +69,7 @@ ament_target_dependencies(${PROJECT_NAME}
   SQLite3
   yaml-cpp
   UUID
+  capabilities2_utils
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
@@ -106,6 +108,7 @@ ament_target_dependencies(${PROJECT_NAME}_node
   capabilities2_msgs
   capabilities2_runner
   SQLite3
+  capabilities2_utils
   yaml-cpp
   UUID
 )

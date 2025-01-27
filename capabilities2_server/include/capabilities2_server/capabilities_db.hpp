@@ -13,7 +13,8 @@
 #include <capabilities2_server/models/provider.hpp>
 #include <capabilities2_server/models/running.hpp>
 #include <capabilities2_server/models/run_config.hpp>
-#include <capabilities2_server/sanitizer/sql_safe.hpp>
+
+#include <capabilities2_utils/sql_safe.hpp>
 
 namespace capabilities2_server
 {
