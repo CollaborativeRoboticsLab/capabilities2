@@ -46,7 +46,7 @@ public:
   using SetFabricPlan = capabilities2_msgs::srv::SetFabricPlan;
   using CancelFabricPlan = capabilities2_msgs::srv::CancelFabricPlan;
 
-  CapabilitiesFabricClient() : Node("Capabilities2_Fabric_Client")
+  CapabilitiesFabricClient(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("Capabilities2_Fabric_Client", options)
   {
     declare_parameter("plan_file_path", "install/capabilities2_fabric/share/capabilities2_fabric/plans/default.xml");
     plan_file_path = get_parameter("plan_file_path").as_string();

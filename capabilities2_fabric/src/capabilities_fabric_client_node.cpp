@@ -1,4 +1,4 @@
-#include <capabilities2_fabric/fabric_client.hpp>
+#include <capabilities2_fabric/capabilities_fabric_client.hpp>
 
 int main(int argc, char* argv[])
 {

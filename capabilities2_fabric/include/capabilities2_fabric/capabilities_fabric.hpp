@@ -55,7 +55,7 @@ public:
   using ConfigureCapabilityClient = rclcpp::Client<ConfigureCapability>;
   using TriggerCapabilityClient = rclcpp::Client<TriggerCapability>;
 
-  CapabilitiesFabric() : Node("Capabilities2_Fabric")
+  CapabilitiesFabric(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("Capabilities2_Fabric", options)
   {
     control_tag_list = xml_parser::get_control_list();
   }

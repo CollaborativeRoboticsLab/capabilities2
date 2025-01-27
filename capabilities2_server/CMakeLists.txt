@@ -45,7 +45,9 @@ include_directories(include
   ${UUID_INCLUDE_DIRS}
 )
 
+#######################################################################
 # Component based implementation that compiles as a library
+#######################################################################
 
 add_library(${PROJECT_NAME} SHARED
   src/capabilities_server_comp.cpp
@@ -86,7 +88,9 @@ install(TARGETS ${PROJECT_NAME}
   RUNTIME DESTINATION bin
 )
 
-# Non Component based implementation that compiles as a executable
+############################################################################
+# node implementation that compiles as a executable 
+############################################################################
 
 add_executable(${PROJECT_NAME}_node
   src/capabilities_server_node.cpp
@@ -128,6 +132,10 @@ target_link_libraries(test_capabilities_server
   ${UUID_LIBRARIES}
 )
 add_dependencies(test_capabilities_server ${PROJECT_NAME})
+
+############################################################################
+# miscellaneous
+############################################################################
 
 # install test executable
 install(TARGETS test_capabilities_server
