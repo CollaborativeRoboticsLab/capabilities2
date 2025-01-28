@@ -21,7 +21,7 @@ public:
         status_publisher_ = node_->create_publisher<Status>(topic_name, 10);
     }
 
-    /**
+    /**error_element
      * @brief publishes status information to the given topic and prints to the logging as info
      *
      * @param text Text to be published

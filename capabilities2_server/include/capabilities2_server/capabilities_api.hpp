@@ -26,6 +26,15 @@
 namespace capabilities2_server
 {
 
+enum capability_event
+{
+  IDLE,
+  STARTED,
+  STOPPED,
+  TERMINATED,
+  SUCCEEDED
+};
+
 /**
  * @brief capabilities api
  * mapping message based logic of capabilities to database models
@@ -613,105 +622,116 @@ public:
     return running_capabilities;
   }
 
+  /**
+   * @brief get pid of capability
+   *
+   * @param capability capability of which the pid is requested
+   * @return value of pid
+   */
+  int get_pid(const std::string& capability)
+  {
+    return atoi(runner_cache_.pid(capability).c_str());
+  }
+
   // event api
   // related to runner api
-  const capabilities2_msgs::msg::CapabilityEvent on_capability_started(const std::string& capability)
-  {
-    // create event msg
-    capabilities2_msgs::msg::CapabilityEvent event;
-    event.header.frame_id = "capabilities";
-    event.header.stamp = rclcpp::Clock().now();
+  // const capabilities2_msgs::msg::CapabilityEvent on_capability_started(const std::string& capability)
+  // {
+  //   // create event msg
+  //   capabilities2_msgs::msg::CapabilityEvent event;
+  //   event.header.frame_id = "capabilities";
+  //   event.header.stamp = rclcpp::Clock().now();
 
-    // started event
-    event.type = capabilities2_msgs::msg::CapabilityEvent::LAUNCHED;
+  //   // started event
+  //   event.type = capabilities2_msgs::msg::CapabilityEvent::LAUNCHED;
 
-    // set cap, prov, pid
-    event.capability = capability;
+  //   // set cap, prov, pid
+  //   event.capability = capability;
 
-    // try to get details
-    try
-    {
-      event.provider = runner_cache_.provider(capability);
-      event.pid = atoi(runner_cache_.pid(capability).c_str());
-    }
-    catch (const capabilities2_runner::runner_exception& e)
-    {
-      event.provider = "unknown";
-      event.pid = -1;
-    }
+  //   // try to get details
+  //   try
+  //   {
+  //     event.provider = runner_cache_.provider(capability);
+  //     event.pid = atoi(runner_cache_.pid(capability).c_str());
+  //   }
+  //   catch (const capabilities2_runner::runner_exception& e)
+  //   {
+  //     event.provider = "unknown";
+  //     event.pid = -1;
+  //   }
 
-    return event;
-  }
+  //   return event;
+  // }
 
-  const capabilities2_msgs::msg::CapabilityEvent on_capability_stopped(const std::string& capability)
-  {
-    // create event msg
-    capabilities2_msgs::msg::CapabilityEvent event;
-    event.header.frame_id = "capabilities";
-    event.header.stamp = rclcpp::Clock().now();
+  // const capabilities2_msgs::msg::CapabilityEvent on_capability_stopped(const std::string& capability)
+  // {
+  //   // create event msg
+  //   capabilities2_msgs::msg::CapabilityEvent event;
+  //   event.header.frame_id = "capabilities";
+  //   event.header.stamp = rclcpp::Clock().now();
 
-    // terminated event
-    event.type = capabilities2_msgs::msg::CapabilityEvent::STOPPED;
+  //   // terminated event
+  //   event.type = capabilities2_msgs::msg::CapabilityEvent::STOPPED;
 
-    // set cap, prov, pid
-    event.capability = capability;
+  //   // set cap, prov, pid
+  //   event.capability = capability;
 
-    // try to get details
-    try
-    {
-      event.provider = runner_cache_.provider(capability);
-      event.pid = atoi(runner_cache_.pid(capability).c_str());
-    }
-    catch (const capabilities2_runner::runner_exception& e)
-    {
-      event.provider = "unknown";
-      event.pid = -1;
-    }
+  //   // try to get details
+  //   try
+  //   {
+  //     event.provider = runner_cache_.provider(capability);
+  //     event.pid = atoi(runner_cache_.pid(capability).c_str());
+  //   }
+  //   catch (const capabilities2_runner::runner_exception& e)
+  //   {
+  //     event.provider = "unknown";
+  //     event.pid = -1;
+  //   }
 
-    return event;
-  }
+  //   return event;
+  // }
 
-  const capabilities2_msgs::msg::CapabilityEvent on_capability_terminated(const std::string& capability)
-  {
-    // create event msg
-    capabilities2_msgs::msg::CapabilityEvent event;
-    event.header.frame_id = "capabilities";
-    event.header.stamp = rclcpp::Clock().now();
+  // const capabilities2_msgs::msg::CapabilityEvent on_capability_terminated(const std::string& capability)
+  // {
+  //   // create event msg
+  //   capabilities2_msgs::msg::CapabilityEvent event;
+  //   event.header.frame_id = "capabilities";
+  //   event.header.stamp = rclcpp::Clock().now();
 
-    // terminated event
-    event.type = capabilities2_msgs::msg::CapabilityEvent::TERMINATED;
+  //   // terminated event
+  //   event.type = capabilities2_msgs::msg::CapabilityEvent::TERMINATED;
 
-    // set cap, prov, pid
-    event.capability = capability;
-    try
-    {
-      event.provider = runner_cache_.provider(capability);
-      event.pid = atoi(runner_cache_.pid(capability).c_str());
-    }
-    catch (const capabilities2_runner::runner_exception& e)
-    {
-      event.provider = "unknown";
-      event.pid = -1;
-    }
+  //   // set cap, prov, pid
+  //   event.capability = capability;
+  //   try
+  //   {
+  //     event.provider = runner_cache_.provider(capability);
+  //     event.pid = atoi(runner_cache_.pid(capability).c_str());
+  //   }
+  //   catch (const capabilities2_runner::runner_exception& e)
+  //   {
+  //     event.provider = "unknown";
+  //     event.pid = -1;
+  //   }
 
-    // log error
-    RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "capability terminated: %s", capability.c_str());
+  //   // log error
+  //   RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "capability terminated: %s", capability.c_str());
 
-    return event;
-  }
+  //   return event;
+  // }
 
-  const capabilities2_msgs::msg::CapabilityEvent on_server_ready()
-  {
-    // create event msg
-    capabilities2_msgs::msg::CapabilityEvent event;
-    event.header.frame_id = "capabilities";
-    event.header.stamp = rclcpp::Clock().now();
+  // const capabilities2_msgs::msg::CapabilityEvent on_server_ready()
+  // {
+  //   // create event msg
+  //   capabilities2_msgs::msg::CapabilityEvent event;
+  //   event.header.frame_id = "capabilities";
+  //   event.header.stamp = rclcpp::Clock().now();
 
-    // started event
-    event.type = capabilities2_msgs::msg::CapabilityEvent::SERVER_READY;
+  //   // started event
+  //   event.type = capabilities2_msgs::msg::CapabilityEvent::SERVER_READY;
 
-    return event;
-  }
+  //   return event;
+  // }
 
   // bond api
   // establish bond

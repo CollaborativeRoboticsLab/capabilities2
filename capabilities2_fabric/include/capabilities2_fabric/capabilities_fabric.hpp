@@ -8,9 +8,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 
-#include <capabilities2_utils/xml_parser.hpp>
-#include <capabilities2_utils/bond_client.hpp>
-#include <capabilities2_utils/status_client.hpp>
+#include <capabilities2_fabric/utils/xml_parser.hpp>
+#include <capabilities2_fabric/utils/bond_client.hpp>
+#include <capabilities2_fabric/utils/status_client.hpp>
 
 #include <capabilities2_msgs/action/plan.hpp>
 
@@ -139,19 +139,7 @@ private:
     status_->error("Received the request to cancel the plan");
     (void)goal_handle;
 
-    if (connection_map.size() > 0)
-    {
-      // release all capabilities that were used since cancel request came
-      for (const auto& [key, value] : connection_map)
-      {
-        status = "Freeing capability of Node " + std::to_string(key) + " named " + value.source.runner;
-        process_feedback(status);
-
-        free_capability(value.source.runner);
-      }
-
-      bond_client_->stop();
-    }
+    bond_client_->stop();
 
     return rclcpp_action::CancelResponse::ACCEPT;
   }

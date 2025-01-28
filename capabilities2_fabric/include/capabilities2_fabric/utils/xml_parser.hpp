@@ -3,8 +3,8 @@
 #include <string>
 #include <vector>
 #include <rclcpp/rclcpp.hpp>
-#include <capabilities2_utils/connection.hpp>
-#include <capabilities2_utils/status_client.hpp>
+#include <capabilities2_fabric/utils/connection.hpp>
+#include <capabilities2_fabric/utils/status_client.hpp>
 
 namespace xml_parser
 {

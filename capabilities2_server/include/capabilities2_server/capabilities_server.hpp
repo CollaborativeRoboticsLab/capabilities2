@@ -62,6 +62,9 @@ public:
   CapabilitiesServer(const rclcpp::NodeOptions& options = rclcpp::NodeOptions())
     : Node("capabilities2", options), CapabilitiesAPI()
   {
+    // pubs
+    event_pub_ = create_publisher<capabilities2_msgs::msg::CapabilityEvent>("~/events", 10);
+
     // params interface
     // loop rate
     declare_parameter("loop_rate", 5.0);
@@ -86,7 +89,8 @@ public:
     if (rebuild)
     {
       // remove db file if it exists
-      RCLCPP_INFO(get_logger(), "Rebuilding capabilities database");
+      event_publish("Rebuilding capabilities database", false);
+
       if (std::remove(db_file.c_str()) != 0)
       {
         RCLCPP_ERROR(get_logger(), "Error deleting file %s", db_file.c_str());
@@ -97,12 +101,17 @@ public:
     if (!std::filesystem::exists(db_path))
     {
       // create db file path
+      event_publish("Creating capabilities database", false);
+
       std::filesystem::create_directories(db_path.parent_path());
     }
 
     // init capabilities api
+    event_publish("Connecting API with Database", false);
+
     connect(db_file, get_node_logging_interface());
-  
+
+    event_publish("Loading capabilities", false);
 
     // load capabilities from package paths
     for (const auto& package_path : package_paths)
@@ -110,11 +119,7 @@ public:
       load_capabilities(package_path);
     }
 
-    // pubs
-    // events
-    event_pub_ = create_publisher<capabilities2_msgs::msg::CapabilityEvent>("~/events", 10);
-
-    // subs
+    event_publish("Starting server interfaces", false);
 
     // services
     // establish bond
@@ -186,11 +191,8 @@ public:
         "~/get_running_capabilities", std::bind(&CapabilitiesServer::get_running_capabilities_cb, this,
                                                 std::placeholders::_1, std::placeholders::_2));
 
-    // log ready
-    RCLCPP_INFO(get_logger(), "capabilities server started");
-
     // publish ready event
-    event_pub_->publish(on_server_ready());
+    event_publish("capabilities server start up complete");
   }
 
   // service callbacks
@@ -495,8 +497,11 @@ private:
           {
             // read spec file
             load_spec_content(package_path + "/" + package + "/" + spec_path, capability_spec);
+
             // add capability to db
-            RCLCPP_INFO(get_logger(), "adding capability: %s", (package + "/" + spec_path).c_str());
+            std::string status = "adding capability: " + package + "/" + spec_path;
+            event_publish(status);
+
             add_capability(capability_spec);
           }
           catch (const std::runtime_error& e)
@@ -576,8 +581,11 @@ private:
           {
             // read spec file
             load_spec_content(package_path + "/" + package + "/share/" + package + "/" + spec_path, capability_spec);
+
             // add capability to db
-            RCLCPP_INFO(get_logger(), "adding capability: %s", (package + "/" + spec_path).c_str());
+            std::string status = "adding capability: " + package + "/" + spec_path;
+            event_publish(status);
+
             add_capability(capability_spec);
           }
           catch (const std::runtime_error& e)
@@ -646,6 +654,60 @@ private:
     capability_spec.content = content;
 
     spec_file_file.close();
+  }
+
+  void event_publish(const std::string& text, bool is_server_ready = true)
+  {
+    auto message = capabilities2_msgs::msg::CapabilityEvent();
+
+    message.header.stamp = rclcpp::Clock().now();
+    message.source.capability = "";
+    message.source.provider = "";
+    message.target.capability = "";
+    message.target.provider = "";
+    message.thread_id = 0;
+    message.text = text;
+    message.pid = -1;
+    message.server_ready = is_server_ready;
+
+    event_pub_->publish(message);
+
+    RCLCPP_INFO(get_logger(), text.c_str());
+  }
+
+  void event_publish_runner(const std::string& capability, const std::string& provider, int thread_id,
+                            const std::string& text, const std::string target_capability = "",
+                            const std::string target_provider = "",
+                            enum capability_event event = capability_event::IDLE)
+  {
+    auto message = capabilities2_msgs::msg::CapabilityEvent();
+
+    message.header.stamp = rclcpp::Clock().now();
+    message.source.capability = capability;
+    message.source.provider = provider;
+    message.target.capability = target_capability;
+    message.target.provider = target_provider;
+    message.thread_id = thread_id;
+    message.text = text;
+    message.pid = get_pid(capability);
+    message.server_ready = true;
+
+    if (event == capability_event::IDLE)
+      message.event = capabilities2_msgs::msg::CapabilityEvent::IDLE;
+    else if (event == capability_event::STARTED)
+      message.event = capabilities2_msgs::msg::CapabilityEvent::STARTED;
+    else if (event == capability_event::STOPPED)
+      message.event = capabilities2_msgs::msg::CapabilityEvent::STOPPED;
+    else if (event == capability_event::TERMINATED)
+      message.event = capabilities2_msgs::msg::CapabilityEvent::TERMINATED;
+    else if (event == capability_event::SUCCEEDED)
+      message.event = capabilities2_msgs::msg::CapabilityEvent::SUCCEEDED;
+    else
+      message.event = capabilities2_msgs::msg::CapabilityEvent::UNDEFINED;
+
+    event_pub_->publish(message);
+
+    RCLCPP_INFO(get_logger(), text.c_str());
   }
 
 private:

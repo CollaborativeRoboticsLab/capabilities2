@@ -17,7 +17,6 @@ find_package(rclcpp_action REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(bondcpp REQUIRED)
 find_package(backward_ros REQUIRED)
-find_package(capabilities2_utils REQUIRED)
 find_package(rclcpp_components REQUIRED)
 
 # Locate the static version of tinyxml2
@@ -48,7 +47,6 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp_action
   bondcpp
   capabilities2_msgs
-  capabilities2_utils
 )
 
 install(TARGETS ${PROJECT_NAME}
@@ -73,7 +71,6 @@ ament_target_dependencies(${PROJECT_NAME}_comp
   rclcpp_components
   bondcpp
   capabilities2_msgs
-  capabilities2_utils
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}_comp
@@ -106,7 +103,6 @@ ament_target_dependencies(fabric_client
   rclcpp
   rclcpp_action
   capabilities2_msgs
-  capabilities2_utils
 )
 
 install(TARGETS fabric_client
@@ -131,7 +127,6 @@ ament_target_dependencies(fabric_client_comp
   rclcpp_components
   bondcpp
   capabilities2_msgs
-  capabilities2_utils
 )
 
 rclcpp_components_register_node(fabric_client_comp
