@@ -137,8 +137,8 @@ public:
 
     info_("goal generated", id);
 
-    std::unique_lock<std::mutex> lock(send_goal_mutex);
-    action_complete = false;
+    std::unique_lock<std::mutex> lock(mutex_);
+    completed_ = false;
 
     // trigger the action client with goal
     send_goal_options_.goal_response_callback =
@@ -201,15 +201,15 @@ public:
           }
 
           result_ = wrapped_result.result;
-          action_complete = true;
-          send_goal_cv.notify_all();
+          completed_ = true;
+          cv_.notify_all();
         };
 
     goal_handle_future_ = action_client_->async_send_goal(goal_msg_, send_goal_options_);
     info_("goal sent. Waiting for acceptance.", id);
 
     // Conditional wait
-    send_goal_cv.wait(lock, [this] { return action_complete; });
+    cv_.wait(lock, [this] { return completed_; });
     info_("action complete. Thread closing.", id);
   }
 
@@ -264,11 +264,6 @@ protected:
 
   /** Result Future*/
   std::shared_future<typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult> result_future_;
-
-  // Synchronization tools
-  std::mutex mutex_;
-  std::condition_variable cv_;
-  bool action_completed_;
 };
 
 }  // namespace capabilities2_runner

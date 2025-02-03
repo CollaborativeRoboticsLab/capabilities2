@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.10)
-project(capabilities2_runner_nav2)
+cmake_minimum_required(VERSION 3.8)
+project(capabilities2_runner_capabilities)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -14,8 +14,6 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(pluginlib REQUIRED)
-find_package(nav2_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_runner REQUIRED)
 
@@ -31,7 +29,7 @@ include_directories(include
 )
 
 add_library(${PROJECT_NAME} SHARED
-  src/nav2_runners.cpp
+  src/capabilities2_runner.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -42,8 +40,6 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp
   rclcpp_action
   pluginlib
-  nav2_msgs
-  geometry_msgs
   capabilities2_msgs
   capabilities2_runner
 )

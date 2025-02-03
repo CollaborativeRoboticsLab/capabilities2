@@ -12,6 +12,7 @@
 
 #include <capabilities2_fabric/utils/xml_parser.hpp>
 #include <capabilities2_fabric/utils/status_client.hpp>
+#include <capabilities2_fabric/utils/fabric_status.hpp>
 
 #include <capabilities2_msgs/action/plan.hpp>
 
@@ -29,16 +30,8 @@
 class CapabilitiesFabricClient : public rclcpp::Node
 {
 public:
-  enum fabric_status
-  {
-    IDLE,
-    RUNNING,
-    CANCELED,
-    ABORTED,
-    FAILED,
-    SUCCEEDED
-  };
 
+  using Status = capabilities2::fabric_status;
   using Plan = capabilities2_msgs::action::Plan;
   using GoalHandlePlan = rclcpp_action::ClientGoalHandle<Plan>;
 
@@ -58,7 +51,7 @@ public:
    */
   void initialize()
   {
-    fabric_state = fabric_status::IDLE;
+    fabric_state = Status::IDLE;
 
     status_ = std::make_shared<StatusClient>(shared_from_this(), "capabilities_fabric_client", "/status/capabilities_fabric_client");
 
@@ -91,13 +84,11 @@ public:
     // check if the file loading failed
     if (xml_status != tinyxml2::XMLError::XML_SUCCESS)
     {
-      status = "Error loading plan: " + plan_file_path + ", Error: " + document.ErrorName();
-      status_->error(status);
+      status_->error("Error loading plan: " + plan_file_path + ", Error: " + document.ErrorName());
       rclcpp::shutdown();
     }
 
-    status = "Plan loaded from : " + plan_file_path;
-    status_->info(status);
+    status_->info("Plan loaded from : " + plan_file_path);
 
     send_goal(document);
   }
@@ -109,9 +100,7 @@ private:
 
     xml_parser::convert_to_string(document_xml, goal_msg.plan);
 
-    status = "Following plan was loaded :\n\n " + goal_msg.plan;
-    status_->info(status);
-
+    status_->info("Following plan was loaded :\n\n " + goal_msg.plan);
     status_->info("Sending goal to the capabilities_fabric action server");
 
     auto send_goal_options = rclcpp_action::Client<Plan>::SendGoalOptions();
@@ -122,13 +111,13 @@ private:
       if (!goal_handle)
       {
         status_->error("Goal was rejected by server");
-        fabric_state = fabric_status::FAILED;
+        fabric_state = Status::FAILED;
       }
       else
       {
         status_->info("Goal accepted by server, waiting for result");
         goal_handle_ = goal_handle;
-        fabric_state = fabric_status::RUNNING;
+        fabric_state = Status::RUNNING;
       }
     };
 
@@ -137,19 +126,19 @@ private:
       switch (result.code)
       {
         case rclcpp_action::ResultCode::SUCCEEDED:
-          fabric_state = fabric_status::SUCCEEDED;
+          fabric_state = Status::SUCCEEDED;
           break;
         case rclcpp_action::ResultCode::ABORTED:
           status_->error("Goal was aborted");
-          fabric_state = fabric_status::ABORTED;
+          fabric_state = Status::ABORTED;
           break;
         case rclcpp_action::ResultCode::CANCELED:
           status_->error("Goal was canceled");
-          fabric_state = fabric_status::CANCELED;
+          fabric_state = Status::CANCELED;
           break;
         default:
           status_->error("Unknown result code");
-          fabric_state = fabric_status::FAILED;
+          fabric_state = Status::FAILED;
           break;
       }
 
@@ -176,27 +165,27 @@ private:
 
   void getStatusCallback(const std::shared_ptr<GetFabricStatus::Request> request, std::shared_ptr<GetFabricStatus::Response> response)
   {
-    if (fabric_state == fabric_status::IDLE)
+    if (fabric_state == Status::IDLE)
     {
       response->status = GetFabricStatus::Response::FABRIC_IDLE;
     }
-    else if (fabric_state == fabric_status::RUNNING)
+    else if (fabric_state == Status::RUNNING)
     {
       response->status = GetFabricStatus::Response::FABRIC_RUNNING;
     }
-    else if (fabric_state == fabric_status::CANCELED)
+    else if (fabric_state == Status::CANCELED)
     {
       response->status = GetFabricStatus::Response::FABRIC_CANCELED;
     }
-    else if (fabric_state == fabric_status::ABORTED)
+    else if (fabric_state == Status::ABORTED)
     {
       response->status = GetFabricStatus::Response::FABRIC_ABORTED;
     }
-    else if (fabric_state == fabric_status::FAILED)
+    else if (fabric_state == Status::FAILED)
     {
       response->status = GetFabricStatus::Response::FABRIC_FAILED;
     }
-    else if (fabric_state == fabric_status::SUCCEEDED)
+    else if (fabric_state == Status::SUCCEEDED)
     {
       response->status = GetFabricStatus::Response::FABRIC_SUCCEEDED;
     }
@@ -229,7 +218,7 @@ private:
 
   void cancelPlanCallback(const std::shared_ptr<CancelFabricPlan::Request> request, std::shared_ptr<CancelFabricPlan::Response> response)
   {
-    if (fabric_state == fabric_status::RUNNING)
+    if (fabric_state == Status::RUNNING)
     {
       this->planner_client_->async_cancel_goal(goal_handle_);
     }
@@ -266,5 +255,5 @@ private:
   rclcpp::Service<CancelFabricPlan>::SharedPtr cancel_server_;
 
   /** Status of the fabric */
-  fabric_status fabric_state;
+  Status fabric_state;
 };

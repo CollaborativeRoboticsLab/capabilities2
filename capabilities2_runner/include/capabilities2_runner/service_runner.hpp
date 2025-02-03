@@ -72,8 +72,8 @@ public:
 
     info_("request generated", id);
 
-    std::unique_lock<std::mutex> lock(send_goal_mutex);
-    action_complete = false;
+    std::unique_lock<std::mutex> lock(mutex_);
+    completed_ = false;
 
     auto result_future = service_client_->async_send_request(
         request_msg, [this, id](typename rclcpp::Client<ServiceT>::SharedFuture future) {
@@ -102,8 +102,8 @@ public:
             }
           }
 
-          action_complete = true;
-          send_goal_cv.notify_all();
+          completed_ = true;
+          cv_.notify_all();
         });
 
     // trigger the events related to on_started state
@@ -114,7 +114,7 @@ public:
     }
 
     // Conditional wait
-    send_goal_cv.wait(lock, [this] { return action_complete; });
+    cv_.wait(lock, [this] { return completed_; });
     info_("Service request complete. Thread closing.", id);
   }
 

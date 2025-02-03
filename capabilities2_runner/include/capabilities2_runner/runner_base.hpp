@@ -570,15 +570,19 @@ protected:
   std::map<int, std::thread> executionThreadPool;
 
   /**
-   * @brief mutex and conditional variable for threadpool synchronisation.
+   * @brief mutex for threadpool synchronisation.
    */
-  std::mutex send_goal_mutex;
-  std::condition_variable send_goal_cv;
+  std::mutex mutex_;
 
   /**
-   * @brief boolean flag for thread completion.
+   * @brief conditional variable for threadpool synchronisation.
    */
-  bool action_complete;
+  std::condition_variable cv_;
+
+  /**
+   * @brief flag for threadpool synchronisation.
+   */
+  bool completed_;
 
   /**
    * @brief external function that triggers capability runners

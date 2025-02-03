@@ -1,0 +1,7 @@
+<library path="capabilities2_runner_capabilities">
+    <class type="capabilities2_runner::FabricCompletionRunner" base_class_type="capabilities2_runner::RunnerBase">
+        <description>
+            A plugin that notifies about the completion of the fabric to the action server
+        </description>
+    </class>
+</library>
