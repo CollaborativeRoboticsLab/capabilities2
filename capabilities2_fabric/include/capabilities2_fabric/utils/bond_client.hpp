@@ -1,3 +1,4 @@
+#pragma once
 #include <bondcpp/bond.hpp>
 #include <rclcpp/rclcpp.hpp>
 

@@ -24,6 +24,7 @@ set(msg_files
   "msg/NaturalCapability.msg"
   "msg/CapabilityCommand.msg"
   "msg/CapabilityResponse.msg"
+  "msg/Status.msg"
 )
 
 set(srv_files
@@ -43,6 +44,9 @@ set(srv_files
   "srv/ConfigureCapability.srv"
   "srv/TriggerCapability.srv"
   "srv/Launch.srv"
+  "srv/GetFabricStatus.srv"
+  "srv/SetFabricPlan.srv"
+  "srv/CancelFabricPlan.srv"
 )
 
 set(action_files

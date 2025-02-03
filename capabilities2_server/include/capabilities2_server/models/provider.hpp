@@ -6,7 +6,7 @@
 #include <capabilities2_server/models/remappable_base.hpp>
 #include <capabilities2_server/models/predicateable_base.hpp>
 #include <capabilities2_server/models/defineable_base.hpp>
-#include <capabilities2_server/sanitizer/sql_safe.hpp>
+#include <capabilities2_server/utils/sql_safe.hpp>
 
 namespace capabilities2_server
 {

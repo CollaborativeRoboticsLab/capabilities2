@@ -38,10 +38,10 @@ public:
    * @param action_name action name used in the yaml file, used to load specific configuration from the run_config
    */
   virtual void init_encapsulated_action(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                                        const std::string& action_name)
+                                        const std::string& action_name, std::function<void(Event&)> print)
   {
     // init the base action runner
-    init_action(node, run_config, action_name);
+    init_action(node, run_config, action_name, print);
 
     // create an encapsulating action server
     encap_action_ = rclcpp_action::create_server<capabilities2_msgs::action::Capability>(

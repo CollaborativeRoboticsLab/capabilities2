@@ -31,21 +31,23 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+                     std::function<void(Event&)> runner_publish_func) override
   {
-    init_action(node, run_config, "text_to_speech");
+    init_action(node, run_config, "text_to_speech", runner_publish_func);
   }
 
 protected:
   /**
    * @brief This generate goal function overrides the generate_goal() function from ActionRunner()
-   * 
-   * @param parameters XMLElement that contains parameters in the format '<Event name=text_to_speech provider=SpeakerRunner text=$value/>'
+   *
+   * @param parameters XMLElement that contains parameters in the format '<Event name=text_to_speech
+   * provider=SpeakerRunner text=$value/>'
    * @return ActionT::Goal the generated goal
    */
-  virtual hri_audio_msgs::action::TextToSpeech::Goal generate_goal(tinyxml2::XMLElement* parameters) override
+  virtual hri_audio_msgs::action::TextToSpeech::Goal generate_goal(tinyxml2::XMLElement* parameters, int id) override
   {
-    const char **text;
+    const char** text;
     parameters->QueryStringAttribute("text", text);
     std::string tts_text(*text);
 
@@ -69,7 +71,6 @@ protected:
     std::string feedback = "";
     return feedback;
   }
-
 };
 
 }  // namespace capabilities2_runner

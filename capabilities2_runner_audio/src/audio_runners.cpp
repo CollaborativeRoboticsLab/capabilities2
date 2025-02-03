@@ -3,11 +3,6 @@
 #include <capabilities2_runner_audio/listen_runner.hpp>
 #include <capabilities2_runner_audio/speak_runner.hpp>
 
-namespace capabilities2_runner
-{
-
-}
-
 // register runner plugins
 PLUGINLIB_EXPORT_CLASS(capabilities2_runner::ListenerRunner, capabilities2_runner::RunnerBase)
 PLUGINLIB_EXPORT_CLASS(capabilities2_runner::SpeakerRunner, capabilities2_runner::RunnerBase)

@@ -1,10 +1,10 @@
-#include <capabilities2_fabric/capabilities_file_parser.hpp>
+#include <capabilities2_fabric/capabilities_fabric_client.hpp>
 
 int main(int argc, char* argv[])
 {
   rclcpp::init(argc, argv);
 
-  auto parser_node = std::make_shared<CapabilitiesFileParser>();
+  auto parser_node = std::make_shared<CapabilitiesFabricClient>();
   
   parser_node->initialize();  // Call initialize after construction
 

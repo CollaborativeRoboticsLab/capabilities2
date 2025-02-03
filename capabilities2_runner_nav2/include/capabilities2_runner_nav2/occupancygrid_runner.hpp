@@ -29,13 +29,13 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+                     std::function<void(Event&)> print) override
   {
-    init_subscriber(node, run_config, "map");
+    init_subscriber(node, run_config, "map", print);
   }
 
 protected:
-
   /**
    * @brief Update on_success event parameters with new data if avaible.
    *
@@ -145,8 +145,9 @@ protected:
     occupancyGridElement->InsertEndChild(dataElement);
 
     std::string data_str;
-    for (size_t i = 0; i < latest_message_->data.size(); ++i) {
-        data_str += std::to_string(latest_message_->data[i]) + " ";
+    for (size_t i = 0; i < latest_message_->data.size(); ++i)
+    {
+      data_str += std::to_string(latest_message_->data[i]) + " ";
     }
     dataElement->SetText(data_str.c_str());
 

@@ -33,10 +33,10 @@ public:
    * @param topic_name topic name used in the yaml file, used to load specific configuration from the run_config
    */
   virtual void init_subscriber(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                               const std::string& topic_name)
+                               const std::string& topic_name, std::function<void(Event&)> print)
   {
     // initialize the runner base by storing node pointer and run config
-    init_base(node, run_config);
+    init_base(node, run_config, print);
 
     // create an service client
     subscription_ = node_->create_subscription<TopicT>(
@@ -61,6 +61,7 @@ public:
     // trigger the events related to on_started state
     if (events[execute_id].on_started != "")
     {
+      info_("on_started", id, events[execute_id].on_started, EventType::STARTED);
       triggerFunction_(events[execute_id].on_started, update_on_started(events[execute_id].on_started_param));
     }
 
@@ -69,16 +70,18 @@ public:
       // trigger the events related to on_success state
       if (events[execute_id].on_success != "")
       {
+        info_("on_success", id, events[execute_id].on_success, EventType::SUCCEEDED);
         triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
       }
     }
     else
     {
-      RCLCPP_ERROR(node_->get_logger(), "get result call failed");
+      error_("get result call failed");
 
       // trigger the events related to on_failure state
       if (events[execute_id].on_failure != "")
       {
+        info_("on_failure", id, events[execute_id].on_failure, EventType::FAILED);
         triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
       }
     }
@@ -105,6 +108,7 @@ public:
     // Trigger on_stopped event if defined
     if (events[execute_id].on_stopped != "")
     {
+      info_("on_stopped", -1, events[execute_id].on_stopped, EventType::STOPPED);
       triggerFunction_(events[execute_id].on_stopped, update_on_stopped(events[execute_id].on_stopped_param));
     }
   }

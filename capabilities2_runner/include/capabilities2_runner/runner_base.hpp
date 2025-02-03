@@ -7,6 +7,8 @@
 #include <thread>
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
+#include <capabilities2_runner/utils/capability_event_t.hpp>
+#include <capabilities2_msgs/msg/capability_event.hpp>
 
 namespace capabilities2_runner
 {
@@ -88,6 +90,9 @@ struct event_opts
 class RunnerBase
 {
 public:
+  using Event = capabilities2_msgs::msg::CapabilityEvent;
+  using EventType = capabilities2_runner::capability_event;
+
   RunnerBase() : run_config_()
   {
   }
@@ -103,8 +108,10 @@ public:
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
+   * @param print_
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) = 0;
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+                     std::function<void(Event&)> print) = 0;
 
   /**
    * @brief stop the runner
@@ -123,13 +130,13 @@ public:
    */
   virtual void trigger(const std::string& parameters)
   {
-    RCLCPP_INFO(node_->get_logger(), "[%s/%d] received new parameters", run_config_.interface.c_str(), thread_id);
+    info_("received new parameters", thread_id);
 
     parameters_[thread_id] = convert_to_xml(parameters);
 
     executionThreadPool[thread_id] = std::thread(&RunnerBase::execution, this, thread_id);
 
-    RCLCPP_INFO(node_->get_logger(), "[%s/%d] started execution", run_config_.interface.c_str(), thread_id);
+    info_("started execution", thread_id);
 
     thread_id += 1;
   }
@@ -140,11 +147,14 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    */
-  void init_base(rclcpp::Node::SharedPtr node, const runner_opts& run_config)
+  void init_base(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+                 std::function<void(Event&)> print)
   {
     // store node pointer and opts
     node_ = node;
     run_config_ = run_config;
+    print_ = print;
+
     insert_id = 0;
     execute_id = -1;
     thread_id = 0;
@@ -160,8 +170,7 @@ public:
   int attach_events(capabilities2_runner::event_opts& event_option,
                     std::function<void(const std::string&, const std::string&)> triggerFunction)
   {
-    RCLCPP_INFO(node_->get_logger(), "[%s] accepted event options with ID : %d ", run_config_.interface.c_str(),
-                insert_id);
+    info_("accepted event options with ID : " + std::to_string(insert_id));
 
     triggerFunction_ = triggerFunction;
 
@@ -464,6 +473,62 @@ protected:
   }
 
 protected:
+  void info_(const std::string text, int thread_id = -1, const std::string& tcapability = "",
+             EventType event = EventType::IDLE)
+  {
+    auto message = Event();
+
+    message.header.stamp = rclcpp::Clock().now();
+    message.source.capability = run_config_.interface;
+    message.source.provider = run_config_.provider;
+    message.target.capability = tcapability;
+    message.thread_id = thread_id;
+    message.text = text;
+    message.error = false;
+    message.server_ready = true;
+
+    switch (event)
+    {
+      case EventType::IDLE:
+        message.event = Event::IDLE;
+        break;
+      case EventType::STARTED:
+        message.event = Event::STARTED;
+        break;
+      case EventType::STOPPED:
+        message.event = Event::STOPPED;
+        break;
+      case EventType::FAILED:
+        message.event = Event::FAILED;
+        break;
+      case EventType::SUCCEEDED:
+        message.event = Event::SUCCEEDED;
+        break;
+      default:
+        message.event = Event::UNDEFINED;
+        break;
+    }
+    
+    print_(message);
+  }
+
+  void error_(const std::string text, int thread_id = -1)
+  {
+    auto message = Event();
+
+    message.header.stamp = rclcpp::Clock().now();
+    message.source.capability = run_config_.interface;
+    message.source.provider = run_config_.provider;
+    message.target.capability = "";
+    message.thread_id = thread_id;
+    message.text = text;
+    message.error = true;
+    message.server_ready = true;
+    message.event = Event::IDLE;
+    
+    print_(message);
+  }
+
   /**
    * @brief shared pointer to the capabilities node. Allows to use ros node related functionalities
    */
@@ -519,6 +584,11 @@ protected:
    * @brief external function that triggers capability runners
    */
   std::function<void(const std::string, const std::string)> triggerFunction_;
+
+  /**
+   * @brief event function for internal runner event publishing
+   */
+  std::function<void(Event&)> print_;
 
   /**
    * @brief XMLElement that is used to convert xml strings to std::string

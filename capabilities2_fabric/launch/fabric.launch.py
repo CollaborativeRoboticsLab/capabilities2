@@ -15,9 +15,9 @@ def generate_launch_description():
         LaunchDescription: The launch description for capabilities2 executor
     """
     # load config file
-    executor_config = os.path.join(get_package_share_directory('capabilities2_fabric'), 'config', 'fabric.yaml')
+    fabric_config = os.path.join(get_package_share_directory('capabilities2_fabric'), 'config', 'fabric.yaml')
 
-    executor = Node(
+    capabilities2_fabric = Node(
             package='capabilities2_fabric',
             namespace='',
             executable='capabilities2_fabric',
@@ -25,17 +25,16 @@ def generate_launch_description():
             output='screen'
         )
     
-    executor_file = Node(
+    fabric_client = Node(
             package='capabilities2_fabric',
             namespace='',
-            executable='capabilities2_file_parser',
-            name='capabilities2_file_parser',
-            parameters=[executor_config],
+            executable='fabric_client',
+            name='fabric_client',
+            parameters=[fabric_config],
             output='screen'
         )
 
-    # return
     return LaunchDescription([
-        executor,
-        executor_file
+        capabilities2_fabric,
+        fabric_client
     ])

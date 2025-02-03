@@ -2,7 +2,7 @@
 
 #include <string>
 #include <yaml-cpp/yaml.h>
-#include <capabilities2_server/sanitizer/sql_safe.hpp>
+#include <capabilities2_server/utils/sql_safe.hpp>
 
 namespace capabilities2_server
 {

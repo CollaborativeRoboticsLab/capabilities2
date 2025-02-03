@@ -28,9 +28,10 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+                     std::function<void(Event&)> print) override
   {
-    init_service(node, run_config, "prompt");
+    init_service(node, run_config, "prompt", print);
   }
 
   /**
@@ -44,7 +45,7 @@ public:
    * @param parameters
    * @return prompt_msgs::srv::Prompt::Request the generated request
    */
-  virtual typename prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters) override
+  virtual typename prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
   {
     tinyxml2::XMLElement* occupancyElement = parameters->FirstChildElement("OccupancyGrid");
 
@@ -55,7 +56,9 @@ public:
 
     prompt_msgs::srv::Prompt::Request request;
 
-    request.prompt.prompt = "The OccupancyGrid of the robot shows the surrounding environment of the robot. The data is given as a ros2 nav_msgs occupancy_grid of which the content are " + data;
+    request.prompt.prompt = "The OccupancyGrid of the robot shows the surrounding environment of the robot. The data "
+                            "is given as a ros2 nav_msgs occupancy_grid of which the content are " +
+                            data;
 
     prompt_msgs::msg::ModelOption modelOption1;
     modelOption1.key = "model";

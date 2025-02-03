@@ -31,9 +31,10 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+                     std::function<void(Event&)> print) override
   {
-    init_action(node, run_config, "capabilities_fabric");
+    init_action(node, run_config, "capabilities_fabric", print);
   }
 
 protected:
@@ -43,7 +44,7 @@ protected:
    '<Event name=follow_waypoints provider=WaypointRunner x='$value' y='$value' />'
    * @return ActionT::Goal the generated goal
    */
-  virtual capabilities2_msgs::action::Plan::Goal generate_goal(tinyxml2::XMLElement* parameters) override
+  virtual capabilities2_msgs::action::Plan::Goal generate_goal(tinyxml2::XMLElement* parameters, int id) override
   {
     tinyxml2::XMLElement* planElement = parameters->FirstChildElement("ReceievdPlan");
 
