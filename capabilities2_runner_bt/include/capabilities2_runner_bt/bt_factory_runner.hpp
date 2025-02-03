@@ -21,10 +21,11 @@ public:
   {
   }
 
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config)
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+                     std::function<void(Event&)> print)
   {
     // init the runner base
-    init_base(node, run_config);
+    init_base(node, run_config, print);
 
     // register (bt)actions from ROS plugins
     try

@@ -89,11 +89,11 @@ public:
     if (rebuild)
     {
       // remove db file if it exists
-      event_publish("Rebuilding capabilities database", false);
+      event_publish("Removing the old capabilities database", false);
 
       if (std::remove(db_file.c_str()) != 0)
       {
-        RCLCPP_ERROR(get_logger(), "Error deleting file %s", db_file.c_str());
+        event_publish("Error deleting database file " + db_file, false, true);
       }
     }
 
@@ -109,7 +109,10 @@ public:
     // init capabilities api
     event_publish("Connecting API with Database", false);
 
-    connect(db_file, get_node_logging_interface());
+    connect(db_file, get_node_logging_interface(),
+            std::bind(&capabilities2_server::CapabilitiesServer::event_publish, this, std::placeholders::_1,
+                      std::placeholders::_2, std::placeholders::_3),
+            std::bind(&capabilities2_server::CapabilitiesServer::event_publish_runner, this, std::placeholders::_1));
 
     event_publish("Loading capabilities", false);
 
@@ -248,13 +251,13 @@ public:
     // guard empty values
     if (req->capability.empty())
     {
-      RCLCPP_ERROR(get_logger(), "free_capability: capability is empty");
+      event_publish("free_capability: capability is empty", true, true);
       return;
     }
 
     if (req->bond_id.empty())
     {
-      RCLCPP_ERROR(get_logger(), "free_capability: bond_id is empty");
+      event_publish("free_capability: bond_id is empty", true, true);
       return;
     }
 
@@ -271,19 +274,19 @@ public:
     // guard empty values
     if (req->capability.empty())
     {
-      RCLCPP_ERROR(get_logger(), "use_capability: capability is empty");
+      event_publish("use_capability: capability is empty", true, true);
       return;
     }
 
     if (req->preferred_provider.empty())
     {
-      RCLCPP_ERROR(get_logger(), "use_capability: preferred_provider is empty");
+      event_publish("use_capability: preferred_provider is empty", true, true);
       return;
     }
 
     if (req->bond_id.empty())
     {
-      RCLCPP_ERROR(get_logger(), "use_capability: bond_id is empty");
+      event_publish("use_capability: bond_id is empty", true, true);
       return;
     }
 
@@ -313,7 +316,7 @@ public:
     // guard empty values
     if (req->capability_spec.package.empty() || req->capability_spec.content.empty())
     {
-      RCLCPP_ERROR(get_logger(), "register_capability: package or content is empty");
+      event_publish("register_capability: package or content is empty", true, true);
       return;
     }
 
@@ -363,7 +366,7 @@ public:
     // if the spec is not empty set response
     if (capability_spec.content.empty())
     {
-      RCLCPP_ERROR(get_logger(), "capability spec not found for resource: %s", req->capability_spec.c_str());
+      event_publish("capability spec not found for resource: " + req->capability_spec, true, true);
 
       // BUG: throw error causes service to crash, this is a ROS2 bug
       // std::runtime_error("capability spec not found for resource: " + req->capability_spec);
@@ -411,7 +414,7 @@ private:
     // check if path exists
     if (!std::filesystem::exists(package_path))
     {
-      RCLCPP_ERROR(get_logger(), "package path does not exist: %s", package_path.c_str());
+      event_publish("package path does not exist: " + package_path, true, true);
       return;
     }
 
@@ -459,7 +462,7 @@ private:
       }
       catch (const std::runtime_error& e)
       {
-        RCLCPP_ERROR(get_logger(), "failed to parse package.xml file: %s", e.what());
+        event_publish("failed to parse package.xml file: " + std::string(e.what()), true, true);
         continue;
       }
 
@@ -499,14 +502,13 @@ private:
             load_spec_content(package_path + "/" + package + "/" + spec_path, capability_spec);
 
             // add capability to db
-            std::string status = "adding capability: " + package + "/" + spec_path;
-            event_publish(status);
+            event_publish("adding capability: " + package + "/" + spec_path);
 
             add_capability(capability_spec);
           }
           catch (const std::runtime_error& e)
           {
-            RCLCPP_ERROR(get_logger(), "failed to load spec file: %s", e.what());
+            event_publish("failed to load spec file: " + std::string(e.what()), true, true);
           }
         }
       };
@@ -543,7 +545,7 @@ private:
       }
       catch (const std::runtime_error& e)
       {
-        RCLCPP_ERROR(get_logger(), "failed to parse package.xml file: %s", e.what());
+        event_publish("failed to parse package.xml file: " + std::string(e.what()), true, true);
         continue;
       }
 
@@ -583,14 +585,13 @@ private:
             load_spec_content(package_path + "/" + package + "/share/" + package + "/" + spec_path, capability_spec);
 
             // add capability to db
-            std::string status = "adding capability: " + package + "/" + spec_path;
-            event_publish(status);
+            event_publish("adding capability: " + package + "/" + spec_path);
 
             add_capability(capability_spec);
           }
           catch (const std::runtime_error& e)
           {
-            RCLCPP_ERROR(get_logger(), "failed to load spec file: %s", e.what());
+            event_publish("failed to load spec file: " + std::string(e.what()), true, true);
           }
         }
       };
@@ -656,7 +657,7 @@ private:
     spec_file_file.close();
   }
 
-  void event_publish(const std::string& text, bool is_server_ready = true)
+  void event_publish(const std::string& text, bool is_server_ready = true, bool is_error = false)
   {
     auto message = capabilities2_msgs::msg::CapabilityEvent();
 
@@ -667,47 +668,48 @@ private:
     message.target.provider = "";
     message.thread_id = 0;
     message.text = text;
+    message.error = is_error;
     message.pid = -1;
     message.server_ready = is_server_ready;
 
     event_pub_->publish(message);
 
-    RCLCPP_INFO(get_logger(), text.c_str());
+    if (is_error)
+      RCLCPP_ERROR(get_logger(), text.c_str());
+    else
+      RCLCPP_INFO(get_logger(), text.c_str());
   }
 
-  void event_publish_runner(const std::string& capability, const std::string& provider, int thread_id,
-                            const std::string& text, const std::string target_capability = "",
-                            const std::string target_provider = "",
-                            enum capability_event event = capability_event::IDLE)
+  void event_publish_runner(capabilities2_msgs::msg::CapabilityEvent& message)
   {
-    auto message = capabilities2_msgs::msg::CapabilityEvent();
-
-    message.header.stamp = rclcpp::Clock().now();
-    message.source.capability = capability;
-    message.source.provider = provider;
-    message.target.capability = target_capability;
-    message.target.provider = target_provider;
-    message.thread_id = thread_id;
-    message.text = text;
-    message.pid = get_pid(capability);
+    message.pid = get_pid(message.source.capability);
     message.server_ready = true;
-
-    if (event == capability_event::IDLE)
-      message.event = capabilities2_msgs::msg::CapabilityEvent::IDLE;
-    else if (event == capability_event::STARTED)
-      message.event = capabilities2_msgs::msg::CapabilityEvent::STARTED;
-    else if (event == capability_event::STOPPED)
-      message.event = capabilities2_msgs::msg::CapabilityEvent::STOPPED;
-    else if (event == capability_event::TERMINATED)
-      message.event = capabilities2_msgs::msg::CapabilityEvent::TERMINATED;
-    else if (event == capability_event::SUCCEEDED)
-      message.event = capabilities2_msgs::msg::CapabilityEvent::SUCCEEDED;
-    else
-      message.event = capabilities2_msgs::msg::CapabilityEvent::UNDEFINED;
 
     event_pub_->publish(message);
 
-    RCLCPP_INFO(get_logger(), text.c_str());
+    std::string text;
+    if (message.thread_id >= 0 and message.target.capability == "")
+    {
+      text = "[" + message.source.capability + "/" + std::to_string(message.thread_id) + "] " + message.text;
+    }
+    else if (message.thread_id < 0 and message.target.capability == "")
+    {
+      text = "[" + message.source.capability + "] " + message.text;
+    }
+    else if (message.thread_id >= 0 and message.target.capability != "")
+    {
+      text = "[" + message.source.capability + "/" + std::to_string(message.thread_id) + "] triggering " +
+             message.target.capability + " " + message.text;
+    }
+    else if (message.thread_id < 0 and message.target.capability != "")
+    {
+      text = "[" + message.source.capability + "] triggering " + message.target.capability + " " + message.text;
+    }
+
+    if (message.error)
+      RCLCPP_ERROR(get_logger(), text.c_str());
+    else
+      RCLCPP_INFO(get_logger(), text.c_str());
   }
 
 private:

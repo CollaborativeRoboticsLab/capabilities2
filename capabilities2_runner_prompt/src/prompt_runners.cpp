@@ -6,11 +6,6 @@
 #include <capabilities2_runner_prompt/prompt_plan_request_runner.hpp>
 #include <capabilities2_runner_prompt/prompt_plan_response_runner.hpp>
 
-namespace capabilities2_runner
-{
-
-}
-
 // register runner plugins
 PLUGINLIB_EXPORT_CLASS(capabilities2_runner::PromptTextRunner, capabilities2_runner::RunnerBase)
 PLUGINLIB_EXPORT_CLASS(capabilities2_runner::PromptPoseRunner, capabilities2_runner::RunnerBase)

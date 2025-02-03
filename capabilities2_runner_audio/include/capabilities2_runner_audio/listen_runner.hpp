@@ -31,9 +31,10 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+                     std::function<void(Event&)> runner_publish_func) override
   {
-    init_action(node, run_config, "speech_to_text");
+    init_action(node, run_config, "speech_to_text", runner_publish_func);
   }
 
 protected:
@@ -44,7 +45,7 @@ protected:
    * provider=ListenerRunner/>'
    * @return ActionT::Goal the generated goal
    */
-  virtual hri_audio_msgs::action::SpeechToText::Goal generate_goal(tinyxml2::XMLElement* parameters) override
+  virtual hri_audio_msgs::action::SpeechToText::Goal generate_goal(tinyxml2::XMLElement* parameters, int id) override
   {
     hri_audio_msgs::action::SpeechToText::Goal goal_msg;
 

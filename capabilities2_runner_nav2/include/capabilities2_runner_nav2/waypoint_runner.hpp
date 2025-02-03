@@ -37,9 +37,10 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+                     std::function<void(Event&)> runner_publish_func) override
   {
-    init_action(node, run_config, "navigate_to_pose");
+    init_action(node, run_config, "navigate_to_pose", runner_publish_func);
   }
 
 protected:
@@ -49,12 +50,12 @@ protected:
    '<Event name=follow_waypoints provider=WaypointRunner x='$value' y='$value' />'
    * @return ActionT::Goal the generated goal
    */
-  virtual nav2_msgs::action::NavigateToPose::Goal generate_goal(tinyxml2::XMLElement* parameters) override
+  virtual nav2_msgs::action::NavigateToPose::Goal generate_goal(tinyxml2::XMLElement* parameters, int id) override
   {
     parameters->QueryDoubleAttribute("x", &x);
     parameters->QueryDoubleAttribute("y", &y);
 
-    RCLCPP_INFO(node_->get_logger(), "[%s] goal consist of x: %f and y: %f", run_config_.interface.c_str(), x, y);
+    info_("goal consist of x: " + std::to_string(x) + " and y: " + std::to_string(y), id);
 
     nav2_msgs::action::NavigateToPose::Goal goal_msg;
     geometry_msgs::msg::PoseStamped pose_msg;
@@ -62,7 +63,7 @@ protected:
     pose_msg.header.frame_id = "map";
     pose_msg.header.stamp.sec = 0;
     pose_msg.header.stamp.nanosec = 0;
-    
+
     pose_msg.pose.position.x = x;
     pose_msg.pose.position.y = y;
     pose_msg.pose.position.z = 0.0;

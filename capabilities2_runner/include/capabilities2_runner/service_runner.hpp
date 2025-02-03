@@ -32,23 +32,24 @@ public:
    * @param service_name action name used in the yaml file, used to load specific configuration from the run_config
    */
   virtual void init_service(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                            const std::string& service_name)
+                            const std::string& service_name, std::function<void(Event&)> print)
   {
     // initialize the runner base by storing node pointer and run config
-    init_base(node, run_config);
+    init_base(node, run_config, print);
 
     // create an service client
     service_client_ = node_->create_client<ServiceT>(service_name);
 
     // wait for action server
-    RCLCPP_INFO(node_->get_logger(), "%s waiting for service: %s", run_config_.interface.c_str(), service_name.c_str());
+    info_("waiting for service: " + service_name);
 
     if (!service_client_->wait_for_service(std::chrono::seconds(3)))
     {
-      RCLCPP_ERROR(node_->get_logger(), "%s failed to connect to service: %s", run_config_.interface.c_str(),
-                   service_name.c_str());
+      error_("failed to connect to service: " + service_name);
       throw runner_exception("failed to connect to server");
     }
+
+    info_("connected with service: " + service_name);
   }
 
   /**
@@ -67,39 +68,54 @@ public:
       throw runner_exception("cannot trigger service without parameters");
 
     // generate a goal from parameters if provided
-    auto request_msg = std::make_shared<typename ServiceT::Request>(generate_request(parameters_[id]));
+    auto request_msg = std::make_shared<typename ServiceT::Request>(generate_request(parameters_[id], id));
+
+    info_("request generated", id);
+
+    std::unique_lock<std::mutex> lock(send_goal_mutex);
+    action_complete = false;
 
     auto result_future = service_client_->async_send_request(
-        request_msg, [this](typename rclcpp::Client<ServiceT>::SharedFuture future) {
+        request_msg, [this, id](typename rclcpp::Client<ServiceT>::SharedFuture future) {
           if (!future.valid())
           {
-            RCLCPP_ERROR(node_->get_logger(), "get result call failed");
+            error_("get result call failed");
 
             // trigger the events related to on_failure state
             if (events[execute_id].on_failure != "")
             {
+              info_("on_failure", id, events[execute_id].on_failure, EventType::FAILED);
               triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
             }
           }
           else
           {
-            RCLCPP_INFO(node_->get_logger(), "get result call succeeded");
+            info_("get result call succeeded", id);
 
             response_ = future.get();
 
             // trigger the events related to on_success state
             if (events[execute_id].on_success != "")
             {
+              info_("on_success", id, events[execute_id].on_success, EventType::SUCCEEDED);
               triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
             }
           }
+
+          action_complete = true;
+          send_goal_cv.notify_all();
         });
 
     // trigger the events related to on_started state
     if (events[execute_id].on_started != "")
     {
+      info_("on_started", id, events[execute_id].on_started, EventType::STARTED);
       triggerFunction_(events[execute_id].on_started, update_on_started(events[execute_id].on_started_param));
     }
+
+    // Conditional wait
+    send_goal_cv.wait(lock, [this] { return action_complete; });
+    info_("Service request complete. Thread closing.", id);
   }
 
   /**
@@ -123,6 +139,7 @@ public:
     // Trigger on_stopped event if defined
     if (events[execute_id].on_stopped != "")
     {
+      info_("on_stopped", -1, events[execute_id].on_stopped, EventType::STOPPED);
       triggerFunction_(events[execute_id].on_stopped, update_on_stopped(events[execute_id].on_stopped_param));
     }
   }
@@ -139,7 +156,7 @@ protected:
    * @param parameters
    * @return ServiceT::Request the generated request
    */
-  virtual typename ServiceT::Request generate_request(tinyxml2::XMLElement* parameters) = 0;
+  virtual typename ServiceT::Request generate_request(tinyxml2::XMLElement* parameters, int id) = 0;
 
   typename rclcpp::Client<ServiceT>::SharedPtr service_client_;
   typename ServiceT::Response::SharedPtr response_;

@@ -16,7 +16,7 @@ string text
 uint8 IDLE=0
 uint8 STARTED=1
 uint8 STOPPED=2
-uint8 TERMINATED=3
+uint8 FAILED=3
 uint8 SUCCEEDED=4
 uint8 UNDEFINED=5
 
@@ -25,6 +25,9 @@ uint8 event
 
 # Whether the server configuration is complete
 bool server_ready
+
+# Whether a failure occured
+bool error
 
 # PID of the related process
 int32 pid

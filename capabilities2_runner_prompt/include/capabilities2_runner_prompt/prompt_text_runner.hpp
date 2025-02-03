@@ -28,9 +28,10 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
+                     std::function<void(Event&)> print) override
   {
-    init_service(node, run_config, "prompt");
+    init_service(node, run_config, "prompt", print);
   }
 
   /**
@@ -44,7 +45,7 @@ public:
    * @param parameters
    * @return prompt_msgs::srv::Prompt::Request the generated request
    */
-  virtual typename prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters) override
+  virtual typename prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
   {
     tinyxml2::XMLElement* textElement = parameters->FirstChildElement("Text");
 

@@ -38,12 +38,18 @@ public:
   /**
    * @brief connect with ROS node logging interface
    *
-   * @param node_logging_interface_ptr pointer to the ROS node logging interface
+   * @param print function to publish INFO messages to the ROS environment
+   * @param runner_print function to be passed into runners for publishing INFO messages to the ROS environment
+   * @param logging pointer to the ROS node logging interface for WARN and ERROR messages
    */
-  void connect(rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr node_logging_interface_ptr)
+  void connect(std::function<void(const std::string&, bool, bool)> print,
+               std::function<void(capabilities2_msgs::msg::CapabilityEvent&)> runner_print,
+               rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging)
   {
     // set logger
-    node_logging_interface_ptr_ = node_logging_interface_ptr;
+    logging_ = logging;
+    print_ = print;
+    runner_print_ = runner_print;
   }
 
   /**
@@ -85,7 +91,7 @@ public:
     }
 
     // start the runner
-    runner_cache_[capability]->start(node, run_config.to_runner_opts());
+    runner_cache_[capability]->start(node, run_config.to_runner_opts(), runner_print_);
   }
 
   /**
@@ -105,8 +111,7 @@ public:
     }
     else
     {
-      RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "Runner not found for capability: %s",
-                   capability.c_str());
+      print_("Runner not found for capability: " + capability, true, true);
       throw capabilities2_runner::runner_exception("capability runner not found: " + capability);
     }
   }
@@ -147,11 +152,9 @@ public:
         event_options, std::bind(&capabilities2_server::RunnerCache::trigger_runner, this, std::placeholders::_1,
                                  std::placeholders::_2));
 
-    RCLCPP_INFO(node_logging_interface_ptr_->get_logger(),
-                "Configured triggers for capability %s: \n\tStarted: %s \n\tFailure: %s \n\tSuccess: %s \n\tStopped: "
-                "%s\n",
-                capability.c_str(), on_started_capability.c_str(), on_failure_capability.c_str(),
-                on_success_capability.c_str(), on_stopped_capability.c_str());
+    print_("Configured triggers for capability" + capability + ": \n\tStarted: " + on_started_capability +
+            " \n\tFailure: " + on_failure_capability + " \n\tSuccess: " + on_success_capability +
+            "\n\tStopped: " + on_stopped_capability + "\n", true, false);
   }
 
   /**
@@ -265,7 +268,16 @@ private:
   pluginlib::ClassLoader<capabilities2_runner::RunnerBase> runner_loader_;
 
   // logger
-  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr node_logging_interface_ptr_;
+  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_;
+
+  // event function for external event publishing
+  std::function<void(const std::string&, bool, bool)> print_;
+
+  // event function for internal runner event publishing
+  std::function<void(capabilities2_msgs::msg::CapabilityEvent&)> runner_print_;
+
+  // event string
+  std::string event;
 };
 
 }  // namespace capabilities2_server
