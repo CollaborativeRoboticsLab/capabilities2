@@ -9,6 +9,7 @@ enum fabric_status
   CANCELED,
   ABORTED,
   FAILED,
-  SUCCEEDED
+  LAUNCHED,
+  COMPLETED
 };
 }

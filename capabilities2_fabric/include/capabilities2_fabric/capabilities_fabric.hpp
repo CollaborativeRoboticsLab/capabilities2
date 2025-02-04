@@ -2,7 +2,6 @@
 #include <thread>
 #include <string>
 #include <vector>
-#include <deque>
 #include <algorithm>
 #include <tinyxml2.h>
 
@@ -12,7 +11,6 @@
 #include <capabilities2_fabric/utils/xml_parser.hpp>
 #include <capabilities2_fabric/utils/bond_client.hpp>
 #include <capabilities2_fabric/utils/status_client.hpp>
-#include <capabilities2_fabric/utils/fabric_status.hpp>
 
 #include <capabilities2_msgs/action/plan.hpp>
 
@@ -24,7 +22,6 @@
 #include <capabilities2_msgs/srv/free_capability.hpp>
 #include <capabilities2_msgs/srv/configure_capability.hpp>
 #include <capabilities2_msgs/srv/trigger_capability.hpp>
-#include <capabilities2_msgs/srv/complete_fabric.hpp>
 
 /**
  * @brief Capabilities Fabric
@@ -49,8 +46,6 @@ public:
   using ConfigureCapability = capabilities2_msgs::srv::ConfigureCapability;
   using TriggerCapability = capabilities2_msgs::srv::TriggerCapability;
 
-  using CompleteFabric = capabilities2_msgs::srv::CompleteFabric;
-
   using GetInterfacesClient = rclcpp::Client<GetInterfaces>;
   using GetSemanticInterfacesClient = rclcpp::Client<GetSemanticInterfaces>;
   using GetProvidersClient = rclcpp::Client<GetProviders>;
@@ -60,9 +55,7 @@ public:
   using ConfigureCapabilityClient = rclcpp::Client<ConfigureCapability>;
   using TriggerCapabilityClient = rclcpp::Client<TriggerCapability>;
 
-  using Status = capabilities2::fabric_status;
-
-  CapabilitiesFabric(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("Capabilities2_Fabric", options), lock_(mutex_, std::defer_lock)
+  CapabilitiesFabric(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("Capabilities2_Fabric", options)
   {
     control_tag_list = xml_parser::get_control_list();
   }
@@ -81,10 +74,6 @@ public:
         this, "/capabilities_fabric", std::bind(&CapabilitiesFabric::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&CapabilitiesFabric::handle_cancel, this, std::placeholders::_1),
         std::bind(&CapabilitiesFabric::handle_accepted, this, std::placeholders::_1));
-
-    completion_server_ =
-        this->create_service<CompleteFabric>("/capabilities_fabric/set_completion",
-                                             std::bind(&CapabilitiesFabric::setCompleteCallback, this, std::placeholders::_1, std::placeholders::_2));
 
     get_interfaces_client_ = this->create_client<GetInterfaces>("/capabilities/get_interfaces");
     get_sem_interf_client_ = this->create_client<GetSemanticInterfaces>("/capabilities/get_semantic_interfaces");
@@ -107,8 +96,6 @@ public:
 
     feedback_msg = std::make_shared<Plan::Feedback>();
     result_msg = std::make_shared<Plan::Result>();
-
-    fabric_state = Status::IDLE;
   }
 
 private:
@@ -126,8 +113,10 @@ private:
 
     (void)uuid;
 
+    status_->info("Following plan was received :\n\n " + goal->plan);
+
     // try to parse the std::string plan from capabilities_msgs/Plan to the to a XMLDocument file
-    tinyxml2::XMLError xml_status = documentEvaluation.Parse(goal->plan.c_str());
+    tinyxml2::XMLError xml_status = document.Parse(goal->plan.c_str());
 
     // check if the file parsing failed
     if (xml_status != tinyxml2::XMLError::XML_SUCCESS)
@@ -136,18 +125,9 @@ private:
       return rclcpp_action::GoalResponse::REJECT;
     }
 
-    if (fabric_state == Status::RUNNING)
-    {
-      status_->info("Prior plan under exeution. Will defer the new plan");
-      plan_queue.push_back(goal->plan);
-      return rclcpp_action::GoalResponse::ACCEPT_AND_DEFER;
-    }
-    else
-    {
-      status_->info("Plan parsed and accepted");
-      plan_queue.push_back(goal->plan);
-      return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
-    }
+    status_->info("Plan parsed and accepted");
+
+    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   }
 
   /**
@@ -163,8 +143,6 @@ private:
 
     bond_client_->stop();
 
-    fabric_state = Status::CANCELED;
-
     return rclcpp_action::CancelResponse::ACCEPT;
   }
 
@@ -177,15 +155,7 @@ private:
   {
     goal_handle_ = goal_handle;
 
-    fabric_state = Status::RUNNING;
-
     execution();
-  }
-
-  void setCompleteCallback(const std::shared_ptr<CompleteFabric::Request> request, std::shared_ptr<CompleteFabric::Response> response)
-  {
-    fabric_completed_ = true;
-    cv_.notify_all();
   }
 
   /**
@@ -194,9 +164,6 @@ private:
   void execution()
   {
     process_feedback("A new execution started");
-
-    lock_.lock();
-    fabric_completed_ = false;
 
     expected_providers_ = 0;
     completed_providers_ = 0;
@@ -210,22 +177,7 @@ private:
     expected_configurations_ = 0;
     completed_configurations_ = 0;
 
-    std::string plan_to_be_executed = plan_queue[0];
-
-    tinyxml2::XMLError xml_status = document.Parse(plan_to_be_executed.c_str());
-
-    // check if the file parsing failed
-    if (xml_status != tinyxml2::XMLError::XML_SUCCESS)
-    {
-      status_->error("Parsing the plan from queue failed");
-      return;
-    }
-    else
-    {
-      status_->error("Parsing the plan from queue successful");
-      plan_queue.pop_front();
-      getInterfaces();
-    }
+    getInterfaces();
   }
 
   /**
@@ -639,8 +591,8 @@ private:
     }
     else
     {
-      request_configure->target_on_start.capability = "std_capabilities/FabricCompletionRunner";
-      request_configure->target_on_start.provider = "std_capabilities/FabricCompletionRunner";
+      request_configure->target_on_start.capability = "";
+      request_configure->target_on_start.provider = "";
     }
 
     if (xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_stop.parameters,
@@ -651,8 +603,8 @@ private:
     }
     else
     {
-      request_configure->target_on_stop.capability = "std_capabilities/FabricCompletionRunner";
-      request_configure->target_on_stop.provider = "std_capabilities/FabricCompletionRunner";
+      request_configure->target_on_stop.capability = "";
+      request_configure->target_on_stop.provider = "";
     }
 
     if (xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_success.parameters,
@@ -663,8 +615,8 @@ private:
     }
     else
     {
-      request_configure->target_on_success.capability = "std_capabilities/FabricCompletionRunner";
-      request_configure->target_on_success.provider = "std_capabilities/FabricCompletionRunner";
+      request_configure->target_on_success.capability = "";
+      request_configure->target_on_success.provider = "";
     }
 
     if (xml_parser::convert_to_string(capabilities[completed_configurations_].target_on_failure.parameters,
@@ -675,8 +627,8 @@ private:
     }
     else
     {
-      request_configure->target_on_failure.capability = "std_capabilities/FabricCompletionRunner";
-      request_configure->target_on_failure.provider = "std_capabilities/FabricCompletionRunner";
+      request_configure->target_on_failure.capability = "";
+      request_configure->target_on_failure.provider = "";
     }
 
     std::string source_capability = capabilities[completed_configurations_].source.runner;
@@ -734,36 +686,8 @@ private:
       auto response = future.get();
       process_feedback("Successfully triggered capability " + connection_map[0].source.runner);
 
-      wait_for_completion();
-    });
-  }
-
-  /**
-   * @brief Wait for the execution completion of the fabric
-   *
-   */
-  void wait_for_completion()
-  {
-    process_feedback("Waiting for fabric execution completion");
-
-    // Conditional wait
-    while (!fabric_completed_)
-    {
-      cv_.wait(lock_);
-    }
-    
-    lock_.unlock();
-
-    if (plan_queue.size()>0)
-    {
-      process_feedback("Successfully completed capabilities2 fabric. Starting the next fabric");
-
-      execution();
-    }
-    else
-    {
       process_result("Successfully completed capabilities2 fabric", true);
-    }
+    });
   }
 
   void check_service(bool wait_for_logic, const std::string& service_name)
@@ -807,13 +731,11 @@ private:
     if (success)
     {
       status_->info(text, newline);
-      fabric_state = Status::SUCCEEDED;
       goal_handle_->succeed(result_msg);
     }
     else
     {
       status_->error(text, newline);
-      fabric_state = Status::ABORTED;
       goal_handle_->abort(result_msg);
     }
   }
@@ -840,23 +762,14 @@ private:
   /** Bond id */
   std::string bond_id_;
 
-  /** Status of the fabric */
-  Status fabric_state;
-
   /** Manages bond between capabilities server and this client */
   std::shared_ptr<BondClient> bond_client_;
 
   /** Handles status message sending and printing to logging */
   std::shared_ptr<StatusClient> status_;
 
-  /** Vector of plans */
-  std::deque<std::string> plan_queue;
-
   /** XML Document */
   tinyxml2::XMLDocument document;
-
-  /** XML Document */
-  tinyxml2::XMLDocument documentEvaluation;
 
   /** vector of connections */
   std::map<int, capabilities2::node_t> connection_map;
@@ -912,12 +825,9 @@ private:
   /** trigger an selected capability */
   TriggerCapabilityClient::SharedPtr trig_capability_client_;
 
-  /** server to get the status of the capabilities2 fabric */
-  rclcpp::Service<CompleteFabric>::SharedPtr completion_server_;
-
   /** capabilities2 server and fabric synchronization tools */
-  std::mutex mutex_;
-  std::condition_variable cv_;
-  bool fabric_completed_;
-  std::unique_lock<std::mutex> lock_;
+  // std::mutex mutex_;
+  // std::condition_variable cv_;
+  // bool fabric_completed_;
+  // std::unique_lock<std::mutex> lock_;
 };

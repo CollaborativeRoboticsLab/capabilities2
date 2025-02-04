@@ -21,6 +21,40 @@ namespace xml_parser
   }
 
   /**
+   * @brief add std_capabilities/FabricCompletionRunner into the plan
+   * as an internal mechanism
+   *
+   * @param document XML document to modify
+   *
+   * @return modified document
+   */
+  void add_closing_event(tinyxml2::XMLDocument &document)
+  {
+    // Get the root <Plan> element
+    tinyxml2::XMLElement* plan = document.FirstChildElement("Plan");
+    
+    // Get the <Control> element
+    tinyxml2::XMLElement* innerControl = plan->FirstChildElement("Control");
+
+    // Create the outer <Control name="sequential"> element
+    tinyxml2::XMLElement* outerControl = document.NewElement("Control");
+    outerControl->SetAttribute("name", "sequential");
+
+    // Remove the inner <Control> from <Plan> and move it inside the new outer <Control>
+    plan->DeleteChild(innerControl);
+    outerControl->InsertEndChild(innerControl);
+
+    // Create and append the new <Event> element
+    tinyxml2::XMLElement* newEvent = document.NewElement("Event");
+    newEvent->SetAttribute("name", "std_capabilities/FabricCompletionRunner");
+    newEvent->SetAttribute("provider", "std_capabilities/FabricCompletionRunner");
+    outerControl->InsertEndChild(newEvent);
+
+    // Append the outer <Control> to <Plan>
+    plan->InsertEndChild(outerControl);
+  }
+
+  /**
    * @brief search a string in a vector of strings
    *
    * @param list vector of strings to be searched
