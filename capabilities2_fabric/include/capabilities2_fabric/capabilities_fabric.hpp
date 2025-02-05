@@ -165,6 +165,14 @@ private:
   {
     process_feedback("A new execution started");
 
+    xml_parser::add_closing_event(document);
+
+    std::string modified_plan;
+
+    xml_parser::convert_to_string(document, modified_plan);
+
+    status_->info("Plan after adding closing event :\n\n " + modified_plan);
+
     expected_providers_ = 0;
     completed_providers_ = 0;
 

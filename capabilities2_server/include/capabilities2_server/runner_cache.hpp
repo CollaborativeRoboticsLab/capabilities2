@@ -152,7 +152,7 @@ public:
         event_options, std::bind(&capabilities2_server::RunnerCache::trigger_runner, this, std::placeholders::_1,
                                  std::placeholders::_2));
 
-    print_("Configured triggers for capability" + capability + ": \n\tStarted: " + on_started_capability +
+    print_("Configured triggers for capability " + capability + ": \n\tStarted: " + on_started_capability +
             " \n\tFailure: " + on_failure_capability + " \n\tSuccess: " + on_success_capability +
             "\n\tStopped: " + on_stopped_capability + "\n", true, false);
   }
