@@ -56,8 +56,8 @@ public:
 
     prompt_msgs::srv::Prompt::Request request;
 
-    request.prompt.prompt =
-        "The position of the robot is given as a standard ros2 geometry message of which the content are " + data;
+    request.prompt.prompt = "The position of the robot is given as a standard ros2 geometry_msgs::msg::Pose of which "
+                            "the content are " + data;
 
     prompt_msgs::msg::ModelOption modelOption1;
     modelOption1.key = "model";
@@ -71,6 +71,8 @@ public:
     modelOption2.type = prompt_msgs::msg::ModelOption::BOOL_TYPE;
 
     request.prompt.options.push_back(modelOption2);
+
+    info_("prompting with : " + request.prompt.prompt, id);
 
     return request;
   }

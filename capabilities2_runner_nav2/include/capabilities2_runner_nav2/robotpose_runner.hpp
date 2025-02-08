@@ -42,7 +42,19 @@ protected:
    * This function is used to inject new data into the XMLElement containing
    * parameters related to the on_success trigger event
    *
-   * A pattern needs to be implemented in the derived class
+   * <Pose>
+   *     <position>
+   *         <x>1.23</x>
+   *         <y>4.56</y>
+   *         <z>7.89</z>
+   *     </position>
+   *     <orientation>
+   *         <x>0.12</x>
+   *         <y>0.34</y>
+   *         <z>0.56</z>
+   *         <w>0.78</w>
+   *     </orientation>
+   * </Pose>
    *
    * @param parameters pointer to the XMLElement containing parameters
    * @return pointer to the XMLElement containing updated parameters
@@ -95,6 +107,8 @@ protected:
 
     // Return the updated parameters element with Pose added as string
     std::string result = convert_to_string(element);
+
+    output_("on_success trigger parameter", result);
 
     return result;
   };

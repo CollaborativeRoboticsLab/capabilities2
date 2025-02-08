@@ -15,10 +15,10 @@ namespace capabilities2_runner
  * call on the prompt_tools/prompt service, providing it as a capability that prompts
  * capabilitie plans values
  */
-class PromptPlanRequestRunner : public ServiceRunner<prompt_msgs::srv::Prompt>
+class PromptPlanRunner : public ServiceRunner<prompt_msgs::srv::Prompt>
 {
 public:
-  PromptPlanRequestRunner() : ServiceRunner()
+  PromptPlanRunner() : ServiceRunner()
   {
   }
 

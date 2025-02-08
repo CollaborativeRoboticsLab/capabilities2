@@ -57,8 +57,7 @@ public:
     prompt_msgs::srv::Prompt::Request request;
 
     request.prompt.prompt = "The OccupancyGrid of the robot shows the surrounding environment of the robot. The data "
-                            "is given as a ros2 nav_msgs occupancy_grid of which the content are " +
-                            data;
+                            "is given as a ros2 nav_msgs::msg::OccupancyGrid of which the content are " + data;
 
     prompt_msgs::msg::ModelOption modelOption1;
     modelOption1.key = "model";
@@ -72,6 +71,8 @@ public:
     modelOption2.type = prompt_msgs::msg::ModelOption::BOOL_TYPE;
 
     request.prompt.options.push_back(modelOption2);
+
+    info_("prompting with : " + request.prompt.prompt, id);
 
     return request;
   }

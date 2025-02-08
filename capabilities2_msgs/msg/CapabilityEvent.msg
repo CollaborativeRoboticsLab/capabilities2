@@ -12,6 +12,9 @@ int8 thread_id
 # status message
 string text
 
+# status message
+string element
+
 # Event types
 uint8 IDLE=0
 uint8 STARTED=1
@@ -28,6 +31,9 @@ bool server_ready
 
 # Whether a failure occured
 bool error
+
+# Whether output data
+bool is_element
 
 # PID of the related process
 int32 pid

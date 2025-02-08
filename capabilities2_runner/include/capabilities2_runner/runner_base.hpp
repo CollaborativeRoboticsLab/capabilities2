@@ -529,6 +529,24 @@ protected:
     print_(message);
   }
 
+  void output_(const std::string text, const std::string element, int thread_id = -1)
+  {
+    auto message = Event();
+
+    message.header.stamp = rclcpp::Clock().now();
+    message.source.capability = run_config_.interface;
+    message.source.provider = run_config_.provider;
+    message.thread_id = thread_id;
+    message.text = text;
+    message.element = element;
+    message.is_element = true;
+    message.error = false;
+    message.server_ready = true;
+    message.event = Event::IDLE;
+    
+    print_(message);
+  }
+
   /**
    * @brief shared pointer to the capabilities node. Allows to use ros node related functionalities
    */

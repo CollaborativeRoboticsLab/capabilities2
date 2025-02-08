@@ -37,12 +37,43 @@ public:
 
 protected:
   /**
-   * @brief Update on_success event parameters with new data if avaible.
+   * @brief Update on_success event parameters with new data from an OccupancyGrid message if avaible.
    *
    * This function is used to inject new data into the XMLElement containing
    * parameters related to the on_success trigger event
    *
-   * A pattern needs to be implemented in the derived class
+   * <OccupancyGrid>
+   *     <header>
+   *         <stamp>
+   *             <secs>1700000000</secs>
+   *             <nsecs>123456789</nsecs>
+   *         </stamp>
+   *         <frame_id>map</frame_id>
+   *     </header>
+   *     <info>
+   *         <resolution>0.05</resolution>
+   *         <width>100</width>
+   *         <height>100</height>
+   *         <origin>
+   *             <position>
+   *                 <x>1.0</x>
+   *                 <y>2.0</y>
+   *                 <z>0.0</z>
+   *             </position>
+   *             <orientation>
+   *                 <x>0.0</x>
+   *                 <y>0.0</y>
+   *                 <z>0.0</z>
+   *                 <w>1.0</w>
+   *             </orientation>
+   *         </origin>
+   *         <map_load_time>
+   *             <secs>1700000000</secs>
+   *             <nsecs>987654321</nsecs>
+   *         </map_load_time>
+   *     </info>
+   *     <data>0 1 2 3 4 5 6 7 8 9 </data>
+   * </OccupancyGrid>
    *
    * @param parameters pointer to the XMLElement containing parameters
    * @return pointer to the XMLElement containing updated parameters
@@ -153,6 +184,8 @@ protected:
 
     // Return the updated parameters element with OccupancyGrid added
     std::string result = convert_to_string(element);
+
+    output_("on_success trigger parameter", result);
 
     return result;
   };
