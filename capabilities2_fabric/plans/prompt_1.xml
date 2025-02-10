@@ -2,6 +2,6 @@
 <Plan>
     <Control name="sequential">
         <Event name="std_capabilities/CapabilityGetRunner" provider="std_capabilities/CapabilityGetRunner"/>
-        <Event name="std_capabilities/PromptCapabilityRunner" provider="std_capabilities/PromptCapabilityRunner"/>
+        <Event name="std_capabilities/PromptCapabilityRunner" provider="std_capabilities/PromptCapabilityRunner" model="llama3.1:8b" stream="false"/>
     </Control>
 </Plan>

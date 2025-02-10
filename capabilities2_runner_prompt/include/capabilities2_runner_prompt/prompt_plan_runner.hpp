@@ -2,9 +2,7 @@
 #include <tinyxml2.h>
 #include <string>
 #include <pluginlib/class_list_macros.hpp>
-#include <capabilities2_runner/service_runner.hpp>
-#include <prompt_msgs/msg/model_option.hpp>
-#include <prompt_msgs/srv/prompt.hpp>
+#include <capabilities2_runner_prompt/prompt_service_runner.hpp>
 
 namespace capabilities2_runner
 {
@@ -15,42 +13,25 @@ namespace capabilities2_runner
  * call on the prompt_tools/prompt service, providing it as a capability that prompts
  * capabilitie plans values
  */
-class PromptPlanRunner : public ServiceRunner<prompt_msgs::srv::Prompt>
+class PromptPlanRunner : public PromptServiceRunner
 {
 public:
-  PromptPlanRunner() : ServiceRunner()
+  PromptPlanRunner() : PromptServiceRunner()
   {
   }
 
   /**
-   * @brief Starter function for starting the service runner
+   * @brief generate the prompt used for prompting the occupancy grids.
    *
-   * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
-   * @param run_config runner configuration loaded from the yaml file
+   * @param parameters tinyXML2 parameters
+   * @return std::string
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                     std::function<void(Event&)> print) override
-  {
-    init_service(node, run_config, "prompt", print);
-  }
-
-protected:
-  /**
-   * @brief Generate a request from parameters given.
-   *
-   * This function is used in conjunction with the trigger function to inject type erased parameters
-   * into the typed action
-   *
-   * A pattern needs to be implemented in the derived class
-   *
-   * @param parameters
-   * @return prompt_msgs::srv::Prompt::Request the generated request
-   */
-  virtual typename prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
+  virtual std::string generate_prompt(tinyxml2::XMLElement* parameters)
   {
     bool replan;
     const char* task;
     std::string taskString;
+    std::string prompt;
 
     parameters->QueryBoolAttribute("replan", &replan);
     parameters->QueryStringAttribute("task", &task);
@@ -60,37 +41,22 @@ protected:
     else
       taskString = "";
 
-    prompt_msgs::srv::Prompt::Request request;
-
     if (!replan)
     {
-      request.prompt.prompt = "Build a xml plan based on the availbale capabilities to acheive mentioned task of " +
-                              taskString + ". Return only the xml plan without explanations or comments";
+      prompt = "Build a xml plan based on the availbale capabilities to acheive mentioned task of " + taskString +
+               ". Return only the xml plan without explanations or comments";
     }
     else
     {
       tinyxml2::XMLElement* failedElements = parameters->FirstChildElement("FailedElements");
 
-      request.prompt.prompt = "Rebuild the xml plan based on the availbale capabilities to acheive mentioned task of " +
-                              taskString + ". Just give the xml plan without explanations or comments. These XML  "
-                              "elements had incompatibilities. " +
-                              std::string(failedElements->GetText()) + "Recorrect them as well";
+      prompt = "Rebuild the xml plan based on the availbale capabilities to acheive mentioned task of " + taskString +
+               ". Just give the xml plan without explanations or comments. These XML  "
+               "elements had incompatibilities. " +
+               std::string(failedElements->GetText()) + "Recorrect them as well";
     }
 
-    prompt_msgs::msg::ModelOption modelOption1;
-    modelOption1.key = "model";
-    modelOption1.value = "llama3.1:8b";
-
-    request.prompt.options.push_back(modelOption1);
-
-    prompt_msgs::msg::ModelOption modelOption2;
-    modelOption2.key = "stream";
-    modelOption2.value = "false";
-    modelOption2.type = prompt_msgs::msg::ModelOption::BOOL_TYPE;
-
-    request.prompt.options.push_back(modelOption2);
-
-    return request;
+    return prompt;
   }
 
   /**

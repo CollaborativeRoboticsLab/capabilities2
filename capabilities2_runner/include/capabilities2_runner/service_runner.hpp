@@ -93,6 +93,7 @@ public:
             info_("get result call succeeded", id);
 
             response_ = future.get();
+            process_response(response_, id);
 
             // trigger the events related to on_success state
             if (events[execute_id].on_success != "")
@@ -157,6 +158,16 @@ protected:
    * @return ServiceT::Request the generated request
    */
   virtual typename ServiceT::Request generate_request(tinyxml2::XMLElement* parameters, int id) = 0;
+
+  /**
+   * @brief Process the reponse and print data as required
+   * 
+   * @param response service reponse
+   * @param id thread id
+   */
+  virtual void process_response(typename ServiceT::Response::SharedPtr response, int id)
+  {
+  }
 
   typename rclcpp::Client<ServiceT>::SharedPtr service_client_;
   typename ServiceT::Response::SharedPtr response_;

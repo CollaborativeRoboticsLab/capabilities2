@@ -2,6 +2,6 @@
 <Plan>
     <Control name="sequential">
         <Event name="std_capabilities/RobotPoseRunner" provider="std_capabilities/RobotPoseRunner"/>
-        <Event name="std_capabilities/PromptPoseRunner" provider="std_capabilities/PromptPoseRunner"/>
+        <Event name="std_capabilities/PromptPoseRunner" provider="std_capabilities/PromptPoseRunner" model="llama3.1:8b" stream="false"/>
     </Control>
 </Plan>
