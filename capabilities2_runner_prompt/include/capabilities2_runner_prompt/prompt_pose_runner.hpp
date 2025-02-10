@@ -9,10 +9,10 @@
 namespace capabilities2_runner
 {
 /**
- * @brief prompt capability runner
+ * @brief prompt pose runner
  *
- * This class is a wrapper around the capabilities2 service runner and is used to
- * call on the prompt_tools/prompt service, providing it as a capability that prompts
+ * This class is a wrapper around the capabilities2 service runner and is used to pass
+ * data to prompt_tools/prompt service, providing it as a capability that prompts
  * robot pose values
  */
 class PromptPoseRunner : public ServiceRunner<prompt_msgs::srv::Prompt>
@@ -35,17 +35,13 @@ public:
   }
 
   /**
-   * @brief Generate a request from parameters given.
-   *
-   * This function is used in conjunction with the trigger function to inject type erased parameters
-   * into the typed action
-   *
-   * A pattern needs to be implemented in the derived class
-   *
-   * @param parameters
-   * @return prompt_msgs::srv::Prompt::Request the generated request
+   * @brief Generate request for trnasforming data for PrompPoseRunner
+   * 
+   * @param parameters parameter values
+   * @param id thread id
+   * @return prompt_msgs::srv::Prompt::Request 
    */
-  virtual typename prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
+  virtual prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
   {
     tinyxml2::XMLElement* poseElement = parameters->FirstChildElement("Pose");
 

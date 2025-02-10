@@ -51,6 +51,33 @@ protected:
     return request;
   }
 
+  /**
+   * @brief Update on_success event parameters with new data from an CapabilitySpecs message if avaible.
+   *
+   * This function is used to inject new data into the XMLElement containing
+   * parameters related to the on_success trigger event
+   *
+   *  <CapabilitySpecs>
+   *      <CapabilitySpec package="robot_navigation" type="capability_interface"
+   * default_provider="robot_navigation/navigation_provider"> <content> name: Navigation dependencies:
+   *                  - MapServer
+   *                  - PathPlanner
+   *          </content>
+   *      </CapabilitySpec>
+   *      <CapabilitySpec package="robot_perception" type="capability_interface">
+   *          <content>
+   *              name: ObjectDetection
+   *              dependencies:
+   *                  - Camera
+   *                  - ImageProcessor
+   *          </content>
+   *      </CapabilitySpec>
+   *  </CapabilitySpecs>
+   *
+   * @param parameters
+   * @return std::string
+   */
+
   virtual std::string update_on_success(std::string& parameters)
   {
     tinyxml2::XMLElement* element = convert_to_xml(parameters);

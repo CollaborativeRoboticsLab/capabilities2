@@ -1,27 +1,25 @@
 #pragma once
-
-#include <thread>
-
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
-
 #include <capabilities2_runner/service_runner.hpp>
-#include <capabilities2_msgs/srv/set_fabric_plan.hpp>
+#include <prompt_msgs/msg/model_option.hpp>
+#include <prompt_msgs/srv/prompt.hpp>
 
 namespace capabilities2_runner
 {
 
 /**
- * @brief Executor runner class
+ * @brief prompt capabilities runner
  *
- * Class to run capabilities2 executor action based capability
- *
+ * This class is a wrapper around the capabilities2 service runner and is used to pass
+ * data to prompt_tools/prompt service, providing it as a capability that prompts
+ * robot capabilities.
  */
-class FabricSetPlanRunner : public ServiceRunner<capabilities2_msgs::srv::SetFabricPlan>
+class PromptCapabilityRunner : public ServiceRunner<prompt_msgs::srv::Prompt>
 {
 public:
-  FabricSetPlanRunner() : ServiceRunner()
+  PromptCapabilityRunner() : ServiceRunner()
   {
   }
 
@@ -34,27 +32,46 @@ public:
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
                      std::function<void(Event&)> print) override
   {
-    init_service(node, run_config, "/capabilities_fabric/set_plan", print);
+    init_service(node, run_config, "prompt", print);
   }
 
 protected:
   /**
-   * @brief This generate goal function overrides the generate_goal() function from ActionRunner()
-   * @param parameters XMLElement that contains parameters in the format
-   '<Event name=follow_waypoints provider=WaypointRunner x='$value' y='$value' />'
-   * @return ActionT::Goal the generated goal
+   * @brief Generate a request from parameters given.
+   *
+   * This function is used in conjunction with the trigger function to inject type erased parameters
+   * into the typed action
+   *
+   * @param parameters
+   * @return prompt_msgs::srv::Prompt::Request the generated request
    */
-  virtual capabilities2_msgs::srv::SetFabricPlan::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
+  virtual prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
   {
-    tinyxml2::XMLElement* planElement = parameters->FirstChildElement("ReceievdPlan");
+    tinyxml2::XMLElement* capabilitySpecsElement = parameters->FirstChildElement("CapabilitySpecs");
 
-    capabilities2_msgs::srv::SetFabricPlan::Request request;
+    tinyxml2::XMLPrinter printer;
+    capabilitySpecsElement->Accept(&printer);
 
-    // Check if the element was found and has text content
-    if (planElement && planElement->GetText())
-    {
-      request.plan = std::string(planElement->GetText());
-    }
+    std::string data(printer.CStr());
+
+    prompt_msgs::srv::Prompt::Request request;
+
+    request.prompt.prompt = "The capabilities of the robot are given as follows" + data;
+
+    prompt_msgs::msg::ModelOption modelOption1;
+    modelOption1.key = "model";
+    modelOption1.value = "llama3.1:8b";
+
+    request.prompt.options.push_back(modelOption1);
+
+    prompt_msgs::msg::ModelOption modelOption2;
+    modelOption2.key = "stream";
+    modelOption2.value = "false";
+    modelOption2.type = prompt_msgs::msg::ModelOption::BOOL_TYPE;
+
+    request.prompt.options.push_back(modelOption2);
+
+    info_("prompting with : " + request.prompt.prompt, id);
 
     return request;
   }

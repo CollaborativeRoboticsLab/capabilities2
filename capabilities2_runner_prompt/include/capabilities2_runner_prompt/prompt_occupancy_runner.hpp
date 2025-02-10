@@ -35,15 +35,11 @@ public:
   }
 
   /**
-   * @brief Generate a request from parameters given.
-   *
-   * This function is used in conjunction with the trigger function to inject type erased parameters
-   * into the typed action
-   *
-   * A pattern needs to be implemented in the derived class
-   *
-   * @param parameters
-   * @return prompt_msgs::srv::Prompt::Request the generated request
+   * @brief Generate request for the PromptOccupancyRunner
+   * 
+   * @param parameters  parameter values
+   * @param id thread id
+   * @return prompt_msgs::srv::Prompt::Request 
    */
   virtual typename prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
   {

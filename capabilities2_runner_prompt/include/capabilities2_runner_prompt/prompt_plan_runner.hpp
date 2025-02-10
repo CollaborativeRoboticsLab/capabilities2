@@ -49,22 +49,31 @@ protected:
   virtual typename prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
   {
     bool replan;
+    const char* task;
+    std::string taskString;
+
     parameters->QueryBoolAttribute("replan", &replan);
+    parameters->QueryStringAttribute("task", &task);
+
+    if (task)
+      taskString = task;
+    else
+      taskString = "";
 
     prompt_msgs::srv::Prompt::Request request;
 
     if (!replan)
     {
-      request.prompt.prompt = "Build a xml plan based on the availbale capabilities to acheive mentioned task. Return "
-                              "only the xml plan without explanations or comments";
+      request.prompt.prompt = "Build a xml plan based on the availbale capabilities to acheive mentioned task of " +
+                              taskString + ". Return only the xml plan without explanations or comments";
     }
     else
     {
       tinyxml2::XMLElement* failedElements = parameters->FirstChildElement("FailedElements");
 
-      request.prompt.prompt = "Rebuild the xml plan based on the availbale capabilities to acheive mentioned task. "
-                              "Just give the xml plan without explanations or comments. These XML elements had "
-                              "incompatibilities. " +
+      request.prompt.prompt = "Rebuild the xml plan based on the availbale capabilities to acheive mentioned task of " +
+                              taskString + ". Just give the xml plan without explanations or comments. These XML  "
+                              "elements had incompatibilities. " +
                               std::string(failedElements->GetText()) + "Recorrect them as well";
     }
 
