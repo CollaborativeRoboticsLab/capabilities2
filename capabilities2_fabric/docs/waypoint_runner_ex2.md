@@ -1,4 +1,4 @@
-## WaypointRunner Example 2
+## WaypointRunner Example 2 - Goal Sequence
 
 ### Dependencies
 
@@ -37,7 +37,7 @@ source install/setup.bash
 ros2 launch capabilities2_server server.launch.py
 ```
 
-### Start the fabric
+### Start the Capabilities2 Fabric
 
 ```bash
 source install/setup.bash

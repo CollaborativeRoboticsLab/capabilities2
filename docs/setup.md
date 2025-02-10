@@ -11,6 +11,16 @@ mkdir -p /home/$USER/capabilities_ws/src
 cd /home/$USER/capabilities_ws/src
 ```
 
+### Tinyxml2 Installation
+
+Clone and install the tinyXML2 package
+
+```bash
+git clone https://github.com/leethomason/tinyxml2.git
+cd tinyxml2
+make install
+```
+
 ### Cloning the Packages
 
 Clone the package using Git
