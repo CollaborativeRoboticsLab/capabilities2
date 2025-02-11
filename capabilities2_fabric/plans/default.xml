@@ -2,12 +2,12 @@
 <Plan>
     <Control name="sequential">
         <Event name="std_capabilities/CapabilityGetRunner" provider="std_capabilities/CapabilityGetRunner"/>
-        <Event name="std_capabilities/PromptCapabilityRunner" provider="std_capabilities/PromptCapabilityRunner" model="llama3.1:8b" stream="false"/>
+        <Event name="std_capabilities/PromptCapabilityRunner" provider="std_capabilities/PromptCapabilityRunner" model="llama3.1:8b"/>
         <Event name="std_capabilities/OccupancyGridRunner" provider="std_capabilities/OccupancyGridRunner"/>
-        <Event name="std_capabilities/PromptOccupancyRunner" provider="std_capabilities/PromptOccupancyRunner" model="llama3.1:8b" stream="false"/>
+        <Event name="std_capabilities/PromptOccupancyRunner" provider="std_capabilities/PromptOccupancyRunner" model="llama3.1:8b"/>
         <Event name="std_capabilities/RobotPoseRunner" provider="std_capabilities/RobotPoseRunner"/>
-        <Event name="std_capabilities/PromptPoseRunner" provider="std_capabilities/PromptPoseRunner" model="llama3.1:8b" stream="false"/>
-        <Event name="std_capabilities/PromptPlanRunner" provider="std_capabilities/PromptPlanRunner" replan="false" task="move to x:1 and y:2 position" model="llama3.1:8b" stream="false"/>
+        <Event name="std_capabilities/PromptPoseRunner" provider="std_capabilities/PromptPoseRunner" model="llama3.1:8b"/>
+        <Event name="std_capabilities/PromptPlanRunner" provider="std_capabilities/PromptPlanRunner" replan="false" task="move to x:1 and y:2 position" model="llama3.1:8b"/>
         <Event name="std_capabilities/FabricSetPlanRunner" provider="std_capabilities/FabricSetPlanRunner"/>
     </Control>
 </Plan>

@@ -2,6 +2,6 @@
 <Plan>
     <Control name="sequential">
         <Event name="std_capabilities/OccupancyGridRunner" provider="std_capabilities/OccupancyGridRunner"/>
-        <Event name="std_capabilities/PromptOccupancyRunner" provider="std_capabilities/PromptOccupancyRunner" model="llama3.1:8b" stream="false"/>
+        <Event name="std_capabilities/PromptOccupancyRunner" provider="std_capabilities/PromptOccupancyRunner" model="llama3.1:8b"/>
     </Control>
 </Plan>

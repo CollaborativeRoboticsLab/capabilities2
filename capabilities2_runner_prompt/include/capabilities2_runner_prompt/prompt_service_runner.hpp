@@ -48,11 +48,9 @@ protected:
    */
   virtual typename prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
   {
-    bool stream;
     const char* modelChar;
     std::string model;
 
-    parameters->QueryBoolAttribute("stream", &stream);
     parameters->QueryStringAttribute("model", &modelChar);
 
     if (modelChar)
@@ -70,7 +68,7 @@ protected:
 
     prompt_msgs::msg::ModelOption modelOption2;
     modelOption2.key = "stream";
-    modelOption2.value = stream;
+    modelOption2.value = false;
     modelOption2.type = prompt_msgs::msg::ModelOption::BOOL_TYPE;
 
     request.prompt.options.push_back(modelOption2);
