@@ -31,7 +31,7 @@ public:
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
                      std::function<void(Event&)> print) override
   {
-    init_service(node, run_config, "/prompt_tools/prompt", print);
+    init_service(node, run_config, "/prompt_bridge/prompt", print);
   }
 
 protected:
