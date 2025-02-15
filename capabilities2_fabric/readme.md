@@ -44,14 +44,14 @@ Below is an example XML plan for configuring a set of capabilities:
         </Control name="parallel">
             <Control name="sequential">
                 <Event name="OccupancyGridRunner" provider="OccupancyGridRunner"/>
-                <Event name="PromptOccupancyRunner" provider="PromptOccupancyRunner" model="llama3.1:8b"/>
+                <Event name="PromptOccupancyRunner" provider="PromptOccupancyRunner" />
             </Control>
             <Control name="sequential">
                 <Event name="RobotPoseRunner" provider="RobotPoseRunner"/>
-                <Event name="PromptPoseRunner" provider="PromptPoseRunner" model="llama3.1:8b"/>
+                <Event name="PromptPoseRunner" provider="PromptPoseRunner" />
             </Control>
         </Control>
-        <Event name="PromptPlanRunner" provider="PromptPlanRunner" replan="false" model="llama3.1:8b"/>
+        <Event name="PromptPlanRunner" provider="PromptPlanRunner" replan="false" />
         <Event name="FabricSetPlanRunner" provider="FabricSetPlanRunner"/>
     </Control>
 </Plan>

@@ -48,21 +48,11 @@ protected:
    */
   virtual typename prompt_msgs::srv::Prompt::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
   {
-    const char* modelChar;
-    std::string model;
-
-    parameters->QueryStringAttribute("model", &modelChar);
-
-    if (modelChar)
-      model = modelChar;
-    else
-      model = "llama3.1:8b";
-
     prompt_msgs::srv::Prompt::Request request;
 
     prompt_msgs::msg::ModelOption modelOption1;
     modelOption1.key = "model";
-    modelOption1.value = model;
+    modelOption1.value = "llama3.1:8b";
 
     request.prompt.options.push_back(modelOption1);
 

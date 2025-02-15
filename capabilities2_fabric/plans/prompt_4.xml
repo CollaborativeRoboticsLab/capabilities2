@@ -2,8 +2,8 @@
 <Plan>
     <Control name="sequential">
         <Event name="std_capabilities/CapabilityGetRunner" provider="std_capabilities/CapabilityGetRunner"/>
-        <Event name="std_capabilities/PromptCapabilityRunner" provider="std_capabilities/PromptCapabilityRunner" model="llama3.1:8b"/>
-        <Event name="std_capabilities/PromptPlanRunner" provider="std_capabilities/PromptPlanRunner" replan="false" task="move to x:1 and y:2 position" model="llama3.1:8b"/>
+        <Event name="std_capabilities/PromptCapabilityRunner" provider="std_capabilities/PromptCapabilityRunner" />
+        <Event name="std_capabilities/PromptPlanRunner" provider="std_capabilities/PromptPlanRunner" replan="false" task="move to x:1 and y:2 position" />
         <Event name="std_capabilities/FabricSetPlanRunner" provider="std_capabilities/FabricSetPlanRunner"/>
     </Control>
 </Plan>
