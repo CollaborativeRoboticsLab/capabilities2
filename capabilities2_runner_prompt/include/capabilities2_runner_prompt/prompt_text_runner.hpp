@@ -26,7 +26,7 @@ public:
    * @param parameters tinyXML2 parameters
    * @return std::string
    */
-  virtual std::string generate_prompt(tinyxml2::XMLElement* parameters)
+  virtual std::string generate_prompt(tinyxml2::XMLElement* parameters, int id)
   {
     tinyxml2::XMLElement* textElement = parameters->FirstChildElement("Text");
 
@@ -36,6 +36,8 @@ public:
     std::string data(printer.CStr());
 
     std::string prompt = "The response was " + data;
+
+    info_("prompting with : " + prompt, id);
 
     return prompt;
   }

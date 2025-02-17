@@ -27,7 +27,7 @@ public:
    * @param parameters tinyXML2 parameters
    * @return std::string
    */
-  virtual std::string generate_prompt(tinyxml2::XMLElement* parameters)
+  virtual std::string generate_prompt(tinyxml2::XMLElement* parameters, int id)
   {
     tinyxml2::XMLElement* capabilitySpecsElement = parameters->FirstChildElement("CapabilitySpecs");
 

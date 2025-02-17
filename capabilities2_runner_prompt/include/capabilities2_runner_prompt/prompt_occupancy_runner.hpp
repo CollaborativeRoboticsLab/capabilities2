@@ -26,7 +26,7 @@ public:
    * @param parameters tinyXML2 parameters
    * @return std::string
    */
-  virtual std::string generate_prompt(tinyxml2::XMLElement* parameters)
+  virtual std::string generate_prompt(tinyxml2::XMLElement* parameters, int id)
   {
     tinyxml2::XMLElement* occupancyElement = parameters->FirstChildElement("OccupancyGrid");
 
@@ -38,6 +38,8 @@ public:
     std::string prompt = "The OccupancyGrid of the robot shows the surrounding environment of the robot. The data "
                          "is given as a ros2 nav_msgs::msg::OccupancyGrid of which the content are " +
                          data;
+
+    info_("prompting with : " + prompt, id);
 
     return prompt;
   }

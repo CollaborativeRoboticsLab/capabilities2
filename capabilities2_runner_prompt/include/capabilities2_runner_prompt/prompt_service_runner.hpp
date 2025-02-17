@@ -52,7 +52,7 @@ protected:
 
     prompt_msgs::msg::ModelOption modelOption1;
     modelOption1.key = "model";
-    modelOption1.value = "llama3.1:8b";
+    modelOption1.value = "deepseek-r1:32b";
 
     request.prompt.options.push_back(modelOption1);
 
@@ -63,9 +63,7 @@ protected:
 
     request.prompt.options.push_back(modelOption2);
 
-    request.prompt.prompt = generate_prompt(parameters);
-
-    info_("prompting with : " + request.prompt.prompt, id);
+    request.prompt.prompt = generate_prompt(parameters, id);
     
     return request;
   }
@@ -76,7 +74,7 @@ protected:
    * @param parameters tinyXML2 parameters
    * @return std::string
    */
-  virtual std::string generate_prompt(tinyxml2::XMLElement* parameters) = 0;
+  virtual std::string generate_prompt(tinyxml2::XMLElement* parameters, int id) = 0;
 
   virtual void process_response(typename prompt_msgs::srv::Prompt::Response::SharedPtr response, int id)
   {

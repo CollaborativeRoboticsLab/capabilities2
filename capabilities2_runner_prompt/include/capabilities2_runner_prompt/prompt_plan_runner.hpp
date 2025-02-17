@@ -26,7 +26,7 @@ public:
    * @param parameters tinyXML2 parameters
    * @return std::string
    */
-  virtual std::string generate_prompt(tinyxml2::XMLElement* parameters)
+  virtual std::string generate_prompt(tinyxml2::XMLElement* parameters, int id)
   {
     bool replan;
     const char* task;
@@ -55,6 +55,8 @@ public:
                "elements had incompatibilities. " +
                std::string(failedElements->GetText()) + "Recorrect them as well";
     }
+
+    info_("prompting with : " + prompt, id);
 
     return prompt;
   }
