@@ -40,7 +40,7 @@ public:
 
     // create an service client
     subscription_ = node_->create_subscription<TopicT>(
-        topic_name, 1, [this](const typename TopicT::SharedPtr msg) { this->callback(msg); });
+        topic_name, 10, [this](const typename TopicT::SharedPtr msg) { this->callback(msg); });
   }
 
   /**
@@ -65,6 +65,15 @@ public:
       triggerFunction_(events[execute_id].on_started, update_on_started(events[execute_id].on_started_param));
     }
 
+    std::unique_lock<std::mutex> lock(mutex_);
+    completed_ = false;
+
+    info_("Waiting for Message.", id);
+
+    // Conditional wait
+    cv_.wait(lock, [this] { return completed_; });
+    info_("Message Received.", id);
+
     if (latest_message_)
     {
       // trigger the events related to on_success state
@@ -76,7 +85,7 @@ public:
     }
     else
     {
-      error_("get result call failed");
+      error_("Message receving failed.");
 
       // trigger the events related to on_failure state
       if (events[execute_id].on_failure != "")
@@ -85,6 +94,8 @@ public:
         triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
       }
     }
+
+    info_("Thread closing.", id);
   }
 
   /**
@@ -122,13 +133,16 @@ protected:
    *
    * @param msg message parameter
    */
-  void callback(const typename TopicT::SharedPtr& msg) const
+  void callback(const typename TopicT::SharedPtr& msg)
   {
     latest_message_ = msg;
+
+    completed_ = true;
+    cv_.notify_all();
   }
 
   typename rclcpp::Subscription<TopicT>::SharedPtr subscription_;
 
-  mutable typename TopicT::SharedPtr latest_message_{ nullptr };
+  mutable typename TopicT::SharedPtr latest_message_;
 };
 }  // namespace capabilities2_runner

@@ -42,19 +42,10 @@ protected:
    * This function is used to inject new data into the XMLElement containing
    * parameters related to the on_success trigger event
    *
-   * <Pose>
-   *     <position>
-   *         <x>1.23</x>
-   *         <y>4.56</y>
-   *         <z>7.89</z>
-   *     </position>
-   *     <orientation>
-   *         <x>0.12</x>
-   *         <y>0.34</y>
-   *         <z>0.56</z>
-   *         <w>0.78</w>
-   *     </orientation>
-   * </Pose>
+    <Pose>
+        <position x="1.23" y="4.56" z="7.89"/>
+        <orientation x="0.12" y="0.34" z="0.56" w="0.78"/>
+    </Pose>
    *
    * @param parameters pointer to the XMLElement containing parameters
    * @return pointer to the XMLElement containing updated parameters
@@ -67,43 +58,20 @@ protected:
     tinyxml2::XMLElement* poseElement = element->GetDocument()->NewElement("Pose");
     element->InsertEndChild(poseElement);
 
-    // Position element
+    // Position element with attributes
     tinyxml2::XMLElement* positionElement = element->GetDocument()->NewElement("position");
+    positionElement->SetAttribute("x", latest_message_->pose.pose.position.x);
+    positionElement->SetAttribute("y", latest_message_->pose.pose.position.y);
+    positionElement->SetAttribute("z", latest_message_->pose.pose.position.z);
     poseElement->InsertEndChild(positionElement);
 
-    // Position x, y, z
-    tinyxml2::XMLElement* posX = element->GetDocument()->NewElement("x");
-    posX->SetText(latest_message_->pose.pose.position.x);  // Set x position value
-    positionElement->InsertEndChild(posX);
-
-    tinyxml2::XMLElement* posY = element->GetDocument()->NewElement("y");
-    posY->SetText(latest_message_->pose.pose.position.y);  // Set y position value
-    positionElement->InsertEndChild(posY);
-
-    tinyxml2::XMLElement* posZ = element->GetDocument()->NewElement("z");
-    posZ->SetText(latest_message_->pose.pose.position.z);  // Set z position value
-    positionElement->InsertEndChild(posZ);
-
-    // Orientation element
+    // Orientation element with attributes
     tinyxml2::XMLElement* orientationElement = element->GetDocument()->NewElement("orientation");
+    orientationElement->SetAttribute("x", latest_message_->pose.pose.orientation.x);
+    orientationElement->SetAttribute("y", latest_message_->pose.pose.orientation.y);
+    orientationElement->SetAttribute("z", latest_message_->pose.pose.orientation.z);
+    orientationElement->SetAttribute("w", latest_message_->pose.pose.orientation.w);
     poseElement->InsertEndChild(orientationElement);
-
-    // Orientation x, y, z, w
-    tinyxml2::XMLElement* oriX = element->GetDocument()->NewElement("x");
-    oriX->SetText(latest_message_->pose.pose.orientation.x);  // Set orientation x value
-    orientationElement->InsertEndChild(oriX);
-
-    tinyxml2::XMLElement* oriY = element->GetDocument()->NewElement("y");
-    oriY->SetText(latest_message_->pose.pose.orientation.y);  // Set orientation y value
-    orientationElement->InsertEndChild(oriY);
-
-    tinyxml2::XMLElement* oriZ = element->GetDocument()->NewElement("z");
-    oriZ->SetText(latest_message_->pose.pose.orientation.z);  // Set orientation z value
-    orientationElement->InsertEndChild(oriZ);
-
-    tinyxml2::XMLElement* oriW = element->GetDocument()->NewElement("w");
-    oriW->SetText(latest_message_->pose.pose.orientation.w);  // Set orientation w value
-    orientationElement->InsertEndChild(oriW);
 
     // Return the updated parameters element with Pose added as string
     std::string result = convert_to_string(element);
