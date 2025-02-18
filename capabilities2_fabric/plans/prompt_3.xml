@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Plan>
     <Control name="sequential">
-        <Event name="std_capabilities/RobotPoseRunner" provider="std_capabilities/RobotPoseRunner"/>
+        <Event name="std_capabilities/RobotPoseRunner" provider="std_capabilities/RobotPoseRunner" from="map" to="base_link"/>
         <Event name="std_capabilities/PromptPoseRunner" provider="std_capabilities/PromptPoseRunner" />
     </Control>
 </Plan>

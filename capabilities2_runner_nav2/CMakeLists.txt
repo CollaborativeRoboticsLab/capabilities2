@@ -15,6 +15,8 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(nav2_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_runner REQUIRED)
@@ -43,6 +45,8 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp_action
   pluginlib
   nav2_msgs
+  tf2
+  tf2_ros
   geometry_msgs
   capabilities2_msgs
   capabilities2_runner

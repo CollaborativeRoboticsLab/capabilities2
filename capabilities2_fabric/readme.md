@@ -47,7 +47,7 @@ Below is an example XML plan for configuring a set of capabilities:
                 <Event name="PromptOccupancyRunner" provider="PromptOccupancyRunner" />
             </Control>
             <Control name="sequential">
-                <Event name="RobotPoseRunner" provider="RobotPoseRunner"/>
+                <Event name="RobotPoseRunner" provider="RobotPoseRunner" from="map" to="base_link"/>
                 <Event name="PromptPoseRunner" provider="PromptPoseRunner" />
             </Control>
         </Control>
