@@ -39,7 +39,7 @@ public:
     // initialize the runner base by storing node pointer and run config
     init_base(node, run_config, runner_publish_func);
 
-    tf_buffer_ = std::make_unique<tf2_ros::Buffer>(node->get_clock());
+    tf_buffer_ = std::make_unique<tf2_ros::Buffer>(node_->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
   }
 
@@ -52,8 +52,9 @@ public:
    */
   virtual void execution(int id) override
   {
-    const char* from;
-    const char* to;
+    const char* map;
+    const char* odom;
+    const char* robot;
 
     execute_id += 1;
 
@@ -70,19 +71,20 @@ public:
 
     info_("Waiting for Transformation.", id);
 
-    parameters_[id]->QueryStringAttribute("from", &from);
-    parameters_[id]->QueryStringAttribute("to", &to);
+    parameters_[id]->QueryStringAttribute("map", &map);
+    parameters_[id]->QueryStringAttribute("odom", &odom);
+    parameters_[id]->QueryStringAttribute("robot", &robot);
 
     // Store frame names in variables that will be used to
     // compute transformations
-    std::string fromFrame(from);
-    std::string toFrame(to);
+    std::string mapFrame(map);
+    std::string odomFrame(odom);
+    std::string robotFrame(robot);
 
-    // Look up for the transformation between target_frame and turtle2 frames
-    // and send velocity commands for turtle2 to reach target_frame
+    // Try to use map -> robot first
     try
     {
-      transform_ = tf_buffer_->lookupTransform(toFrame, fromFrame, tf2::TimePointZero);
+      transform_ = tf_buffer_->lookupTransform(mapFrame, robotFrame, tf2::TimePointZero);
 
       // trigger the events related to on_success state
       if (events[execute_id].on_success != "")
@@ -90,10 +92,32 @@ public:
         info_("on_success", id, events[execute_id].on_success, EventType::SUCCEEDED);
         triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
       }
+      
+      info_("Transformation received. Thread closing.", id);
+      return;
     }
-    catch (const tf2::TransformException& ex)
+    catch (tf2::TransformException& ex)
     {
-      info_("Could not transform " + toFrame + " to " + fromFrame + " : " + std::string(ex.what()), id);
+      info_("Could not transform from map to robot: " + std::string(ex.what()), id);
+    }
+
+    // Fall back to odom -> robot
+    try
+    {
+      transform_ = tf_buffer_->lookupTransform(odomFrame, robotFrame, tf2::TimePointZero);
+
+      // trigger the events related to on_success state
+      if (events[execute_id].on_success != "")
+      {
+        info_("on_success", id, events[execute_id].on_success, EventType::SUCCEEDED);
+        triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
+      }
+
+      info_("Transformation received. Thread closing.", id);
+    }
+    catch (tf2::TransformException& ex)
+    {
+      info_("Could not transform from odom to robot: " + std::string(ex.what()), id);
 
       // trigger the events related to on_failure state
       if (events[execute_id].on_failure != "")
@@ -101,9 +125,9 @@ public:
         info_("on_failure", id, events[execute_id].on_failure, EventType::FAILED);
         triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
       }
-    }
 
-    info_("Thread closing.", id);
+      info_("Transformation not received. Thread closing.", id);
+    }
   }
 
   /**
