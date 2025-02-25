@@ -52,7 +52,7 @@ protected:
 
     prompt_msgs::msg::ModelOption modelOption1;
     modelOption1.key = "model";
-    modelOption1.value = "deepseek-r1:32b";
+    modelOption1.value = "llama3.2";
 
     request.prompt.options.push_back(modelOption1);
 
