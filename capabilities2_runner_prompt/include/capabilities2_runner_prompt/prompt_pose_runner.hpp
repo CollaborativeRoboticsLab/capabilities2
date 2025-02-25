@@ -26,7 +26,7 @@ public:
    * @param parameters tinyXML2 parameters
    * @return std::string
    */
-  virtual std::string generate_prompt(tinyxml2::XMLElement* parameters, int id)
+  virtual void generate_prompt(tinyxml2::XMLElement* parameters, int id, std::string& prompt, bool& flush) override
   {
     tinyxml2::XMLElement* poseElement = parameters->FirstChildElement("Pose");
 
@@ -35,13 +35,11 @@ public:
 
     std::string data(printer.CStr());
 
-    std::string prompt = "The position of the robot is given as a standard ros2 geometry_msgs::msg::Pose of which "
-                         "the content are " +
-                         data;
+    prompt = "The position of the robot is given as a standard ros2 geometry_msgs::msg::Pose of which the content "
+             "are " + data;
+    flush  = false;
 
     info_("prompting with : " + prompt, id);
-    
-    return prompt;
   }
 };
 

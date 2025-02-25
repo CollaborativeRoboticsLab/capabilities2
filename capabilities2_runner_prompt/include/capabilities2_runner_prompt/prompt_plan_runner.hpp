@@ -26,12 +26,11 @@ public:
    * @param parameters tinyXML2 parameters
    * @return std::string
    */
-  virtual std::string generate_prompt(tinyxml2::XMLElement* parameters, int id)
+  virtual void generate_prompt(tinyxml2::XMLElement* parameters, int id, std::string& prompt, bool& flush) override
   {
     bool replan;
     const char* task;
     std::string taskString;
-    std::string prompt;
 
     parameters->QueryBoolAttribute("replan", &replan);
     parameters->QueryStringAttribute("task", &task);
@@ -45,6 +44,8 @@ public:
     {
       prompt = "Build a xml plan based on the availbale capabilities to acheive mentioned task of " + taskString +
                ". Return only the xml plan without explanations or comments";
+
+      flush = true;
     }
     else
     {
@@ -54,11 +55,10 @@ public:
                ". Just give the xml plan without explanations or comments. These XML  "
                "elements had incompatibilities. " +
                std::string(failedElements->GetText()) + "Recorrect them as well";
+      flush = true;
     }
 
     info_("prompting with : " + prompt, id);
-
-    return prompt;
   }
 
   /**

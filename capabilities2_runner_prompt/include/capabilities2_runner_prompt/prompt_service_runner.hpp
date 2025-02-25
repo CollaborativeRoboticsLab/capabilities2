@@ -63,7 +63,7 @@ protected:
 
     request.prompt.options.push_back(modelOption2);
 
-    request.prompt.prompt = generate_prompt(parameters, id);
+    generate_prompt(parameters, id, request.prompt.prompt, request.prompt.flush);
     
     return request;
   }
@@ -74,7 +74,7 @@ protected:
    * @param parameters tinyXML2 parameters
    * @return std::string
    */
-  virtual std::string generate_prompt(tinyxml2::XMLElement* parameters, int id) = 0;
+  virtual void generate_prompt(tinyxml2::XMLElement* parameters, int id, std::string& prompt, bool& flush) = 0;
 
   virtual void process_response(typename prompt_msgs::srv::Prompt::Response::SharedPtr response, int id)
   {
