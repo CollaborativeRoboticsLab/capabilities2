@@ -78,7 +78,14 @@ protected:
 
   virtual void process_response(typename prompt_msgs::srv::Prompt::Response::SharedPtr response, int id)
   {
-    info_("response received : " + response->response.response, id);
+    if (response->response.buffered)
+    {
+      info_("information buffered", id);
+    }
+    else
+    {
+      info_("response received : " + response->response.response, id);
+    }
   }
 };
 
