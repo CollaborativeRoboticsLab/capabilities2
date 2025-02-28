@@ -1,7 +1,7 @@
 <library path="capabilities2_runner_nav2">
-    <class type="capabilities2_runner::WayPointRunner" base_class_type="capabilities2_runner::RunnerBase">
+    <class type="capabilities2_runner::OccupancyGridRunner" base_class_type="capabilities2_runner::RunnerBase">
         <description>
-            A plugin that provide nav2 waypoint navigation capability
+            A plugin that provide occupancy grid map extraction capability
         </description>
     </class>
     <class type="capabilities2_runner::RobotPoseRunner" base_class_type="capabilities2_runner::RunnerBase">
@@ -9,9 +9,9 @@
             A plugin that provide robot pose extraction capability
         </description>
     </class>
-    <class type="capabilities2_runner::OccupancyGridRunner" base_class_type="capabilities2_runner::RunnerBase">
+    <class type="capabilities2_runner::WayPointRunner" base_class_type="capabilities2_runner::RunnerBase">
         <description>
-            A plugin that provide occupancy grid map extraction capability
+            A plugin that provide nav2 waypoint navigation capability
         </description>
     </class>
 </library>

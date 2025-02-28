@@ -113,6 +113,8 @@ private:
 
     (void)uuid;
 
+    status_->info("Following plan was received :\n\n " + goal->plan);
+
     // try to parse the std::string plan from capabilities_msgs/Plan to the to a XMLDocument file
     tinyxml2::XMLError xml_status = document.Parse(goal->plan.c_str());
 
@@ -161,7 +163,15 @@ private:
    */
   void execution()
   {
-    process_feedback("Execution started");
+    process_feedback("A new execution started");
+
+    xml_parser::add_closing_event(document);
+
+    std::string modified_plan;
+
+    xml_parser::convert_to_string(document, modified_plan);
+
+    status_->info("Plan after adding closing event :\n\n " + modified_plan);
 
     expected_providers_ = 0;
     completed_providers_ = 0;
@@ -200,8 +210,7 @@ private:
       auto response = future.get();
       expected_interfaces_ = response->interfaces.size();
 
-      status = "Received Interfaces. Requsting " + std::to_string(expected_interfaces_) + " semantic interface information";
-      process_feedback(status);
+      process_feedback("Received Interfaces. Requsting " + std::to_string(expected_interfaces_) + " semantic interface information");
 
       // Request each interface recursively for Semantic interfaces
       getSemanticInterfaces(response->interfaces);
@@ -217,8 +226,7 @@ private:
   {
     std::string requested_interface = interfaces[completed_interfaces_];
 
-    status = "Requesting semantic interfaces for " + requested_interface;
-    process_feedback(status, true);
+    process_feedback("Requesting semantic interfaces for " + requested_interface, true);
 
     auto request_semantic = std::make_shared<GetSemanticInterfaces::Request>();
     request_semantic->interface = requested_interface;
@@ -243,9 +251,8 @@ private:
               interface_list.push_back(semantic_interface);
               is_semantic_list.push_back(true);
 
-              status = (completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received " + semantic_interface + " for " +
-                       requested_interface + ". So added " + semantic_interface;
-              process_feedback(status);
+              process_feedback(std::to_string(completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received " +
+                               semantic_interface + " for " + requested_interface + ". So added " + semantic_interface);
             }
           }
           // if no semantic interfaces are availble for a given interface, add the interface instead
@@ -254,9 +261,8 @@ private:
             interface_list.push_back(requested_interface);
             is_semantic_list.push_back(false);
 
-            status = std::to_string(completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received none for " +
-                     requested_interface + ". So added " + requested_interface;
-            process_feedback(status);
+            process_feedback(std::to_string(completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received none for " +
+                             requested_interface + ". So added " + requested_interface);
           }
 
           if (completed_interfaces_ != expected_interfaces_)
@@ -270,8 +276,7 @@ private:
 
             expected_providers_ = interface_list.size();
 
-            status = "Requsting Provider information for " + std::to_string(expected_providers_) + " providers";
-            process_feedback(status);
+            process_feedback("Requsting Provider information for " + std::to_string(expected_providers_) + " providers");
 
             // request providers from the interfaces in the interfaces_list
             getProvider(interface_list, is_semantic_list);
@@ -290,8 +295,7 @@ private:
     std::string requested_interface = interfaces[completed_providers_];
     bool semantic_flag = is_semantic[completed_providers_];
 
-    status = "Requesting provider for " + requested_interface;
-    process_feedback(status, true);
+    process_feedback("Requesting provider for " + requested_interface, true);
 
     auto request_providers = std::make_shared<GetProviders::Request>();
 
@@ -303,8 +307,7 @@ private:
         request_providers, [this, is_semantic, requested_interface, interfaces](GetProvidersClient::SharedFuture future) {
           if (!future.valid())
           {
-            status = "Did not retrieve providers for interface: " + requested_interface;
-            process_result(status, false, false);
+            process_result("Did not retrieve providers for interface: " + requested_interface, false, false);
             return;
           }
 
@@ -316,9 +319,8 @@ private:
             // add defualt provider to the list
             providers_list.push_back(response->default_provider);
 
-            status = std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received " + response->default_provider +
-                     " for " + requested_interface + ". So added " + response->default_provider;
-            process_feedback(status);
+            process_feedback(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received " +
+                             response->default_provider + " for " + requested_interface + ". So added " + response->default_provider);
           }
 
           // add additional providers to the list if available
@@ -328,15 +330,14 @@ private:
             {
               providers_list.push_back(provider);
 
-              status = std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received and added " + provider +
-                       " for " + requested_interface;
-              process_feedback(status);
+              process_feedback(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received and added " +
+                               provider + " for " + requested_interface);
             }
           }
           else
           {
-            status = std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : No providers for " + requested_interface;
-            process_feedback(status);
+            process_feedback(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : No providers for " +
+                             requested_interface);
           }
 
           // Check if all expected calls are completed before calling verify_plan
@@ -469,16 +470,14 @@ private:
       auto response = future.get();
       bond_id_ = response->bond_id;
 
-      status = "Received the bond id : " + bond_id_;
-      process_feedback(status);
+      process_feedback("Received the bond id : " + bond_id_);
 
       bond_client_ = std::make_unique<BondClient>(shared_from_this(), bond_id_);
       bond_client_->start();
 
       expected_capabilities_ = connection_map.size();
 
-      status = "Requsting start of " + std::to_string(expected_capabilities_) + " capabilities";
-      process_feedback(status);
+      process_feedback("Requsting start of " + std::to_string(expected_capabilities_) + " capabilities");
 
       use_capability(connection_map);
     });
@@ -500,28 +499,25 @@ private:
     request_use->preferred_provider = provider;
     request_use->bond_id = bond_id_;
 
-    status = "Starting capability of Runner " + std::to_string(completed_capabilities_) + " : " + capabilities[completed_capabilities_].source.runner;
-    process_feedback(status, true);
+    process_feedback("Starting capability of Runner " + std::to_string(completed_capabilities_) + " : " +
+                         capabilities[completed_capabilities_].source.runner,
+                     true);
 
     // send the request
     auto result_future =
         use_capability_client_->async_send_request(request_use, [this, capability, provider](UseCapabilityClient::SharedFuture future) {
           if (!future.valid())
           {
-            status = "Failed to Use capability " + capability + " from " + provider + ". Server Execution Cancelled";
-            process_result(status);
+            process_result("Failed to Use capability " + capability + " from " + provider + ". Server Execution Cancelled");
 
             // release all capabilities that were used since not all started successfully
             for (const auto& [key, value] : connection_map)
             {
-              status = "Freeing capability of Node " + std::to_string(key) + " named " + value.source.runner;
-              process_feedback(status);
-
+              process_feedback("Freeing capability of Node " + std::to_string(key) + " named " + value.source.runner);
               free_capability(value.source.runner);
             }
 
             bond_client_->stop();
-
             return;
           }
 
@@ -529,8 +525,7 @@ private:
 
           auto response = future.get();
 
-          status = std::to_string(completed_capabilities_) + "/" + std::to_string(expected_capabilities_) + " : start succeessful";
-          process_feedback(status);
+          process_feedback(std::to_string(completed_capabilities_) + "/" + std::to_string(expected_capabilities_) + " : start succeessful");
 
           // Check if all expected calls are completed before calling verify_plan
           if (completed_capabilities_ == expected_capabilities_)
@@ -539,8 +534,7 @@ private:
 
             expected_configurations_ = connection_map.size();
 
-            status = "Requsting capability configuration for " + std::to_string(expected_configurations_) + " capabilities";
-            process_feedback(status, true);
+            process_feedback("Requsting capability configuration for " + std::to_string(expected_configurations_) + " capabilities", true);
 
             configure_capabilities(connection_map);
           }
@@ -566,15 +560,12 @@ private:
     auto result_future = free_capability_client_->async_send_request(request_free, [this, capability](FreeCapabilityClient::SharedFuture future) {
       if (!future.valid())
       {
-        status = "Failed to free capability " + capability;
-        process_result(status);
+        process_result("Failed to free capability " + capability);
         return;
       }
 
       auto response = future.get();
-
-      status = "Successfully freed capability " + capability;
-      process_feedback(status, true);
+      process_feedback("Successfully freed capability " + capability, true);
     });
   }
 
@@ -585,9 +576,9 @@ private:
   {
     auto request_configure = std::make_shared<ConfigureCapability::Request>();
 
-    status = "Configuring capability of Runner " + std::to_string(completed_configurations_) + " named " +
-             capabilities[completed_configurations_].source.runner;
-    process_feedback(status, true);
+    process_feedback("Configuring capability of Runner " + std::to_string(completed_configurations_) + " named " +
+                         capabilities[completed_configurations_].source.runner,
+                     true);
 
     if (xml_parser::convert_to_string(capabilities[completed_configurations_].source.parameters, request_configure->source.parameters))
     {
@@ -655,8 +646,7 @@ private:
         conf_capability_client_->async_send_request(request_configure, [this, source_capability](ConfigureCapabilityClient::SharedFuture future) {
           if (!future.valid())
           {
-            status = "Failed to configure capability :" + source_capability + ". Server execution cancelled";
-            process_result(status);
+            process_result("Failed to configure capability :" + source_capability + ". Server execution cancelled");
             return;
           }
 
@@ -664,9 +654,8 @@ private:
 
           auto response = future.get();
 
-          status = std::to_string(completed_configurations_) + "/" + std::to_string(expected_configurations_) +
-                   " : Successfully configured capability : " + source_capability;
-          process_feedback(status);
+          process_feedback(std::to_string(completed_configurations_) + "/" + std::to_string(expected_configurations_) +
+                           " : Successfully configured capability : " + source_capability);
 
           // Check if all expected calls are completed before calling verify_plan
           if (completed_configurations_ == expected_configurations_)
@@ -698,17 +687,14 @@ private:
     auto result_future = trig_capability_client_->async_send_request(request_trigger, [this](TriggerCapabilityClient::SharedFuture future) {
       if (!future.valid())
       {
-        status = "Failed to trigger capability " + connection_map[0].source.runner;
-        process_result(status);
+        process_result("Failed to trigger capability " + connection_map[0].source.runner);
         return;
       }
 
       auto response = future.get();
+      process_feedback("Successfully triggered capability " + connection_map[0].source.runner);
 
-      status = "Successfully triggered capability " + connection_map[0].source.runner;
-      process_feedback(status);
-
-      process_result("Successfully launched capabilities2 fabric", true);
+      process_result("Successfully completed capabilities2 fabric", true);
     });
   }
 
@@ -716,14 +702,12 @@ private:
   {
     while (wait_for_logic)
     {
-      std::string failed = service_name + " not available";
-      status_->error(failed);
+      status_->error(service_name + " not available");
       rclcpp::shutdown();
       return;
     }
 
-    std::string success = service_name + " connected";
-    status_->info(success);
+    status_->info(service_name + " connected");
   }
 
   /**
@@ -754,13 +738,13 @@ private:
 
     if (success)
     {
-      goal_handle_->succeed(result_msg);
       status_->info(text, newline);
+      goal_handle_->succeed(result_msg);
     }
     else
     {
-      goal_handle_->abort(result_msg);
       status_->error(text, newline);
+      goal_handle_->abort(result_msg);
     }
   }
 
@@ -782,9 +766,6 @@ private:
 
   int expected_configurations_;
   int completed_configurations_;
-
-  /** status message string */
-  std::string status;
 
   /** Bond id */
   std::string bond_id_;
@@ -851,4 +832,10 @@ private:
 
   /** trigger an selected capability */
   TriggerCapabilityClient::SharedPtr trig_capability_client_;
+
+  /** capabilities2 server and fabric synchronization tools */
+  // std::mutex mutex_;
+  // std::condition_variable cv_;
+  // bool fabric_completed_;
+  // std::unique_lock<std::mutex> lock_;
 };

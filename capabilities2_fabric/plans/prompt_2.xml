@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Plan>
+    <Control name="sequential">
+        <Event name="std_capabilities/OccupancyGridRunner" provider="std_capabilities/OccupancyGridRunner"/>
+        <Event name="std_capabilities/PromptOccupancyRunner" provider="std_capabilities/PromptOccupancyRunner" />
+    </Control>
+</Plan>

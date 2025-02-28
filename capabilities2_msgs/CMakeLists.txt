@@ -47,6 +47,7 @@ set(srv_files
   "srv/GetFabricStatus.srv"
   "srv/SetFabricPlan.srv"
   "srv/CancelFabricPlan.srv"
+  "srv/CompleteFabric.srv"
 )
 
 set(action_files

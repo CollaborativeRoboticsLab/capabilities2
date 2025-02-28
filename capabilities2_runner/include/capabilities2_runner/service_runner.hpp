@@ -72,8 +72,8 @@ public:
 
     info_("request generated", id);
 
-    std::unique_lock<std::mutex> lock(send_goal_mutex);
-    action_complete = false;
+    std::unique_lock<std::mutex> lock(mutex_);
+    completed_ = false;
 
     auto result_future = service_client_->async_send_request(
         request_msg, [this, id](typename rclcpp::Client<ServiceT>::SharedFuture future) {
@@ -93,6 +93,7 @@ public:
             info_("get result call succeeded", id);
 
             response_ = future.get();
+            process_response(response_, id);
 
             // trigger the events related to on_success state
             if (events[execute_id].on_success != "")
@@ -102,8 +103,8 @@ public:
             }
           }
 
-          action_complete = true;
-          send_goal_cv.notify_all();
+          completed_ = true;
+          cv_.notify_all();
         });
 
     // trigger the events related to on_started state
@@ -114,7 +115,7 @@ public:
     }
 
     // Conditional wait
-    send_goal_cv.wait(lock, [this] { return action_complete; });
+    cv_.wait(lock, [this] { return completed_; });
     info_("Service request complete. Thread closing.", id);
   }
 
@@ -157,6 +158,16 @@ protected:
    * @return ServiceT::Request the generated request
    */
   virtual typename ServiceT::Request generate_request(tinyxml2::XMLElement* parameters, int id) = 0;
+
+  /**
+   * @brief Process the reponse and print data as required
+   * 
+   * @param response service reponse
+   * @param id thread id
+   */
+  virtual void process_response(typename ServiceT::Response::SharedPtr response, int id)
+  {
+  }
 
   typename rclcpp::Client<ServiceT>::SharedPtr service_client_;
   typename ServiceT::Response::SharedPtr response_;

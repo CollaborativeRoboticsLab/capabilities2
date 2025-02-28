@@ -6,7 +6,6 @@
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
-#include <lifecycle_msgs/srv/get_state.hpp>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav2_msgs/action/navigate_to_pose.hpp>
@@ -94,8 +93,6 @@ protected:
   std::string robot_base_frame_; /**The frame of the robot base*/
 
   double x, y; /**Coordinate frame parameters*/
-
-  rclcpp::Client<lifecycle_msgs::srv::GetState>::SharedPtr get_state_client_;
 };
 
 }  // namespace capabilities2_runner

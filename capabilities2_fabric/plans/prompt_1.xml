@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Plan>
+    <Control name="sequential">
+        <Event name="std_capabilities/CapabilityGetRunner" provider="std_capabilities/CapabilityGetRunner"/>
+        <Event name="std_capabilities/PromptCapabilityRunner" provider="std_capabilities/PromptCapabilityRunner" />
+    </Control>
+</Plan>

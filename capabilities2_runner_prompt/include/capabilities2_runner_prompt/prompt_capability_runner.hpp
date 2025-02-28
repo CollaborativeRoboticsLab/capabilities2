@@ -1,22 +1,23 @@
 #pragma once
 #include <tinyxml2.h>
-#include <string>
-#include <pluginlib/class_list_macros.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_action/rclcpp_action.hpp>
 #include <capabilities2_runner_prompt/prompt_service_runner.hpp>
 
 namespace capabilities2_runner
 {
+
 /**
- * @brief prompt pose runner
+ * @brief prompt capabilities runner
  *
  * This class is a wrapper around the capabilities2 service runner and is used to pass
  * data to prompt_tools/prompt service, providing it as a capability that prompts
- * robot pose values
+ * robot capabilities.
  */
-class PromptPoseRunner : public PromptServiceRunner
+class PromptCapabilityRunner : public PromptServiceRunner
 {
 public:
-  PromptPoseRunner() : PromptServiceRunner()
+  PromptCapabilityRunner() : PromptServiceRunner()
   {
   }
 
@@ -28,18 +29,15 @@ public:
    */
   virtual void generate_prompt(tinyxml2::XMLElement* parameters, int id, std::string& prompt, bool& flush) override
   {
-    tinyxml2::XMLElement* poseElement = parameters->FirstChildElement("Pose");
+    tinyxml2::XMLElement* capabilitySpecsElement = parameters->FirstChildElement("CapabilitySpecs");
 
     tinyxml2::XMLPrinter printer;
-    poseElement->Accept(&printer);
+    capabilitySpecsElement->Accept(&printer);
 
     std::string data(printer.CStr());
 
-    prompt = "The position of the robot is given as a standard ros2 geometry_msgs::msg::Pose of which the content "
-             "are " + data;
+    prompt = "The capabilities of the robot are given as follows" + data;
     flush  = false;
-
-    info_("prompting with : " + prompt, id);
   }
 };
 

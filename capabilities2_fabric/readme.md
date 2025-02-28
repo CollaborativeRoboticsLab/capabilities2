@@ -44,15 +44,15 @@ Below is an example XML plan for configuring a set of capabilities:
         </Control name="parallel">
             <Control name="sequential">
                 <Event name="OccupancyGridRunner" provider="OccupancyGridRunner"/>
-                <Event name="PromptOccupancyRunner" provider="PromptOccupancyRunner"/>
+                <Event name="PromptOccupancyRunner" provider="PromptOccupancyRunner" />
             </Control>
             <Control name="sequential">
-                <Event name="RobotPoseRunner" provider="RobotPoseRunner"/>
-                <Event name="PromptPoseRunner" provider="PromptPoseRunner"/>
+                <Event name="RobotPoseRunner" provider="RobotPoseRunner" from="map" to="base_link"/>
+                <Event name="PromptPoseRunner" provider="PromptPoseRunner" />
             </Control>
         </Control>
-        <Event name="PromptPlanRequestRunner" provider="PromptPlanRequestRunner" replan="false"/>
-        <Event name="PromptPlanResponseRunner" provider="PromptPlanResponseRunner"/>
+        <Event name="PromptPlanRunner" provider="PromptPlanRunner" replan="false" />
+        <Event name="FabricSetPlanRunner" provider="FabricSetPlanRunner"/>
     </Control>
 </Plan>
 ```
@@ -73,7 +73,22 @@ Below is an example XML plan for configuring a set of capabilities:
 ### Navigation
 
 1. [WaypointRunner Example 1](./docs/waypoint_runner_ex1.md)
-Implements at the very basic fabric triggering that moves the robot from one point to another
+Implements at the very basic fabric triggering that moves the robot from one point to another.
 
 2. [WaypointRunner Example 2](./docs/waypoint_runner_ex2.md)
-Implements navigating through 2 points using 'sequential' control functionality
+Implements navigating through 2 points using 'sequential' control functionality.
+
+
+### Prompting
+
+1. [PromptCapabilityRunner Example](./docs/prompt_capability_runner_ex1.md)
+Implements requesting for robot's capabilities and prompting them to the LLM
+
+2. [PromptOccupancyRunner Example](./docs/prompt_occupancy_runner_ex1.md)
+Implements listening for robot's occupancy grid and prompting them to the LLM
+
+2. [PromptPoseRunner Example](./docs/prompt_pose_runner_ex1.md)
+Implements listening for robot's pose and prompting them to the LLM
+
+2. [PromptPlanRunner Example](./docs/prompt_plan_runner_ex1.md)
+Implements prompting the LLM for a plan for a new task and setting it to Capabilities Fabric

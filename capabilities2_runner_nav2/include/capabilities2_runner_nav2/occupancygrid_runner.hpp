@@ -32,17 +32,29 @@ public:
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
                      std::function<void(Event&)> print) override
   {
-    init_subscriber(node, run_config, "map", print);
+    init_subscriber(node, run_config, "/map", print);
   }
 
 protected:
   /**
-   * @brief Update on_success event parameters with new data if avaible.
+   * @brief Update on_success event parameters with new data from an OccupancyGrid message if avaible.
    *
    * This function is used to inject new data into the XMLElement containing
    * parameters related to the on_success trigger event
    *
-   * A pattern needs to be implemented in the derived class
+    <OccupancyGrid>
+        <header frame_id="map">
+            <stamp secs="1708369200" nsecs="123456789"/>
+        </header>
+        <info resolution="0.05" width="100" height="100">
+            <origin>
+                <position x="1.0" y="2.0" z="0.0"/>
+                <orientation x="0.0" y="0.0" z="0.707" w="0.707"/>
+            </origin>
+            <map_load_time secs="1708369100" nsecs="987654321"/>
+        </info>
+        <data>0 100 -1 50 25 75 0 0 100 50</data>
+    </OccupancyGrid>
    *
    * @param parameters pointer to the XMLElement containing parameters
    * @return pointer to the XMLElement containing updated parameters
@@ -55,104 +67,65 @@ protected:
     tinyxml2::XMLElement* occupancyGridElement = element->GetDocument()->NewElement("OccupancyGrid");
     element->InsertEndChild(occupancyGridElement);
 
-    // Header element
+    // Header element with attributes
     tinyxml2::XMLElement* headerElement = element->GetDocument()->NewElement("header");
-    occupancyGridElement->InsertEndChild(headerElement);
+    headerElement->SetAttribute("frame_id", latest_message_->header.frame_id.c_str());
 
     tinyxml2::XMLElement* stampElement = element->GetDocument()->NewElement("stamp");
+    stampElement->SetAttribute("secs", latest_message_->header.stamp.sec);
+    stampElement->SetAttribute("nsecs", latest_message_->header.stamp.nanosec);
     headerElement->InsertEndChild(stampElement);
 
-    tinyxml2::XMLElement* secsElement = element->GetDocument()->NewElement("secs");
-    secsElement->SetText(latest_message_->header.stamp.sec);
-    stampElement->InsertEndChild(secsElement);
+    occupancyGridElement->InsertEndChild(headerElement);
 
-    tinyxml2::XMLElement* nsecsElement = element->GetDocument()->NewElement("nsecs");
-    nsecsElement->SetText(latest_message_->header.stamp.nanosec);
-    stampElement->InsertEndChild(nsecsElement);
-
-    tinyxml2::XMLElement* frameIdElement = element->GetDocument()->NewElement("frame_id");
-    frameIdElement->SetText(latest_message_->header.frame_id.c_str());
-    headerElement->InsertEndChild(frameIdElement);
-
-    // Info element
+    // Info element with attributes
     tinyxml2::XMLElement* infoElement = element->GetDocument()->NewElement("info");
-    occupancyGridElement->InsertEndChild(infoElement);
+    infoElement->SetAttribute("resolution", latest_message_->info.resolution);
+    infoElement->SetAttribute("width", latest_message_->info.width);
+    infoElement->SetAttribute("height", latest_message_->info.height);
 
-    tinyxml2::XMLElement* resolutionElement = element->GetDocument()->NewElement("resolution");
-    resolutionElement->SetText(latest_message_->info.resolution);
-    infoElement->InsertEndChild(resolutionElement);
-
-    tinyxml2::XMLElement* widthElement = element->GetDocument()->NewElement("width");
-    widthElement->SetText(latest_message_->info.width);
-    infoElement->InsertEndChild(widthElement);
-
-    tinyxml2::XMLElement* heightElement = element->GetDocument()->NewElement("height");
-    heightElement->SetText(latest_message_->info.height);
-    infoElement->InsertEndChild(heightElement);
-
-    // Origin element
+    // Origin element with position and orientation attributes
     tinyxml2::XMLElement* originElement = element->GetDocument()->NewElement("origin");
-    infoElement->InsertEndChild(originElement);
 
     tinyxml2::XMLElement* positionElement = element->GetDocument()->NewElement("position");
+    positionElement->SetAttribute("x", latest_message_->info.origin.position.x);
+    positionElement->SetAttribute("y", latest_message_->info.origin.position.y);
+    positionElement->SetAttribute("z", latest_message_->info.origin.position.z);
     originElement->InsertEndChild(positionElement);
 
-    tinyxml2::XMLElement* posX = element->GetDocument()->NewElement("x");
-    posX->SetText(latest_message_->info.origin.position.x);
-    positionElement->InsertEndChild(posX);
-
-    tinyxml2::XMLElement* posY = element->GetDocument()->NewElement("y");
-    posY->SetText(latest_message_->info.origin.position.y);
-    positionElement->InsertEndChild(posY);
-
-    tinyxml2::XMLElement* posZ = element->GetDocument()->NewElement("z");
-    posZ->SetText(latest_message_->info.origin.position.z);
-    positionElement->InsertEndChild(posZ);
-
     tinyxml2::XMLElement* orientationElement = element->GetDocument()->NewElement("orientation");
+    orientationElement->SetAttribute("x", latest_message_->info.origin.orientation.x);
+    orientationElement->SetAttribute("y", latest_message_->info.origin.orientation.y);
+    orientationElement->SetAttribute("z", latest_message_->info.origin.orientation.z);
+    orientationElement->SetAttribute("w", latest_message_->info.origin.orientation.w);
     originElement->InsertEndChild(orientationElement);
 
-    tinyxml2::XMLElement* oriX = element->GetDocument()->NewElement("x");
-    oriX->SetText(latest_message_->info.origin.orientation.x);
-    orientationElement->InsertEndChild(oriX);
+    infoElement->InsertEndChild(originElement);
 
-    tinyxml2::XMLElement* oriY = element->GetDocument()->NewElement("y");
-    oriY->SetText(latest_message_->info.origin.orientation.y);
-    orientationElement->InsertEndChild(oriY);
-
-    tinyxml2::XMLElement* oriZ = element->GetDocument()->NewElement("z");
-    oriZ->SetText(latest_message_->info.origin.orientation.z);
-    orientationElement->InsertEndChild(oriZ);
-
-    tinyxml2::XMLElement* oriW = element->GetDocument()->NewElement("w");
-    oriW->SetText(latest_message_->info.origin.orientation.w);
-    orientationElement->InsertEndChild(oriW);
-
-    // Map load time
+    // Map load time with attributes
     tinyxml2::XMLElement* mapLoadTimeElement = element->GetDocument()->NewElement("map_load_time");
+    mapLoadTimeElement->SetAttribute("secs", latest_message_->info.map_load_time.sec);
+    mapLoadTimeElement->SetAttribute("nsecs", latest_message_->info.map_load_time.nanosec);
     infoElement->InsertEndChild(mapLoadTimeElement);
 
-    tinyxml2::XMLElement* mapSecsElement = element->GetDocument()->NewElement("secs");
-    mapSecsElement->SetText(latest_message_->info.map_load_time.sec);
-    mapLoadTimeElement->InsertEndChild(mapSecsElement);
-
-    tinyxml2::XMLElement* mapNsecsElement = element->GetDocument()->NewElement("nsecs");
-    mapNsecsElement->SetText(latest_message_->info.map_load_time.nanosec);
-    mapLoadTimeElement->InsertEndChild(mapNsecsElement);
+    occupancyGridElement->InsertEndChild(infoElement);
 
     // Data element for occupancy data (converted to a string)
     tinyxml2::XMLElement* dataElement = element->GetDocument()->NewElement("data");
-    occupancyGridElement->InsertEndChild(dataElement);
 
     std::string data_str;
-    for (size_t i = 0; i < latest_message_->data.size(); ++i)
+    for (size_t i = 0; i < latest_message_->data.size(); i++)
     {
       data_str += std::to_string(latest_message_->data[i]) + " ";
     }
     dataElement->SetText(data_str.c_str());
 
+    occupancyGridElement->InsertEndChild(dataElement);
+
     // Return the updated parameters element with OccupancyGrid added
     std::string result = convert_to_string(element);
+
+    output_("on_success trigger parameter", result);
 
     return result;
   };

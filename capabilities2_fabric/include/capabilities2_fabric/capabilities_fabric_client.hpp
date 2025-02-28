@@ -2,6 +2,7 @@
 #include <thread>
 #include <string>
 #include <vector>
+#include <deque>
 #include <algorithm>
 #include <tinyxml2.h>
 #include <functional>
@@ -12,12 +13,14 @@
 
 #include <capabilities2_fabric/utils/xml_parser.hpp>
 #include <capabilities2_fabric/utils/status_client.hpp>
+#include <capabilities2_fabric/utils/fabric_status.hpp>
 
 #include <capabilities2_msgs/action/plan.hpp>
 
 #include <capabilities2_msgs/srv/set_fabric_plan.hpp>
 #include <capabilities2_msgs/srv/cancel_fabric_plan.hpp>
 #include <capabilities2_msgs/srv/get_fabric_status.hpp>
+#include <capabilities2_msgs/srv/complete_fabric.hpp>
 
 /**
  * @brief Capabilities Executor File Parser
@@ -29,22 +32,14 @@
 class CapabilitiesFabricClient : public rclcpp::Node
 {
 public:
-  enum fabric_status
-  {
-    IDLE,
-    RUNNING,
-    CANCELED,
-    ABORTED,
-    FAILED,
-    SUCCEEDED
-  };
-
+  using Status = capabilities2::fabric_status;
   using Plan = capabilities2_msgs::action::Plan;
   using GoalHandlePlan = rclcpp_action::ClientGoalHandle<Plan>;
 
   using GetFabricStatus = capabilities2_msgs::srv::GetFabricStatus;
   using SetFabricPlan = capabilities2_msgs::srv::SetFabricPlan;
   using CancelFabricPlan = capabilities2_msgs::srv::CancelFabricPlan;
+  using CompleteFabric = capabilities2_msgs::srv::CompleteFabric;
 
   CapabilitiesFabricClient(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("Capabilities2_Fabric_Client", options)
   {
@@ -58,7 +53,7 @@ public:
    */
   void initialize()
   {
-    fabric_state = fabric_status::IDLE;
+    fabric_state = Status::IDLE;
 
     status_ = std::make_shared<StatusClient>(shared_from_this(), "capabilities_fabric_client", "/status/capabilities_fabric_client");
 
@@ -72,6 +67,10 @@ public:
     cancel_server_ =
         this->create_service<CancelFabricPlan>("/capabilities_fabric/cancel_plan", std::bind(&CapabilitiesFabricClient::cancelPlanCallback, this,
                                                                                              std::placeholders::_1, std::placeholders::_2));
+
+    completion_server_ =
+        this->create_service<CompleteFabric>("/capabilities_fabric/set_completion", std::bind(&CapabilitiesFabricClient::setCompleteCallback, this,
+                                                                                              std::placeholders::_1, std::placeholders::_2));
 
     // Create the action client for capabilities_fabric after the node is fully constructed
     this->planner_client_ = rclcpp_action::create_client<Plan>(shared_from_this(), "/capabilities_fabric");
@@ -91,44 +90,66 @@ public:
     // check if the file loading failed
     if (xml_status != tinyxml2::XMLError::XML_SUCCESS)
     {
-      status = "Error loading plan: " + plan_file_path + ", Error: " + document.ErrorName();
-      status_->error(status);
+      status_->error("Error loading plan: " + plan_file_path + ", Error: " + document.ErrorName());
       rclcpp::shutdown();
     }
 
-    status = "Plan loaded from : " + plan_file_path;
-    status_->info(status);
+    status_->info("Plan loaded from : " + plan_file_path);
 
-    send_goal(document);
+    std::string plan;
+    xml_parser::convert_to_string(document, plan);
+
+    plan_queue.push_back(plan);
+
+    goal_send_thread = std::thread(&CapabilitiesFabricClient::manage_goal, this);
   }
 
 private:
-  void send_goal(tinyxml2::XMLDocument& document_xml)
+  void manage_goal()
   {
+    while (plan_queue.size() > 0)
+    {
+      status_->info("Fabric client thread starting");
+
+      std::unique_lock<std::mutex> lock(mutex_);
+      completed_ = false;
+
+      send_goal();
+
+      status_->info("Fabric plan sent. Waiting for acceptance.");
+
+      // Conditional wait
+      cv_.wait(lock, [this] { return completed_; });
+      status_->info("Fabric client thread closing");
+    }
+  }
+
+  void send_goal()
+  {
+    // Create Plan Goal message
     auto goal_msg = Plan::Goal();
 
-    xml_parser::convert_to_string(document_xml, goal_msg.plan);
-
-    status = "Following plan was loaded :\n\n " + goal_msg.plan;
-    status_->info(status);
+    // load the latest plan from the queue
+    goal_msg.plan = plan_queue[0];
+    plan_queue.pop_front();
 
     status_->info("Sending goal to the capabilities_fabric action server");
 
+    // send goal options
     auto send_goal_options = rclcpp_action::Client<Plan>::SendGoalOptions();
 
-    // send goal options
     // goal response callback
     send_goal_options.goal_response_callback = [this](const GoalHandlePlan::SharedPtr& goal_handle) {
       if (!goal_handle)
       {
         status_->error("Goal was rejected by server");
-        fabric_state = fabric_status::FAILED;
+        fabric_state = Status::FAILED;
       }
       else
       {
-        status_->info("Goal accepted by server, waiting for result");
+        status_->info("Goal accepted by server, waiting for completion");
         goal_handle_ = goal_handle;
-        fabric_state = fabric_status::RUNNING;
+        fabric_state = Status::RUNNING;
       }
     };
 
@@ -137,19 +158,19 @@ private:
       switch (result.code)
       {
         case rclcpp_action::ResultCode::SUCCEEDED:
-          fabric_state = fabric_status::SUCCEEDED;
+          fabric_state = Status::LAUNCHED;
           break;
         case rclcpp_action::ResultCode::ABORTED:
           status_->error("Goal was aborted");
-          fabric_state = fabric_status::ABORTED;
+          fabric_state = Status::ABORTED;
           break;
         case rclcpp_action::ResultCode::CANCELED:
           status_->error("Goal was canceled");
-          fabric_state = fabric_status::CANCELED;
+          fabric_state = Status::CANCELED;
           break;
         default:
           status_->error("Unknown result code");
-          fabric_state = fabric_status::FAILED;
+          fabric_state = Status::FAILED;
           break;
       }
 
@@ -174,31 +195,53 @@ private:
     this->planner_client_->async_send_goal(goal_msg, send_goal_options);
   }
 
+  void cancelPlanCallback(const std::shared_ptr<CancelFabricPlan::Request> request, std::shared_ptr<CancelFabricPlan::Response> response)
+  {
+    if (fabric_state == Status::RUNNING)
+    {
+      this->planner_client_->async_cancel_goal(goal_handle_);
+    }
+
+    response->success = true;
+  }
+
+  void setCompleteCallback(const std::shared_ptr<CompleteFabric::Request> request, std::shared_ptr<CompleteFabric::Response> response)
+  {
+    fabric_state = Status::COMPLETED;
+
+    completed_ = true;
+    cv_.notify_all();
+  }
+
   void getStatusCallback(const std::shared_ptr<GetFabricStatus::Request> request, std::shared_ptr<GetFabricStatus::Response> response)
   {
-    if (fabric_state == fabric_status::IDLE)
+    if (fabric_state == Status::IDLE)
     {
       response->status = GetFabricStatus::Response::FABRIC_IDLE;
     }
-    else if (fabric_state == fabric_status::RUNNING)
+    else if (fabric_state == Status::RUNNING)
     {
       response->status = GetFabricStatus::Response::FABRIC_RUNNING;
     }
-    else if (fabric_state == fabric_status::CANCELED)
+    else if (fabric_state == Status::CANCELED)
     {
       response->status = GetFabricStatus::Response::FABRIC_CANCELED;
     }
-    else if (fabric_state == fabric_status::ABORTED)
+    else if (fabric_state == Status::ABORTED)
     {
       response->status = GetFabricStatus::Response::FABRIC_ABORTED;
     }
-    else if (fabric_state == fabric_status::FAILED)
+    else if (fabric_state == Status::FAILED)
     {
       response->status = GetFabricStatus::Response::FABRIC_FAILED;
     }
-    else if (fabric_state == fabric_status::SUCCEEDED)
+    else if (fabric_state == Status::LAUNCHED)
     {
-      response->status = GetFabricStatus::Response::FABRIC_SUCCEEDED;
+      response->status = GetFabricStatus::Response::FABRIC_LAUNCHED;
+    }
+    else if (fabric_state == Status::COMPLETED)
+    {
+      response->status = GetFabricStatus::Response::FABRIC_COMPLETED;
     }
     else
     {
@@ -211,7 +254,7 @@ private:
     status_->info("Received the request with a plan");
 
     // try to parse the std::string plan from capabilities_msgs/Plan to the to a XMLDocument file
-    tinyxml2::XMLError xml_status = document.Parse(request->plan.c_str());
+    tinyxml2::XMLError xml_status = documentChecking.Parse(request->plan.c_str());
 
     // check if the file parsing failed
     if (xml_status != tinyxml2::XMLError::XML_SUCCESS)
@@ -220,18 +263,18 @@ private:
       response->success = false;
     }
 
-    status_->info("Plan parsed and accepted");
+    status_->info("Plan parsed and valid");
 
-    response->success = true;
+    plan_queue.push_back(request->plan);
 
-    send_goal(document);
-  }
-
-  void cancelPlanCallback(const std::shared_ptr<CancelFabricPlan::Request> request, std::shared_ptr<CancelFabricPlan::Response> response)
-  {
-    if (fabric_state == fabric_status::RUNNING)
+    if (fabric_state == Status::RUNNING)
     {
-      this->planner_client_->async_cancel_goal(goal_handle_);
+      status_->info("Prior plan under exeution. Will defer the new plan");
+    }
+    else
+    {
+      status_->info("Plan parsed and accepted");
+      goal_send_thread = std::thread(&CapabilitiesFabricClient::manage_goal, this);
     }
 
     response->success = true;
@@ -244,8 +287,17 @@ private:
   /** Status message */
   std::string status;
 
+  /** Vector of plans */
+  std::deque<std::string> plan_queue;
+
   /** XML Document */
   tinyxml2::XMLDocument document;
+
+  /** XML Document */
+  tinyxml2::XMLDocument documentChecking;
+
+  /** Thread to manage sending goal */
+  std::thread goal_send_thread;
 
   /** action client */
   rclcpp_action::Client<Plan>::SharedPtr planner_client_;
@@ -265,6 +317,24 @@ private:
   /** server to cancel the current plan in the capabilities2 fabric */
   rclcpp::Service<CancelFabricPlan>::SharedPtr cancel_server_;
 
+  /** server to get the status of the capabilities2 fabric */
+  rclcpp::Service<CompleteFabric>::SharedPtr completion_server_;
+
   /** Status of the fabric */
-  fabric_status fabric_state;
+  Status fabric_state;
+
+  /**
+   * @brief mutex for threadpool synchronisation.
+   */
+  std::mutex mutex_;
+
+  /**
+   * @brief conditional variable for threadpool synchronisation.
+   */
+  std::condition_variable cv_;
+
+  /**
+   * @brief flag for threadpool synchronisation.
+   */
+  bool completed_;
 };

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Plan>
+    <Control name="sequential">
+        <Event name="std_capabilities/WaypointRunner" provider="std_capabilities/WaypointRunner" x="0.0" y="0.1" />
+        <Event name="std_capabilities/RobotPoseRunner" provider="std_capabilities/RobotPoseRunner" map="map" odom="odom" robot="base_link"/>
+        <Event name="std_capabilities/PromptPoseRunner" provider="std_capabilities/PromptPoseRunner" />
+    </Control>
+</Plan>
