@@ -115,6 +115,8 @@ public:
         throw runner_exception(e.what());
       }
     }
+
+    info_("stopping runner");
   }
 
   /**

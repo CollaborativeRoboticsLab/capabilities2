@@ -96,6 +96,8 @@ public:
 
     feedback_msg = std::make_shared<Plan::Feedback>();
     result_msg = std::make_shared<Plan::Result>();
+
+    need_reset_ = false;
   }
 
 private:
@@ -141,7 +143,10 @@ private:
     status_->error("Received the request to cancel the plan");
     (void)goal_handle;
 
-    bond_client_->stop();
+    for (auto& [bond_id, bond_client] : bond_client_cache_)
+    {
+      bond_client->stop();
+    }
 
     return rclcpp_action::CancelResponse::ACCEPT;
   }
@@ -173,6 +178,17 @@ private:
 
     status_->info("Plan after adding closing event :\n\n " + modified_plan);
 
+    // if (need_reset_)
+    // {
+    //   free_capability_all(connection_map);
+    //   need_reset_ = false;
+    // }
+
+    interface_list.clear();
+    providers_list.clear();
+    rejected_list.clear();
+    connection_map.clear();
+
     expected_providers_ = 0;
     completed_providers_ = 0;
 
@@ -181,6 +197,7 @@ private:
 
     expected_capabilities_ = 0;
     completed_capabilities_ = 0;
+    freed_capabilities_ = 0;
 
     expected_configurations_ = 0;
     completed_configurations_ = 0;
@@ -406,7 +423,7 @@ private:
     process_feedback("Connection extraction successful");
 
     // estasblish the bond with the server
-    establish_bond();
+    request_bond();
   }
 
   /**
@@ -418,10 +435,6 @@ private:
   {
     auto feedback = std::make_shared<Plan::Feedback>();
     auto result = std::make_shared<Plan::Result>();
-
-    // intialize a vector to accomodate elements from both
-    std::vector<std::string> tag_list(interface_list.size() + control_tag_list.size());
-    std::merge(interface_list.begin(), interface_list.end(), control_tag_list.begin(), control_tag_list.end(), tag_list.begin());
 
     // verify whether document got 'plan' tags
     if (!xml_parser::check_plan_tag(document))
@@ -449,10 +462,10 @@ private:
   }
 
   /**
-   * @brief establish the bond with capabilities2 server
+   * @brief Request the bond from the capabilities2 server
    *
    */
-  void establish_bond()
+  void request_bond()
   {
     process_feedback("Requesting bond id");
 
@@ -469,18 +482,40 @@ private:
 
       auto response = future.get();
       bond_id_ = response->bond_id;
-
       process_feedback("Received the bond id : " + bond_id_);
 
-      bond_client_ = std::make_unique<BondClient>(shared_from_this(), bond_id_);
-      bond_client_->start();
-
-      expected_capabilities_ = connection_map.size();
-
-      process_feedback("Requsting start of " + std::to_string(expected_capabilities_) + " capabilities");
-
-      use_capability(connection_map);
+      establish_bond();
     });
+  }
+
+  /**
+   * @brief establish the bond with capabilities2 server
+   *
+   */
+  void establish_bond()
+  {
+    bond_client_cache_[bond_id_] = std::make_unique<BondClient>(shared_from_this(), bond_id_);
+    bond_client_cache_[bond_id_]->start();
+
+    process_feedback("Bond sucessfully established with bond id : " + bond_id_);
+
+    if (bond_client_cache_.size() > 1)
+    {
+      for (auto& [old_bond_id, bond_client] : bond_client_cache_)
+      {
+        if (old_bond_id != bond_id_)
+        {
+          bond_client->stop();
+          process_feedback("Stopping and removing old bond with id : " + old_bond_id);
+        }
+      }
+    }
+
+    expected_capabilities_ = connection_map.size();
+
+    process_feedback("Requsting start of " + std::to_string(expected_capabilities_) + " capabilities");
+
+    use_capability(connection_map);
   }
 
   /**
@@ -511,17 +546,17 @@ private:
             process_result("Failed to Use capability " + capability + " from " + provider + ". Server Execution Cancelled");
 
             // release all capabilities that were used since not all started successfully
-            for (const auto& [key, value] : connection_map)
-            {
-              process_feedback("Freeing capability of Node " + std::to_string(key) + " named " + value.source.runner);
-              free_capability(value.source.runner);
-            }
+            free_capability_all(connection_map);
 
-            bond_client_->stop();
+            for (auto& [bond_id, bond_client] : bond_client_cache_)
+            {
+              bond_client->stop();
+            }
             return;
           }
 
           completed_capabilities_++;
+          need_reset_ = true;
 
           auto response = future.get();
 
@@ -546,12 +581,14 @@ private:
   }
 
   /**
-   * @brief Request use of capability from capabilities2 server
+   * @brief Free all started capabilities in the capabilities map
    *
-   * @param capability capability name to be started
+   * @param capabilities map of capabilities to be freed
    */
-  void free_capability(const std::string& capability)
+  void free_capability_all(std::map<int, capabilities2::node_t>& capabilities)
   {
+    std::string capability = capabilities[freed_capabilities_].source.runner;
+
     auto request_free = std::make_shared<FreeCapability::Request>();
     request_free->capability = capability;
     request_free->bond_id = bond_id_;
@@ -566,6 +603,18 @@ private:
 
       auto response = future.get();
       process_feedback("Successfully freed capability " + capability, true);
+
+      freed_capabilities_++;
+
+      // Check if all expected calls are completed before calling verify_plan
+      if (freed_capabilities_ == completed_capabilities_)
+      {
+        process_feedback("All started capabilities have been freed.");
+      }
+      else
+      {
+        free_capability_all(connection_map);
+      }
     });
   }
 
@@ -754,6 +803,7 @@ private:
 
   /** flag to select loading from file or accepting via action server */
   bool read_file;
+  bool need_reset_;
 
   int expected_interfaces_;
   int completed_interfaces_;
@@ -763,6 +813,7 @@ private:
 
   int expected_capabilities_;
   int completed_capabilities_;
+  int freed_capabilities_;
 
   int expected_configurations_;
   int completed_configurations_;
@@ -771,7 +822,7 @@ private:
   std::string bond_id_;
 
   /** Manages bond between capabilities server and this client */
-  std::shared_ptr<BondClient> bond_client_;
+  std::map<std::string, std::shared_ptr<BondClient>> bond_client_cache_;
 
   /** Handles status message sending and printing to logging */
   std::shared_ptr<StatusClient> status_;

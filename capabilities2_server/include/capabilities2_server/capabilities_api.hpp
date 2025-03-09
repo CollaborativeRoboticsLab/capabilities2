@@ -164,7 +164,7 @@ public:
     // FIXME: this unrolls the dependency tree from the bottom up but should probably be top down
     for (const auto& run : running.dependencies)
     {
-      print_("freeing dependency: " + run.interface, true, false);
+      print_("freeing dependency: " + run.interface + "of : " + capability, true, false);
 
       // remove the internal 'use' bond for the capability dependency
       unbind_dependency(run.interface);
@@ -180,7 +180,7 @@ public:
     // this will implicitly stop the runner
     try
     {
-      runner_cache_.remove_runner(capability);
+        runner_cache_.remove_runner(capability);
     }
     catch (const capabilities2_runner::runner_exception& e)
     {
@@ -368,7 +368,7 @@ public:
     }
 
     // couldn't parse unknown capability type
-    print_("unknown capability type: " +spec.type, true, true);
+    print_("unknown capability type: " + spec.type, true, true);
   }
 
   // query api

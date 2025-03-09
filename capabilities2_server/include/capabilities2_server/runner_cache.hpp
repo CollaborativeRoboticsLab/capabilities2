@@ -184,10 +184,10 @@ public:
     }
 
     // reset the runner pointer
-    runner_cache_[capability].reset();
+    // runner_cache_[capability].reset();
 
     // remove the runner from map
-    runner_cache_.erase(capability);
+    // runner_cache_.erase(capability);
   }
 
   /**

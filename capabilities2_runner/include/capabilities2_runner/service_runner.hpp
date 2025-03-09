@@ -143,6 +143,8 @@ public:
       info_("on_stopped", -1, events[execute_id].on_stopped, EventType::STOPPED);
       triggerFunction_(events[execute_id].on_stopped, update_on_stopped(events[execute_id].on_stopped_param));
     }
+
+    info_("stopping runner");
   }
 
 protected:

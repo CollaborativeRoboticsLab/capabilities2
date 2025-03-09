@@ -124,6 +124,8 @@ public:
           RCLCPP_INFO(node_->get_logger(), "Request to launch %s from %s succeeded ", launch_name.c_str(),
                       package_name.c_str());
         });
+
+    info_("stopping runner");
   }
 
   // throw on trigger function

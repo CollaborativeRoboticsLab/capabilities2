@@ -71,6 +71,7 @@ public:
   {
     // remove bond id from capability entry
     auto it = std::find(bond_cache_[capability].begin(), bond_cache_[capability].end(), bond_id);
+    
     if (it != bond_cache_[capability].end())
     {
       bond_cache_[capability].erase(it);
