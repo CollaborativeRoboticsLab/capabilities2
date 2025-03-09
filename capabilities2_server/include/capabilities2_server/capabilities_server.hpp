@@ -716,9 +716,6 @@ private:
   // loop hz
   double loop_hz_;
 
-  /** capabilities_fabric launch thread */
-  std::shared_ptr<std::thread> fabric_launch_thread;
-
   // publishers
   // event publisher
   rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEvent>::SharedPtr event_pub_;

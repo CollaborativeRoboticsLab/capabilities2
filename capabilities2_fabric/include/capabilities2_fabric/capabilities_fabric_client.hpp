@@ -176,11 +176,11 @@ private:
 
       if (result.result->success)
       {
-        status_->info("Plan executed successfully");
+        status_->info("Plan launched successfully");
       }
       else
       {
-        status_->error("Plan failed to complete");
+        status_->error("Plan failed to launch");
 
         if (result.result->failed_elements.size() > 0)
         {
@@ -199,6 +199,7 @@ private:
   {
     if (fabric_state == Status::RUNNING)
     {
+      status_->info("Plan canncelling requested");
       this->planner_client_->async_cancel_goal(goal_handle_);
     }
 
@@ -208,7 +209,7 @@ private:
   void setCompleteCallback(const std::shared_ptr<CompleteFabric::Request> request, std::shared_ptr<CompleteFabric::Response> response)
   {
     fabric_state = Status::COMPLETED;
-
+    status_->info("Plan completed successfully");
     completed_ = true;
     cv_.notify_all();
   }
@@ -267,7 +268,9 @@ private:
 
     plan_queue.push_back(request->plan);
 
-    if (fabric_state == Status::RUNNING)
+    status_->info("Plan queued and waiting for execution");
+
+    if ((fabric_state == Status::RUNNING) or (fabric_state == Status::LAUNCHED))
     {
       status_->info("Prior plan under exeution. Will defer the new plan");
     }

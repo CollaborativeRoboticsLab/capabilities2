@@ -43,7 +43,7 @@ public:
     if (!replan)
     {
       prompt = "Build a xml plan based on the availbale capabilities to acheive mentioned task of " + taskString +
-               ". Return only the xml plan without explanations or comments";
+               ". Return only the xml plan without explanations or comments.";
 
       flush = true;
     }
