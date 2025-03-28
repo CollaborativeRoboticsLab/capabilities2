@@ -39,20 +39,28 @@ Below is an example XML plan for configuring a set of capabilities:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<Plan>
-    <Control name="sequential">
-        </Control name="parallel">
-            <Control name="sequential">
-                <Event name="OccupancyGridRunner" provider="OccupancyGridRunner"/>
-                <Event name="PromptOccupancyRunner" provider="PromptOccupancyRunner" />
+<Plan name="navigate_or_return_fabric">
+    <Control name="sequential" name="contro_plan">
+        <Control name="sequential" name="main_execution_plan">
+            <Event interface="std_capabilities/CapabilityGetRunner" provider="std_capabilities/CapabilityGetRunner"/>
+            <Event interface="std_capabilities/PromptCapabilityRunner" provider="std_capabilities/PromptCapabilityRunner" />
+            <Control name="parallel" name="gather_occupancy_data">
+                <Control name="sequential" name="navigate_or_retur">
+                    <Event interface="std_capabilities/OccupancyGridRunner" provider="std_capabilities/OccupancyGridRunner"/>
+                    <Event interface="std_capabilities/PromptOccupancyRunner" provider="std_capabilities/PromptOccupancyRunner" /> 
+                <Control name="sequential">
+                </Control>
+                <Control name="sequential" name="gather_position_data">
+                    <Event interface="std_capabilities/RobotPoseRunner" provider="std_capabilities/RobotPoseRunner" from="map" to="base_link"/>
+                    <Event interface="std_capabilities/PromptPoseRunner" provider="std_capabilities/PromptPoseRunner" />
+                </Control>
             </Control>
-            <Control name="sequential">
-                <Event name="RobotPoseRunner" provider="RobotPoseRunner" from="map" to="base_link"/>
-                <Event name="PromptPoseRunner" provider="PromptPoseRunner" />
+            <Event interface="std_capabilities/WaypointRunner" provider="std_capabilities/WaypointRunner" x="5.0" y="5.0" />
+            <Control name="recovery" name="return_to_home_if_lost">
+                <Event interface="std_capabilities/WaypointRunner" provider="std_capabilities/WaypointRunner" x="0.0" y="0.0" />
             </Control>
         </Control>
-        <Event name="PromptPlanRunner" provider="PromptPlanRunner" replan="false" />
-        <Event name="FabricSetPlanRunner" provider="FabricSetPlanRunner"/>
+        <Event interface="std_capabilities/FabricCompletionRunner" provider="std_capabilities/FabricCompletionRunner"/>
     </Control>
 </Plan>
 ```
