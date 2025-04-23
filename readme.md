@@ -68,3 +68,17 @@ This work is based on the capabilities package developed by the Open Source Robo
 ## Citation
 
 If you use this work in an academic context, please cite the following publication(s):
+
+[Capabilities2 for ROS2: Advanced Skill-Based Control for Human-Robot Interaction](https://dl.acm.org/doi/10.5555/3721488.3721623)
+```latex
+@inproceedings{10.5555/3721488.3721623,
+    author = {Pritchard, Michael and Ratnayake, Kalana and Gamage, Buddhi and Jayasuriya, Maleen and Herath, Damith},
+    title = {Capabilities2 for ROS2: Advanced Skill-Based Control for Human-Robot Interaction},
+    year = {2025},
+    publisher = {IEEE Press},
+    booktitle = {Proceedings of the 2025 ACM/IEEE International Conference on Human-Robot Interaction},
+    pages = {1067–1071},
+    location = {Melbourne, Australia},
+    series = {HRI '25}
+}
+```
