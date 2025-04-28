@@ -1,8 +1,8 @@
 #pragma once
-#include <tinyxml2.h>
 
 #include "rclcpp/rclcpp.hpp"
 
+#include <tinyxml2.h>
 #include <capabilities2_runner/runner_base.hpp>
 
 namespace capabilities2_runner

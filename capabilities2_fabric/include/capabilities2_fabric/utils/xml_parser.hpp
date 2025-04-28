@@ -1,7 +1,7 @@
 #pragma once
-#include <tinyxml2.h>
 #include <string>
 #include <vector>
+#include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 #include <capabilities2_fabric/utils/connection.hpp>
 #include <capabilities2_fabric/utils/status_client.hpp>

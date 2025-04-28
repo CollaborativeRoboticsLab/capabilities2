@@ -1,8 +1,8 @@
 #pragma once
 
-#include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 
+#include <tinyxml2.h>
 #include "geometry_msgs/msg/transform_stamped.hpp"
 
 #include <capabilities2_runner/topic_runner.hpp>

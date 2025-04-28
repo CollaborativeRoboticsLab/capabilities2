@@ -10,36 +10,27 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# find dependencies
+# Find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
+find_package(rclcpp_components REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
+find_package(tinyxml2_vendor REQUIRED)
+find_package(TinyXML2 REQUIRED)  # provided by tinyxml2 upstream, or tinyxml2_vendor
 find_package(bondcpp REQUIRED)
 find_package(backward_ros REQUIRED)
-find_package(rclcpp_components REQUIRED)
 
-# Locate the static version of tinyxml2
-find_library(TINYXML2_LIB NAMES tinyxml2 PATHS /usr/local/lib NO_DEFAULT_PATH)
-
-if(NOT TINYXML2_LIB)
-  message(FATAL_ERROR "tinyxml2 library not found. Make sure it's installed as a static library.")
-endif()
-
-include_directories(include
-  /usr/local/include
+include_directories(
+  include
 )
 
 ############################################################################
-# capabilities2_fabric node implementation that compiles as a executable 
+# capabilities2_fabric node executable
 ############################################################################
 
 add_executable(${PROJECT_NAME}
   src/capabilities_fabric_node.cpp
-)
-
-target_link_libraries(${PROJECT_NAME}
-  ${TINYXML2_LIB}
 )
 
 ament_target_dependencies(${PROJECT_NAME}
@@ -47,6 +38,7 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp_action
   bondcpp
   capabilities2_msgs
+  TinyXML2
 )
 
 install(TARGETS ${PROJECT_NAME}
@@ -54,15 +46,11 @@ install(TARGETS ${PROJECT_NAME}
 )
 
 ############################################################################
-# capabilities2_fabric component implementation that compiles as a library 
+# capabilities2_fabric component library
 ############################################################################
 
 add_library(${PROJECT_NAME}_comp SHARED
   src/capabilities_fabric_comp.cpp
-)
-
-target_link_libraries(${PROJECT_NAME}_comp
-  ${TINYXML2_LIB}
 )
 
 ament_target_dependencies(${PROJECT_NAME}_comp
@@ -71,6 +59,7 @@ ament_target_dependencies(${PROJECT_NAME}_comp
   rclcpp_components
   bondcpp
   capabilities2_msgs
+  TinyXML2
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}_comp
@@ -88,37 +77,30 @@ install(TARGETS ${PROJECT_NAME}_comp
 )
 
 ############################################################################
-# fabric_client node implementation that compiles as a executable 
+# fabric_client node executable
 ############################################################################
 
 add_executable(fabric_client
   src/capabilities_fabric_client_node.cpp
 )
 
-target_link_libraries(fabric_client
-  ${TINYXML2_LIB}
-)
-
 ament_target_dependencies(fabric_client
   rclcpp
   rclcpp_action
   capabilities2_msgs
+  TinyXML2
 )
 
 install(TARGETS fabric_client
-    DESTINATION lib/${PROJECT_NAME}
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 ############################################################################
-# fabric_client component implementation that compiles as a library 
+# fabric_client component library
 ############################################################################
 
 add_library(fabric_client_comp SHARED
   src/capabilities_fabric_client_comp.cpp
-)
-
-target_link_libraries(fabric_client_comp
-  ${TINYXML2_LIB}
 )
 
 ament_target_dependencies(fabric_client_comp
@@ -127,6 +109,7 @@ ament_target_dependencies(fabric_client_comp
   rclcpp_components
   bondcpp
   capabilities2_msgs
+  TinyXML2
 )
 
 rclcpp_components_register_node(fabric_client_comp
@@ -144,7 +127,7 @@ install(TARGETS fabric_client_comp
 )
 
 ############################################################################
-# miscellaneous
+# Miscellaneous installations
 ############################################################################
 
 install(DIRECTORY include/
@@ -162,6 +145,5 @@ install(DIRECTORY config
 install(DIRECTORY plans
   DESTINATION share/${PROJECT_NAME}
 )
-
 
 ament_package()

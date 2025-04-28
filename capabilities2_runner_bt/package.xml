@@ -21,11 +21,11 @@
   <depend>std_msgs</depend>
   <depend>capabilities2_msgs</depend>
   <depend>capabilities2_runner</depend>
+  <depend>tinyxml2_vendor</depend>
   <depend>behaviortree_cpp</depend>
 
   <!-- system dependency -->
   <depend>uuid</depend>
-  <depend>tinyxml2</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -1,6 +1,6 @@
 #pragma once
-#include <tinyxml2.h>
 #include <string>
+#include <tinyxml2.h>
 #include <pluginlib/class_list_macros.hpp>
 #include <capabilities2_runner/service_runner.hpp>
 #include <capabilities2_msgs/srv/complete_fabric.hpp>

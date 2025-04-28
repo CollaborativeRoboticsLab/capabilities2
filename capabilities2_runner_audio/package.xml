@@ -17,10 +17,9 @@
   <depend>hri_audio_msgs</depend>
   <depend>capabilities2_msgs</depend>
   <depend>capabilities2_runner</depend>
+  <depend>tinyxml2_vendor</depend>
 
   <!-- system dependency -->
-  <depend>tinyxml2</depend>
-
   <exec_depend>ros2launch</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>

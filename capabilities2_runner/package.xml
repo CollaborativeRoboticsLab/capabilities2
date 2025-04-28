@@ -20,10 +20,10 @@
   <depend>pluginlib</depend>
   <depend>std_msgs</depend>
   <depend>capabilities2_msgs</depend>
+  <depend>tinyxml2_vendor</depend>
 
   <!-- system dependency -->
   <depend>uuid</depend>
-  <depend>tinyxml2</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

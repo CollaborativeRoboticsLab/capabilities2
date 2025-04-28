@@ -22,11 +22,10 @@
   <depend>rclcpp_components</depend>
   <depend>capabilities2_msgs</depend>
   <depend>capabilities2_runner</depend>
-  <depend>capabilities2_utils</depend>
+  <depend>tinyxml2_vendor</depend>
 
   <!-- system dependency -->
   <depend>yaml-cpp</depend>
-  <depend>tinyxml2</depend>
   <depend>libsqlite3-dev</depend>
   <depend>uuid</depend>
   <depend>backward_ros</depend>

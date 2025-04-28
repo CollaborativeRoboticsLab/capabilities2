@@ -10,31 +10,20 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+include_directories(
+  include
+)
+
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
-
-# Locate the static version of tinyxml2
-find_library(TINYXML2_LIB NAMES tinyxml2 PATHS /usr/local/lib NO_DEFAULT_PATH)
-
-if(NOT TINYXML2_LIB)
-  message(FATAL_ERROR "tinyxml2 library not found. Make sure it's installed as a static library.")
-endif()
-
-include_directories(include
-  /usr/local/include
-)
+find_package(tinyxml2_vendor REQUIRED)
+find_package(TinyXML2 REQUIRED)  # provided by tinyxml2 upstream, or tinyxml2_vendor
 
 add_library(${PROJECT_NAME} SHARED
   src/standard_runners.cpp
-  # src/launch_runner.cpp
-  # src/action_runner.cpp
-)
-
-target_link_libraries(${PROJECT_NAME}
-  ${TINYXML2_LIB}
 )
 
 ament_target_dependencies(${PROJECT_NAME}
@@ -42,6 +31,7 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp_action
   pluginlib
   capabilities2_msgs
+  TinyXML2
 )
 
 pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
