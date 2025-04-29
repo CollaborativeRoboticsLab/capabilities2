@@ -7,9 +7,7 @@
 #include <fstream>
 #include <filesystem>
 #include <functional>
-
 #include <stdlib.h>
-
 #include <tinyxml2.h>
 
 #include <rclcpp/rclcpp.hpp>

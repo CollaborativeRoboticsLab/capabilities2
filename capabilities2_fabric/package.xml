@@ -14,10 +14,7 @@
   <depend>capabilities2_msgs</depend>
   <depend>rclcpp_action</depend>
   <depend>backward_ros</depend> 
-  <depend>capabilities2_utils</depend>
-
-  <!-- system dependency -->
-  <depend>tinyxml2</depend>
+  <depend>tinyxml2_vendor</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

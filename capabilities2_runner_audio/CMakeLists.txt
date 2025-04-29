@@ -18,24 +18,15 @@ find_package(pluginlib REQUIRED)
 find_package(hri_audio_msgs REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_runner REQUIRED)
+find_package(tinyxml2_vendor REQUIRED)
+find_package(TinyXML2 REQUIRED)  # provided by tinyxml2 upstream, or tinyxml2_vendor
 
-# Locate the static version of tinyxml2
-find_library(TINYXML2_LIB NAMES tinyxml2 PATHS /usr/local/lib NO_DEFAULT_PATH)
-
-if(NOT TINYXML2_LIB)
-  message(FATAL_ERROR "tinyxml2 library not found. Make sure it's installed as a static library.")
-endif()
-
-include_directories(include
-  /usr/local/include
+include_directories(
+  include
 )
 
 add_library(${PROJECT_NAME} SHARED
   src/audio_runners.cpp
-)
-
-target_link_libraries(${PROJECT_NAME}
-  ${TINYXML2_LIB}
 )
 
 ament_target_dependencies(${PROJECT_NAME}
@@ -45,6 +36,7 @@ ament_target_dependencies(${PROJECT_NAME}
   hri_audio_msgs
   capabilities2_msgs
   capabilities2_runner
+  TinyXML2
 )
 
 pluginlib_export_plugin_description_file(capabilities2_runner plugins.xml)
