@@ -20,6 +20,7 @@ find_package(tinyxml2_vendor REQUIRED)
 find_package(TinyXML2 REQUIRED)  # provided by tinyxml2 upstream, or tinyxml2_vendor
 find_package(bondcpp REQUIRED)
 find_package(backward_ros REQUIRED)
+find_package(capabilities2_events REQUIRED)
 
 include_directories(
   include
@@ -38,6 +39,7 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp_action
   bondcpp
   capabilities2_msgs
+  capabilities2_events
   TinyXML2
 )
 
@@ -59,6 +61,7 @@ ament_target_dependencies(${PROJECT_NAME}_comp
   rclcpp_components
   bondcpp
   capabilities2_msgs
+  capabilities2_events
   TinyXML2
 )
 
@@ -88,6 +91,7 @@ ament_target_dependencies(fabric_client
   rclcpp
   rclcpp_action
   capabilities2_msgs
+  capabilities2_events
   TinyXML2
 )
 
@@ -109,6 +113,7 @@ ament_target_dependencies(fabric_client_comp
   rclcpp_components
   bondcpp
   capabilities2_msgs
+  capabilities2_events
   TinyXML2
 )
 

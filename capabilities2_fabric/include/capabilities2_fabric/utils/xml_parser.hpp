@@ -4,7 +4,7 @@
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 #include <capabilities2_fabric/utils/connection.hpp>
-#include <capabilities2_fabric/utils/status_client.hpp>
+#include <capabilities2_events/event_client.hpp>
 
 namespace xml_parser
 {
@@ -123,7 +123,7 @@ void add_closing_event(tinyxml2::XMLDocument& document)
  * @brief check the plan for invalid/unsupported control and event tags
  * uses recursive approach to go through the plan
  *
- * @param status StatusClient used for logging and status publishing
+ * @param event EventClient used for logging and event publishing
  * @param element XML Element to be evaluated
  * @param events list containing valid event tags
  * @param providers list containing providers
@@ -132,7 +132,7 @@ void add_closing_event(tinyxml2::XMLDocument& document)
  *
  * @return `true` if element valid and supported and `false` otherwise
  */
-bool check_tags(const std::shared_ptr<StatusClient> status, tinyxml2::XMLElement* element, std::vector<std::string>& events,
+bool check_tags(const std::shared_ptr<EventClient> event, tinyxml2::XMLElement* element, std::vector<std::string>& events,
                 std::vector<std::string>& providers, std::vector<std::string>& control, std::vector<std::string>& rejected)
 {
   const char* name;
@@ -171,34 +171,34 @@ bool check_tags(const std::shared_ptr<StatusClient> status, tinyxml2::XMLElement
     if (!foundInControl)
     {
       std::string msg = "Control tag '" + nametag + "' not available in the valid list";
-      status->error(msg);
+      event->error(msg);
       rejected.push_back(parameter_string);
       return false;
     }
 
     if (hasChildren)
-      returnValue &= xml_parser::check_tags(status, element->FirstChildElement(), events, providers, control, rejected);
+      returnValue &= xml_parser::check_tags(event, element->FirstChildElement(), events, providers, control, rejected);
 
     if (hasSiblings)
-      returnValue &= xml_parser::check_tags(status, element->NextSiblingElement(), events, providers, control, rejected);
+      returnValue &= xml_parser::check_tags(event, element->NextSiblingElement(), events, providers, control, rejected);
   }
   else if (typetag == "Event")
   {
     if (!foundInEvents || !foundInProviders)
     {
       std::string msg = "Event tag name '" + nametag + "' or provider '" + providertag + "' not available in the valid list";
-      status->error(msg);
+      event->error(msg);
       rejected.push_back(parameter_string);
       return false;
     }
 
     if (hasSiblings)
-      returnValue &= xml_parser::check_tags(status, element->NextSiblingElement(), events, providers, control, rejected);
+      returnValue &= xml_parser::check_tags(event, element->NextSiblingElement(), events, providers, control, rejected);
   }
   else
   {
     std::string msg = "XML element is not valid :" + parameter_string;
-    status->error(msg);
+    event->error(msg);
     rejected.push_back(parameter_string);
     return false;
   }
