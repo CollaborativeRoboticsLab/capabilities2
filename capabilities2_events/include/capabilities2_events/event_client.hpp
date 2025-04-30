@@ -59,9 +59,6 @@ public:
    */
   void info(const Event& message)
   {
-    message.header.stamp = node_->now();
-    message.origin_node = node_name_;
-
     event_publisher_->publish(message);
   }
 
@@ -98,9 +95,6 @@ public:
    */
   void error(const Event& message)
   {
-    message.header.stamp = node_->now();
-    message.origin_node = node_name_;
-
     event_publisher_->publish(message);
   }
 

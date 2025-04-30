@@ -12,7 +12,6 @@
 #include <rclcpp_action/rclcpp_action.hpp>
 
 #include <capabilities2_fabric/utils/xml_parser.hpp>
-#include <capabilities2_fabric/utils/fabric_status.hpp>
 
 #include <capabilities2_msgs/action/plan.hpp>
 #include <capabilities2_msgs/srv/set_fabric_plan.hpp>
@@ -31,8 +30,18 @@
 
 class CapabilitiesFabricClient : public rclcpp::Node
 {
+  enum Status
+  {
+    IDLE,
+    RUNNING,
+    CANCELED,
+    ABORTED,
+    FAILED,
+    LAUNCHED,
+    COMPLETED
+  };
+
 public:
-  using Status = capabilities2::fabric_status;
   using Plan = capabilities2_msgs::action::Plan;
   using GoalHandlePlan = rclcpp_action::ClientGoalHandle<Plan>;
 
@@ -43,8 +52,18 @@ public:
 
   CapabilitiesFabricClient(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("Capabilities2_Fabric_Client", options)
   {
-    declare_parameter("plan_file_path", "install/capabilities2_fabric/share/capabilities2_fabric/plans/default.xml");
-    plan_file_path = get_parameter("plan_file_path").as_string();
+    try
+    {
+      // Only call setup if this object is already owned by a shared_ptr
+      if (shared_from_this())
+      {
+        initialize();
+      }
+    }
+    catch (const std::bad_weak_ptr&)
+    {
+      // Not yet safe — probably standalone without make_shared
+    }
   }
 
   /**
@@ -53,6 +72,9 @@ public:
    */
   void initialize()
   {
+    declare_parameter("plan_file_path", "install/capabilities2_fabric/share/capabilities2_fabric/plans/default.xml");
+    plan_file_path = get_parameter("plan_file_path").as_string();
+
     fabric_state = Status::IDLE;
 
     event_ = std::make_shared<EventClient>(shared_from_this(), "capabilities_fabric_client", "/events/capabilities_fabric_client");

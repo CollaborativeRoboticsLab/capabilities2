@@ -29,10 +29,9 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                     std::function<void(Event&)> print) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
-    init_base(node, run_config, print);
+    init_base(node, run_config);
 
     package_name = run_config_.runner.substr(0, run_config_.runner.find("/"));
     launch_name = run_config_.runner.substr(run_config_.runner.find("/") + 1);

@@ -9,7 +9,7 @@
 #include <rclcpp_action/rclcpp_action.hpp>
 
 #include <capabilities2_fabric/utils/xml_parser.hpp>
-#include <capabilities2_fabric/utils/bond_client.hpp>
+#include <capabilities2_utils/bond_client.hpp>
 
 #include <capabilities2_msgs/action/plan.hpp>
 
@@ -58,7 +58,18 @@ public:
 
   CapabilitiesFabric(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("Capabilities2_Fabric", options)
   {
-    control_tag_list = xml_parser::get_control_list();
+    try
+    {
+      // Only call setup if this object is already owned by a shared_ptr
+      if (shared_from_this())
+      {
+        initialize();
+      }
+    }
+    catch (const std::bad_weak_ptr&)
+    {
+      // Not yet safe — probably standalone without make_shared
+    }
   }
 
   /**
@@ -69,6 +80,8 @@ public:
    */
   void initialize()
   {
+    control_tag_list = xml_parser::get_control_list();
+
     event_ = std::make_shared<EventClient>(shared_from_this(), "capabilities_fabric", "/events/capabilities_fabric");
 
     this->planner_server_ = rclcpp_action::create_server<Plan>(
@@ -95,7 +108,6 @@ public:
     check_service(!trig_capability_client_->wait_for_service(std::chrono::seconds(1)), "/capabilities/trigger_capability");
     check_service(!conf_capability_client_->wait_for_service(std::chrono::seconds(1)), "/capabilities/configure_capability");
 
-    feedback_msg = std::make_shared<Plan::Feedback>();
     result_msg = std::make_shared<Plan::Result>();
   }
 
@@ -264,8 +276,8 @@ private:
               interface_list.push_back(semantic_interface);
               is_semantic_list.push_back(true);
 
-              event_->info(std::to_string(completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received " +
-                               semantic_interface + " for " + requested_interface + ". So added " + semantic_interface);
+              event_->info(std::to_string(completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received " + semantic_interface +
+                           " for " + requested_interface + ". So added " + semantic_interface);
             }
           }
           // if no semantic interfaces are availble for a given interface, add the interface instead
@@ -275,7 +287,7 @@ private:
             is_semantic_list.push_back(false);
 
             event_->info(std::to_string(completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received none for " +
-                             requested_interface + ". So added " + requested_interface);
+                         requested_interface + ". So added " + requested_interface);
           }
 
           if (completed_interfaces_ != expected_interfaces_)
@@ -316,59 +328,58 @@ private:
     request_providers->interface = requested_interface;
     request_providers->include_semantic = semantic_flag;
 
-    auto result_providers_future = get_providers_client_->async_send_request(
-        request_providers, [this, is_semantic, requested_interface, interfaces](GetProvidersClient::SharedFuture future) {
-          if (!future.valid())
-          {
-            result_msg->success = false;
-            result_msg->message = "Failed to retrieve providers for interface: " + requested_interface;
-            event_->error(result_msg->message);
-            goal_handle_->abort(result_msg);
-            return;
-          }
+    auto result_providers_future = get_providers_client_->async_send_request(request_providers, [this, is_semantic, requested_interface, interfaces](
+                                                                                                    GetProvidersClient::SharedFuture future) {
+      if (!future.valid())
+      {
+        result_msg->success = false;
+        result_msg->message = "Failed to retrieve providers for interface: " + requested_interface;
+        event_->error(result_msg->message);
+        goal_handle_->abort(result_msg);
+        return;
+      }
 
-          completed_providers_++;
-          auto response = future.get();
+      completed_providers_++;
+      auto response = future.get();
 
-          if (response->default_provider != "")
-          {
-            // add defualt provider to the list
-            providers_list.push_back(response->default_provider);
+      if (response->default_provider != "")
+      {
+        // add defualt provider to the list
+        providers_list.push_back(response->default_provider);
 
-            event_->info(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received " +
-                             response->default_provider + " for " + requested_interface + ". So added " + response->default_provider);
-          }
+        event_->info(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received " + response->default_provider +
+                     " for " + requested_interface + ". So added " + response->default_provider);
+      }
 
-          // add additional providers to the list if available
-          if (response->providers.size() > 0)
-          {
-            for (const auto& provider : response->providers)
-            {
-              providers_list.push_back(provider);
+      // add additional providers to the list if available
+      if (response->providers.size() > 0)
+      {
+        for (const auto& provider : response->providers)
+        {
+          providers_list.push_back(provider);
 
-              event_->info(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received and added " +
-                               provider + " for " + requested_interface);
-            }
-          }
-          else
-          {
-            event_->info(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : No providers for " +
-                             requested_interface);
-          }
+          event_->info(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received and added " + provider +
+                       " for " + requested_interface);
+        }
+      }
+      else
+      {
+        event_->info(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : No providers for " + requested_interface);
+      }
 
-          // Check if all expected calls are completed before calling verify_plan
-          if (completed_providers_ != expected_providers_)
-          {
-            // request providers for the next interface in the interfaces_list
-            getProvider(interfaces, is_semantic);
-          }
-          else
-          {
-            event_->info("All requested interface, semantic interface and provider data recieved");
+      // Check if all expected calls are completed before calling verify_plan
+      if (completed_providers_ != expected_providers_)
+      {
+        // request providers for the next interface in the interfaces_list
+        getProvider(interfaces, is_semantic);
+      }
+      else
+      {
+        event_->info("All requested interface, semantic interface and provider data recieved");
 
-            verify_and_continue();
-          }
-        });
+        verify_and_continue();
+      }
+    });
   }
 
   /**
@@ -436,7 +447,6 @@ private:
    */
   bool verify_plan()
   {
-    auto feedback = std::make_shared<Plan::Feedback>();
     auto result = std::make_shared<Plan::Result>();
 
     // verify whether document got 'plan' tags
@@ -547,7 +557,7 @@ private:
     request_use->bond_id = bond_id_;
 
     event_->info("Starting capability of Runner " + std::to_string(completed_capabilities_) + " : " +
-                         capabilities[completed_capabilities_].source.runner);
+                 capabilities[completed_capabilities_].source.runner);
 
     // send the request
     auto result_future =
@@ -642,7 +652,7 @@ private:
     auto request_configure = std::make_shared<ConfigureCapability::Request>();
 
     event_->info("Configuring capability of Runner " + std::to_string(completed_configurations_) + " named " +
-                         capabilities[completed_configurations_].source.runner);
+                 capabilities[completed_configurations_].source.runner);
 
     if (xml_parser::convert_to_string(capabilities[completed_configurations_].source.parameters, request_configure->source.parameters))
     {
@@ -722,7 +732,7 @@ private:
           auto response = future.get();
 
           event_->info(std::to_string(completed_configurations_) + "/" + std::to_string(expected_configurations_) +
-                           " : Successfully configured capability : " + source_capability);
+                       " : Successfully configured capability : " + source_capability);
 
           // Check if all expected calls are completed before calling verify_plan
           if (completed_configurations_ == expected_configurations_)
@@ -831,9 +841,6 @@ private:
 
   /** Invalid events list */
   std::vector<std::string> rejected_list;
-
-  /** Feedback message for plan action server*/
-  std::shared_ptr<Plan::Feedback> feedback_msg;
 
   /** Result message for plan action server*/
   std::shared_ptr<Plan::Result> result_msg;

@@ -31,10 +31,9 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                     std::function<void(Event&)> print) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
-    init_service(node, run_config, "/capabilities_fabric/set_plan", print);
+    init_service(node, run_config, "/capabilities_fabric/set_plan");
   }
 
 protected:

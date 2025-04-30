@@ -19,6 +19,7 @@ find_package(pluginlib REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_runner REQUIRED)
+find_package(capabilities2_events REQUIRED)
 find_package(tinyxml2_vendor REQUIRED)
 find_package(TinyXML2 REQUIRED)  # provided by tinyxml2 upstream, or tinyxml2_vendor
 find_package(backward_ros REQUIRED)
@@ -60,6 +61,7 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp_components
   capabilities2_msgs
   capabilities2_runner
+  capabilities2_events
   TinyXML2
   SQLite3
   yaml-cpp
@@ -102,6 +104,7 @@ ament_target_dependencies(${PROJECT_NAME}_node
   rclcpp_components
   capabilities2_msgs
   capabilities2_runner
+  capabilities2_events
   TinyXML2
   SQLite3
   yaml-cpp

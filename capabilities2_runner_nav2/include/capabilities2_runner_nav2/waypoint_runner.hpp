@@ -36,10 +36,9 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                     std::function<void(Event&)> runner_publish_func) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
-    init_action(node, run_config, "navigate_to_pose", runner_publish_func);
+    init_action(node, run_config, "navigate_to_pose");
   }
 
 protected:

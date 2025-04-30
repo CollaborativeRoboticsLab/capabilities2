@@ -9,6 +9,7 @@
 #include <pluginlib/class_loader.hpp>
 #include <capabilities2_server/models/run_config.hpp>
 #include <capabilities2_runner/runner_base.hpp>
+#include <capabilities2_events/event_client.hpp>
 
 namespace capabilities2_server
 {
@@ -29,27 +30,16 @@ class RunnerCache
 public:
   RunnerCache() : runner_loader_("capabilities2_runner", "capabilities2_runner::RunnerBase")
   {
-    // on_started = nullptr;
-    // on_stopped = nullptr;
-    // on_failure = nullptr;
-    // on_success = nullptr;
   }
 
   /**
-   * @brief connect with ROS node logging interface
+   * @brief connect with event interface
    *
-   * @param print function to publish INFO messages to the ROS environment
-   * @param runner_print function to be passed into runners for publishing INFO messages to the ROS environment
-   * @param logging pointer to the ROS node logging interface for WARN and ERROR messages
+   * @param event_client pointer to the event client
    */
-  void connect(std::function<void(const std::string&, bool, bool)> print,
-               std::function<void(capabilities2_msgs::msg::CapabilityEvent&)> runner_print,
-               rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging)
+  void connect(std::shared_ptr<EventClient> event_client)
   {
-    // set logger
-    logging_ = logging;
-    print_ = print;
-    runner_print_ = runner_print;
+    event_ = event_client;
   }
 
   /**
@@ -91,7 +81,7 @@ public:
     }
 
     // start the runner
-    runner_cache_[capability]->start(node, run_config.to_runner_opts(), runner_print_);
+    runner_cache_[capability]->start(node, run_config.to_runner_opts());
   }
 
   /**
@@ -111,7 +101,7 @@ public:
     }
     else
     {
-      print_("Runner not found for capability: " + capability, true, true);
+      event_->error("Runner not found for capability: " + capability);
       throw capabilities2_runner::runner_exception("capability runner not found: " + capability);
     }
   }
@@ -121,40 +111,21 @@ public:
    *
    *
    * @param capability capability from where the events originate
-   * @param on_started_capability capability triggered by on_start event
-   * @param on_started_parameters parameters related to capability triggered by on_start event
-   * @param on_stopped_capability capability triggered by on_stop event
-   * @param on_stopped_parameters parameters related to capability triggered by on_stop event
-   * @param on_success_capability capability triggered by on_success event
-   * @param on_success_parameters parameters related to capability triggered by on_success event
-   * @param on_failure_capability capability triggered by on_failure event
-   * @param on_failure_parameters parameters related to capability triggered by on_failure event
+   * @param on_started on_start event with capability and parameters
+   * @param on_failure on_failure event with capability and parameters
+   * @param on_success on_success event with capability and parameters
+   * @param on_stopped on_stop event with capability and parameters
    */
-  void set_runner_triggers(const std::string& capability, const std::string& on_started_capability,
-                           const std::string& on_started_parameters, const std::string& on_failure_capability,
-                           const std::string& on_failure_parameters, const std::string& on_success_capability,
-                           const std::string& on_success_parameters, const std::string& on_stopped_capability,
-                           const std::string& on_stopped_parameters)
+  void set_runner_triggers(const std::string& capability, capabilities2::event_opts& event_options)
   {
-    capabilities2_runner::event_opts event_options;
-
-    event_options.on_started = on_started_capability;
-    event_options.on_failure = on_failure_capability;
-    event_options.on_success = on_success_capability;
-    event_options.on_stopped = on_stopped_capability;
-
-    event_options.on_started_param = on_started_parameters;
-    event_options.on_failure_param = on_failure_parameters;
-    event_options.on_success_param = on_success_parameters;
-    event_options.on_stopped_param = on_stopped_parameters;
-
     int event_count = runner_cache_[capability]->attach_events(
         event_options, std::bind(&capabilities2_server::RunnerCache::trigger_runner, this, std::placeholders::_1,
                                  std::placeholders::_2));
 
-    print_("Configured triggers for capability " + capability + ": \n\tStarted: " + on_started_capability +
-            " \n\tFailure: " + on_failure_capability + " \n\tSuccess: " + on_success_capability +
-            "\n\tStopped: " + on_stopped_capability + "\n", true, false);
+    event_->info(
+        "Configured triggers for capability " + capability + ": \n\tStarted: " + event_options.on_started.interface +
+        " \n\tFailure: " + event_options.on_failure.interface + " \n\tSuccess: " + event_options.on_success.interface +
+        "\n\tStopped: " + event_options.on_stopped.interface);
   }
 
   /**
@@ -267,14 +238,8 @@ private:
   // runner plugin loader
   pluginlib::ClassLoader<capabilities2_runner::RunnerBase> runner_loader_;
 
-  // logger
-  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_;
-
-  // event function for external event publishing
-  std::function<void(const std::string&, bool, bool)> print_;
-
-  // event function for internal runner event publishing
-  std::function<void(capabilities2_msgs::msg::CapabilityEvent&)> runner_print_;
+  // for events publishing
+  std::shared_ptr<EventClient> event_;
 
   // event string
   std::string event;
