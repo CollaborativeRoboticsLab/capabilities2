@@ -17,7 +17,7 @@ def generate_launch_description():
     capabilities2 = Node(
         package='capabilities2_events',
         executable='capabilities2_events_node',
-        name='capabilities_events_listener',
+        name='listener',
         output='screen',
         arguments=['--ros-args', '--log-level', 'info']
     )

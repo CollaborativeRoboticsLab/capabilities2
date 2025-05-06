@@ -82,7 +82,7 @@ public:
   {
     control_tag_list = xml_parser::get_control_list();
 
-    event_ = std::make_shared<EventClient>(shared_from_this(), "capabilities_fabric", "/events");
+    event_ = std::make_shared<EventClient>(shared_from_this(), "fabric", "/events");
 
     this->planner_server_ = rclcpp_action::create_server<Plan>(
         this, "/capabilities_fabric", std::bind(&CapabilitiesFabric::handle_goal, this, std::placeholders::_1, std::placeholders::_2),

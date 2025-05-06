@@ -84,7 +84,7 @@ public:
   void initialize()
   {
     // pubs
-    event_ = std::make_shared<EventClient>(shared_from_this(), "capabilities_server", "/events");
+    event_ = std::make_shared<EventClient>(shared_from_this(), "server", "/events");
 
     // params interface
     // loop rate
@@ -442,7 +442,7 @@ public:
 private:
   void load_capabilities(const std::string& package_path)
   {
-    // event_->info("Loading capabilities from package path: " + package_path);
+    event_->debug("Loading capabilities from package path: " + package_path);
 
     // check if path exists
     if (!std::filesystem::exists(package_path))
@@ -474,7 +474,7 @@ private:
     // load capabilities from packages in /opt/ros/*/share
     for (const auto& package : packages_root)
     {
-      // event_->info("Loading capabilities from package: " + package);
+      event_->debug("Loading capabilities from package: " + package);
 
       // package.xml exports
       std::string package_xml = package_path + "/" + package + "/package.xml";
@@ -557,7 +557,7 @@ private:
     // load capabilities from packages in workspace install folder
     for (const auto& package : packages_install)
     {
-      // event_->info("Loading capabilities from package: " + package);
+      event_->debug("Loading capabilities from package: " + package);
 
       // package.xml exports
       std::string package_xml = package_path + "/" + package + "/share/" + package + "/package.xml";

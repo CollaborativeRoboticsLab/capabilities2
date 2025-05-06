@@ -131,7 +131,7 @@ public:
     execute_id = -1;
     thread_id = 0;
 
-    event_ = std::make_shared<EventClient>(node_, "capability_runners", "/events");
+    event_ = std::make_shared<EventClient>(node_, "runner", "/events");
   }
 
   /**
@@ -459,10 +459,8 @@ protected:
     message.target.capability = target_capability;
     message.target.provider = target_provider;
     message.thread_id = thread_id;
-    message.error = false;
-    message.text = text;
-    message.is_failed_element = false;
-    message.element = "";
+    message.type = Event::INFO;
+    message.content = text;
     message.pid = -1;
 
     switch (event)
@@ -501,10 +499,8 @@ protected:
     message.target.capability = "";
     message.target.provider = "";
     message.thread_id = thread_id;
-    message.error = true;
-    message.text = text;
-    message.is_failed_element = false;
-    message.element = "";
+    message.type = Event::ERROR;
+    message.content = text;
     message.pid = -1;
     message.event = Event::UNDEFINED;
 
@@ -522,14 +518,12 @@ protected:
     message.target.capability = "";
     message.target.provider = "";
     message.thread_id = thread_id;
-    message.error = true;
-    message.text = text;
-    message.is_failed_element = true;
-    message.element = element;
+    message.type = Event::ERROR_ELEMENT;
+    message.content = text + " : " + element;
     message.pid = -1;
     message.event = Event::UNDEFINED;
 
-    event_->error(message);
+    event_->error_element(message);
   }
 
   /**

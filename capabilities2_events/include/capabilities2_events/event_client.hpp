@@ -43,10 +43,8 @@ public:
     message.target.provider = "";
     message.thread_id = thread_id;
     message.event = Event::UNDEFINED;
-    message.error = false;
-    message.text = text;
-    message.is_failed_element = false;
-    message.element = "";
+    message.type = Event::INFO;
+    message.content = text;
     message.pid = -1;
 
     event_publisher_->publish(message);
@@ -58,6 +56,41 @@ public:
    * @param message Message to be published
    */
   void info(const Event& message)
+  {
+    event_publisher_->publish(message);
+  }
+
+  /**
+   * @brief publishes status information to the given topic as debug
+   *
+   * @param text Text to be published
+   */
+
+  void debug(const std::string& text, int thread_id = -1)
+  {
+    auto message = Event();
+
+    message.header.stamp = node_->now();
+    message.origin_node = node_name_;
+    message.source.capability = "";
+    message.source.provider = "";
+    message.target.capability = "";
+    message.target.provider = "";
+    message.thread_id = thread_id;
+    message.event = Event::UNDEFINED;
+    message.type = Event::DEBUG;
+    message.content = text;
+    message.pid = -1;
+
+    event_publisher_->publish(message);
+  }
+
+  /**
+   * @brief publishes status information to the given topic as debug
+   *
+   * @param message Message to be published
+   */
+  void debug(const Event& message)
   {
     event_publisher_->publish(message);
   }
@@ -79,10 +112,8 @@ public:
     message.target.provider = "";
     message.thread_id = thread_id;
     message.event = Event::UNDEFINED;
-    message.error = true;
-    message.text = text;
-    message.is_failed_element = false;
-    message.element = "";
+    message.type = Event::ERROR;
+    message.content = text;
     message.pid = -1;
 
     event_publisher_->publish(message);
@@ -115,12 +146,21 @@ public:
     message.target.provider = "";
     message.thread_id = thread_id;
     message.event = Event::UNDEFINED;
-    message.error = true;
-    message.text = "Failed element";
-    message.is_failed_element = true;
-    message.element = element;
+    message.type = Event::ERROR_ELEMENT;
+    message.content = element;
     message.pid = -1;
 
+    event_publisher_->publish(message);
+  }
+
+  /**
+   * @brief publishes status information to the given topic as error with 
+   * element infromation included
+   *
+   * @param message Message to be published
+   */
+  void error_element(const Event& message)
+  {
     event_publisher_->publish(message);
   }
 

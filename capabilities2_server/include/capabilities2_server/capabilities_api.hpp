@@ -612,7 +612,7 @@ public:
   void on_bond_established(const std::string& bond_id)
   {
     // log bond established event
-    event_->error("bond established with id: " + bond_id);
+    event_->info("bond established with id: " + bond_id);
   }
 
   void on_bond_broken(const std::string& bond_id)

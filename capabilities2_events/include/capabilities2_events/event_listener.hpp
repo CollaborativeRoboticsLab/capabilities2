@@ -13,7 +13,8 @@ public:
     // Create a subscription to the "topic" topic
     RCLCPP_INFO(this->get_logger(), "Creating subscription to topic");
 
-    subscription_ = this->create_subscription<Event>("/events", 10, std::bind(&CapabilitiesEventListener::topic_callback, this, std::placeholders::_1));
+    subscription_ =
+        this->create_subscription<Event>("/events", 10, std::bind(&CapabilitiesEventListener::topic_callback, this, std::placeholders::_1));
   }
 
 private:
@@ -21,40 +22,44 @@ private:
   {
     std::string text;
 
-    if (msg.is_failed_element)
+    if (msg.type == Event::ERROR_ELEMENT)
     {
-      text = "[" + msg.origin_node + "]" + "[" + msg.source.capability + "/" + std::to_string(msg.thread_id) + "] " + msg.text + " : " + msg.element;
+      text = "[" + msg.origin_node + "]" + "[" + msg.source.capability + "/" + std::to_string(msg.thread_id) + "] " + msg.content;
     }
     else if (msg.thread_id >= 0 and msg.target.capability == "" and msg.source.capability == "")
     {
-      text = "[" + msg.origin_node + "]" + "[" + std::to_string(msg.thread_id) + "] " + msg.text;
+      text = "[" + msg.origin_node + "]" + "[" + std::to_string(msg.thread_id) + "] " + msg.content;
     }
     else if (msg.thread_id < 0 and msg.target.capability == "" and msg.source.capability == "")
     {
-      text = "[" + msg.origin_node + "] " + msg.text;
+      text = "[" + msg.origin_node + "] " + msg.content;
     }
     else if (msg.thread_id >= 0 and msg.target.capability == "" and msg.source.capability != "")
     {
-      text = "[" + msg.origin_node + "]" + "[" + msg.source.capability + "/" + std::to_string(msg.thread_id) + "] " + msg.text;
+      text = "[" + msg.origin_node + "]" + "[" + msg.source.capability + "/" + std::to_string(msg.thread_id) + "] " + msg.content;
     }
     else if (msg.thread_id < 0 and msg.target.capability == "" and msg.source.capability != "")
     {
-      text = "[" + msg.origin_node + "]" + "[" + msg.source.capability + "] " + msg.text;
+      text = "[" + msg.origin_node + "]" + "[" + msg.source.capability + "] " + msg.content;
     }
     else if (msg.thread_id >= 0 and msg.target.capability != "")
     {
       text = "[" + msg.origin_node + "]" + "[" + msg.source.capability + "/" + std::to_string(msg.thread_id) + "] triggering " +
-             msg.target.capability + " " + msg.text;
+             msg.target.capability + " " + msg.content;
     }
     else if (msg.thread_id < 0 and msg.target.capability != "")
     {
-      text = "[" + msg.origin_node + "]" + "[" + msg.source.capability + "] triggering " + msg.target.capability + " " + msg.text;
+      text = "[" + msg.origin_node + "]" + "[" + msg.source.capability + "] triggering " + msg.target.capability + " " + msg.content;
     }
 
-    if (msg.error)
+    if (msg.type == Event::ERROR)
       RCLCPP_ERROR(get_logger(), text.c_str());
-    else
+    else if (msg.type == Event::INFO)
       RCLCPP_INFO(get_logger(), text.c_str());
+    else if (msg.type == Event::DEBUG)
+      RCLCPP_DEBUG(get_logger(), text.c_str());
+    else
+      RCLCPP_ERROR(get_logger(), text.c_str());
   }
 
   rclcpp::Subscription<Event>::SharedPtr subscription_;

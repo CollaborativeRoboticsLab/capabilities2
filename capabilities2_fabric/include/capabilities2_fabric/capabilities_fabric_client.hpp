@@ -77,7 +77,7 @@ public:
 
     fabric_state = Status::IDLE;
 
-    event_ = std::make_shared<EventClient>(shared_from_this(), "capabilities_fabric_client", "/events");
+    event_ = std::make_shared<EventClient>(shared_from_this(), "client", "/events");
 
     status_server_ =
         this->create_service<GetFabricStatus>("/capabilities_fabric/get_status", std::bind(&CapabilitiesFabricClient::getStatusCallback, this,
