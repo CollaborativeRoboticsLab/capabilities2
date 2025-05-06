@@ -54,7 +54,7 @@ install(TARGETS ${PROJECT_NAME}
 ############################################################################
 
 add_library(${PROJECT_NAME}_comp SHARED
-  src/capabilities_fabric_comp.cpp
+  src/capabilities_fabric_component.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME}_comp
@@ -108,7 +108,7 @@ install(TARGETS fabric_client
 ############################################################################
 
 add_library(fabric_client_comp SHARED
-  src/capabilities_fabric_client_comp.cpp
+  src/capabilities_fabric_client_component.cpp
 )
 
 ament_target_dependencies(fabric_client_comp

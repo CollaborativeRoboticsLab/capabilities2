@@ -131,7 +131,7 @@ public:
     execute_id = -1;
     thread_id = 0;
 
-    event_ = std::make_shared<EventClient>(node_, "capability_runners", "/events/capability_runners");
+    event_ = std::make_shared<EventClient>(node_, "capability_runners", "/events");
   }
 
   /**

@@ -31,7 +31,7 @@ public:
    * @param text Text to be published
    */
 
-  void info(const std::string& text)
+  void info(const std::string& text, int thread_id = -1)
   {
     auto message = Event();
 
@@ -41,7 +41,7 @@ public:
     message.source.provider = "";
     message.target.capability = "";
     message.target.provider = "";
-    message.thread_id = 0;
+    message.thread_id = thread_id;
     message.event = Event::UNDEFINED;
     message.error = false;
     message.text = text;
@@ -67,7 +67,7 @@ public:
    *
    * @param text Text to be published
    */
-  void error(const std::string& text)
+  void error(const std::string& text, int thread_id = -1)
   {
     auto message = Event();
 
@@ -77,7 +77,7 @@ public:
     message.source.provider = "";
     message.target.capability = "";
     message.target.provider = "";
-    message.thread_id = 0;
+    message.thread_id = thread_id;
     message.event = Event::UNDEFINED;
     message.error = true;
     message.text = text;
@@ -103,7 +103,7 @@ public:
    *
    * @param element element information to be published
    */
-  void error_element(const std::string& element)
+  void error_element(const std::string& element, int thread_id = -1)
   {
     auto message = Event();
 
@@ -113,7 +113,7 @@ public:
     message.source.provider = "";
     message.target.capability = "";
     message.target.provider = "";
-    message.thread_id = 0;
+    message.thread_id = thread_id;
     message.event = Event::UNDEFINED;
     message.error = true;
     message.text = "Failed element";

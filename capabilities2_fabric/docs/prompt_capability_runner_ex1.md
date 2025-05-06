@@ -36,3 +36,10 @@ ros2 launch capabilities2_server server.launch.py
 source install/setup.bash
 ros2 launch capabilities2_fabric fabric.launch.py
 ```
+
+### Start the Capabilities2 Event Listener 
+
+```bash
+source install/setup.bash
+ros2 launch capabilities2_events listener.launch.py
+```
