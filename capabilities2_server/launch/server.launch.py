@@ -5,6 +5,8 @@ capabilities2_server launch file
 import os
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 
 
@@ -16,6 +18,7 @@ def generate_launch_description():
     """
     # load config file
     server_config = os.path.join(get_package_share_directory('capabilities2_server'), 'config', 'capabilities.yaml')
+    foxglove_path = os.path.join(get_package_share_directory('capabilities2_events'), 'launch', 'foxglove.launch.py')
 
     # create bridge composition
     capabilities2 = Node(
@@ -27,7 +30,12 @@ def generate_launch_description():
         arguments=['--ros-args', '--log-level', 'info']
     )
 
+    foxglove_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(foxglove_path),
+    )
+
     # return
     return LaunchDescription([
-        capabilities2
+        capabilities2,
+        foxglove_launch
     ])
