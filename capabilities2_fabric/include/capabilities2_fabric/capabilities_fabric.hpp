@@ -391,8 +391,41 @@ private:
   {
     event_->info("Verifying the plan");
 
+    bool verification_success = true;
+
+    auto result = std::make_shared<Plan::Result>();
+
+    // extract the components within the 'plan' tags
+    bool extraction_success = false;
+    tinyxml2::XMLElement* plan = xml_parser::get_plan(document, extraction_success);
+
+    if (!extraction_success)
+    {
+      result_msg->success = false;
+      result_msg->message = "Execution plan is not compatible. Please recheck and update";
+      event_->error(result_msg->message);
+      goal_handle_->abort(result_msg);
+      verification_success = false;
+    }
+
+    event_->info("Plan extraction complete");
+
+    // verify whether the plan is valid by checking the tags
+    std::string error_message;
+
+    if (!xml_parser::check_tags(plan, interface_list, providers_list, control_tag_list, rejected_list, error_message))
+    {
+      result_msg->success = false;
+      result_msg->message = "Execution plan is faulty. Please recheck and update";
+      event_->error(result_msg->message);
+      goal_handle_->abort(result_msg);
+      verification_success = false;
+    }
+
+    event_->info("Checking tags successful");
+
     // verify the plan
-    if (!verify_plan())
+    if (!verification_success)
     {
       event_->info("Plan verification failed");
 
@@ -407,8 +440,8 @@ private:
         {
           result->failed_elements.push_back(rejected_element);
         }
-        goal_handle_->abort(result);
 
+        goal_handle_->abort(result);
         event_->info(result->message);
       }
       else
@@ -424,12 +457,7 @@ private:
       event_->error("Server Execution Cancelled");
     }
 
-    event_->info("Plan verification successful");
-
-    // extract the plan from the XMLDocument
-    tinyxml2::XMLElement* plan = xml_parser::get_plan(document);
-
-    event_->info("Plan conversion successful");
+    event_->info("Plan verification successful. Proceeding with connections extraction");
 
     // Extract the connections from the plan
     xml_parser::extract_connections(plan, connection_map);
@@ -438,46 +466,6 @@ private:
 
     // estasblish the bond with the server
     request_bond();
-  }
-
-  /**
-   * @brief verify the plan using received interfaces
-   *
-   * @return `true` if interface retreival is successful,`false` otherwise
-   */
-  bool verify_plan()
-  {
-    auto result = std::make_shared<Plan::Result>();
-
-    // verify whether document got 'plan' tags
-    if (!xml_parser::check_plan_tag(document))
-    {
-      result_msg->success = false;
-      result_msg->message = "Execution plan is not compatible. Please recheck and update";
-      event_->error(result_msg->message);
-      goal_handle_->abort(result_msg);
-      return false;
-    }
-
-    event_->info("'Plan' tag checking successful");
-
-    // extract the components within the 'plan' tags
-    tinyxml2::XMLElement* plan = xml_parser::get_plan(document);
-
-    event_->info("Plan extraction complete");
-
-    // verify whether the plan is valid
-    if (!xml_parser::check_tags(event_, plan, interface_list, providers_list, control_tag_list, rejected_list))
-    {
-      result_msg->success = false;
-      result_msg->message = "Execution plan is faulty. Please recheck and update";
-      event_->error(result_msg->message);
-      goal_handle_->abort(result_msg);
-      return false;
-    }
-
-    event_->info("Checking tags successful");
-    return true;
   }
 
   /**

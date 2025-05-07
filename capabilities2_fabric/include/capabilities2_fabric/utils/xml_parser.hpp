@@ -9,15 +9,27 @@
 namespace xml_parser
 {
 /**
- * @brief extract elements related plan
+ * @brief extract elements related plan and return the first child element
  *
  * @param document XML document to extract plan from
+ * @param success boolean to indicate if the plan was found
  *
  * @return plan in the form of tinyxml2::XMLElement*
  */
-tinyxml2::XMLElement* get_plan(tinyxml2::XMLDocument& document)
+tinyxml2::XMLElement* get_plan(tinyxml2::XMLDocument& document, bool& success)
 {
-  return document.FirstChildElement("Plan")->FirstChildElement();
+  std::string plan_tag(document.FirstChildElement()->Name());
+
+  if (plan_tag == "Plan")
+  {
+    success = true;
+    return document.FirstChildElement("Plan")->FirstChildElement();
+  }
+  else
+  {
+    success = false;
+    return nullptr;
+  }
 }
 
 /**
@@ -31,23 +43,6 @@ tinyxml2::XMLElement* get_plan(tinyxml2::XMLDocument& document)
 bool search(std::vector<std::string> list, std::string value)
 {
   return (std::find(list.begin(), list.end(), value) != list.end());
-}
-
-/**
- * @brief check if the xml document has valid plan tags
- *
- * @param document XML document in question
- *
- * @return `true` if its valid and `false` otherwise
- */
-bool check_plan_tag(tinyxml2::XMLDocument& document)
-{
-  std::string plan_tag(document.FirstChildElement()->Name());
-
-  if (plan_tag == "Plan")
-    return true;
-  else
-    return false;
 }
 
 /**
@@ -132,8 +127,8 @@ void add_closing_event(tinyxml2::XMLDocument& document)
  *
  * @return `true` if element valid and supported and `false` otherwise
  */
-bool check_tags(const std::shared_ptr<EventClient> event, tinyxml2::XMLElement* element, std::vector<std::string>& events,
-                std::vector<std::string>& providers, std::vector<std::string>& control, std::vector<std::string>& rejected)
+bool check_tags(tinyxml2::XMLElement* element, std::vector<std::string>& events, std::vector<std::string>& providers,
+                std::vector<std::string>& control, std::vector<std::string>& rejected, std::string& error)
 {
   const char* name;
   const char* provider;
@@ -146,7 +141,6 @@ bool check_tags(const std::shared_ptr<EventClient> event, tinyxml2::XMLElement* 
 
   std::string nametag;
   std::string providertag;
-
   std::string typetag(element->Name());
 
   if (name)
@@ -170,35 +164,32 @@ bool check_tags(const std::shared_ptr<EventClient> event, tinyxml2::XMLElement* 
   {
     if (!foundInControl)
     {
-      std::string msg = "Control tag '" + nametag + "' not available in the valid list";
-      event->error(msg);
+      error = "Control tag '" + nametag + "' not available in the valid list";
       rejected.push_back(parameter_string);
       return false;
     }
 
     if (hasChildren)
-      returnValue &= xml_parser::check_tags(event, element->FirstChildElement(), events, providers, control, rejected);
+      returnValue &= xml_parser::check_tags(element->FirstChildElement(), events, providers, control, rejected, error);
 
     if (hasSiblings)
-      returnValue &= xml_parser::check_tags(event, element->NextSiblingElement(), events, providers, control, rejected);
+      returnValue &= xml_parser::check_tags(element->NextSiblingElement(), events, providers, control, rejected, error);
   }
   else if (typetag == "Event")
   {
     if (!foundInEvents || !foundInProviders)
     {
-      std::string msg = "Event tag name '" + nametag + "' or provider '" + providertag + "' not available in the valid list";
-      event->error(msg);
+      error = "Event tag name '" + nametag + "' or provider '" + providertag + "' not available in the valid list";
       rejected.push_back(parameter_string);
       return false;
     }
 
     if (hasSiblings)
-      returnValue &= xml_parser::check_tags(event, element->NextSiblingElement(), events, providers, control, rejected);
+      returnValue &= xml_parser::check_tags(element->NextSiblingElement(), events, providers, control, rejected, error);
   }
   else
   {
-    std::string msg = "XML element is not valid :" + parameter_string;
-    event->error(msg);
+    error = "XML element is not valid :" + parameter_string;
     rejected.push_back(parameter_string);
     return false;
   }
@@ -278,7 +269,7 @@ int extract_connections(tinyxml2::XMLElement* element, std::map<int, capabilitie
 
     if (hasSiblings)
     {
-      predecessor_id = xml_parser::extract_connections(element->NextSiblingElement(), connections, predecessor_id+1, connection_type);
+      predecessor_id = xml_parser::extract_connections(element->NextSiblingElement(), connections, predecessor_id + 1, connection_type);
     }
 
     return predecessor_id;
