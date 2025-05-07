@@ -453,7 +453,7 @@ protected:
     auto message = Event();
 
     message.header.stamp = node_->now();
-    message.origin_node = "capability_runners";
+    message.origin_node = "runners";
     message.source.capability = run_config_.interface;
     message.source.provider = run_config_.provider;
     message.target.capability = target_capability;
@@ -493,7 +493,7 @@ protected:
     auto message = Event();
 
     message.header.stamp = node_->now();
-    message.origin_node = "capability_runners";
+    message.origin_node = "runners";
     message.source.capability = run_config_.interface;
     message.source.provider = run_config_.provider;
     message.target.capability = "";
@@ -512,7 +512,7 @@ protected:
     auto message = Event();
 
     message.header.stamp = node_->now();
-    message.origin_node = "capability_runners";
+    message.origin_node = "runners";
     message.source.capability = run_config_.interface;
     message.source.provider = run_config_.provider;
     message.target.capability = "";
