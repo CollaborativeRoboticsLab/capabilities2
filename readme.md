@@ -9,7 +9,10 @@
 A reimplementation of the [capabilities](https://github.com/osrf/capabilities) package. This package is implemented using C++17 and extends the capabilities package features. 
 - [capabilities2_server](./capabilities2_server/readme.md) package contains the core of the system.
 - [capabilities2_runner](./capabilities2_server/readme.md) package contains base and template classes for capability implementations.
-- [capabilities2_fabric](./capabilities2_fabric/readme.md) package implements a control framework that utlizes capabilities2 system.
+
+
+## Extentions
+- [Fabric](https://github.com/CollaborativeRoboticsLab/fabric) package implements a behaviour planning framework that utlizes capabilities2 system.
 
 
 ## System structure
@@ -42,15 +45,6 @@ Runners can be created using the runner API parent classes [here](./capabilities
 ```bash
 source install/setup.bash
 ros2 launch capabilities2_server server.launch.py
-```
-
-### Starting the Capabilities2 Fabric
-
-Start the capabilities2 server first. Then run the following on a new terminal
-
-```bash
-source install/setup.bash
-ros2 launch capabilities2_fabric fabric.launch.py
 ```
 
 ## Additional Information
