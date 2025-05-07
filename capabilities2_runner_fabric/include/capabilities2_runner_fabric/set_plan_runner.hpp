@@ -7,7 +7,7 @@
 #include <rclcpp_action/rclcpp_action.hpp>
 
 #include <capabilities2_runner/service_runner.hpp>
-#include <capabilities2_msgs/srv/set_fabric_plan.hpp>
+#include <fabric_msgs/srv/set_fabric_plan.hpp>
 
 namespace capabilities2_runner
 {
@@ -18,7 +18,7 @@ namespace capabilities2_runner
  * Class to run capabilities2 executor action based capability
  *
  */
-class FabricSetPlanRunner : public ServiceRunner<capabilities2_msgs::srv::SetFabricPlan>
+class FabricSetPlanRunner : public ServiceRunner<fabric_msgs::srv::SetFabricPlan>
 {
 public:
   FabricSetPlanRunner() : ServiceRunner()
@@ -33,7 +33,7 @@ public:
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
-    init_service(node, run_config, "/capabilities_fabric/set_plan");
+    init_service(node, run_config, "/fabric/set_plan");
   }
 
 protected:
@@ -42,11 +42,11 @@ protected:
    * @param parameters XMLElement that contains parameters in the format
    * @return ActionT::Goal the generated goal
    */
-  virtual capabilities2_msgs::srv::SetFabricPlan::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
+  virtual fabric_msgs::srv::SetFabricPlan::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
   {
     tinyxml2::XMLElement* planElement = parameters->FirstChildElement("ReceievdPlan");
 
-    capabilities2_msgs::srv::SetFabricPlan::Request request;
+    fabric_msgs::srv::SetFabricPlan::Request request;
 
     // Check if the element was found and has text content
     if (planElement && planElement->GetText())

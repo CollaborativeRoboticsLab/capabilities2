@@ -2,20 +2,34 @@
 #include <string>
 #include <bondcpp/bond.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <capabilities2_events/event_client.hpp>
 
 class BondClient
 {
 public:
-  BondClient(rclcpp::Node::SharedPtr node, const std::string& bond_id, const std::string& bonds_topic = "/capabilities/bond")
+  /**
+   * @brief Construct a new Bond Client object
+   * 
+   * @param node pointer to the node
+   * @param event_client pointer to the event client
+   * @param bond_id Bond id string
+   * @param bonds_topic Bond topic to be published
+   */
+  BondClient(rclcpp::Node::SharedPtr node, std::shared_ptr<EventClient> event_client, const std::string &bond_id, const std::string &bonds_topic = "/capabilities/bond")
   {
     topic_ = bonds_topic;
     bond_id_ = bond_id;
     node_ = node;
+    event_ = event_client;
   }
 
+  /**
+   * @brief start the bond
+   * 
+   */
   void start()
   {
-    RCLCPP_INFO(node_->get_logger(), "[BondClient] creating bond to capabilities server");
+    event_->info("[BondClient] creating bond to capabilities server");
 
     bond_ = std::make_unique<bond::Bond>(topic_, bond_id_, node_, std::bind(&BondClient::on_broken, this), std::bind(&BondClient::on_formed, this));
 
@@ -24,9 +38,13 @@ public:
     bond_->start();
   }
 
+  /**
+   * @brief stop the bond
+   * 
+   */
   void stop()
   {
-    RCLCPP_INFO(node_->get_logger(), "[BondClient] destroying bond to capabilities server");
+    event_->info("[BondClient] destroying bond to capabilities server");
 
     if (bond_)
     {
@@ -40,16 +58,24 @@ public:
   }
 
 private:
+  /**
+   * @brief callback function for bond formed event
+   * 
+   */
   void on_formed()
   {
     // log bond established event
-    RCLCPP_INFO(node_->get_logger(), "[BondClient] bond with capabilities server formed with id: %s", bond_id_.c_str());
+    event_->info("[BondClient] bond with capabilities server formed with id: " + bond_id_);
   }
 
+  /**
+   * @brief callback function for bond broken event
+   * 
+   */
   void on_broken()
   {
     // log bond established event
-    RCLCPP_INFO(node_->get_logger(), "[BondClient] bond with capabilities server broken with id: %s", bond_id_.c_str());
+    event_->info("[BondClient] bond with capabilities server broken with id: " + bond_id_);
   }
 
   /** Ros node pointer */
@@ -63,4 +89,7 @@ private:
 
   /** Heart beat bond with capabilities server */
   std::shared_ptr<bond::Bond> bond_;
+
+  /** Event client for publishing events */
+  std::shared_ptr<EventClient> event_;
 };

@@ -1,5 +1,0 @@
-std_msgs/Header header
-string plan
----
-std_msgs/Header header
-bool success
