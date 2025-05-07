@@ -7,8 +7,9 @@
 #include <thread>
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
-#include <capabilities2_runner/utils/capability_event_t.hpp>
 #include <capabilities2_msgs/msg/capability_event.hpp>
+#include <capabilities2_events/event_types.hpp>
+#include <capabilities2_events/event_client.hpp>
 
 namespace capabilities2_runner
 {
@@ -61,37 +62,11 @@ struct runner_opts
   std::string pid;
 };
 
-/**
- * @brief event options
- *
- * keeps track of events that are related to runner instances at various points of the
- * plan
- * @param on_started name of the capability to execute on start
- * @param on_success name of the capability to execute on success
- * @param on_failure name of the capability to execute on failure
- * @param on_stopped name of the capability to execute on stop
- * @param on_started_param parameters for the capability to execute on start
- * @param on_success_param parameters for the capability to execute on success
- * @param on_failure_param parameters for the capability to execute on failure
- * @param on_stopped_param parameters for the capability to execute on stop
- */
-struct event_opts
-{
-  std::string on_started;
-  std::string on_success;
-  std::string on_failure;
-  std::string on_stopped;
-  std::string on_started_param;
-  std::string on_success_param;
-  std::string on_failure_param;
-  std::string on_stopped_param;
-};
-
 class RunnerBase
 {
 public:
   using Event = capabilities2_msgs::msg::CapabilityEvent;
-  using EventType = capabilities2_runner::capability_event;
+  using EventType = capabilities2::event_t;
 
   RunnerBase() : run_config_()
   {
@@ -110,8 +85,7 @@ public:
    * @param run_config runner configuration loaded from the yaml file
    * @param print_
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                     std::function<void(Event&)> print) = 0;
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) = 0;
 
   /**
    * @brief stop the runner
@@ -147,17 +121,17 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    */
-  void init_base(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                 std::function<void(Event&)> print)
+  void init_base(rclcpp::Node::SharedPtr node, const runner_opts& run_config)
   {
     // store node pointer and opts
     node_ = node;
     run_config_ = run_config;
-    print_ = print;
 
     insert_id = 0;
     execute_id = -1;
     thread_id = 0;
+
+    event_ = std::make_shared<EventClient>(node_, "runner", "/events");
   }
 
   /**
@@ -167,7 +141,7 @@ public:
    *
    * @return number of attached events
    */
-  int attach_events(capabilities2_runner::event_opts& event_option,
+  int attach_events(capabilities2::event_opts& event_option,
                     std::function<void(const std::string&, const std::string&)> triggerFunction)
   {
     info_("accepted event options with ID : " + std::to_string(insert_id));
@@ -473,19 +447,21 @@ protected:
   }
 
 protected:
-  void info_(const std::string text, int thread_id = -1, const std::string& tcapability = "",
-             EventType event = EventType::IDLE)
+  void info_(const std::string text, int thread_id = -1, EventType event = EventType::IDLE,
+             const std::string& target_capability = "", const std::string& target_provider = "")
   {
     auto message = Event();
 
-    message.header.stamp = rclcpp::Clock().now();
+    message.header.stamp = node_->now();
+    message.origin_node = "capability_runners";
     message.source.capability = run_config_.interface;
     message.source.provider = run_config_.provider;
-    message.target.capability = tcapability;
+    message.target.capability = target_capability;
+    message.target.provider = target_provider;
     message.thread_id = thread_id;
-    message.text = text;
-    message.error = false;
-    message.server_ready = true;
+    message.type = Event::INFO;
+    message.content = text;
+    message.pid = -1;
 
     switch (event)
     {
@@ -508,43 +484,46 @@ protected:
         message.event = Event::UNDEFINED;
         break;
     }
-    
-    print_(message);
+
+    event_->info(message);
   }
 
   void error_(const std::string text, int thread_id = -1)
   {
     auto message = Event();
 
-    message.header.stamp = rclcpp::Clock().now();
+    message.header.stamp = node_->now();
+    message.origin_node = "capability_runners";
     message.source.capability = run_config_.interface;
     message.source.provider = run_config_.provider;
     message.target.capability = "";
+    message.target.provider = "";
     message.thread_id = thread_id;
-    message.text = text;
-    message.error = true;
-    message.server_ready = true;
-    message.event = Event::IDLE;
-    
-    print_(message);
+    message.type = Event::ERROR;
+    message.content = text;
+    message.pid = -1;
+    message.event = Event::UNDEFINED;
+
+    event_->error(message);
   }
 
   void output_(const std::string text, const std::string element, int thread_id = -1)
   {
     auto message = Event();
 
-    message.header.stamp = rclcpp::Clock().now();
+    message.header.stamp = node_->now();
+    message.origin_node = "capability_runners";
     message.source.capability = run_config_.interface;
     message.source.provider = run_config_.provider;
+    message.target.capability = "";
+    message.target.provider = "";
     message.thread_id = thread_id;
-    message.text = text;
-    message.element = element;
-    message.is_element = true;
-    message.error = false;
-    message.server_ready = true;
-    message.event = Event::IDLE;
-    
-    print_(message);
+    message.type = Event::ERROR_ELEMENT;
+    message.content = text + " : " + element;
+    message.pid = -1;
+    message.event = Event::UNDEFINED;
+
+    event_->error_element(message);
   }
 
   /**
@@ -560,7 +539,7 @@ protected:
   /**
    * @brief dictionary of events
    */
-  std::map<int, event_opts> events;
+  std::map<int, capabilities2::event_opts> events;
 
   /**
    * @brief Last event tracker id to be inserted
@@ -608,11 +587,6 @@ protected:
   std::function<void(const std::string, const std::string)> triggerFunction_;
 
   /**
-   * @brief event function for internal runner event publishing
-   */
-  std::function<void(Event&)> print_;
-
-  /**
    * @brief XMLElement that is used to convert xml strings to std::string
    */
   tinyxml2::XMLPrinter printer;
@@ -621,6 +595,11 @@ protected:
    * @brief XMLElement that is used to convert std::string to xml strings
    */
   tinyxml2::XMLDocument doc;
+
+  /**
+   * @brief client for publishing events
+   */
+  std::shared_ptr<EventClient> event_;
 };
 
 }  // namespace capabilities2_runner

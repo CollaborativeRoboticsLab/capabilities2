@@ -9,8 +9,7 @@
 #include <rclcpp_action/rclcpp_action.hpp>
 
 #include <capabilities2_fabric/utils/xml_parser.hpp>
-#include <capabilities2_fabric/utils/bond_client.hpp>
-#include <capabilities2_fabric/utils/status_client.hpp>
+#include <capabilities2_utils/bond_client.hpp>
 
 #include <capabilities2_msgs/action/plan.hpp>
 
@@ -22,6 +21,8 @@
 #include <capabilities2_msgs/srv/free_capability.hpp>
 #include <capabilities2_msgs/srv/configure_capability.hpp>
 #include <capabilities2_msgs/srv/trigger_capability.hpp>
+
+#include <capabilities2_events/event_client.hpp>
 
 /**
  * @brief Capabilities Fabric
@@ -57,7 +58,18 @@ public:
 
   CapabilitiesFabric(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("Capabilities2_Fabric", options)
   {
-    control_tag_list = xml_parser::get_control_list();
+    try
+    {
+      // Only call setup if this object is already owned by a shared_ptr
+      if (shared_from_this())
+      {
+        initialize();
+      }
+    }
+    catch (const std::bad_weak_ptr&)
+    {
+      // Not yet safe — probably standalone without make_shared
+    }
   }
 
   /**
@@ -68,7 +80,9 @@ public:
    */
   void initialize()
   {
-    status_ = std::make_shared<StatusClient>(shared_from_this(), "capabilities_fabric", "/status/capabilities_fabric");
+    control_tag_list = xml_parser::get_control_list();
+
+    event_ = std::make_shared<EventClient>(shared_from_this(), "fabric", "/events");
 
     this->planner_server_ = rclcpp_action::create_server<Plan>(
         this, "/capabilities_fabric", std::bind(&CapabilitiesFabric::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
@@ -94,10 +108,7 @@ public:
     check_service(!trig_capability_client_->wait_for_service(std::chrono::seconds(1)), "/capabilities/trigger_capability");
     check_service(!conf_capability_client_->wait_for_service(std::chrono::seconds(1)), "/capabilities/configure_capability");
 
-    feedback_msg = std::make_shared<Plan::Feedback>();
     result_msg = std::make_shared<Plan::Result>();
-
-    need_reset_ = false;
   }
 
 private:
@@ -111,11 +122,11 @@ private:
    */
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const Plan::Goal> goal)
   {
-    status_->info("Received the goal request with the plan");
+    event_->info("Received the goal request with the plan");
 
     (void)uuid;
 
-    status_->info("Following plan was received :\n\n " + goal->plan);
+    event_->info("Following plan was received :\n\n " + goal->plan);
 
     // try to parse the std::string plan from capabilities_msgs/Plan to the to a XMLDocument file
     tinyxml2::XMLError xml_status = document.Parse(goal->plan.c_str());
@@ -123,12 +134,11 @@ private:
     // check if the file parsing failed
     if (xml_status != tinyxml2::XMLError::XML_SUCCESS)
     {
-      status_->error("Parsing the plan from goal message failed");
+      event_->error("Parsing the plan from goal message failed");
       return rclcpp_action::GoalResponse::REJECT;
     }
 
-    status_->info("Plan parsed and accepted");
-
+    event_->info("Plan parsed and accepted");
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   }
 
@@ -140,7 +150,7 @@ private:
    */
   rclcpp_action::CancelResponse handle_cancel(const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
-    status_->error("Received the request to cancel the plan");
+    event_->info("Received the request to cancel the plan");
     (void)goal_handle;
 
     for (auto& [bond_id, bond_client] : bond_client_cache_)
@@ -159,6 +169,7 @@ private:
   void handle_accepted(const std::shared_ptr<GoalHandlePlan> goal_handle)
   {
     goal_handle_ = goal_handle;
+    event_->info("Goal handle accepted");
 
     execution();
   }
@@ -168,21 +179,12 @@ private:
    */
   void execution()
   {
-    process_feedback("A new execution started");
+    event_->info("A new execution started");
 
     xml_parser::add_closing_event(document);
-
-    std::string modified_plan;
-
     xml_parser::convert_to_string(document, modified_plan);
 
-    status_->info("Plan after adding closing event :\n\n " + modified_plan);
-
-    // if (need_reset_)
-    // {
-    //   free_capability_all(connection_map);
-    //   need_reset_ = false;
-    // }
+    event_->info("Plan after adding closing event :\n\n " + modified_plan);
 
     interface_list.clear();
     providers_list.clear();
@@ -210,7 +212,7 @@ private:
    */
   void getInterfaces()
   {
-    process_feedback("Requesting Interface information");
+    event_->info("Requesting Interface information");
 
     auto request_interface = std::make_shared<GetInterfaces::Request>();
 
@@ -220,14 +222,17 @@ private:
 
       if (!future.valid())
       {
-        process_result("Failed to get Interface information. Server execution cancelled", false, false);
+        result_msg->success = false;
+        result_msg->message = "Failed to get Interface information. Server execution cancelled";
+        event_->error(result_msg->message);
+        goal_handle_->abort(result_msg);
         return;
       }
 
       auto response = future.get();
       expected_interfaces_ = response->interfaces.size();
 
-      process_feedback("Received Interfaces. Requsting " + std::to_string(expected_interfaces_) + " semantic interface information");
+      event_->info("Received Interfaces. Requsting " + std::to_string(expected_interfaces_) + " semantic interface information");
 
       // Request each interface recursively for Semantic interfaces
       getSemanticInterfaces(response->interfaces);
@@ -243,7 +248,7 @@ private:
   {
     std::string requested_interface = interfaces[completed_interfaces_];
 
-    process_feedback("Requesting semantic interfaces for " + requested_interface, true);
+    event_->info("Requesting semantic interfaces for " + requested_interface);
 
     auto request_semantic = std::make_shared<GetSemanticInterfaces::Request>();
     request_semantic->interface = requested_interface;
@@ -253,7 +258,10 @@ private:
         request_semantic, [this, interfaces, requested_interface](GetSemanticInterfacesClient::SharedFuture future) {
           if (!future.valid())
           {
-            process_result("Failed to get Semantic Interface information. Server execution cancelled", false, false);
+            result_msg->success = false;
+            result_msg->message = "Failed to get Semantic Interface information. Server execution cancelled";
+            event_->error(result_msg->message);
+            goal_handle_->abort(result_msg);
             return;
           }
 
@@ -268,8 +276,8 @@ private:
               interface_list.push_back(semantic_interface);
               is_semantic_list.push_back(true);
 
-              process_feedback(std::to_string(completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received " +
-                               semantic_interface + " for " + requested_interface + ". So added " + semantic_interface);
+              event_->info(std::to_string(completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received " + semantic_interface +
+                           " for " + requested_interface + ". So added " + semantic_interface);
             }
           }
           // if no semantic interfaces are availble for a given interface, add the interface instead
@@ -278,8 +286,8 @@ private:
             interface_list.push_back(requested_interface);
             is_semantic_list.push_back(false);
 
-            process_feedback(std::to_string(completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received none for " +
-                             requested_interface + ". So added " + requested_interface);
+            event_->info(std::to_string(completed_interfaces_) + "/" + std::to_string(expected_interfaces_) + " : Received none for " +
+                         requested_interface + ". So added " + requested_interface);
           }
 
           if (completed_interfaces_ != expected_interfaces_)
@@ -289,11 +297,11 @@ private:
           }
           else
           {
-            process_feedback("Received all requested Interface information", true);
+            event_->info("Received all requested Interface information");
 
             expected_providers_ = interface_list.size();
 
-            process_feedback("Requsting Provider information for " + std::to_string(expected_providers_) + " providers");
+            event_->info("Requsting Provider information for " + std::to_string(expected_providers_) + " providers");
 
             // request providers from the interfaces in the interfaces_list
             getProvider(interface_list, is_semantic_list);
@@ -312,7 +320,7 @@ private:
     std::string requested_interface = interfaces[completed_providers_];
     bool semantic_flag = is_semantic[completed_providers_];
 
-    process_feedback("Requesting provider for " + requested_interface, true);
+    event_->info("Requesting provider for " + requested_interface);
 
     auto request_providers = std::make_shared<GetProviders::Request>();
 
@@ -320,56 +328,58 @@ private:
     request_providers->interface = requested_interface;
     request_providers->include_semantic = semantic_flag;
 
-    auto result_providers_future = get_providers_client_->async_send_request(
-        request_providers, [this, is_semantic, requested_interface, interfaces](GetProvidersClient::SharedFuture future) {
-          if (!future.valid())
-          {
-            process_result("Did not retrieve providers for interface: " + requested_interface, false, false);
-            return;
-          }
+    auto result_providers_future = get_providers_client_->async_send_request(request_providers, [this, is_semantic, requested_interface, interfaces](
+                                                                                                    GetProvidersClient::SharedFuture future) {
+      if (!future.valid())
+      {
+        result_msg->success = false;
+        result_msg->message = "Failed to retrieve providers for interface: " + requested_interface;
+        event_->error(result_msg->message);
+        goal_handle_->abort(result_msg);
+        return;
+      }
 
-          completed_providers_++;
-          auto response = future.get();
+      completed_providers_++;
+      auto response = future.get();
 
-          if (response->default_provider != "")
-          {
-            // add defualt provider to the list
-            providers_list.push_back(response->default_provider);
+      if (response->default_provider != "")
+      {
+        // add defualt provider to the list
+        providers_list.push_back(response->default_provider);
 
-            process_feedback(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received " +
-                             response->default_provider + " for " + requested_interface + ". So added " + response->default_provider);
-          }
+        event_->info(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received " + response->default_provider +
+                     " for " + requested_interface + ". So added " + response->default_provider);
+      }
 
-          // add additional providers to the list if available
-          if (response->providers.size() > 0)
-          {
-            for (const auto& provider : response->providers)
-            {
-              providers_list.push_back(provider);
+      // add additional providers to the list if available
+      if (response->providers.size() > 0)
+      {
+        for (const auto& provider : response->providers)
+        {
+          providers_list.push_back(provider);
 
-              process_feedback(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received and added " +
-                               provider + " for " + requested_interface);
-            }
-          }
-          else
-          {
-            process_feedback(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : No providers for " +
-                             requested_interface);
-          }
+          event_->info(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : Received and added " + provider +
+                       " for " + requested_interface);
+        }
+      }
+      else
+      {
+        event_->info(std::to_string(completed_providers_) + "/" + std::to_string(expected_providers_) + " : No providers for " + requested_interface);
+      }
 
-          // Check if all expected calls are completed before calling verify_plan
-          if (completed_providers_ != expected_providers_)
-          {
-            // request providers for the next interface in the interfaces_list
-            getProvider(interfaces, is_semantic);
-          }
-          else
-          {
-            process_feedback("All requested interface, semantic interface and provider data recieved", true);
+      // Check if all expected calls are completed before calling verify_plan
+      if (completed_providers_ != expected_providers_)
+      {
+        // request providers for the next interface in the interfaces_list
+        getProvider(interfaces, is_semantic);
+      }
+      else
+      {
+        event_->info("All requested interface, semantic interface and provider data recieved");
 
-            verify_and_continue();
-          }
-        });
+        verify_and_continue();
+      }
+    });
   }
 
   /**
@@ -379,12 +389,45 @@ private:
    */
   void verify_and_continue()
   {
-    process_feedback("Verifying the plan");
+    event_->info("Verifying the plan");
+
+    bool verification_success = true;
+
+    auto result = std::make_shared<Plan::Result>();
+
+    // extract the components within the 'plan' tags
+    bool extraction_success = false;
+    tinyxml2::XMLElement* plan = xml_parser::get_plan(document, extraction_success);
+
+    if (!extraction_success)
+    {
+      result_msg->success = false;
+      result_msg->message = "Execution plan is not compatible. Please recheck and update";
+      event_->error(result_msg->message);
+      goal_handle_->abort(result_msg);
+      verification_success = false;
+    }
+
+    event_->info("Plan extraction complete");
+
+    // verify whether the plan is valid by checking the tags
+    std::string error_message;
+
+    if (!xml_parser::check_tags(plan, interface_list, providers_list, control_tag_list, rejected_list, error_message))
+    {
+      result_msg->success = false;
+      result_msg->message = "Execution plan is faulty. Please recheck and update";
+      event_->error(result_msg->message);
+      goal_handle_->abort(result_msg);
+      verification_success = false;
+    }
+
+    event_->info("Checking tags successful");
 
     // verify the plan
-    if (!verify_plan())
+    if (!verification_success)
     {
-      process_feedback("Plan verification failed");
+      event_->info("Plan verification failed");
 
       if (rejected_list.size() > 0)
       {
@@ -397,68 +440,32 @@ private:
         {
           result->failed_elements.push_back(rejected_element);
         }
-        goal_handle_->abort(result);
 
-        process_feedback(result->message);
+        goal_handle_->abort(result);
+        event_->info(result->message);
       }
       else
       {
         // TODO: improve with error codes
-        process_result("Plan verification failed. Server Execution Cancelled.");
+        result_msg->success = false;
+        result_msg->message = "Plan verification failed. Server Execution Cancelled.";
+        event_->error(result_msg->message);
+        goal_handle_->abort(result_msg);
+        return;
       }
 
-      status_->error("Server Execution Cancelled");
+      event_->error("Server Execution Cancelled");
     }
 
-    process_feedback("Plan verification successful");
-
-    // extract the plan from the XMLDocument
-    tinyxml2::XMLElement* plan = xml_parser::get_plan(document);
-
-    process_feedback("Plan conversion successful");
+    event_->info("Plan verification successful. Proceeding with connections extraction");
 
     // Extract the connections from the plan
     xml_parser::extract_connections(plan, connection_map);
 
-    process_feedback("Connection extraction successful");
+    event_->info("Connection extraction successful");
 
     // estasblish the bond with the server
     request_bond();
-  }
-
-  /**
-   * @brief verify the plan using received interfaces
-   *
-   * @return `true` if interface retreival is successful,`false` otherwise
-   */
-  bool verify_plan()
-  {
-    auto feedback = std::make_shared<Plan::Feedback>();
-    auto result = std::make_shared<Plan::Result>();
-
-    // verify whether document got 'plan' tags
-    if (!xml_parser::check_plan_tag(document))
-    {
-      process_result("Execution plan is not compatible. Please recheck and update");
-      return false;
-    }
-
-    process_feedback("'Plan' tag checking successful");
-
-    // extract the components within the 'plan' tags
-    tinyxml2::XMLElement* plan = xml_parser::get_plan(document);
-
-    process_feedback("Plan extraction complete");
-
-    // verify whether the plan is valid
-    if (!xml_parser::check_tags(status_, plan, interface_list, providers_list, control_tag_list, rejected_list))
-    {
-      process_result("Execution plan is faulty. Please recheck and update");
-      return false;
-    }
-
-    process_feedback("Checking tags successful");
-    return true;
   }
 
   /**
@@ -467,7 +474,7 @@ private:
    */
   void request_bond()
   {
-    process_feedback("Requesting bond id");
+    event_->info("Requesting bond id");
 
     // create bond establishing server request
     auto request_bond = std::make_shared<EstablishBond::Request>();
@@ -476,13 +483,16 @@ private:
     auto result_future = establish_bond_client_->async_send_request(request_bond, [this](EstablishBondClient::SharedFuture future) {
       if (!future.valid())
       {
-        process_result("Failed to retrieve the bond id. Server execution cancelled");
+        result_msg->success = false;
+        result_msg->message = "Failed to retrieve the bond id. Server execution cancelled";
+        event_->error(result_msg->message);
+        goal_handle_->abort(result_msg);
         return;
       }
 
       auto response = future.get();
       bond_id_ = response->bond_id;
-      process_feedback("Received the bond id : " + bond_id_);
+      event_->info("Received the bond id : " + bond_id_);
 
       establish_bond();
     });
@@ -497,7 +507,7 @@ private:
     bond_client_cache_[bond_id_] = std::make_unique<BondClient>(shared_from_this(), bond_id_);
     bond_client_cache_[bond_id_]->start();
 
-    process_feedback("Bond sucessfully established with bond id : " + bond_id_);
+    event_->info("Bond sucessfully established with bond id : " + bond_id_);
 
     if (bond_client_cache_.size() > 1)
     {
@@ -506,14 +516,14 @@ private:
         if (old_bond_id != bond_id_)
         {
           bond_client->stop();
-          process_feedback("Stopping and removing old bond with id : " + old_bond_id);
+          event_->info("Stopping and removing old bond with id : " + old_bond_id);
         }
       }
     }
 
     expected_capabilities_ = connection_map.size();
 
-    process_feedback("Requsting start of " + std::to_string(expected_capabilities_) + " capabilities");
+    event_->info("Requsting start of " + std::to_string(expected_capabilities_) + " capabilities");
 
     use_capability(connection_map);
   }
@@ -534,16 +544,18 @@ private:
     request_use->preferred_provider = provider;
     request_use->bond_id = bond_id_;
 
-    process_feedback("Starting capability of Runner " + std::to_string(completed_capabilities_) + " : " +
-                         capabilities[completed_capabilities_].source.runner,
-                     true);
+    event_->info("Starting capability of Runner " + std::to_string(completed_capabilities_) + " : " +
+                 capabilities[completed_capabilities_].source.runner);
 
     // send the request
     auto result_future =
         use_capability_client_->async_send_request(request_use, [this, capability, provider](UseCapabilityClient::SharedFuture future) {
           if (!future.valid())
           {
-            process_result("Failed to Use capability " + capability + " from " + provider + ". Server Execution Cancelled");
+            result_msg->success = false;
+            result_msg->message = "Failed to Use capability " + capability + " from " + provider + ". Server Execution Cancelled";
+            event_->error(result_msg->message);
+            goal_handle_->abort(result_msg);
 
             // release all capabilities that were used since not all started successfully
             free_capability_all(connection_map);
@@ -556,20 +568,19 @@ private:
           }
 
           completed_capabilities_++;
-          need_reset_ = true;
 
           auto response = future.get();
 
-          process_feedback(std::to_string(completed_capabilities_) + "/" + std::to_string(expected_capabilities_) + " : start succeessful");
+          event_->info(std::to_string(completed_capabilities_) + "/" + std::to_string(expected_capabilities_) + " : start succeessful");
 
           // Check if all expected calls are completed before calling verify_plan
           if (completed_capabilities_ == expected_capabilities_)
           {
-            process_feedback("All requested capabilities have been started. Configuring the capabilities with events", true);
+            event_->info("All requested capabilities have been started. Configuring the capabilities with events");
 
             expected_configurations_ = connection_map.size();
 
-            process_feedback("Requsting capability configuration for " + std::to_string(expected_configurations_) + " capabilities", true);
+            event_->info("Requsting capability configuration for " + std::to_string(expected_configurations_) + " capabilities");
 
             configure_capabilities(connection_map);
           }
@@ -597,19 +608,22 @@ private:
     auto result_future = free_capability_client_->async_send_request(request_free, [this, capability](FreeCapabilityClient::SharedFuture future) {
       if (!future.valid())
       {
-        process_result("Failed to free capability " + capability);
+        result_msg->success = false;
+        result_msg->message = "Failed to free capability " + capability;
+        event_->error(result_msg->message);
+        goal_handle_->abort(result_msg);
         return;
       }
 
       auto response = future.get();
-      process_feedback("Successfully freed capability " + capability, true);
+      event_->info("Successfully freed capability " + capability);
 
       freed_capabilities_++;
 
       // Check if all expected calls are completed before calling verify_plan
       if (freed_capabilities_ == completed_capabilities_)
       {
-        process_feedback("All started capabilities have been freed.");
+        event_->info("All started capabilities have been freed.");
       }
       else
       {
@@ -625,9 +639,8 @@ private:
   {
     auto request_configure = std::make_shared<ConfigureCapability::Request>();
 
-    process_feedback("Configuring capability of Runner " + std::to_string(completed_configurations_) + " named " +
-                         capabilities[completed_configurations_].source.runner,
-                     true);
+    event_->info("Configuring capability of Runner " + std::to_string(completed_configurations_) + " named " +
+                 capabilities[completed_configurations_].source.runner);
 
     if (xml_parser::convert_to_string(capabilities[completed_configurations_].source.parameters, request_configure->source.parameters))
     {
@@ -695,7 +708,10 @@ private:
         conf_capability_client_->async_send_request(request_configure, [this, source_capability](ConfigureCapabilityClient::SharedFuture future) {
           if (!future.valid())
           {
-            process_result("Failed to configure capability :" + source_capability + ". Server execution cancelled");
+            result_msg->success = false;
+            result_msg->message = "Failed to configure capability :" + source_capability + ". Server execution cancelled";
+            event_->error(result_msg->message);
+            goal_handle_->abort(result_msg);
             return;
           }
 
@@ -703,13 +719,13 @@ private:
 
           auto response = future.get();
 
-          process_feedback(std::to_string(completed_configurations_) + "/" + std::to_string(expected_configurations_) +
-                           " : Successfully configured capability : " + source_capability);
+          event_->info(std::to_string(completed_configurations_) + "/" + std::to_string(expected_configurations_) +
+                       " : Successfully configured capability : " + source_capability);
 
           // Check if all expected calls are completed before calling verify_plan
           if (completed_configurations_ == expected_configurations_)
           {
-            process_feedback("All requested capabilities have been configured. Triggering the first capability", true);
+            event_->info("All requested capabilities have been configured. Triggering the first capability");
 
             trigger_first_node();
           }
@@ -736,14 +752,20 @@ private:
     auto result_future = trig_capability_client_->async_send_request(request_trigger, [this](TriggerCapabilityClient::SharedFuture future) {
       if (!future.valid())
       {
-        process_result("Failed to trigger capability " + connection_map[0].source.runner);
+        result_msg->success = false;
+        result_msg->message = "Failed to trigger capability " + connection_map[0].source.runner;
+        event_->error(result_msg->message);
+        goal_handle_->abort(result_msg);
         return;
       }
 
       auto response = future.get();
-      process_feedback("Successfully triggered capability " + connection_map[0].source.runner);
+      event_->info("Successfully triggered capability " + connection_map[0].source.runner);
 
-      process_result("Successfully completed capabilities2 fabric", true);
+      result_msg->success = true;
+      result_msg->message = "Successfully completed capabilities2 fabric";
+      event_->info(result_msg->message);
+      goal_handle_->succeed(result_msg);
     });
   }
 
@@ -751,59 +773,22 @@ private:
   {
     while (wait_for_logic)
     {
-      status_->error(service_name + " not available");
+      event_->error(service_name + " not available");
       rclcpp::shutdown();
       return;
     }
-
-    status_->info(service_name + " connected");
-  }
-
-  /**
-   * @brief publishers feedback message and status message
-   *
-   * @param text content of the feedback message and status message
-   * @param newline whether to include a newline before the message
-   */
-  void process_feedback(const std::string& text, bool newline = false)
-  {
-    feedback_msg->progress = text;
-    goal_handle_->publish_feedback(feedback_msg);
-
-    status_->info(text, newline);
-  }
-
-  /**
-   * @brief publishers result message and status message
-   *
-   * @param text content of the feedback message and status message
-   * @param success whether the action succeeded
-   * @param newline whether to include a newline before the message
-   */
-  void process_result(const std::string& text, bool success = false, bool newline = false)
-  {
-    result_msg->success = success;
-    result_msg->message = text;
-
-    if (success)
-    {
-      status_->info(text, newline);
-      goal_handle_->succeed(result_msg);
-    }
-    else
-    {
-      status_->error(text, newline);
-      goal_handle_->abort(result_msg);
-    }
+    event_->info(service_name + " connected");
   }
 
 private:
   /** File Path link */
   std::string plan_file_path;
 
+  /** Modified plan with closing capabilities */
+  std::string modified_plan;
+
   /** flag to select loading from file or accepting via action server */
   bool read_file;
-  bool need_reset_;
 
   int expected_interfaces_;
   int completed_interfaces_;
@@ -823,9 +808,6 @@ private:
 
   /** Manages bond between capabilities server and this client */
   std::map<std::string, std::shared_ptr<BondClient>> bond_client_cache_;
-
-  /** Handles status message sending and printing to logging */
-  std::shared_ptr<StatusClient> status_;
 
   /** XML Document */
   tinyxml2::XMLDocument document;
@@ -847,9 +829,6 @@ private:
 
   /** Invalid events list */
   std::vector<std::string> rejected_list;
-
-  /** Feedback message for plan action server*/
-  std::shared_ptr<Plan::Feedback> feedback_msg;
 
   /** Result message for plan action server*/
   std::shared_ptr<Plan::Result> result_msg;
@@ -883,6 +862,9 @@ private:
 
   /** trigger an selected capability */
   TriggerCapabilityClient::SharedPtr trig_capability_client_;
+
+  /** Event client for publishing events */
+  std::shared_ptr<EventClient> event_;
 
   /** capabilities2 server and fabric synchronization tools */
   // std::mutex mutex_;

@@ -7,11 +7,10 @@ namespace capabilities2_runner
 class DummyRunner : public RunnerBase
 {
 public:
-  void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-             std::function<void(Event&)> runner_publish_func) override
+  void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
     // init the base runner
-    init_base(node, run_config, runner_publish_func);
+    init_base(node, run_config);
 
     // do nothing
     RCLCPP_INFO(node_->get_logger(), "Dummy runner started");

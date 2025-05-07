@@ -33,11 +33,10 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                     std::function<void(Event&)> runner_publish_func) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
     // initialize the runner base by storing node pointer and run config
-    init_base(node, run_config, runner_publish_func);
+    init_base(node, run_config);
 
     tf_buffer_ = std::make_unique<tf2_ros::Buffer>(node_->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
@@ -63,10 +62,12 @@ public:
       throw runner_exception("cannot grab data without parameters");
 
     // trigger the events related to on_started state
-    if (events[execute_id].on_started != "")
+    if (events[execute_id].on_started.interface != "")
     {
-      info_("on_started", id, events[execute_id].on_started, EventType::STARTED);
-      triggerFunction_(events[execute_id].on_started, update_on_started(events[execute_id].on_started_param));
+      info_("on_started", id, EventType::STARTED, events[execute_id].on_started.interface,
+            events[execute_id].on_started.provider);
+      triggerFunction_(events[execute_id].on_started.interface,
+                       update_on_started(events[execute_id].on_started.parameters));
     }
 
     info_("Waiting for Transformation.", id);
@@ -87,12 +88,14 @@ public:
       transform_ = tf_buffer_->lookupTransform(mapFrame, robotFrame, tf2::TimePointZero);
 
       // trigger the events related to on_success state
-      if (events[execute_id].on_success != "")
+      if (events[execute_id].on_success.interface != "")
       {
-        info_("on_success", id, events[execute_id].on_success, EventType::SUCCEEDED);
-        triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
+        info_("on_success", id, EventType::SUCCEEDED, events[execute_id].on_success.interface,
+              events[execute_id].on_success.provider);
+        triggerFunction_(events[execute_id].on_success.interface,
+                         update_on_success(events[execute_id].on_success.parameters));
       }
-      
+
       info_("Transformation received. Thread closing.", id);
       return;
     }
@@ -107,10 +110,12 @@ public:
       transform_ = tf_buffer_->lookupTransform(odomFrame, robotFrame, tf2::TimePointZero);
 
       // trigger the events related to on_success state
-      if (events[execute_id].on_success != "")
+      if (events[execute_id].on_success.interface != "")
       {
-        info_("on_success", id, events[execute_id].on_success, EventType::SUCCEEDED);
-        triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
+        info_("on_success", id, EventType::SUCCEEDED, events[execute_id].on_success.interface,
+              events[execute_id].on_success.provider);
+        triggerFunction_(events[execute_id].on_success.interface,
+                         update_on_success(events[execute_id].on_success.parameters));
       }
 
       info_("Transformation received. Thread closing.", id);
@@ -120,10 +125,12 @@ public:
       info_("Could not transform from odom to robot: " + std::string(ex.what()), id);
 
       // trigger the events related to on_failure state
-      if (events[execute_id].on_failure != "")
+      if (events[execute_id].on_failure.interface != "")
       {
-        info_("on_failure", id, events[execute_id].on_failure, EventType::FAILED);
-        triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
+        info_("on_failure", id, EventType::FAILED, events[execute_id].on_failure.interface,
+              events[execute_id].on_failure.provider);
+        triggerFunction_(events[execute_id].on_failure.interface,
+                         update_on_failure(events[execute_id].on_failure.parameters));
       }
 
       info_("Transformation not received. Thread closing.", id);
@@ -149,10 +156,12 @@ public:
       throw runner_exception("cannot stop runner subscriber that was not started");
 
     // Trigger on_stopped event if defined
-    if (events[execute_id].on_stopped != "")
+    if (events[execute_id].on_stopped.interface != "")
     {
-      info_("on_stopped", -1, events[execute_id].on_stopped, EventType::STOPPED);
-      triggerFunction_(events[execute_id].on_stopped, update_on_stopped(events[execute_id].on_stopped_param));
+      info_("on_stopped", -1, EventType::STOPPED, events[execute_id].on_stopped.interface,
+            events[execute_id].on_stopped.provider);
+      triggerFunction_(events[execute_id].on_stopped.interface,
+                       update_on_stopped(events[execute_id].on_stopped.parameters));
     }
   }
 

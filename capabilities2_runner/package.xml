@@ -20,6 +20,7 @@
   <depend>pluginlib</depend>
   <depend>std_msgs</depend>
   <depend>capabilities2_msgs</depend>
+  <depend>capabilities2_events</depend>
   <depend>tinyxml2_vendor</depend>
 
   <!-- system dependency -->

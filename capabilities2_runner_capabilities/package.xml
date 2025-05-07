@@ -18,6 +18,7 @@
   <depend>std_msgs</depend>
   <depend>capabilities2_msgs</depend>
   <depend>capabilities2_runner</depend>
+  <depend>capabilities2_events</depend>
   <depend>tinyxml2_vendor</depend>
 
   <export>

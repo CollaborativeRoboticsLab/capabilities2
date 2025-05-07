@@ -32,10 +32,10 @@ public:
    * @param service_name action name used in the yaml file, used to load specific configuration from the run_config
    */
   virtual void init_service(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                            const std::string& service_name, std::function<void(Event&)> print)
+                            const std::string& service_name)
   {
     // initialize the runner base by storing node pointer and run config
-    init_base(node, run_config, print);
+    init_base(node, run_config);
 
     // create an service client
     service_client_ = node_->create_client<ServiceT>(service_name);
@@ -82,10 +82,12 @@ public:
             error_("get result call failed");
 
             // trigger the events related to on_failure state
-            if (events[execute_id].on_failure != "")
+            if (events[execute_id].on_failure.interface != "")
             {
-              info_("on_failure", id, events[execute_id].on_failure, EventType::FAILED);
-              triggerFunction_(events[execute_id].on_failure, update_on_failure(events[execute_id].on_failure_param));
+              info_("on_failure", id, EventType::FAILED, events[execute_id].on_failure.interface,
+                    events[execute_id].on_failure.provider);
+              triggerFunction_(events[execute_id].on_failure.interface,
+                               update_on_failure(events[execute_id].on_failure.parameters));
             }
           }
           else
@@ -96,10 +98,12 @@ public:
             process_response(response_, id);
 
             // trigger the events related to on_success state
-            if (events[execute_id].on_success != "")
+            if (events[execute_id].on_success.interface != "")
             {
-              info_("on_success", id, events[execute_id].on_success, EventType::SUCCEEDED);
-              triggerFunction_(events[execute_id].on_success, update_on_success(events[execute_id].on_success_param));
+              info_("on_success", id, EventType::SUCCEEDED, events[execute_id].on_success.interface,
+                    events[execute_id].on_success.provider);
+              triggerFunction_(events[execute_id].on_success.interface,
+                               update_on_success(events[execute_id].on_success.parameters));
             }
           }
 
@@ -108,10 +112,12 @@ public:
         });
 
     // trigger the events related to on_started state
-    if (events[execute_id].on_started != "")
+    if (events[execute_id].on_started.interface != "")
     {
-      info_("on_started", id, events[execute_id].on_started, EventType::STARTED);
-      triggerFunction_(events[execute_id].on_started, update_on_started(events[execute_id].on_started_param));
+      info_("on_started", id, EventType::STARTED, events[execute_id].on_started.interface,
+            events[execute_id].on_started.provider);
+      triggerFunction_(events[execute_id].on_started.interface,
+                       update_on_started(events[execute_id].on_started.parameters));
     }
 
     // Conditional wait
@@ -138,10 +144,12 @@ public:
       throw runner_exception("cannot stop runner action that was not started");
 
     // Trigger on_stopped event if defined
-    if (events[execute_id].on_stopped != "")
+    if (events[execute_id].on_stopped.interface != "")
     {
-      info_("on_stopped", -1, events[execute_id].on_stopped, EventType::STOPPED);
-      triggerFunction_(events[execute_id].on_stopped, update_on_stopped(events[execute_id].on_stopped_param));
+      info_("on_stopped", -1, EventType::STOPPED, events[execute_id].on_stopped.interface,
+            events[execute_id].on_stopped.provider);
+      triggerFunction_(events[execute_id].on_stopped.interface,
+                       update_on_stopped(events[execute_id].on_stopped.parameters));
     }
 
     info_("stopping runner");
@@ -163,7 +171,7 @@ protected:
 
   /**
    * @brief Process the reponse and print data as required
-   * 
+   *
    * @param response service reponse
    * @param id thread id
    */

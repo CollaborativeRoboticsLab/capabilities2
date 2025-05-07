@@ -12,15 +12,14 @@
 #include <rclcpp_action/rclcpp_action.hpp>
 
 #include <capabilities2_fabric/utils/xml_parser.hpp>
-#include <capabilities2_fabric/utils/status_client.hpp>
-#include <capabilities2_fabric/utils/fabric_status.hpp>
 
 #include <capabilities2_msgs/action/plan.hpp>
-
 #include <capabilities2_msgs/srv/set_fabric_plan.hpp>
 #include <capabilities2_msgs/srv/cancel_fabric_plan.hpp>
 #include <capabilities2_msgs/srv/get_fabric_status.hpp>
 #include <capabilities2_msgs/srv/complete_fabric.hpp>
+
+#include <capabilities2_events/event_client.hpp>
 
 /**
  * @brief Capabilities Executor File Parser
@@ -31,8 +30,18 @@
 
 class CapabilitiesFabricClient : public rclcpp::Node
 {
+  enum Status
+  {
+    IDLE,
+    RUNNING,
+    CANCELED,
+    ABORTED,
+    FAILED,
+    LAUNCHED,
+    COMPLETED
+  };
+
 public:
-  using Status = capabilities2::fabric_status;
   using Plan = capabilities2_msgs::action::Plan;
   using GoalHandlePlan = rclcpp_action::ClientGoalHandle<Plan>;
 
@@ -43,8 +52,18 @@ public:
 
   CapabilitiesFabricClient(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("Capabilities2_Fabric_Client", options)
   {
-    declare_parameter("plan_file_path", "install/capabilities2_fabric/share/capabilities2_fabric/plans/default.xml");
-    plan_file_path = get_parameter("plan_file_path").as_string();
+    try
+    {
+      // Only call setup if this object is already owned by a shared_ptr
+      if (shared_from_this())
+      {
+        initialize();
+      }
+    }
+    catch (const std::bad_weak_ptr&)
+    {
+      // Not yet safe — probably standalone without make_shared
+    }
   }
 
   /**
@@ -53,9 +72,12 @@ public:
    */
   void initialize()
   {
+    declare_parameter("plan_file_path", "install/capabilities2_fabric/share/capabilities2_fabric/plans/default.xml");
+    plan_file_path = get_parameter("plan_file_path").as_string();
+
     fabric_state = Status::IDLE;
 
-    status_ = std::make_shared<StatusClient>(shared_from_this(), "capabilities_fabric_client", "/status/capabilities_fabric_client");
+    event_ = std::make_shared<EventClient>(shared_from_this(), "client", "/events");
 
     status_server_ =
         this->create_service<GetFabricStatus>("/capabilities_fabric/get_status", std::bind(&CapabilitiesFabricClient::getStatusCallback, this,
@@ -77,12 +99,12 @@ public:
 
     if (!this->planner_client_->wait_for_action_server(std::chrono::seconds(5)))
     {
-      status_->error("Action server not available after waiting");
+      event_->error("Action server not available after waiting");
       rclcpp::shutdown();
       return;
     }
 
-    status_->info("Sucessfully connected to the capabilities_fabric action server");
+    event_->info("Sucessfully connected to the capabilities_fabric action server");
 
     // try to load the file
     tinyxml2::XMLError xml_status = document.LoadFile(plan_file_path.c_str());
@@ -90,11 +112,11 @@ public:
     // check if the file loading failed
     if (xml_status != tinyxml2::XMLError::XML_SUCCESS)
     {
-      status_->error("Error loading plan: " + plan_file_path + ", Error: " + document.ErrorName());
+      event_->error("Error loading plan: " + plan_file_path + ", Error: " + document.ErrorName());
       rclcpp::shutdown();
     }
 
-    status_->info("Plan loaded from : " + plan_file_path);
+    event_->info("Plan loaded from : " + plan_file_path);
 
     std::string plan;
     xml_parser::convert_to_string(document, plan);
@@ -109,18 +131,18 @@ private:
   {
     while (plan_queue.size() > 0)
     {
-      status_->info("Fabric client thread starting");
+      event_->info("Fabric client thread starting");
 
       std::unique_lock<std::mutex> lock(mutex_);
       completed_ = false;
 
       send_goal();
 
-      status_->info("Fabric plan sent. Waiting for acceptance.");
+      event_->info("Fabric plan sent. Waiting for acceptance.");
 
       // Conditional wait
       cv_.wait(lock, [this] { return completed_; });
-      status_->info("Fabric client thread closing");
+      event_->info("Fabric client thread closing");
     }
   }
 
@@ -133,7 +155,7 @@ private:
     goal_msg.plan = plan_queue[0];
     plan_queue.pop_front();
 
-    status_->info("Sending goal to the capabilities_fabric action server");
+    event_->info("Sending goal to the capabilities_fabric action server");
 
     // send goal options
     auto send_goal_options = rclcpp_action::Client<Plan>::SendGoalOptions();
@@ -142,12 +164,12 @@ private:
     send_goal_options.goal_response_callback = [this](const GoalHandlePlan::SharedPtr& goal_handle) {
       if (!goal_handle)
       {
-        status_->error("Goal was rejected by server");
+        event_->error("Goal was rejected by server");
         fabric_state = Status::FAILED;
       }
       else
       {
-        status_->info("Goal accepted by server, waiting for completion");
+        event_->info("Goal accepted by server, waiting for completion");
         goal_handle_ = goal_handle;
         fabric_state = Status::RUNNING;
       }
@@ -161,33 +183,33 @@ private:
           fabric_state = Status::LAUNCHED;
           break;
         case rclcpp_action::ResultCode::ABORTED:
-          status_->error("Goal was aborted");
+          event_->error("Goal was aborted");
           fabric_state = Status::ABORTED;
           break;
         case rclcpp_action::ResultCode::CANCELED:
-          status_->error("Goal was canceled");
+          event_->error("Goal was canceled");
           fabric_state = Status::CANCELED;
           break;
         default:
-          status_->error("Unknown result code");
+          event_->error("Unknown result code");
           fabric_state = Status::FAILED;
           break;
       }
 
       if (result.result->success)
       {
-        status_->info("Plan launched successfully");
+        event_->info("Plan launched successfully");
       }
       else
       {
-        status_->error("Plan failed to launch");
+        event_->error("Plan failed to launch");
 
         if (result.result->failed_elements.size() > 0)
         {
-          status_->error("Plan failed due to incompatible XMLElements in the plan");
+          event_->error("Plan failed due to incompatible XMLElements in the plan");
 
           for (const auto& failed_element : result.result->failed_elements)
-            status_->error_element(failed_element);
+            event_->error_element(failed_element);
         }
       }
     };
@@ -199,7 +221,7 @@ private:
   {
     if (fabric_state == Status::RUNNING)
     {
-      status_->info("Plan canncelling requested");
+      event_->info("Plan canncelling requested");
       this->planner_client_->async_cancel_goal(goal_handle_);
     }
 
@@ -209,7 +231,7 @@ private:
   void setCompleteCallback(const std::shared_ptr<CompleteFabric::Request> request, std::shared_ptr<CompleteFabric::Response> response)
   {
     fabric_state = Status::COMPLETED;
-    status_->info("Plan completed successfully");
+    event_->info("Plan completed successfully");
     completed_ = true;
     cv_.notify_all();
   }
@@ -252,7 +274,7 @@ private:
 
   void setPlanCallback(const std::shared_ptr<SetFabricPlan::Request> request, std::shared_ptr<SetFabricPlan::Response> response)
   {
-    status_->info("Received the request with a plan");
+    event_->info("Received the request with a plan");
 
     // try to parse the std::string plan from capabilities_msgs/Plan to the to a XMLDocument file
     tinyxml2::XMLError xml_status = documentChecking.Parse(request->plan.c_str());
@@ -260,23 +282,23 @@ private:
     // check if the file parsing failed
     if (xml_status != tinyxml2::XMLError::XML_SUCCESS)
     {
-      status_->info("Parsing the plan from service request message failed");
+      event_->info("Parsing the plan from service request message failed");
       response->success = false;
     }
 
-    status_->info("Plan parsed and valid");
+    event_->info("Plan parsed and valid");
 
     plan_queue.push_back(request->plan);
 
-    status_->info("Plan queued and waiting for execution");
+    event_->info("Plan queued and waiting for execution");
 
     if ((fabric_state == Status::RUNNING) or (fabric_state == Status::LAUNCHED))
     {
-      status_->info("Prior plan under exeution. Will defer the new plan");
+      event_->info("Prior plan under exeution. Will defer the new plan");
     }
     else
     {
-      status_->info("Plan parsed and accepted");
+      event_->info("Plan parsed and accepted");
       goal_send_thread = std::thread(&CapabilitiesFabricClient::manage_goal, this);
     }
 
@@ -305,9 +327,6 @@ private:
   /** action client */
   rclcpp_action::Client<Plan>::SharedPtr planner_client_;
 
-  /** Handles status message sending and printing to logging */
-  std::shared_ptr<StatusClient> status_;
-
   /** Goal handle for action client control */
   GoalHandlePlan::SharedPtr goal_handle_;
 
@@ -326,18 +345,15 @@ private:
   /** Status of the fabric */
   Status fabric_state;
 
-  /**
-   * @brief mutex for threadpool synchronisation.
-   */
+  /** Event client for publishing events */
+  std::shared_ptr<EventClient> event_;
+
+  /** mutex for threadpool synchronisation. */
   std::mutex mutex_;
 
-  /**
-   * @brief conditional variable for threadpool synchronisation.
-   */
+  /** conditional variable for threadpool synchronisation */
   std::condition_variable cv_;
 
-  /**
-   * @brief flag for threadpool synchronisation.
-   */
+  /** flag for threadpool synchronisation. */
   bool completed_;
 };

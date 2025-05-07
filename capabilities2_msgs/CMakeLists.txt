@@ -24,7 +24,6 @@ set(msg_files
   "msg/NaturalCapability.msg"
   "msg/CapabilityCommand.msg"
   "msg/CapabilityResponse.msg"
-  "msg/Status.msg"
 )
 
 set(srv_files

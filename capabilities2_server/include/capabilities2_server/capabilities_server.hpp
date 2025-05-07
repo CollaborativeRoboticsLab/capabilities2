@@ -34,6 +34,9 @@
 #include <capabilities2_msgs/srv/get_remappings.hpp>
 #include <capabilities2_msgs/srv/get_running_capabilities.hpp>
 
+#include <capabilities2_events/event_client.hpp>
+#include <capabilities2_events/event_types.hpp>
+
 namespace capabilities2_server
 {
 
@@ -60,8 +63,28 @@ public:
   CapabilitiesServer(const rclcpp::NodeOptions& options = rclcpp::NodeOptions())
     : Node("capabilities2", options), CapabilitiesAPI()
   {
+    try
+    {
+      // Only call setup if this object is already owned by a shared_ptr
+      if (shared_from_this())
+      {
+        initialize();
+      }
+    }
+    catch (const std::bad_weak_ptr&)
+    {
+      // Not yet safe — probably standalone without make_shared
+    }
+  }
+
+  /**
+   * @brief Initializes the capabilities server node.
+   *
+   */
+  void initialize()
+  {
     // pubs
-    event_pub_ = create_publisher<capabilities2_msgs::msg::CapabilityEvent>("~/events", 10);
+    event_ = std::make_shared<EventClient>(shared_from_this(), "server", "/events");
 
     // params interface
     // loop rate
@@ -87,11 +110,11 @@ public:
     if (rebuild)
     {
       // remove db file if it exists
-      event_publish("Removing the old capabilities database", false);
+      event_->info("Removing the old capabilities database");
 
       if (std::remove(db_file.c_str()) != 0)
       {
-        event_publish("Error deleting database file " + db_file, false, true);
+        event_->error("Error deleting database file " + db_file);
       }
     }
 
@@ -99,20 +122,17 @@ public:
     if (!std::filesystem::exists(db_path))
     {
       // create db file path
-      event_publish("Creating capabilities database", false);
+      event_->info("Creating capabilities database");
 
       std::filesystem::create_directories(db_path.parent_path());
     }
 
     // init capabilities api
-    event_publish("Connecting API with Database", false);
+    event_->info("Connecting Capabilities API with Database");
 
-    connect(db_file, get_node_logging_interface(),
-            std::bind(&capabilities2_server::CapabilitiesServer::event_publish, this, std::placeholders::_1,
-                      std::placeholders::_2, std::placeholders::_3),
-            std::bind(&capabilities2_server::CapabilitiesServer::event_publish_runner, this, std::placeholders::_1));
+    connect(db_file, event_);
 
-    event_publish("Loading capabilities", false);
+    event_->info("Loading capabilities");
 
     // load capabilities from package paths
     for (const auto& package_path : package_paths)
@@ -120,7 +140,7 @@ public:
       load_capabilities(package_path);
     }
 
-    event_publish("Starting server interfaces", false);
+    event_->info("Starting server interfaces");
 
     // services
     // establish bond
@@ -193,7 +213,7 @@ public:
                                                 std::placeholders::_1, std::placeholders::_2));
 
     // publish ready event
-    event_publish("capabilities server start up complete");
+    event_->info("capabilities server start up complete");
   }
 
   // service callbacks
@@ -249,13 +269,13 @@ public:
     // guard empty values
     if (req->capability.empty())
     {
-      event_publish("free_capability: capability is empty", true, true);
+      event_->error("free_capability: capability is empty");
       return;
     }
 
     if (req->bond_id.empty())
     {
-      event_publish("free_capability: bond_id is empty", true, true);
+      event_->error("free_capability: bond_id is empty");
       return;
     }
 
@@ -272,19 +292,19 @@ public:
     // guard empty values
     if (req->capability.empty())
     {
-      event_publish("use_capability: capability is empty", true, true);
+      event_->error("use_capability: capability is empty");
       return;
     }
 
     if (req->preferred_provider.empty())
     {
-      event_publish("use_capability: preferred_provider is empty", true, true);
+      event_->error("use_capability: preferred_provider is empty");
       return;
     }
 
     if (req->bond_id.empty())
     {
-      event_publish("use_capability: bond_id is empty", true, true);
+      event_->error("use_capability: bond_id is empty");
       return;
     }
 
@@ -298,11 +318,26 @@ public:
   void configure_capability_cb(const std::shared_ptr<capabilities2_msgs::srv::ConfigureCapability::Request> req,
                                std::shared_ptr<capabilities2_msgs::srv::ConfigureCapability::Response> res)
   {
+    capabilities2::event_opts event_options;
+
+    event_options.on_started.interface = req->target_on_start.capability;
+    event_options.on_started.provider = req->target_on_start.provider;
+    event_options.on_started.parameters = req->target_on_start.parameters;
+
+    event_options.on_failure.interface = req->target_on_failure.capability;
+    event_options.on_failure.provider = req->target_on_failure.provider;
+    event_options.on_failure.parameters = req->target_on_failure.parameters;
+
+    event_options.on_success.interface = req->target_on_success.capability;
+    event_options.on_success.provider = req->target_on_success.provider;
+    event_options.on_success.parameters = req->target_on_success.parameters;
+
+    event_options.on_stopped.interface = req->target_on_stop.capability;
+    event_options.on_stopped.provider = req->target_on_stop.provider;
+    event_options.on_stopped.parameters = req->target_on_stop.parameters;
+
     // setup triggers between parameters
-    set_triggers(req->source.capability, req->target_on_start.capability, req->target_on_start.parameters,
-                 req->target_on_failure.capability, req->target_on_failure.parameters,
-                 req->target_on_success.capability, req->target_on_success.parameters, req->target_on_stop.capability,
-                 req->target_on_stop.parameters);
+    set_triggers(req->source.capability, event_options);
 
     // response is empty
   }
@@ -314,7 +349,7 @@ public:
     // guard empty values
     if (req->capability_spec.package.empty() || req->capability_spec.content.empty())
     {
-      event_publish("register_capability: package or content is empty", true, true);
+      event_->error("register_capability: package or content is empty");
       return;
     }
 
@@ -364,7 +399,7 @@ public:
     // if the spec is not empty set response
     if (capability_spec.content.empty())
     {
-      event_publish("capability spec not found for resource: " + req->capability_spec, true, true);
+      event_->error("capability spec not found for resource: " + req->capability_spec);
 
       // BUG: throw error causes service to crash, this is a ROS2 bug
       // std::runtime_error("capability spec not found for resource: " + req->capability_spec);
@@ -407,12 +442,12 @@ public:
 private:
   void load_capabilities(const std::string& package_path)
   {
-    RCLCPP_DEBUG(get_logger(), "Loading capabilities from package path: %s", package_path.c_str());
+    event_->debug("Loading capabilities from package path: " + package_path);
 
     // check if path exists
     if (!std::filesystem::exists(package_path))
     {
-      event_publish("package path does not exist: " + package_path, true, true);
+      event_->error("package path does not exist: " + package_path);
       return;
     }
 
@@ -439,7 +474,7 @@ private:
     // load capabilities from packages in /opt/ros/*/share
     for (const auto& package : packages_root)
     {
-      RCLCPP_DEBUG(get_logger(), "loading capabilities from package: %s", package.c_str());
+      event_->debug("Loading capabilities from package: " + package);
 
       // package.xml exports
       std::string package_xml = package_path + "/" + package + "/package.xml";
@@ -447,7 +482,7 @@ private:
       // check if package.xml exists
       if (!std::filesystem::exists(package_xml))
       {
-        RCLCPP_DEBUG(get_logger(), "package.xml does not exist: %s", package_xml.c_str());
+        event_->error("package.xml does not exist: " + package_xml);
         continue;
       }
 
@@ -460,7 +495,7 @@ private:
       }
       catch (const std::runtime_error& e)
       {
-        event_publish("failed to parse package.xml file: " + std::string(e.what()), true, true);
+        event_->error("failed to parse package.xml file: " + std::string(e.what()));
         continue;
       }
 
@@ -469,7 +504,7 @@ private:
 
       if (exports == nullptr)
       {
-        RCLCPP_DEBUG(get_logger(), "No exports found in package.xml file: %s", package_xml.c_str());
+        event_->error("No exports found in package.xml file: " + package_xml);
         continue;
       }
 
@@ -500,13 +535,13 @@ private:
             load_spec_content(package_path + "/" + package + "/" + spec_path, capability_spec);
 
             // add capability to db
-            event_publish("adding capability: " + package + "/" + spec_path);
+            event_->info("adding capability: " + package + "/" + spec_path);
 
             add_capability(capability_spec);
           }
           catch (const std::runtime_error& e)
           {
-            event_publish("failed to load spec file: " + std::string(e.what()), true, true);
+            event_->error("failed to load spec file: " + std::string(e.what()));
           }
         }
       };
@@ -522,7 +557,7 @@ private:
     // load capabilities from packages in workspace install folder
     for (const auto& package : packages_install)
     {
-      RCLCPP_DEBUG(get_logger(), "loading capabilities from package: %s", package.c_str());
+      event_->debug("Loading capabilities from package: " + package);
 
       // package.xml exports
       std::string package_xml = package_path + "/" + package + "/share/" + package + "/package.xml";
@@ -530,7 +565,7 @@ private:
       // check if package.xml exists
       if (!std::filesystem::exists(package_xml))
       {
-        RCLCPP_DEBUG(get_logger(), "package.xml does not exist: %s", package_xml.c_str());
+        event_->error("package.xml does not exist: " + package_xml);
         continue;
       }
 
@@ -543,7 +578,7 @@ private:
       }
       catch (const std::runtime_error& e)
       {
-        event_publish("failed to parse package.xml file: " + std::string(e.what()), true, true);
+        event_->error("failed to parse package.xml file: " + std::string(e.what()));
         continue;
       }
 
@@ -552,7 +587,7 @@ private:
 
       if (exports == nullptr)
       {
-        RCLCPP_DEBUG(get_logger(), "No exports found in package.xml file: %s", package_xml.c_str());
+        event_->error("No exports found in package.xml file: " + package_xml);
         continue;
       }
 
@@ -583,13 +618,13 @@ private:
             load_spec_content(package_path + "/" + package + "/share/" + package + "/" + spec_path, capability_spec);
 
             // add capability to db
-            event_publish("adding capability: " + package + "/" + spec_path);
+            event_->info("adding capability: " + package + "/" + spec_path);
 
             add_capability(capability_spec);
           }
           catch (const std::runtime_error& e)
           {
-            event_publish("failed to load spec file: " + std::string(e.what()), true, true);
+            event_->error("failed to load spec file: " + std::string(e.what()));
           }
         }
       };
@@ -655,68 +690,13 @@ private:
     spec_file_file.close();
   }
 
-  void event_publish(const std::string& text, bool is_server_ready = true, bool is_error = false)
-  {
-    auto message = capabilities2_msgs::msg::CapabilityEvent();
-
-    message.header.stamp = rclcpp::Clock().now();
-    message.source.capability = "";
-    message.source.provider = "";
-    message.target.capability = "";
-    message.target.provider = "";
-    message.thread_id = 0;
-    message.text = text;
-    message.error = is_error;
-    message.pid = -1;
-    message.server_ready = is_server_ready;
-
-    event_pub_->publish(message);
-
-    if (is_error)
-      RCLCPP_ERROR(get_logger(), text.c_str());
-    else
-      RCLCPP_INFO(get_logger(), text.c_str());
-  }
-
-  void event_publish_runner(capabilities2_msgs::msg::CapabilityEvent& message)
-  {
-    message.pid = get_pid(message.source.capability);
-    message.server_ready = true;
-
-    event_pub_->publish(message);
-
-    std::string text;
-    if (message.thread_id >= 0 and message.target.capability == "")
-    {
-      text = "[" + message.source.capability + "/" + std::to_string(message.thread_id) + "] " + message.text;
-    }
-    else if (message.thread_id < 0 and message.target.capability == "")
-    {
-      text = "[" + message.source.capability + "] " + message.text;
-    }
-    else if (message.thread_id >= 0 and message.target.capability != "")
-    {
-      text = "[" + message.source.capability + "/" + std::to_string(message.thread_id) + "] triggering " +
-             message.target.capability + " " + message.text;
-    }
-    else if (message.thread_id < 0 and message.target.capability != "")
-    {
-      text = "[" + message.source.capability + "] triggering " + message.target.capability + " " + message.text;
-    }
-
-    if (message.error)
-      RCLCPP_ERROR(get_logger(), text.c_str());
-    else
-      RCLCPP_INFO(get_logger(), text.c_str());
-  }
-
 private:
   // loop hz
   double loop_hz_;
 
   // publishers
-  // event publisher
-  rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEvent>::SharedPtr event_pub_;
+  /** Event client for publishing events */
+  std::shared_ptr<EventClient> event_;
 
   // services
   // establish bond

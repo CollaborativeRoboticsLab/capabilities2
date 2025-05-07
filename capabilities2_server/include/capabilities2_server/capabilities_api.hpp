@@ -16,7 +16,8 @@
 #include <capabilities2_server/capabilities_db.hpp>
 #include <capabilities2_server/bond_cache.hpp>
 #include <capabilities2_server/runner_cache.hpp>
-#include <capabilities2_runner/utils/capability_event_t.hpp>
+#include <capabilities2_events/event_types.hpp>
+#include <capabilities2_events/event_client.hpp>
 
 #include <capabilities2_msgs/msg/remapping.hpp>
 #include <capabilities2_msgs/msg/capability.hpp>
@@ -46,22 +47,19 @@ public:
    * @brief connect with the database file
    *
    * @param db_file file path of the database file
-   * @param node_logging_interface_ptr pointer to the ROS node logging interface
+   * @param event_client pointer to the event publishing interface
    */
-  void connect(const std::string& db_file, rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging,
-               std::function<void(const std::string&, bool, bool)> print,
-               std::function<void(capabilities2_msgs::msg::CapabilityEvent&)> runner_print)
+  void connect(const std::string& db_file, std::shared_ptr<EventClient> event_client)
   {
-    print_ = print;
-    logging_ = logging;
+    event_ = event_client;
 
-    runner_cache_.connect(print, runner_print, logging);
+    runner_cache_.connect(event_client);
 
     // connect db
     cap_db_ = std::make_unique<CapabilitiesDB>(db_file);
 
     // log
-    print_("Capabilities API connected to db: " + db_file, false, false);
+    event_->info("Capabilities API connected to db: " + db_file);
   }
 
   /**
@@ -85,7 +83,7 @@ public:
     // go through the running model and start the necessary dependencies
     for (const auto& run : running.dependencies)
     {
-      print_("found dependency: " + run.interface, true, false);
+      event_->info("found dependency: " + run.interface);
 
       // make an internal 'use' bond for the capability dependency
       bind_dependency(run.interface);
@@ -106,13 +104,13 @@ public:
     {
       runner_cache_.add_runner(node, capability, run_config);
 
-      print_("started capability: " + capability + " with provider: " + provider, true, false);
+      event_->info("started capability: " + capability + " with provider: " + provider);
 
       return value and true;
     }
     catch (const capabilities2_runner::runner_exception& e)
     {
-      RCLCPP_WARN(logging_->get_logger(), "could not start runner: %s", e.what());
+      event_->error("could not start runner: " + std::string(e.what()));
       return false;
     }
   }
@@ -135,7 +133,7 @@ public:
     }
     catch (const capabilities2_runner::runner_exception& e)
     {
-      RCLCPP_WARN(logging_->get_logger(), "could not trigger runner: %s", e.what());
+      event_->error("could not trigger runner: " + std::string(e.what()));
     }
   }
 
@@ -150,7 +148,7 @@ public:
     // this can happen if dependencies fail to resolve in the first place
     if (!runner_cache_.running(capability))
     {
-      print_("could not get provider for: " + capability, true, true);
+      event_->error("could not get provider for: " + capability);
       return;
     }
 
@@ -164,7 +162,7 @@ public:
     // FIXME: this unrolls the dependency tree from the bottom up but should probably be top down
     for (const auto& run : running.dependencies)
     {
-      print_("freeing dependency: " + run.interface + "of : " + capability, true, false);
+      event_->info("freeing dependency: " + run.interface + "of : " + capability);
 
       // remove the internal 'use' bond for the capability dependency
       unbind_dependency(run.interface);
@@ -180,16 +178,16 @@ public:
     // this will implicitly stop the runner
     try
     {
-        runner_cache_.remove_runner(capability);
+      runner_cache_.remove_runner(capability);
     }
     catch (const capabilities2_runner::runner_exception& e)
     {
-      RCLCPP_WARN(logging_->get_logger(), "could not stop runner: %s", e.what());
+      event_->error("could not stop runner: " + std::string(e.what()));
       return;
     }
 
     // log
-    print_("stopped capability: " + capability, true, false);
+    event_->info("stopped capability: " + capability);
   }
 
   /**
@@ -208,7 +206,7 @@ public:
     if (!bond_cache_.exists(capability))
     {
       // stop the capability
-      print_("stopping freed capability: " + capability, true, false);
+      event_->info("stopping freed capability: " + capability);
 
       stop_capability(capability);
     }
@@ -239,35 +237,22 @@ public:
    * @brief Set triggers for `on_success`, `on_failure`, `on_start`, `on_stop` events for a given capability
    *
    * @param capability capability from where the events originate
-   * @param on_started_capability capability triggered by on_start event
-   * @param on_started_parameters parameters related to capability triggered by on_start event
-   * @param on_stopped_capability capability triggered by on_stop event
-   * @param on_stopped_parameters parameters related to capability triggered by on_stop event
-   * @param on_success_capability capability triggered by on_success event
-   * @param on_success_parameters parameters related to capability triggered by on_success event
-   * @param on_failure_capability capability triggered by on_failure event
-   * @param on_failure_parameters parameters related to capability triggered by on_failure event
+   * @param event_options event options for the capability
    */
-  void set_triggers(const std::string& capability, const std::string& on_started_capability,
-                    const std::string& on_started_parameters, const std::string& on_failure_capability,
-                    const std::string& on_failure_parameters, const std::string& on_success_capability,
-                    const std::string& on_success_parameters, const std::string& on_stopped_capability,
-                    const std::string& on_stopped_parameters)
+  void set_triggers(const std::string& capability, capabilities2::event_opts& event_options)
   {
     try
     {
       // log
-      print_("Setting triggers for capability: " + capability, true, false);
+      event_->info("Setting triggers for capability: " + capability);
 
-      runner_cache_.set_runner_triggers(capability, on_started_capability, on_started_parameters, on_failure_capability,
-                                        on_failure_parameters, on_success_capability, on_success_parameters,
-                                        on_stopped_capability, on_stopped_parameters);
+      runner_cache_.set_runner_triggers(capability, event_options);
 
-      print_("Successfully set triggers for capability: " + capability, true, false);
+      event_->info("Successfully set triggers for capability: " + capability);
     }
     catch (const capabilities2_runner::runner_exception& e)
     {
-      RCLCPP_WARN(logging_->get_logger(), "Sould not set triggers: %s", e.what());
+      event_->error("could not set triggers for the runner: " + std::string(e.what()));
     }
   }
 
@@ -285,7 +270,7 @@ public:
       // exists guard
       if (cap_db_->exists<models::interface_model_t>(header.name))
       {
-        RCLCPP_WARN(logging_->get_logger(), "interface already exists");
+        event_->info(header.name + " interface already exists");
         return;
       }
 
@@ -297,7 +282,7 @@ public:
       }
       catch (const std::exception& e)
       {
-        print_("failed to convert spec to model: " + std::string(e.what()), true, true);
+        event_->error("failed to convert spec to model: " + std::string(e.what()));
         return;
       }
 
@@ -305,7 +290,7 @@ public:
       model.header.name = spec.package + "/" + model.header.name;
       cap_db_->insert_interface(model);
 
-      print_("interface added to db: " + model.header.name, true, false);
+      event_->info("interface added to db: " + model.header.name);
 
       return;
     }
@@ -314,7 +299,7 @@ public:
     {
       if (cap_db_->exists<models::semantic_interface_model_t>(header.name))
       {
-        RCLCPP_WARN(logging_->get_logger(), "semantic interface already exists");
+        event_->info(header.name + " semantic interface already exists");
         return;
       }
 
@@ -326,7 +311,7 @@ public:
       }
       catch (const std::exception& e)
       {
-        print_("failed to convert spec to model: " + std::string(e.what()), true, true);
+        event_->error("failed to convert spec to model: " + std::string(e.what()));
         return;
       }
 
@@ -334,7 +319,7 @@ public:
       cap_db_->insert_semantic_interface(model);
 
       // log
-      print_("semantic interface added to db: " + model.header.name, true, false);
+      event_->info("semantic interface added to db: " + model.header.name);
 
       return;
     }
@@ -343,7 +328,7 @@ public:
     {
       if (cap_db_->exists<models::provider_model_t>(header.name))
       {
-        RCLCPP_WARN(logging_->get_logger(), "provider already exists");
+        event_->info(header.name + " provider already exists");
         return;
       }
 
@@ -355,7 +340,7 @@ public:
       }
       catch (const std::exception& e)
       {
-        print_("failed to convert spec to model: " + std::string(e.what()), true, true);
+        event_->error("failed to convert spec to model: " + std::string(e.what()));
         return;
       }
 
@@ -363,12 +348,12 @@ public:
       cap_db_->insert_provider(model);
 
       // log
-      print_("provider added to db: " + model.header.name, true, false);
+      event_->info("provider added to db: " + model.header.name);
       return;
     }
 
     // couldn't parse unknown capability type
-    print_("unknown capability type: " + spec.type, true, true);
+    event_->error("unknown capability type: " + spec.type);
   }
 
   // query api
@@ -627,13 +612,13 @@ public:
   void on_bond_established(const std::string& bond_id)
   {
     // log bond established event
-    RCLCPP_INFO(logging_->get_logger(), "bond established with id: %s", bond_id.c_str());
+    event_->info("bond established with id: " + bond_id);
   }
 
   void on_bond_broken(const std::string& bond_id)
   {
     // log warning
-    RCLCPP_WARN(logging_->get_logger(), "bond broken for id: %s", bond_id.c_str());
+    event_->error("bond broken for id: " + bond_id);
 
     // get capabilities requested by the bond
     std::vector<std::string> capabilities = bond_cache_.get_capabilities(bond_id);
@@ -707,8 +692,8 @@ private:
   // db
   std::unique_ptr<DBBase> cap_db_;
 
-  // for internal logging
-  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_;
+  // for events publishing
+  std::shared_ptr<EventClient> event_;
 
   // caches
   BondCache bond_cache_;
@@ -716,9 +701,6 @@ private:
 
   // internal bindings
   std::vector<std::string> internal_bond_ids_;
-
-  // event function for external event publishing
-  std::function<void(const std::string&, bool, bool)> print_;
 };
 
 }  // namespace capabilities2_server

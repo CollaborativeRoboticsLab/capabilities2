@@ -1,21 +1,18 @@
 std_msgs/Header header
 
+# Node name which published this event
+string origin_node
+
 # Capability which this event pertains to
 Capability source
 
 # Capability which this event targets at
 Capability target
 
-# Capability trigger thread id
+# Thread id of the capability which this event pertains to
 int8 thread_id
 
-# status message
-string text
-
-# status message
-string element
-
-# Event types
+# Events available
 uint8 IDLE=0
 uint8 STARTED=1
 uint8 STOPPED=2
@@ -23,17 +20,20 @@ uint8 FAILED=3
 uint8 SUCCEEDED=4
 uint8 UNDEFINED=5
 
-# Event type
+# Related event
 uint8 event
 
-# Whether the server configuration is complete
-bool server_ready
+# Event types available
+uint8 INFO=0
+uint8 DEBUG=1
+uint8 ERROR=2
+uint8 ERROR_ELEMENT=3
 
-# Whether a failure occured
-bool error
+# Related event type
+uint8 type
 
-# Whether output data
-bool is_element
+# status message
+string content
 
 # PID of the related process
 int32 pid

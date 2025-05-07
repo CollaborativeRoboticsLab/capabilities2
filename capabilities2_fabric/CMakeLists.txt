@@ -15,11 +15,13 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_components REQUIRED)
-find_package(capabilities2_msgs REQUIRED)
 find_package(tinyxml2_vendor REQUIRED)
 find_package(TinyXML2 REQUIRED)  # provided by tinyxml2 upstream, or tinyxml2_vendor
 find_package(bondcpp REQUIRED)
 find_package(backward_ros REQUIRED)
+find_package(capabilities2_msgs REQUIRED)
+find_package(capabilities2_events REQUIRED)
+find_package(capabilities2_utils REQUIRED)
 
 include_directories(
   include
@@ -38,6 +40,8 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp_action
   bondcpp
   capabilities2_msgs
+  capabilities2_events
+  capabilities2_utils
   TinyXML2
 )
 
@@ -50,7 +54,7 @@ install(TARGETS ${PROJECT_NAME}
 ############################################################################
 
 add_library(${PROJECT_NAME}_comp SHARED
-  src/capabilities_fabric_comp.cpp
+  src/capabilities_fabric_component.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME}_comp
@@ -59,6 +63,8 @@ ament_target_dependencies(${PROJECT_NAME}_comp
   rclcpp_components
   bondcpp
   capabilities2_msgs
+  capabilities2_events
+  capabilities2_utils
   TinyXML2
 )
 
@@ -88,6 +94,8 @@ ament_target_dependencies(fabric_client
   rclcpp
   rclcpp_action
   capabilities2_msgs
+  capabilities2_events
+  capabilities2_utils
   TinyXML2
 )
 
@@ -100,7 +108,7 @@ install(TARGETS fabric_client
 ############################################################################
 
 add_library(fabric_client_comp SHARED
-  src/capabilities_fabric_client_comp.cpp
+  src/capabilities_fabric_client_component.cpp
 )
 
 ament_target_dependencies(fabric_client_comp
@@ -109,6 +117,8 @@ ament_target_dependencies(fabric_client_comp
   rclcpp_components
   bondcpp
   capabilities2_msgs
+  capabilities2_events
+  capabilities2_utils
   TinyXML2
 )
 
