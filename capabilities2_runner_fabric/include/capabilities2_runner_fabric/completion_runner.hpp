@@ -3,7 +3,7 @@
 #include <tinyxml2.h>
 #include <pluginlib/class_list_macros.hpp>
 #include <capabilities2_runner/service_runner.hpp>
-#include <capabilities2_msgs/srv/complete_fabric.hpp>
+#include <fabric_msgs/srv/complete_fabric.hpp>
 
 namespace capabilities2_runner
 {
@@ -14,7 +14,7 @@ namespace capabilities2_runner
  * call on the /capabilities_fabric/set_completion service, providing it as a 
  * capability that notifys the completion of the fabric
  */
-class FabricCompletionRunner : public ServiceRunner<capabilities2_msgs::srv::CompleteFabric>
+class FabricCompletionRunner : public ServiceRunner<fabric_msgs::srv::CompleteFabric>
 {
 public:
   FabricCompletionRunner() : ServiceRunner()
@@ -29,7 +29,7 @@ public:
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
   {
-    init_service(node, run_config, "/capabilities_fabric/set_completion");
+    init_service(node, run_config, "/fabric/set_completion");
   }
 
 protected:
@@ -42,9 +42,9 @@ protected:
    * @param parameters
    * @return prompt_msgs::srv::Prompt::Request the generated request
    */
-  virtual typename capabilities2_msgs::srv::CompleteFabric::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
+  virtual typename fabric_msgs::srv::CompleteFabric::Request generate_request(tinyxml2::XMLElement* parameters, int id) override
   {
-    capabilities2_msgs::srv::CompleteFabric::Request request;
+    fabric_msgs::srv::CompleteFabric::Request request;
     return request;
   }
 };

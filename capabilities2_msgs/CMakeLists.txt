@@ -43,16 +43,11 @@ set(srv_files
   "srv/ConfigureCapability.srv"
   "srv/TriggerCapability.srv"
   "srv/Launch.srv"
-  "srv/GetFabricStatus.srv"
-  "srv/SetFabricPlan.srv"
-  "srv/CancelFabricPlan.srv"
-  "srv/CompleteFabric.srv"
 )
 
 set(action_files
   "action/Capability.action"
   "action/Launch.action"
-  "action/Plan.action"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
