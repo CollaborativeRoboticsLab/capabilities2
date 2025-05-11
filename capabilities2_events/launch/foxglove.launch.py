@@ -12,7 +12,8 @@ def generate_launch_description():
         DeclareLaunchArgument('tls', default_value='false'),
         DeclareLaunchArgument('certfile', default_value=''),
         DeclareLaunchArgument('keyfile', default_value=''),
-        DeclareLaunchArgument('topic_whitelist', default_value="['.*']"),
+        DeclareLaunchArgument('topic_whitelist', default_value="['/events']"),
+        # DeclareLaunchArgument('topic_whitelist', default_value="['.*']"),  # Uncomment this line to whitelist all topics
         DeclareLaunchArgument('param_whitelist', default_value="['.*']"),
         DeclareLaunchArgument('service_whitelist', default_value="['.*']"),
         DeclareLaunchArgument('client_topic_whitelist', default_value="['.*']"),
