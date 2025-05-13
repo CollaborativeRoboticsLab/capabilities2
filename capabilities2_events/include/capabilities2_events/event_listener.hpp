@@ -26,6 +26,22 @@ private:
     {
       text = "[" + msg.origin_node + "]" + "[" + msg.source.capability + "/" + std::to_string(msg.thread_id) + "] " + msg.content;
     }
+    else if (msg.type == Event::DEFINE_EVENT and msg.event == Event::STARTED)
+    {
+      text = "[" + msg.origin_node + "]" + "[" + msg.source.capability + "] will trigger [" + msg.target.capability + "] on start";
+    }
+    else if (msg.type == Event::DEFINE_EVENT and msg.event == Event::STOPPED)
+    {
+      text = "[" + msg.origin_node + "]" + "[" + msg.source.capability + "] will trigger [" + msg.target.capability + "] on stop";
+    }
+    else if (msg.type == Event::DEFINE_EVENT and msg.event == Event::FAILED)
+    {
+      text = "[" + msg.origin_node + "]" + "[" + msg.source.capability + "] will trigger [" + msg.target.capability + "] on failure";
+    }
+    else if (msg.type == Event::DEFINE_EVENT and msg.event == Event::SUCCEEDED)
+    {
+      text = "[" + msg.origin_node + "]" + "[" + msg.source.capability + "] will trigger [" + msg.target.capability + "] on success";
+    }
     else if (msg.thread_id >= 0 and msg.target.capability == "" and msg.source.capability == "")
     {
       text = "[" + msg.origin_node + "]" + "[" + std::to_string(msg.thread_id) + "] " + msg.content;
@@ -54,12 +70,16 @@ private:
 
     if (msg.type == Event::ERROR)
       RCLCPP_ERROR(get_logger(), text.c_str());
-    else if (msg.type == Event::INFO)
-      RCLCPP_INFO(get_logger(), text.c_str());
+    else if (msg.type == Event::ERROR_ELEMENT)
+      RCLCPP_ERROR(get_logger(), text.c_str());
     else if (msg.type == Event::DEBUG)
       RCLCPP_DEBUG(get_logger(), text.c_str());
+    else if (msg.type == Event::INFO)
+      RCLCPP_INFO(get_logger(), text.c_str());
+    else if (msg.type == Event::DEFINE_EVENT)
+      RCLCPP_INFO(get_logger(), text.c_str());
     else
-      RCLCPP_ERROR(get_logger(), text.c_str());
+      RCLCPP_INFO(get_logger(), text.c_str());
   }
 
   rclcpp::Subscription<Event>::SharedPtr subscription_;

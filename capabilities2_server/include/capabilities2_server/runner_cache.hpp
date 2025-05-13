@@ -121,11 +121,6 @@ public:
     int event_count = runner_cache_[capability]->attach_events(
         event_options, std::bind(&capabilities2_server::RunnerCache::trigger_runner, this, std::placeholders::_1,
                                  std::placeholders::_2));
-
-    event_->info(
-        "Configured triggers for capability " + capability + ": \n\tStarted: " + event_options.on_started.interface +
-        " \n\tFailure: " + event_options.on_failure.interface + " \n\tSuccess: " + event_options.on_success.interface +
-        "\n\tStopped: " + event_options.on_stopped.interface);
   }
 
   /**
