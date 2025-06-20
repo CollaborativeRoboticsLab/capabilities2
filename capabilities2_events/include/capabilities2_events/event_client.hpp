@@ -26,6 +26,16 @@ public:
   }
 
   /**
+   * @brief publishes status information to the given topic
+   *
+   * @param message Message to be published
+   */
+  void publish(const Event& message)
+  {
+    event_publisher_->publish(message);
+  }
+
+  /**
    * @brief publishes status information to the given topic as info
    *
    * @param text Text to be published
@@ -47,17 +57,7 @@ public:
     message.content = text;
     message.pid = -1;
 
-    event_publisher_->publish(message);
-  }
-
-  /**
-   * @brief publishes status information to the given topic as info
-   *
-   * @param message Message to be published
-   */
-  void info(const Event& message)
-  {
-    event_publisher_->publish(message);
+    publish(message);
   }
 
   /**
@@ -82,17 +82,7 @@ public:
     message.content = text;
     message.pid = -1;
 
-    event_publisher_->publish(message);
-  }
-
-  /**
-   * @brief publishes status information to the given topic as debug
-   *
-   * @param message Message to be published
-   */
-  void debug(const Event& message)
-  {
-    event_publisher_->publish(message);
+    publish(message);
   }
 
   /**
@@ -116,17 +106,7 @@ public:
     message.content = text;
     message.pid = -1;
 
-    event_publisher_->publish(message);
-  }
-
-  /**
-   * @brief publishes status information to the given topic as error
-   *
-   * @param message Message to be published
-   */
-  void error(const Event& message)
-  {
-    event_publisher_->publish(message);
+    publish(message);
   }
 
   /**
@@ -150,27 +130,16 @@ public:
     message.content = element;
     message.pid = -1;
 
-    event_publisher_->publish(message);
+    publish(message);
   }
 
   /**
-   * @brief publishes status information to the given topic as error with
-   * element infromation included
-   *
-   * @param message Message to be published
-   */
-  void error_element(const Event& message)
-  {
-    event_publisher_->publish(message);
-  }
-
-  /**
-   * @brief publishes element information to the given topic as error
+   * @brief publishes element information to the given topic as event
    *
    * @param element element information to be published
    */
-  void define_event(const std::string& src_capability, const std::string& src_provider, const std::string& tgt_capability,
-                    const std::string& tgt_provider, uint8_t event = Event::UNDEFINED)
+  void runner_define(const std::string& src_capability, const std::string& src_provider, const std::string& tgt_capability,
+                     const std::string& tgt_provider, uint8_t event = Event::UNDEFINED)
   {
     auto message = Event();
 
@@ -182,11 +151,11 @@ public:
     message.target.provider = tgt_provider;
     message.thread_id = -1;
     message.event = event;
-    message.type = Event::DEFINE_EVENT;
+    message.type = Event::RUNNER_DEFINE;
     message.content = "";
     message.pid = -1;
 
-    event_publisher_->publish(message);
+    publish(message);
   }
 
 protected:

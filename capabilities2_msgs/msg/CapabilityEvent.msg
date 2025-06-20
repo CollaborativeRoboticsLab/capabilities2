@@ -28,7 +28,8 @@ uint8 INFO=0
 uint8 DEBUG=1
 uint8 ERROR=2
 uint8 ERROR_ELEMENT=3
-uint8 DEFINE_EVENT=4
+uint8 RUNNER_DEFINE=4
+uint8 RUNNER_EVENT=5
 
 # Related event type
 uint8 type

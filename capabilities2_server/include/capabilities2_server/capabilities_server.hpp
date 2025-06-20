@@ -324,25 +324,29 @@ public:
     event_options.on_started.provider = req->target_on_start.provider;
     event_options.on_started.parameters = req->target_on_start.parameters;
 
-    event_->define_event(req->source.capability, req->source.provider, req->target_on_start.capability, req->target_on_start.provider, capabilities2_msgs::msg::CapabilityEvent::STARTED);
+    event_->runner_define(req->source.capability, req->source.provider, req->target_on_start.capability,
+                          req->target_on_start.provider, capabilities2_msgs::msg::CapabilityEvent::STARTED);
 
     event_options.on_failure.interface = req->target_on_failure.capability;
     event_options.on_failure.provider = req->target_on_failure.provider;
     event_options.on_failure.parameters = req->target_on_failure.parameters;
 
-    event_->define_event(req->source.capability, req->source.provider, req->target_on_failure.capability, req->target_on_failure.provider, capabilities2_msgs::msg::CapabilityEvent::FAILED);
+    event_->runner_define(req->source.capability, req->source.provider, req->target_on_failure.capability,
+                          req->target_on_failure.provider, capabilities2_msgs::msg::CapabilityEvent::FAILED);
 
     event_options.on_success.interface = req->target_on_success.capability;
     event_options.on_success.provider = req->target_on_success.provider;
     event_options.on_success.parameters = req->target_on_success.parameters;
 
-    event_->define_event(req->source.capability, req->source.provider, req->target_on_success.capability, req->target_on_success.provider, capabilities2_msgs::msg::CapabilityEvent::SUCCEEDED);
+    event_->runner_define(req->source.capability, req->source.provider, req->target_on_success.capability,
+                          req->target_on_success.provider, capabilities2_msgs::msg::CapabilityEvent::SUCCEEDED);
 
     event_options.on_stopped.interface = req->target_on_stop.capability;
     event_options.on_stopped.provider = req->target_on_stop.provider;
     event_options.on_stopped.parameters = req->target_on_stop.parameters;
 
-    event_->define_event(req->source.capability, req->source.provider, req->target_on_stop.capability, req->target_on_stop.provider, capabilities2_msgs::msg::CapabilityEvent::STOPPED);
+    event_->runner_define(req->source.capability, req->source.provider, req->target_on_stop.capability,
+                          req->target_on_stop.provider, capabilities2_msgs::msg::CapabilityEvent::STOPPED);
 
     // setup triggers between parameters
     set_triggers(req->source.capability, event_options);
