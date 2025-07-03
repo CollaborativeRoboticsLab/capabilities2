@@ -7,9 +7,9 @@
 #include <thread>
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
-#include <capabilities2_msgs/msg/capability_event.hpp>
-#include <capabilities2_events/event_types.hpp>
-#include <capabilities2_events/event_client.hpp>
+#include <event_logger_msgs/msg/event.hpp>
+#include <event_logger/event_types.hpp>
+#include <event_logger/event_client.hpp>
 
 namespace capabilities2_runner
 {
@@ -65,8 +65,8 @@ struct runner_opts
 class RunnerBase
 {
 public:
-  using Event = capabilities2_msgs::msg::CapabilityEvent;
-  using EventType = capabilities2::event_t;
+  using Event = event_logger_msgs::msg::Event;
+  using EventType = event_logger::event_t;
 
   RunnerBase() : run_config_()
   {
@@ -141,7 +141,7 @@ public:
    *
    * @return number of attached events
    */
-  int attach_events(capabilities2::event_opts& event_option,
+  int attach_events(event_logger::event_opts& event_option,
                     std::function<void(const std::string&, const std::string&)> triggerFunction)
   {
     info_("accepted event options with ID : " + std::to_string(insert_id));
@@ -453,10 +453,10 @@ protected:
 
     message.header.stamp = node_->now();
     message.origin_node = "runners";
-    message.source.capability = run_config_.interface;
-    message.source.provider = run_config_.provider;
-    message.target.capability = "";
-    message.target.provider = "";
+    message.source_capability = run_config_.interface;
+    message.source_provider = run_config_.provider;
+    message.target_capability = "";
+    message.target_provider = "";
     message.thread_id = thread_id;
     message.type = Event::INFO;
     message.content = text;
@@ -472,10 +472,10 @@ protected:
 
     message.header.stamp = node_->now();
     message.origin_node = "runners";
-    message.source.capability = run_config_.interface;
-    message.source.provider = run_config_.provider;
-    message.target.capability = "";
-    message.target.provider = "";
+    message.source_capability = run_config_.interface;
+    message.source_provider = run_config_.provider;
+    message.target_capability = "";
+    message.target_provider = "";
     message.thread_id = thread_id;
     message.type = Event::ERROR;
     message.content = text;
@@ -491,10 +491,10 @@ protected:
 
     message.header.stamp = node_->now();
     message.origin_node = "runners";
-    message.source.capability = run_config_.interface;
-    message.source.provider = run_config_.provider;
-    message.target.capability = "";
-    message.target.provider = "";
+    message.source_capability = run_config_.interface;
+    message.source_provider = run_config_.provider;
+    message.target_capability = "";
+    message.target_provider = "";
     message.thread_id = thread_id;
     message.type = Event::INFO;
     message.content = text + " : " + element;
@@ -511,10 +511,10 @@ protected:
 
     message.header.stamp = node_->now();
     message.origin_node = "runners";
-    message.source.capability = run_config_.interface;
-    message.source.provider = run_config_.provider;
-    message.target.capability = target_capability;
-    message.target.provider = target_provider;
+    message.source_capability = run_config_.interface;
+    message.source_provider = run_config_.provider;
+    message.target_capability = target_capability;
+    message.target_provider = target_provider;
     message.thread_id = thread_id;
     message.type = Event::RUNNER_EVENT;
     message.pid = -1;
@@ -557,7 +557,7 @@ protected:
   /**
    * @brief dictionary of events
    */
-  std::map<int, capabilities2::event_opts> events;
+  std::map<int, event_logger::event_opts> events;
 
   /**
    * @brief Last event tracker id to be inserted

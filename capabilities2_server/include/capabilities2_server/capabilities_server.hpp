@@ -15,7 +15,6 @@
 
 #include <capabilities2_server/capabilities_api.hpp>
 
-#include <capabilities2_msgs/msg/capability_event.hpp>
 #include <capabilities2_msgs/msg/capability_spec.hpp>
 
 #include <capabilities2_msgs/srv/establish_bond.hpp>
@@ -34,8 +33,9 @@
 #include <capabilities2_msgs/srv/get_remappings.hpp>
 #include <capabilities2_msgs/srv/get_running_capabilities.hpp>
 
-#include <capabilities2_events/event_client.hpp>
-#include <capabilities2_events/event_types.hpp>
+#include <event_logger/event_client.hpp>
+#include <event_logger/event_types.hpp>
+#include <event_logger_msgs/msg/event.hpp>
 
 namespace capabilities2_server
 {
@@ -318,35 +318,35 @@ public:
   void configure_capability_cb(const std::shared_ptr<capabilities2_msgs::srv::ConfigureCapability::Request> req,
                                std::shared_ptr<capabilities2_msgs::srv::ConfigureCapability::Response> res)
   {
-    capabilities2::event_opts event_options;
+    event_logger::event_opts event_options;
 
     event_options.on_started.interface = req->target_on_start.capability;
     event_options.on_started.provider = req->target_on_start.provider;
     event_options.on_started.parameters = req->target_on_start.parameters;
 
     event_->runner_define(req->source.capability, req->source.provider, req->target_on_start.capability,
-                          req->target_on_start.provider, capabilities2_msgs::msg::CapabilityEvent::STARTED);
+                          req->target_on_start.provider, event_logger_msgs::msg::Event::STARTED);
 
     event_options.on_failure.interface = req->target_on_failure.capability;
     event_options.on_failure.provider = req->target_on_failure.provider;
     event_options.on_failure.parameters = req->target_on_failure.parameters;
 
     event_->runner_define(req->source.capability, req->source.provider, req->target_on_failure.capability,
-                          req->target_on_failure.provider, capabilities2_msgs::msg::CapabilityEvent::FAILED);
+                          req->target_on_failure.provider, event_logger_msgs::msg::Event::FAILED);
 
     event_options.on_success.interface = req->target_on_success.capability;
     event_options.on_success.provider = req->target_on_success.provider;
     event_options.on_success.parameters = req->target_on_success.parameters;
 
     event_->runner_define(req->source.capability, req->source.provider, req->target_on_success.capability,
-                          req->target_on_success.provider, capabilities2_msgs::msg::CapabilityEvent::SUCCEEDED);
+                          req->target_on_success.provider, event_logger_msgs::msg::Event::SUCCEEDED);
 
     event_options.on_stopped.interface = req->target_on_stop.capability;
     event_options.on_stopped.provider = req->target_on_stop.provider;
     event_options.on_stopped.parameters = req->target_on_stop.parameters;
 
     event_->runner_define(req->source.capability, req->source.provider, req->target_on_stop.capability,
-                          req->target_on_stop.provider, capabilities2_msgs::msg::CapabilityEvent::STOPPED);
+                          req->target_on_stop.provider, event_logger_msgs::msg::Event::STOPPED);
 
     // setup triggers between parameters
     set_triggers(req->source.capability, event_options);

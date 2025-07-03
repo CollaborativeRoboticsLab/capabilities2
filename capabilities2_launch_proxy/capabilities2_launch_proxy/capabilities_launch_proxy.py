@@ -32,7 +32,6 @@ from launch.actions import RegisterEventHandler
 from launch.launch_description_sources import AnyLaunchDescriptionSource
 # from launch.some_entities_type import SomeEntitiesType
 from capabilities2_msgs.action import Launch
-from capabilities2_msgs.msg import CapabilityEvent
 
 
 class CancelLaunchGoalEvent(Event):
@@ -108,13 +107,6 @@ class CapabilitiesLaunchProxy(Node):
             handle_accepted_callback=self.handle_accepted_cb,
             execute_callback=self.execute_cb,
             cancel_callback=self.cancel_cb
-        )
-
-        # cap event pub
-        self.event_pub = self.create_publisher(
-            CapabilityEvent,
-            '~/events',
-            10
         )
 
         # create launch service

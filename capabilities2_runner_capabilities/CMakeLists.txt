@@ -16,7 +16,8 @@ find_package(rclcpp_action REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_runner REQUIRED)
-find_package(capabilities2_events REQUIRED)
+find_package(event_logger REQUIRED)
+find_package(event_logger_msgs REQUIRED)
 find_package(tinyxml2_vendor REQUIRED)
 find_package(TinyXML2 REQUIRED)  # provided by tinyxml2 upstream, or tinyxml2_vendor
 
@@ -34,7 +35,8 @@ ament_target_dependencies(${PROJECT_NAME}
   pluginlib
   capabilities2_msgs
   capabilities2_runner
-  capabilities2_events
+  event_logger
+  event_logger_msgs
   TinyXML2
 )
 

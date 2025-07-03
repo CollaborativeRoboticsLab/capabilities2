@@ -21,7 +21,8 @@
   <depend>std_msgs</depend>
   <depend>capabilities2_msgs</depend>
   <depend>capabilities2_runner</depend>
-  <depend>capabilities2_events</depend>
+  <depend>event_logger</depend>
+  <depend>event_logger_msgs</depend>
   <depend>tinyxml2_vendor</depend>
   <depend>behaviortree_cpp</depend>
 
