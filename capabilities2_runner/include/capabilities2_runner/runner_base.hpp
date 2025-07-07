@@ -8,6 +8,7 @@
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 #include <event_logger_msgs/msg/event.hpp>
+#include <event_logger_msgs/msg/event_capability.hpp>
 #include <event_logger/event_types.hpp>
 #include <event_logger/event_client.hpp>
 
@@ -453,10 +454,10 @@ protected:
 
     message.header.stamp = node_->now();
     message.origin_node = "runners";
-    message.source_capability = run_config_.interface;
-    message.source_provider = run_config_.provider;
-    message.target_capability = "";
-    message.target_provider = "";
+    message.source.capability = run_config_.interface;
+    message.source.provider = run_config_.provider;
+    message.target.capability = "";
+    message.target.provider = "";
     message.thread_id = thread_id;
     message.type = Event::INFO;
     message.content = text;
@@ -472,10 +473,10 @@ protected:
 
     message.header.stamp = node_->now();
     message.origin_node = "runners";
-    message.source_capability = run_config_.interface;
-    message.source_provider = run_config_.provider;
-    message.target_capability = "";
-    message.target_provider = "";
+    message.source.capability = run_config_.interface;
+    message.source.provider = run_config_.provider;
+    message.target.capability = "";
+    message.target.provider = "";
     message.thread_id = thread_id;
     message.type = Event::ERROR;
     message.content = text;
@@ -491,10 +492,10 @@ protected:
 
     message.header.stamp = node_->now();
     message.origin_node = "runners";
-    message.source_capability = run_config_.interface;
-    message.source_provider = run_config_.provider;
-    message.target_capability = "";
-    message.target_provider = "";
+    message.source.capability = run_config_.interface;
+    message.source.provider = run_config_.provider;
+    message.target.capability = "";
+    message.target.provider = "";
     message.thread_id = thread_id;
     message.type = Event::INFO;
     message.content = text + " : " + element;
@@ -511,10 +512,10 @@ protected:
 
     message.header.stamp = node_->now();
     message.origin_node = "runners";
-    message.source_capability = run_config_.interface;
-    message.source_provider = run_config_.provider;
-    message.target_capability = target_capability;
-    message.target_provider = target_provider;
+    message.source.capability = run_config_.interface;
+    message.source.provider = run_config_.provider;
+    message.target.capability = target_capability;
+    message.target.provider = target_provider;
     message.thread_id = thread_id;
     message.type = Event::RUNNER_EVENT;
     message.pid = -1;
