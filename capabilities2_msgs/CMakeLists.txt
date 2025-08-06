@@ -17,7 +17,6 @@ find_package(std_msgs REQUIRED)
 
 set(msg_files
   "msg/Capability.msg"
-  "msg/CapabilityEvent.msg"
   "msg/CapabilitySpec.msg"
   "msg/Remapping.msg"
   "msg/RunningCapability.msg"

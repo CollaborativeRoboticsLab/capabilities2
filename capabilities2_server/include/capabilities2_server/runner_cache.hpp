@@ -9,7 +9,7 @@
 #include <pluginlib/class_loader.hpp>
 #include <capabilities2_server/models/run_config.hpp>
 #include <capabilities2_runner/runner_base.hpp>
-#include <capabilities2_events/event_client.hpp>
+#include <event_logger/event_client.hpp>
 
 namespace capabilities2_server
 {
@@ -116,16 +116,11 @@ public:
    * @param on_success on_success event with capability and parameters
    * @param on_stopped on_stop event with capability and parameters
    */
-  void set_runner_triggers(const std::string& capability, capabilities2::event_opts& event_options)
+  void set_runner_triggers(const std::string& capability, event_logger::event_opts& event_options)
   {
     int event_count = runner_cache_[capability]->attach_events(
         event_options, std::bind(&capabilities2_server::RunnerCache::trigger_runner, this, std::placeholders::_1,
                                  std::placeholders::_2));
-
-    event_->info(
-        "Configured triggers for capability " + capability + ": \n\tStarted: " + event_options.on_started.interface +
-        " \n\tFailure: " + event_options.on_failure.interface + " \n\tSuccess: " + event_options.on_success.interface +
-        "\n\tStopped: " + event_options.on_stopped.interface);
   }
 
   /**

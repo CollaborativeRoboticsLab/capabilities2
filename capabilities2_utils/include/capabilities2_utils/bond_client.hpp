@@ -2,7 +2,7 @@
 #include <string>
 #include <bondcpp/bond.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <capabilities2_events/event_client.hpp>
+#include <event_logger/event_client.hpp>
 
 class BondClient
 {

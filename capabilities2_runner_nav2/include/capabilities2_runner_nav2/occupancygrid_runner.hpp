@@ -124,7 +124,7 @@ protected:
     // Return the updated parameters element with OccupancyGrid added
     std::string result = convert_to_string(element);
 
-    output_("on_success trigger parameter", result);
+    // output_("on_success trigger parameter", result);
 
     return result;
   };

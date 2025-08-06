@@ -16,13 +16,14 @@
 #include <capabilities2_server/capabilities_db.hpp>
 #include <capabilities2_server/bond_cache.hpp>
 #include <capabilities2_server/runner_cache.hpp>
-#include <capabilities2_events/event_types.hpp>
-#include <capabilities2_events/event_client.hpp>
+
+#include <event_logger/event_types.hpp>
+#include <event_logger/event_client.hpp>
+#include <event_logger_msgs/msg/event.hpp>
 
 #include <capabilities2_msgs/msg/remapping.hpp>
 #include <capabilities2_msgs/msg/capability.hpp>
 #include <capabilities2_msgs/msg/capability_spec.hpp>
-#include <capabilities2_msgs/msg/capability_event.hpp>
 #include <capabilities2_msgs/srv/get_remappings.hpp>
 #include <capabilities2_msgs/msg/running_capability.hpp>
 
@@ -239,7 +240,7 @@ public:
    * @param capability capability from where the events originate
    * @param event_options event options for the capability
    */
-  void set_triggers(const std::string& capability, capabilities2::event_opts& event_options)
+  void set_triggers(const std::string& capability, event_logger::event_opts& event_options)
   {
     try
     {

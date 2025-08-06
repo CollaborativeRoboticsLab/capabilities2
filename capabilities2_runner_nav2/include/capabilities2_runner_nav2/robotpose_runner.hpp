@@ -64,8 +64,7 @@ public:
     // trigger the events related to on_started state
     if (events[execute_id].on_started.interface != "")
     {
-      info_("on_started", id, EventType::STARTED, events[execute_id].on_started.interface,
-            events[execute_id].on_started.provider);
+      event_(EventType::STARTED, id, events[execute_id].on_started.interface, events[execute_id].on_started.provider);
       triggerFunction_(events[execute_id].on_started.interface,
                        update_on_started(events[execute_id].on_started.parameters));
     }
@@ -90,8 +89,8 @@ public:
       // trigger the events related to on_success state
       if (events[execute_id].on_success.interface != "")
       {
-        info_("on_success", id, EventType::SUCCEEDED, events[execute_id].on_success.interface,
-              events[execute_id].on_success.provider);
+        event_(EventType::SUCCEEDED, id, events[execute_id].on_success.interface,
+               events[execute_id].on_success.provider);
         triggerFunction_(events[execute_id].on_success.interface,
                          update_on_success(events[execute_id].on_success.parameters));
       }
@@ -112,8 +111,8 @@ public:
       // trigger the events related to on_success state
       if (events[execute_id].on_success.interface != "")
       {
-        info_("on_success", id, EventType::SUCCEEDED, events[execute_id].on_success.interface,
-              events[execute_id].on_success.provider);
+        event_(EventType::SUCCEEDED, id, events[execute_id].on_success.interface,
+               events[execute_id].on_success.provider);
         triggerFunction_(events[execute_id].on_success.interface,
                          update_on_success(events[execute_id].on_success.parameters));
       }
@@ -127,8 +126,7 @@ public:
       // trigger the events related to on_failure state
       if (events[execute_id].on_failure.interface != "")
       {
-        info_("on_failure", id, EventType::FAILED, events[execute_id].on_failure.interface,
-              events[execute_id].on_failure.provider);
+        event_(EventType::FAILED, id, events[execute_id].on_failure.interface, events[execute_id].on_failure.provider);
         triggerFunction_(events[execute_id].on_failure.interface,
                          update_on_failure(events[execute_id].on_failure.parameters));
       }
@@ -158,7 +156,7 @@ public:
     // Trigger on_stopped event if defined
     if (events[execute_id].on_stopped.interface != "")
     {
-      info_("on_stopped", -1, EventType::STOPPED, events[execute_id].on_stopped.interface,
+      event_(EventType::STOPPED, -1, events[execute_id].on_stopped.interface,
             events[execute_id].on_stopped.provider);
       triggerFunction_(events[execute_id].on_stopped.interface,
                        update_on_stopped(events[execute_id].on_stopped.parameters));
@@ -206,7 +204,7 @@ protected:
     // Return the updated parameters element with Pose added as string
     std::string result = convert_to_string(element);
 
-    output_("on_success trigger parameter", result);
+    // output_("on_success trigger parameter", result);
 
     return result;
   };

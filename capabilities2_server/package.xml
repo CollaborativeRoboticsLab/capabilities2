@@ -8,6 +8,7 @@
 
   <maintainer email="michael.pritchard@canberra.edu.au">Michael Pritchard</maintainer>
   <maintainer email="mppritchard3@hotmail.com">mik-p</maintainer>
+  <maintainer email="kalana.ratnayakemudiyanselage@canberra.edu.au">Kalana Ratnayake</maintainer>
 
   <author email="michael.pritchard@canberra.edu.au">Michael Pritchard</author>
 
@@ -22,7 +23,8 @@
   <depend>rclcpp_components</depend>
   <depend>capabilities2_msgs</depend>
   <depend>capabilities2_runner</depend>
-  <depend>capabilities2_events</depend>
+  <depend>event_logger</depend>
+  <depend>event_logger_msgs</depend>
   <depend>tinyxml2_vendor</depend>
 
   <!-- system dependency -->

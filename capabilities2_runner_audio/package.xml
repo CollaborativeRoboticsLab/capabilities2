@@ -4,7 +4,11 @@
   <name>capabilities2_runner_audio</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="kalanaratnayake95@gmail.com">kalana</maintainer>
+
+  <maintainer email="kalanaratnayake95@gmail.com">Kalana Ratnayake</maintainer>
+  <maintainer email="kalana.ratnayakemudiyanselage@canberra.edu.au">Kalana Ratnayake</maintainer>
+
+  <author email="kalana.ratnayakemudiyanselage@canberra.edu.au">Kalana Ratnayake</author>
 
   <license>MIT</license>
 
@@ -17,7 +21,8 @@
   <depend>hri_audio_msgs</depend>
   <depend>capabilities2_msgs</depend>
   <depend>capabilities2_runner</depend>
-  <depend>capabilities2_events</depend>
+  <depend>event_logger</depend>
+  <depend>event_logger_msgs</depend>
   <depend>tinyxml2_vendor</depend>
 
   <!-- system dependency -->
