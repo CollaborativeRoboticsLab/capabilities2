@@ -325,28 +325,28 @@ public:
     event_options.on_started.parameters = req->target_on_start.parameters;
 
     event_->runner_define(req->source.capability, req->source.provider, req->target_on_start.capability,
-                          req->target_on_start.provider, event_logger_msgs::msg::Event::STARTED);
+                          req->target_on_start.provider, event_logger_msgs::msg::Event::STARTED, req->connection_description);
 
     event_options.on_failure.interface = req->target_on_failure.capability;
     event_options.on_failure.provider = req->target_on_failure.provider;
     event_options.on_failure.parameters = req->target_on_failure.parameters;
 
     event_->runner_define(req->source.capability, req->source.provider, req->target_on_failure.capability,
-                          req->target_on_failure.provider, event_logger_msgs::msg::Event::FAILED);
+                          req->target_on_failure.provider, event_logger_msgs::msg::Event::FAILED, req->connection_description);
 
     event_options.on_success.interface = req->target_on_success.capability;
     event_options.on_success.provider = req->target_on_success.provider;
     event_options.on_success.parameters = req->target_on_success.parameters;
 
     event_->runner_define(req->source.capability, req->source.provider, req->target_on_success.capability,
-                          req->target_on_success.provider, event_logger_msgs::msg::Event::SUCCEEDED);
+                          req->target_on_success.provider, event_logger_msgs::msg::Event::SUCCEEDED, req->connection_description);
 
     event_options.on_stopped.interface = req->target_on_stop.capability;
     event_options.on_stopped.provider = req->target_on_stop.provider;
     event_options.on_stopped.parameters = req->target_on_stop.parameters;
 
     event_->runner_define(req->source.capability, req->source.provider, req->target_on_stop.capability,
-                          req->target_on_stop.provider, event_logger_msgs::msg::Event::STOPPED);
+                          req->target_on_stop.provider, event_logger_msgs::msg::Event::STOPPED, req->connection_description);
 
     // setup triggers between parameters
     set_triggers(req->source.capability, event_options);

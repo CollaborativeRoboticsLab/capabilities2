@@ -25,6 +25,7 @@ namespace capabilities2
 		connection_t target_on_stop;
 		connection_t target_on_success;
 		connection_t target_on_failure;
+		std::string connection_description;
 	};
 
 } // namespace capabilities2

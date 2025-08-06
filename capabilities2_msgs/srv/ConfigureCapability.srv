@@ -3,4 +3,5 @@ Capability target_on_start
 Capability target_on_stop
 Capability target_on_success
 Capability target_on_failure
+string connection_description
 ---
