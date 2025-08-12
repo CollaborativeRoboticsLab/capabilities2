@@ -61,6 +61,7 @@ struct runner_opts
   std::string runner;
   std::string started_by;
   std::string pid;
+  int input_count;
 };
 
 class RunnerBase
