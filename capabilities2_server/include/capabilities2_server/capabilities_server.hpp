@@ -308,8 +308,14 @@ public:
       return;
     }
 
+    if (req->input_count > 0)
+    {
+      event_->error("use_capability: input count should be non zero");
+      return;
+    }
+
     // use capability with this bond
-    use_capability(shared_from_this(), req->capability, req->preferred_provider, req->bond_id);
+    use_capability(shared_from_this(), req->capability, req->preferred_provider, req->input_count, req->bond_id);
 
     // response is empty
   }

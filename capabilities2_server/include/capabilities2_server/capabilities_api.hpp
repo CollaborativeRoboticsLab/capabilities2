@@ -69,10 +69,12 @@ public:
    * @param node ros node pointer of the ros server
    * @param capability capability name to be started
    * @param provider provider of the capability
+   * @param input_count number of inputs for the capability
    *
    * @return `true` if capability started successfully. else returns `false`
    */
-  bool start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider)
+  bool start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
+                        int input_count= 0)
   {
     // return value
     bool value = true;
@@ -96,14 +98,14 @@ public:
     // get the provider specification for the capability
     models::run_config_model_t run_config = cap_db_->get_run_config(provider);
 
-    // create a new runner
-    // this call implicitly starts the runner
+    // create a new runner, this call implicitly starts the runner
     // create a runner id which is the cap name to uniquely identify the runner
     // this means only one runner per capability name
+    //
     // TODO: consider the logic for multiple runners per capability
     try
     {
-      runner_cache_.add_runner(node, capability, run_config);
+      runner_cache_.add_runner(node, capability, run_config, input_count);
 
       event_->info("started capability: " + capability + " with provider: " + provider);
 
@@ -220,18 +222,19 @@ public:
    * @param node ros node pointer of the ros server
    * @param capability capability name to be started
    * @param provider provider of the capability
+   * @param input_count number of inputs for the capability
    * @param bond_id bond_id for the capability
    *
    * @return `true` if capability started successfully. else returns `false`
    */
   bool use_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
-                      const std::string& bond_id)
+                      int input_count, const std::string& bond_id)
   {
     // add bond to cache for capability
     bond_cache_.add_bond(capability, bond_id);
 
     // start the capability with the provider
-    return start_capability(node, capability, provider);
+    return start_capability(node, capability, provider, input_count);
   }
 
   /**

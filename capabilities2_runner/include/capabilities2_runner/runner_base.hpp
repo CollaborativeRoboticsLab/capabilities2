@@ -132,6 +132,7 @@ public:
     insert_id = 0;
     execute_id = -1;
     thread_id = 0;
+    current_inputs_ = 0;
 
     event_client_ = std::make_shared<EventClient>(node_, "runner", "/events");
   }
@@ -194,6 +195,16 @@ public:
   const std::string& get_pid() const
   {
     return run_config_.pid;
+  }
+
+  /**
+   * @brief Get the execution status of runner. 
+   * 
+   * @return `true` if execution is complete, `false` otherwise.
+   */
+  const bool get_completion_status() const
+  {
+    return execution_complete_;
   }
 
 protected:
@@ -575,6 +586,16 @@ protected:
    * @brief Last parameter tracker id to be executed
    */
   int thread_id;
+
+  /**
+   * @brief curent number of trigger signals received
+   */
+  int current_inputs_;
+
+  /**
+   * @brief system runner completion tracking
+   */
+  bool execution_complete_;
 
   /**
    * @brief pointer to XMLElement which contain parameters

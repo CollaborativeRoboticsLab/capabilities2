@@ -25,36 +25,36 @@ public:
   {
     init_base(node, run_config);
 
-    info_("Starting InputMultiplexAnyRunner with " + std::to_string(run_config.input_count) + " inputs.");
-
-    expected_inputs_ = run_config.input_count;
-
-    current_inputs_ = 0;
-    not_triggered_ = true;
+    info_("started with " + std::to_string(run_config.input_count) + " inputs.");
   }
 
+  /**
+   * @brief trigger function to handle multiplexing of all inputs based on ANY condition
+   *
+   * @param parameters not used in this runner
+   */
   virtual void trigger(const std::string& parameters) override
   {
     current_inputs_ += 1;
 
-    if (not_triggered_)
-      not_triggered_ = false;
-
-    if (current_inputs_ >= 0)
+    if (current_inputs_ > 0)
     {
-      info_("InputMultiplexAnyRunner is has fullfilled the ANY condition with " + std::to_string(current_inputs_) +
-            " inputs.");
+      info_("has fullfilled the ANY condition with " + std::to_string(current_inputs_) + " inputs.");
 
       executionThread = std::thread(&InputMultiplexAnyRunner::execution, this, thread_id);
       thread_id += 1;
     }
     else
     {
-      info_("InputMultiplexAnyRunner waiting. Only got " + std::to_string(current_inputs_ + 1) + "/" +
-            std::to_string(expected_inputs_) + " inputs.");
+      info_("only got " + std::to_string(current_inputs_) + "/" + std::to_string(run_config_.input_count) + " inputs.");
     }
   }
 
+  /**
+   * @brief Trigger process to be executed.
+   *
+   * @param id thread id
+   */
   virtual void execution(int id)
   {
     // trigger the events related to on_success state
@@ -64,6 +64,7 @@ public:
       triggerFunction_(events[execute_id].on_success.interface,
                        update_on_success(events[execute_id].on_success.parameters));
     }
+
     // trigger the events related to on_failure state
     else if (events[execute_id].on_failure.interface != "")
     {
@@ -96,12 +97,9 @@ public:
   ~InputMultiplexAnyRunner();
 
 private:
-  bool not_triggered_;
-
-  int expected_inputs_;
-
-  int current_inputs_;
-
+  /**
+   * @brief execution thread to handle the execution of the runner
+   */
   std::thread executionThread;
 };
 

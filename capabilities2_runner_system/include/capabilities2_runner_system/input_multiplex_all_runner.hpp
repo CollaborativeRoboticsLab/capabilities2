@@ -25,36 +25,36 @@ public:
   {
     init_base(node, run_config);
 
-    info_("Starting InputMultiplexAllRunner with " + std::to_string(run_config.input_count) + " inputs.");
-
-    expected_inputs_ = run_config.input_count;
-
-    current_inputs_ = 0;
-    not_triggered_ = true;
+    info_("started with " + std::to_string(run_config.input_count) + " inputs.");
   }
 
+  /**
+   * @brief trigger function to handle multiplexing of all inputs based on ALL condition
+   *
+   * @param parameters not used in this runner
+   */
   virtual void trigger(const std::string& parameters) override
   {
     current_inputs_ += 1;
 
-    if (not_triggered_)
-      not_triggered_ = false;
-
-    if (current_inputs_ == expected_inputs_)
+    if (current_inputs_ == run_config_.input_count)
     {
-      info_("InputMultiplexAllRunner is has fullfilled the All condition with " + std::to_string(current_inputs_) +
-            " inputs.");
+      info_("has fullfilled the All condition with " + std::to_string(current_inputs_) + " inputs.");
 
       executionThread = std::thread(&InputMultiplexAllRunner::execution, this, thread_id);
       thread_id += 1;
     }
     else
     {
-      info_("InputMultiplexAllRunner waiting. Only got " + std::to_string(current_inputs_ + 1) + "/" +
-            std::to_string(expected_inputs_) + " inputs.");
+      info_("only got " + std::to_string(current_inputs_) + "/" + std::to_string(run_config_.input_count) + " inputs.");
     }
   }
 
+  /**
+   * @brief Trigger process to be executed.
+   *
+   * @param id thread id
+   */
   virtual void execution(int id)
   {
     // trigger the events related to on_success state
@@ -96,12 +96,9 @@ public:
   ~InputMultiplexAllRunner();
 
 private:
-  bool not_triggered_;
-
-  int expected_inputs_;
-
-  int current_inputs_;
-
+  /**
+   * @brief execution thread to handle the execution of the runner
+   */
   std::thread executionThread;
 };
 

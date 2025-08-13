@@ -8,16 +8,16 @@
 namespace capabilities2_runner
 {
 /**
- * @brief fabric completion runner
+ * @brief completion runner
  *
  * This class is a wrapper around the capabilities2 service runner and is used to
  * call on the /capabilities_fabric/set_completion service, providing it as a 
  * capability that notifys the completion of the fabric
  */
-class FabricCompletionRunner : public ServiceRunner<fabric_msgs::srv::CompleteFabric>
+class CompletionRunner : public ServiceRunner<fabric_msgs::srv::CompleteFabric>
 {
 public:
-  FabricCompletionRunner() : ServiceRunner()
+  CompletionRunner() : ServiceRunner()
   {
   }
 

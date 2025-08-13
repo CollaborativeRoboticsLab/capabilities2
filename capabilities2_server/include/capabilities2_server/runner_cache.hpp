@@ -50,10 +50,10 @@ public:
    * @param run_config run_config of the runner to be loaded
    */
   void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability,
-                  const models::run_config_model_t& run_config)
+                  const models::run_config_model_t& run_config, int input_count = 0)
   {
-    // if the runner exists then throw an error
-    if (running(capability))
+    // if the runner exists then throw an error preserving uniqueness
+    if (!is_system_capability(capability) && running(capability))
     {
       // already running
       throw capabilities2_runner::runner_exception("capability is running already: " + capability);
@@ -66,22 +66,28 @@ public:
       throw capabilities2_runner::runner_exception("run config is not valid: " + YAML::Dump(run_config.to_yaml()));
     }
 
-    // create the runner
-    // add the runner to map
-    // if the spec runner contains a path to a launch file then use the launch file runner
+    // create the runner, add the runner to map, and if the spec runner contains a path to a launch file then use the
+    // launch file runner
     if (run_config.runner.find(".launch") != std::string::npos || run_config.runner.find("/") != std::string::npos ||
         run_config.runner.find(".py") != std::string::npos)
     {
       runner_cache_[capability] = runner_loader_.createSharedInstance("capabilities2_runner::LaunchRunner");
     }
+    else if (is_system_capability(capability))
+    {
+      system_runner_cache_[capability].push_back(runner_loader_.createSharedInstance(run_config.runner));
+    }
     else
     {
-      // use different runner types based on cap and provider specs
       runner_cache_[capability] = runner_loader_.createSharedInstance(run_config.runner);
     }
 
+    // add input count to the runner options
+    capabilities2_runner::runner_opts opts = run_config.to_runner_opts();
+    opts.input_count = input_count;
+
     // start the runner
-    runner_cache_[capability]->start(node, run_config.to_runner_opts());
+    runner_cache_[capability]->start(node, opts);
   }
 
   /**
@@ -130,6 +136,24 @@ public:
    */
   void remove_runner(const std::string& capability)
   {
+    if (is_system_capability(capability))
+    {
+      // remove from system runner cache
+      auto it = system_runner_cache_.find(capability);
+
+      // loop through runners and stop them
+      if (it != system_runner_cache_.end())
+      {
+        for (auto& runner : it->second)
+          if (runner->get_completion_status())
+            runner->stop();
+        
+        // system_runner_cache_.erase(it);
+      }
+    }
+    
+    // ---- non-system: preserve your current unique semantics ----
+
     // find the runner in the cache
     if (!running(capability))
     {
@@ -225,10 +249,26 @@ public:
     return runner_cache_.find(capability) != runner_cache_.end();
   }
 
+  /**
+   * @brief Check if a capability is a system capability
+   *
+   * @param cap capability name
+   * @return true if it is a system capability
+   * @return false otherwise
+   */
+  bool is_system_capability(const std::string& capability)
+  {
+    // (future-proof: new system runners still match)
+    return capability.rfind("system_capabilities/", 0) == 0;
+  }
+
 private:
   // map capability to running model
   // capability / provider specs -> runner
   std::map<std::string, std::shared_ptr<capabilities2_runner::RunnerBase>> runner_cache_;
+
+  // system runner cache that allows duplicates
+  std::map<std::string, std::vector<std::shared_ptr<capabilities2_runner::RunnerBase>>> system_runner_cache_;
 
   // runner plugin loader
   pluginlib::ClassLoader<capabilities2_runner::RunnerBase> runner_loader_;
