@@ -3,6 +3,6 @@
 name: CompletionRunner
 spec_type: provider
 spec_version: 1.1
-description: "The capability provider for the /capabilities_fabric/set_completion interface"
+description: "The capability provider for the /fabric/set_completion interface"
 implements: system_capabilities/CompletionRunner
 runner: capabilities2_runner::CompletionRunner

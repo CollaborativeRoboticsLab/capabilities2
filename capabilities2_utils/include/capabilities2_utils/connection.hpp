@@ -16,7 +16,6 @@ namespace capabilities2
 	{
 		std::string runner = "";
 		std::string provider = "";
-		int input_count = 0;
 		tinyxml2::XMLElement* parameters = nullptr;
 	};
 

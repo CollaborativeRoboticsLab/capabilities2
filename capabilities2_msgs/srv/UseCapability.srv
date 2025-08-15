@@ -1,5 +1,4 @@
 string capability
 string preferred_provider
-int32 input_count
 string bond_id
 ---

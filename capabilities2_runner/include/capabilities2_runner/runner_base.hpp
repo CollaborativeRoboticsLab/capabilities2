@@ -141,10 +141,11 @@ public:
    * @brief attach events to the runner
    *
    * @param event_option event_options related for the action
+   * @param triggerFunction external function that triggers capability runners
    *
    * @return number of attached events
    */
-  int attach_events(event_logger::event_opts& event_option,
+  virtual int attach_events(event_logger::event_opts& event_option,
                     std::function<void(const std::string&, const std::string&)> triggerFunction)
   {
     info_("accepted event options with ID : " + std::to_string(insert_id));

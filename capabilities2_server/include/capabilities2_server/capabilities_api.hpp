@@ -69,12 +69,10 @@ public:
    * @param node ros node pointer of the ros server
    * @param capability capability name to be started
    * @param provider provider of the capability
-   * @param input_count number of inputs for the capability
    *
    * @return `true` if capability started successfully. else returns `false`
    */
-  bool start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
-                        int input_count= 0)
+  bool start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider)
   {
     // return value
     bool value = true;
@@ -105,7 +103,7 @@ public:
     // TODO: consider the logic for multiple runners per capability
     try
     {
-      runner_cache_.add_runner(node, capability, run_config, input_count);
+      runner_cache_.add_runner(node, capability, run_config);
 
       event_->info("started capability: " + capability + " with provider: " + provider);
 
@@ -114,6 +112,7 @@ public:
     catch (const capabilities2_runner::runner_exception& e)
     {
       event_->error("could not start runner: " + std::string(e.what()));
+
       return false;
     }
   }
@@ -222,19 +221,18 @@ public:
    * @param node ros node pointer of the ros server
    * @param capability capability name to be started
    * @param provider provider of the capability
-   * @param input_count number of inputs for the capability
    * @param bond_id bond_id for the capability
    *
    * @return `true` if capability started successfully. else returns `false`
    */
   bool use_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
-                      int input_count, const std::string& bond_id)
+                      const std::string& bond_id)
   {
     // add bond to cache for capability
     bond_cache_.add_bond(capability, bond_id);
 
     // start the capability with the provider
-    return start_capability(node, capability, provider, input_count);
+    return start_capability(node, capability, provider);
   }
 
   /**

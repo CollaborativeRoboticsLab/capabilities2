@@ -1,31 +1,17 @@
 #pragma once
 
-#include <thread>
-#include <capabilities2_runner/runner_base.hpp>
+#include <capabilities2_runner_system/multiplex_base_runner.hpp>
 
 namespace capabilities2_runner
 {
-class InputMultiplexAllRunner : public RunnerBase
+class InputMultiplexAllRunner : public MultiplexBaseRunner
 {
 public:
   /**
    * @brief Constructor which needs to be empty due to plugin semantics
    */
-  InputMultiplexAllRunner() : RunnerBase()
+  InputMultiplexAllRunner() : MultiplexBaseRunner()
   {
-  }
-
-  /**
-   * @brief Starter function for starting the action runner
-   *
-   * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
-   * @param run_config runner configuration loaded from the yaml file
-   */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
-  {
-    init_base(node, run_config);
-
-    info_("started with " + std::to_string(run_config.input_count) + " inputs.");
   }
 
   /**
@@ -35,71 +21,37 @@ public:
    */
   virtual void trigger(const std::string& parameters) override
   {
-    current_inputs_ += 1;
+    tinyxml2::XMLElement* parameters_ = convert_to_xml(parameters);
 
-    if (current_inputs_ == run_config_.input_count)
+    int uid = 0;
+    int input_count = 0;
+
+    parameters_->QueryIntAttribute("input_count", &input_count);
+    parameters_->QueryIntAttribute("uid", &uid);
+
+    if (input_count_tracker.find(uid) == input_count_tracker.end())
     {
-      info_("has fullfilled the All condition with " + std::to_string(current_inputs_) + " inputs.");
+      input_count_tracker[uid] = 1;
+      expected_input_count[uid] = input_count;
 
-      executionThread = std::thread(&InputMultiplexAllRunner::execution, this, thread_id);
-      thread_id += 1;
+      info_("has started the All condition with " + std::to_string(input_count_tracker[uid]) + " inputs.");
     }
     else
     {
-      info_("only got " + std::to_string(current_inputs_) + "/" + std::to_string(run_config_.input_count) + " inputs.");
-    }
-  }
+      input_count_tracker[uid] += 1;
 
-  /**
-   * @brief Trigger process to be executed.
-   *
-   * @param id thread id
-   */
-  virtual void execution(int id)
-  {
-    // trigger the events related to on_success state
-    if (events[execute_id].on_success.interface != "")
+      info_("has received " + std::to_string(input_count_tracker[uid]) + "/" +
+            std::to_string(expected_input_count[uid]) + " inputs for ALL condition.");
+    }
+
+    if (input_count_tracker[uid] == expected_input_count[uid])
     {
-      event_(EventType::SUCCEEDED, id, events[execute_id].on_success.interface, events[execute_id].on_success.provider);
-      triggerFunction_(events[execute_id].on_success.interface,
-                       update_on_success(events[execute_id].on_success.parameters));
-    }
-    // trigger the events related to on_failure state
-    else if (events[execute_id].on_failure.interface != "")
-    {
-      event_(EventType::FAILED, id, events[execute_id].on_failure.interface, events[execute_id].on_failure.provider);
-      triggerFunction_(events[execute_id].on_failure.interface,
-                       update_on_failure(events[execute_id].on_failure.parameters));
+      info_("has fullfilled the All condition with " + std::to_string(input_count_tracker[uid]) + " inputs.");
+
+      executionThreadPool[uid] = std::thread(&InputMultiplexAllRunner::execution, this, uid);
     }
   }
 
-  /**
-   * @brief stop function to cease functionality and shutdown
-   *
-   */
-  virtual void stop() override
-  {
-    // if the node pointer is empty then throw an error
-    // this means that the runner was not started and is being used out of order
-
-    if (!node_)
-      throw runner_exception("cannot stop runner that was not started");
-
-    info_("stopping runner");
-  }
-
-  /**
-   * @brief Destructor
-   *
-   * Cleans up the thread if it is still running
-   */
-  ~InputMultiplexAllRunner();
-
-private:
-  /**
-   * @brief execution thread to handle the execution of the runner
-   */
-  std::thread executionThread;
 };
 
 }  // namespace capabilities2_runner
