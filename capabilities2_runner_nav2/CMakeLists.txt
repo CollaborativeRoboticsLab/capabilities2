@@ -20,6 +20,7 @@ find_package(tf2_ros REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_runner REQUIRED)
+find_package(capabilities2_utils REQUIRED)
 find_package(event_logger REQUIRED)
 find_package(event_logger_msgs REQUIRED)
 find_package(tinyxml2_vendor REQUIRED)
@@ -43,6 +44,7 @@ ament_target_dependencies(${PROJECT_NAME}
   geometry_msgs
   capabilities2_msgs
   capabilities2_runner
+  capabilities2_utils
   event_logger
   event_logger_msgs
   TinyXML2

@@ -7,9 +7,11 @@
 #include <thread>
 #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
+
+#include <capabilities2_utils/event_types.hpp>
+
 #include <event_logger_msgs/msg/event.hpp>
 #include <event_logger_msgs/msg/event_capability.hpp>
-#include <event_logger/event_types.hpp>
 #include <event_logger/event_client.hpp>
 
 namespace capabilities2_runner
@@ -68,7 +70,7 @@ class RunnerBase
 {
 public:
   using Event = event_logger_msgs::msg::Event;
-  using EventType = event_logger::event_t;
+  using EventType = capabilities2::event_t;
 
   RunnerBase() : run_config_()
   {
@@ -106,15 +108,18 @@ public:
    */
   virtual void trigger(const std::string& parameters)
   {
-    info_("received new parameters", thread_id);
+    // extract the unique id for the runner and use that as the thread id
+    tinyxml2::XMLElement * element = nullptr;
+    element = convert_to_xml(parameters);
+    element->QueryIntAttribute("id", &runner_id);
 
-    parameters_[thread_id] = convert_to_xml(parameters);
+    parameters_[runner_id] = element;
 
-    executionThreadPool[thread_id] = std::thread(&RunnerBase::execution, this, thread_id);
+    info_("received new parameters with event id", runner_id);
 
-    info_("started execution", thread_id);
+    executionThreadPool[runner_id] = std::thread(&RunnerBase::execution, this, runner_id);
 
-    thread_id += 1;
+    info_("started execution", runner_id);
   }
 
   /**
@@ -129,10 +134,8 @@ public:
     node_ = node;
     run_config_ = run_config;
 
-    insert_id = 0;
-    execute_id = -1;
-    thread_id = 0;
     current_inputs_ = 0;
+    runner_id = 0;
 
     event_client_ = std::make_shared<EventClient>(node_, "runner", "/events");
   }
@@ -145,17 +148,14 @@ public:
    *
    * @return number of attached events
    */
-  virtual int attach_events(event_logger::event_opts& event_option,
+  virtual void attach_events(capabilities2::event_opts& event_option,
                     std::function<void(const std::string&, const std::string&)> triggerFunction)
   {
-    info_("accepted event options with ID : " + std::to_string(insert_id));
+    info_("accepted event options with ID : " + std::to_string(event_option.event_id));
 
     triggerFunction_ = triggerFunction;
 
-    events[insert_id] = event_option;
-    insert_id += 1;
-
-    return insert_id;
+    events[event_option.event_id] = event_option;
   }
 
   /**
@@ -213,8 +213,9 @@ protected:
    * @brief Trigger process to be executed.
    *
    * This method utilizes paramters set via the trigger() function
-   *
-   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
+   * 
+   * @param id unique identifier for the runner id. used to track the correct 
+   * triggers and subsequent events.
    *
    */
   virtual void execution(int id) = 0;
@@ -571,22 +572,12 @@ protected:
   /**
    * @brief dictionary of events
    */
-  std::map<int, event_logger::event_opts> events;
+  std::map<int, capabilities2::event_opts> events;
 
   /**
-   * @brief Last event tracker id to be inserted
+   * @brief unique id for the runner
    */
-  int insert_id;
-
-  /**
-   * @brief Last parameter tracker id to be executed
-   */
-  int execute_id;
-
-  /**
-   * @brief Last parameter tracker id to be executed
-   */
-  int thread_id;
+  int runner_id;
 
   /**
    * @brief curent number of trigger signals received

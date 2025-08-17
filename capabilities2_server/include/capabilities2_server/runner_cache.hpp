@@ -112,7 +112,7 @@ public:
    * @param on_success on_success event with capability and parameters
    * @param on_stopped on_stop event with capability and parameters
    */
-  void set_runner_triggers(const std::string& capability, event_logger::event_opts& event_options)
+  void set_runner_triggers(const std::string& capability, capabilities2::event_opts& event_options)
   {
     runner_cache_[capability]->attach_events(event_options,
                                              std::bind(&capabilities2_server::RunnerCache::trigger_runner, this,

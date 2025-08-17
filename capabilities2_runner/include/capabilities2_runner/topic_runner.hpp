@@ -51,18 +51,15 @@ public:
    */
   virtual void execution(int id) override
   {
-    execute_id += 1;
-
     // if parameters are not provided then cannot proceed
     if (!parameters_[id])
       throw runner_exception("cannot grab data without parameters");
 
     // trigger the events related to on_started state
-    if (events[execute_id].on_started.interface != "")
+    if (events[id].on_started.interface != "")
     {
-      event_(EventType::STARTED, id, events[execute_id].on_started.interface, events[execute_id].on_started.provider);
-      triggerFunction_(events[execute_id].on_started.interface,
-                       update_on_started(events[execute_id].on_started.parameters));
+      event_(EventType::STARTED, id, events[id].on_started.interface, events[id].on_started.provider);
+      triggerFunction_(events[id].on_started.interface, update_on_started(events[id].on_started.parameters));
     }
 
     std::unique_lock<std::mutex> lock(mutex_);
@@ -77,12 +74,10 @@ public:
     if (latest_message_)
     {
       // trigger the events related to on_success state
-      if (events[execute_id].on_success.interface != "")
+      if (events[id].on_success.interface != "")
       {
-        event_(EventType::SUCCEEDED, id, events[execute_id].on_success.interface,
-               events[execute_id].on_success.provider);
-        triggerFunction_(events[execute_id].on_success.interface,
-                         update_on_success(events[execute_id].on_success.parameters));
+        event_(EventType::SUCCEEDED, id, events[id].on_success.interface, events[id].on_success.provider);
+        triggerFunction_(events[id].on_success.interface, update_on_success(events[id].on_success.parameters));
       }
     }
     else
@@ -90,11 +85,10 @@ public:
       error_("Message receving failed.");
 
       // trigger the events related to on_failure state
-      if (events[execute_id].on_failure.interface != "")
+      if (events[id].on_failure.interface != "")
       {
-        event_(EventType::FAILED, id, events[execute_id].on_failure.interface, events[execute_id].on_failure.provider);
-        triggerFunction_(events[execute_id].on_failure.interface,
-                         update_on_failure(events[execute_id].on_failure.parameters));
+        event_(EventType::FAILED, id, events[id].on_failure.interface, events[id].on_failure.provider);
+        triggerFunction_(events[id].on_failure.interface, update_on_failure(events[id].on_failure.parameters));
       }
     }
 
@@ -120,11 +114,11 @@ public:
       throw runner_exception("cannot stop runner subscriber that was not started");
 
     // Trigger on_stopped event if defined
-    if (events[execute_id].on_stopped.interface != "")
+    if (events[runner_id].on_stopped.interface != "")
     {
-      event_(EventType::STOPPED, -1, events[execute_id].on_stopped.interface, events[execute_id].on_stopped.provider);
-      triggerFunction_(events[execute_id].on_stopped.interface,
-                       update_on_stopped(events[execute_id].on_stopped.parameters));
+      event_(EventType::STOPPED, -1, events[runner_id].on_stopped.interface, events[runner_id].on_stopped.provider);
+      triggerFunction_(events[runner_id].on_stopped.interface,
+                       update_on_stopped(events[runner_id].on_stopped.parameters));
     }
 
     info_("stopping runner");

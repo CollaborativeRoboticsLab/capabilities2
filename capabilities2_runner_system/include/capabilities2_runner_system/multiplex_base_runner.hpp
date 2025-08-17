@@ -31,70 +31,38 @@ public:
   /**
    * @brief Trigger process to be executed.
    *
-   * @param uid unique identifier for the execution
+   * @param id unique identifier for the execution
    */
-  virtual void execution(int uid)
+  virtual void execution(int id)
   {
-    info_("execution started for uid: " + std::to_string(uid));
+    info_("execution started for id: " + std::to_string(id));
 
-    // trigger the events related to on_success state
-    if (events[uid].on_success.interface != "")
+    // check if the id is already completed
+    if (completed_executions.find(id) != completed_executions.end() && completed_executions[id])
     {
-      event_(EventType::SUCCEEDED, uid, events[uid].on_success.interface, events[uid].on_success.provider);
-      triggerFunction_(events[uid].on_success.interface, update_on_success(events[uid].on_success.parameters));
+      info_("execution already completed for id: " + std::to_string(id));
+      return;
     }
-    // trigger the events related to on_failure state
-    else if (events[uid].on_failure.interface != "")
+    else
     {
-      event_(EventType::FAILED, uid, events[uid].on_failure.interface, events[uid].on_failure.provider);
-      triggerFunction_(events[uid].on_failure.interface, update_on_failure(events[uid].on_failure.parameters));
-    }
-  }
-
-  /**
-   * @brief attach events to the runner
-   *
-   * @param event_option event_options related for the action
-   * @param triggerFunction external function that triggers capability runners
-   *
-   * @return number of attached events
-   */
-  virtual int attach_events(event_logger::event_opts& event_option,
-                            std::function<void(const std::string&, const std::string&)> triggerFunction) override
-  {
-    info_("accepted event options with ID : " + std::to_string(insert_id));
-
-    triggerFunction_ = triggerFunction;
-
-    tinyxml2::XMLElement* on_success_params = convert_to_xml(event_option.on_success.parameters);
-
-    int uid = NULL;
-
-    // extract the uid from the event options from whatever runner is present by looping
-    if (event_option.on_success.interface != "")
-    {
-      tinyxml2::XMLElement* on_success_params = convert_to_xml(event_option.on_success.parameters);
-      on_success_params->QueryIntAttribute("uid", &uid);
-    }
-    else if (event_option.on_failure.interface != "")
-    {
-      tinyxml2::XMLElement* on_failure_params = convert_to_xml(event_option.on_failure.parameters);
-      on_failure_params->QueryIntAttribute("uid", &uid);
-    }
-    else if (event_option.on_started.interface != "")
-    {
-      tinyxml2::XMLElement* on_started_params = convert_to_xml(event_option.on_started.parameters);
-      on_started_params->QueryIntAttribute("uid", &uid);
-    }
-    else if (event_option.on_stopped.interface != "")
-    {
-      tinyxml2::XMLElement* on_stopped_params = convert_to_xml(event_option.on_stopped.parameters);
-      on_stopped_params->QueryIntAttribute("uid", &uid);
+      // trigger the events related to on_success state
+      if (events[id].on_success.interface != "")
+      {
+        event_(EventType::SUCCEEDED, id, events[id].on_success.interface, events[id].on_success.provider);
+        triggerFunction_(events[id].on_success.interface, update_on_success(events[id].on_success.parameters));
+      }
+      // trigger the events related to on_failure state
+      else if (events[id].on_failure.interface != "")
+      {
+        event_(EventType::FAILED, id, events[id].on_failure.interface, events[id].on_failure.provider);
+        triggerFunction_(events[id].on_failure.interface, update_on_failure(events[id].on_failure.parameters));
+      }
     }
 
-    events[uid] = event_option;
+    // track the execution as completed
+    completed_executions[id] = true;
 
-    return uid;
+    info_("multiplexing complete. Thread closing.", id);
   }
 
   /**
@@ -118,5 +86,8 @@ protected:
 
   // expected input count
   std::map<int, int> expected_input_count;
+
+  // completed executions
+  std::map<int, bool> completed_executions;
 };
 }  // namespace capabilities2_runner

@@ -21,37 +21,46 @@ public:
    */
   virtual void trigger(const std::string& parameters) override
   {
+    info_("received new parameters for InputMultiplexAnyRunner : " + parameters);
+
     tinyxml2::XMLElement* parameters_ = convert_to_xml(parameters);
 
-    int uid = 0;
-    int input_count = 0;
+    int input_count = -1;
 
     parameters_->QueryIntAttribute("input_count", &input_count);
-    parameters_->QueryIntAttribute("uid", &uid);
+    parameters_->QueryIntAttribute("id", &runner_id);
 
-    if (input_count_tracker.find(uid) == input_count_tracker.end())
+    if (runner_id < 0 || input_count < 0)
     {
-      input_count_tracker[uid] = 1;
-      expected_input_count[uid] = input_count;
-
-      info_("has started the ANY condition with " + std::to_string(input_count_tracker[uid]) + " inputs.");
+      throw runner_exception("UID or input_count not found in parameters");
     }
     else
     {
-      input_count_tracker[uid] += 1;
-
-      info_("has received " + std::to_string(input_count_tracker[uid]) + "/" +
-            std::to_string(expected_input_count[uid]) + " inputs for ANY condition.");
+      info_("triggered with UID: " + std::to_string(runner_id) + " and input_count: " + std::to_string(input_count));
     }
 
-    if (input_count_tracker[uid] > 0)
+    if (input_count_tracker.find(runner_id) == input_count_tracker.end())
     {
-      info_("has fullfilled the ANY condition with " + std::to_string(input_count_tracker[uid]) + " inputs.");
+      input_count_tracker[runner_id] = 1;
+      expected_input_count[runner_id] = input_count;
 
-      executionThreadPool[uid] = std::thread(&InputMultiplexAnyRunner::execution, this, uid);
+      info_("has started the ANY condition with " + std::to_string(input_count_tracker[runner_id]) + " inputs.");
+    }
+    else
+    {
+      input_count_tracker[runner_id] += 1;
+
+      info_("has received " + std::to_string(input_count_tracker[runner_id]) + "/" +
+            std::to_string(expected_input_count[runner_id]) + " inputs for ANY condition.");
+    }
+
+    if (input_count_tracker[runner_id] > 0)
+    {
+      info_("has fullfilled the ANY condition with " + std::to_string(input_count_tracker[runner_id]) + " inputs.");
+
+      executionThreadPool[runner_id] = std::thread(&InputMultiplexAnyRunner::execution, this, runner_id);
     }
   }
-
 };
 
 }  // namespace capabilities2_runner

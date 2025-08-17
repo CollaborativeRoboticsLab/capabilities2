@@ -23,35 +23,33 @@ public:
   {
     tinyxml2::XMLElement* parameters_ = convert_to_xml(parameters);
 
-    int uid = 0;
     int input_count = 0;
 
     parameters_->QueryIntAttribute("input_count", &input_count);
-    parameters_->QueryIntAttribute("uid", &uid);
+    parameters_->QueryIntAttribute("id", &runner_id);
 
-    if (input_count_tracker.find(uid) == input_count_tracker.end())
+    if (input_count_tracker.find(runner_id) == input_count_tracker.end())
     {
-      input_count_tracker[uid] = 1;
-      expected_input_count[uid] = input_count;
+      input_count_tracker[runner_id] = 1;
+      expected_input_count[runner_id] = input_count;
 
-      info_("has started the All condition with " + std::to_string(input_count_tracker[uid]) + " inputs.");
+      info_("has started the All condition with " + std::to_string(input_count_tracker[runner_id]) + " inputs.");
     }
     else
     {
-      input_count_tracker[uid] += 1;
+      input_count_tracker[runner_id] += 1;
 
-      info_("has received " + std::to_string(input_count_tracker[uid]) + "/" +
-            std::to_string(expected_input_count[uid]) + " inputs for ALL condition.");
+      info_("has received " + std::to_string(input_count_tracker[runner_id]) + "/" +
+            std::to_string(expected_input_count[runner_id]) + " inputs for ALL condition.");
     }
 
-    if (input_count_tracker[uid] == expected_input_count[uid])
+    if (input_count_tracker[runner_id] == expected_input_count[runner_id])
     {
-      info_("has fullfilled the All condition with " + std::to_string(input_count_tracker[uid]) + " inputs.");
+      info_("has fullfilled the All condition with " + std::to_string(input_count_tracker[runner_id]) + " inputs.");
 
-      executionThreadPool[uid] = std::thread(&InputMultiplexAllRunner::execution, this, uid);
+      executionThreadPool[runner_id] = std::thread(&InputMultiplexAllRunner::execution, this, runner_id);
     }
   }
-
 };
 
 }  // namespace capabilities2_runner
