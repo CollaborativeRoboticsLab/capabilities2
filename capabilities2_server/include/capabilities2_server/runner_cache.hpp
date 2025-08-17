@@ -52,12 +52,10 @@ public:
   void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability,
                   const models::run_config_model_t& run_config)
   {
-    // if the runner exists then throw an error
+    // if the runner exists then throw an error preserving uniqueness
     if (running(capability))
     {
-      // already running
       throw capabilities2_runner::runner_exception("capability is running already: " + capability);
-      // return;
     }
 
     // check if run config is valid
@@ -66,9 +64,8 @@ public:
       throw capabilities2_runner::runner_exception("run config is not valid: " + YAML::Dump(run_config.to_yaml()));
     }
 
-    // create the runner
-    // add the runner to map
-    // if the spec runner contains a path to a launch file then use the launch file runner
+    // create the runner, add the runner to map, and if the spec runner contains a path to a launch file then use the
+    // launch file runner
     if (run_config.runner.find(".launch") != std::string::npos || run_config.runner.find("/") != std::string::npos ||
         run_config.runner.find(".py") != std::string::npos)
     {
@@ -76,7 +73,6 @@ public:
     }
     else
     {
-      // use different runner types based on cap and provider specs
       runner_cache_[capability] = runner_loader_.createSharedInstance(run_config.runner);
     }
 
@@ -116,11 +112,11 @@ public:
    * @param on_success on_success event with capability and parameters
    * @param on_stopped on_stop event with capability and parameters
    */
-  void set_runner_triggers(const std::string& capability, event_logger::event_opts& event_options)
+  void set_runner_triggers(const std::string& capability, capabilities2::event_opts& event_options)
   {
-    int event_count = runner_cache_[capability]->attach_events(
-        event_options, std::bind(&capabilities2_server::RunnerCache::trigger_runner, this, std::placeholders::_1,
-                                 std::placeholders::_2));
+    runner_cache_[capability]->attach_events(event_options,
+                                             std::bind(&capabilities2_server::RunnerCache::trigger_runner, this,
+                                                       std::placeholders::_1, std::placeholders::_2));
   }
 
   /**
@@ -130,12 +126,10 @@ public:
    */
   void remove_runner(const std::string& capability)
   {
-    // find the runner in the cache
+    // find the runner in the cache and if not found then throw an error
     if (!running(capability))
     {
-      // not found so nothing to do
       throw capabilities2_runner::runner_exception("capability runner not found: " + capability);
-      // return;
     }
 
     // safely stop the runner

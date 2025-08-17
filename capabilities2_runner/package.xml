@@ -21,6 +21,7 @@
   <depend>pluginlib</depend>
   <depend>std_msgs</depend>
   <depend>capabilities2_msgs</depend>
+  <depend>capabilities2_utils</depend>
   <depend>event_logger</depend>
   <depend>event_logger_msgs</depend>
   <depend>tinyxml2_vendor</depend>

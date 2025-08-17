@@ -18,6 +18,7 @@ find_package(pluginlib REQUIRED)
 find_package(hri_audio_msgs REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_runner REQUIRED)
+find_package(capabilities2_utils REQUIRED)
 find_package(event_logger REQUIRED)
 find_package(event_logger_msgs REQUIRED)
 find_package(tinyxml2_vendor REQUIRED)
@@ -38,6 +39,7 @@ ament_target_dependencies(${PROJECT_NAME}
   hri_audio_msgs
   capabilities2_msgs
   capabilities2_runner
+  capabilities2_utils
   event_logger
   event_logger_msgs
   TinyXML2

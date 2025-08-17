@@ -14,8 +14,8 @@ namespace capabilities2
 
 	struct connection_t
 	{
-		std::string runner;
-		std::string provider;
+		std::string runner = "";
+		std::string provider = "";
 		tinyxml2::XMLElement* parameters = nullptr;
 	};
 
@@ -26,6 +26,7 @@ namespace capabilities2
 		connection_t target_on_success;
 		connection_t target_on_failure;
 		std::string connection_description;
+		int trigger_id = -1;
 	};
 
 } // namespace capabilities2

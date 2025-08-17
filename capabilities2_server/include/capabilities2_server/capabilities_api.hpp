@@ -16,8 +16,8 @@
 #include <capabilities2_server/capabilities_db.hpp>
 #include <capabilities2_server/bond_cache.hpp>
 #include <capabilities2_server/runner_cache.hpp>
+#include <capabilities2_utils/event_types.hpp>
 
-#include <event_logger/event_types.hpp>
 #include <event_logger/event_client.hpp>
 #include <event_logger_msgs/msg/event.hpp>
 
@@ -96,10 +96,10 @@ public:
     // get the provider specification for the capability
     models::run_config_model_t run_config = cap_db_->get_run_config(provider);
 
-    // create a new runner
-    // this call implicitly starts the runner
+    // create a new runner, this call implicitly starts the runner
     // create a runner id which is the cap name to uniquely identify the runner
     // this means only one runner per capability name
+    //
     // TODO: consider the logic for multiple runners per capability
     try
     {
@@ -112,6 +112,7 @@ public:
     catch (const capabilities2_runner::runner_exception& e)
     {
       event_->error("could not start runner: " + std::string(e.what()));
+
       return false;
     }
   }
@@ -240,7 +241,7 @@ public:
    * @param capability capability from where the events originate
    * @param event_options event options for the capability
    */
-  void set_triggers(const std::string& capability, event_logger::event_opts& event_options)
+  void set_triggers(const std::string& capability, capabilities2::event_opts& event_options)
   {
     try
     {

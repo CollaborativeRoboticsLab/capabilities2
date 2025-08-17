@@ -16,7 +16,6 @@
 #include <capabilities2_server/capabilities_api.hpp>
 
 #include <capabilities2_msgs/msg/capability_spec.hpp>
-
 #include <capabilities2_msgs/srv/establish_bond.hpp>
 #include <capabilities2_msgs/srv/start_capability.hpp>
 #include <capabilities2_msgs/srv/stop_capability.hpp>
@@ -33,8 +32,9 @@
 #include <capabilities2_msgs/srv/get_remappings.hpp>
 #include <capabilities2_msgs/srv/get_running_capabilities.hpp>
 
+#include <capabilities2_utils/event_types.hpp>
+
 #include <event_logger/event_client.hpp>
-#include <event_logger/event_types.hpp>
 #include <event_logger_msgs/msg/event.hpp>
 
 namespace capabilities2_server
@@ -318,7 +318,9 @@ public:
   void configure_capability_cb(const std::shared_ptr<capabilities2_msgs::srv::ConfigureCapability::Request> req,
                                std::shared_ptr<capabilities2_msgs::srv::ConfigureCapability::Response> res)
   {
-    event_logger::event_opts event_options;
+    capabilities2::event_opts event_options;
+
+    event_options.event_id = req->trigger_id;
 
     event_options.on_started.interface = req->target_on_start.capability;
     event_options.on_started.provider = req->target_on_start.provider;
@@ -347,6 +349,11 @@ public:
 
     event_->runner_define(req->source.capability, req->source.provider, req->target_on_stop.capability,
                           req->target_on_stop.provider, event_logger_msgs::msg::Event::STOPPED, req->connection_description);
+
+    event_->info("on_started : " + event_options.on_started.parameters);
+    event_->info("on_failure : " + event_options.on_failure.parameters);
+    event_->info("on_success : " + event_options.on_success.parameters);
+    event_->info("on_stopped : " + event_options.on_stopped.parameters);
 
     // setup triggers between parameters
     set_triggers(req->source.capability, event_options);
