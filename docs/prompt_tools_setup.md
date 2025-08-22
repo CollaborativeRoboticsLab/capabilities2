@@ -6,7 +6,14 @@ Clone the prompt tools package same workspace if its not already availabe in the
 
 ```bash
 cd src
-git clone https://github.com/CollaborativeRoboticsLab/prompt_tools.git -b develop
+git clone https://github.com/CollaborativeRoboticsLab/prompt_tools.git
+```
+
+## Clone Capabilities2 plugin for Prompt tools stack
+
+```bash
+cd src
+git clone https://github.com/CollaborativeRoboticsLab/capabilities2_runner_prompt.git
 ```
 
 ## Dependency Installation

@@ -37,6 +37,7 @@ Runners can be created using the runner API parent classes [here](./capabilities
 - [Setup Instructions without devcontainer](./docs/setup.md)
 - [Dependency installation for Nav2 Runners](./docs/nav2_setup.md)
 - [Dependency installation for Prompt Runners](./docs/prompt_tools_setup.md)
+- [Dependency installation for Fabric Runners](./docs/fabric_setup.md)
 - [Dependency installation for Foxglove-studio](./docs/foxglove_studio.md)
 
 ## Quick Startup information
