@@ -1,4 +1,4 @@
-# capabilities2
+# Capabilities2
 
 [![ROS2 Jazzy](https://img.shields.io/badge/ROS2-Jazzy-blue)](https://index.ros.org/doc/ros2/Releases/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -33,11 +33,11 @@ Runners can be created using the runner API parent classes [here](./capabilities
 
 
 ## Setup Information
+- [Installation](./docs/setup.md)
 - [Setup Instructions with devcontainer](./docs/setup_with_dev.md)
-- [Setup Instructions without devcontainer](./docs/setup.md)
+- [Dependency installation for Fabric Runners](./docs/fabric_setup.md)
 - [Dependency installation for Nav2 Runners](./docs/nav2_setup.md)
 - [Dependency installation for Prompt Runners](./docs/prompt_tools_setup.md)
-- [Dependency installation for Fabric Runners](./docs/fabric_setup.md)
 - [Dependency installation for Foxglove-studio](./docs/foxglove_studio.md)
 
 ## Quick Startup information
