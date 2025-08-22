@@ -32,5 +32,33 @@
 
   <export>
     <build_type>ament_cmake</build_type>
+
+    <!-- CompletionRunner -->
+    <capability_interface>
+      interfaces/CompletionRunner.yaml
+    </capability_interface>
+
+    <capability_provider>
+      providers/CompletionRunner.yaml
+    </capability_provider>
+
+    <!-- InputMultiplexAllRunner -->
+    <capability_interface>
+      interfaces/InputMultiplexAllRunner.yaml
+    </capability_interface>
+
+    <capability_provider>
+      providers/InputMultiplexAllRunner.yaml
+    </capability_provider>
+
+    <!-- InputMultiplexAnyRunner -->
+    <capability_interface>
+      interfaces/InputMultiplexAnyRunner.yaml
+    </capability_interface>
+
+    <capability_provider>
+      providers/InputMultiplexAnyRunner.yaml
+    </capability_provider>
+
   </export>
 </package>
