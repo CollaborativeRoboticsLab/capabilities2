@@ -5,5 +5,5 @@ name: CapabilityGetRunner
 spec_type: provider
 spec_version: 1.1
 description: "The capability provider for extracting capabilities from server. This is used to identify the capabilities of the robot" 
-implements: std_capabilities/CapabilityGetRunner
+implements: capabilities2_runner_capabilities/CapabilityGetRunner
 runner: capabilities2_runner::CapabilityGetRunner

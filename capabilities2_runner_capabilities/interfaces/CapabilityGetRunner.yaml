@@ -3,11 +3,11 @@
 name: CapabilityGetRunner
 spec_version: 1.1
 spec_type: interface
-description: "This capability depends on the capabilities2 server functionalities and allows an decision making authority such as an
-              LLM extract capabilities of the robot. The capability can be trigged with an command such as 
-              '<Runner interface=std_capabilities/CapabilityGetRunner provider=std_capabilities/CapabilityGetRunner />'. This is included in 
-              the default starting plan and the decision making authority such as an LLM does not need to include this in any generated
-              plans. The details for the Capaiblities are stored in a format as follows, 
+description: "This capability depends on the capabilities2 server functionalities and allows an decision making authority such as an LLM extract 
+              capabilities of the robot. The capability can be trigged with an command such as 
+              '<Runner interface=capabilities2_runner_capabilities/CapabilityGetRunner provider=capabilities2_runner_capabilities/CapabilityGetRunner />'. 
+              This is included in the default starting plan and the decision making authority such as an LLM does not need to include this in any 
+              generated plans. The details for the Capaiblities are stored in a format as follows, 
               '   <CapabilitySpecs>
                       <CapabilitySpec package=robot_navigation type=capability_interface default_provider=robot_navigation/navigation_provider>
                           <content>

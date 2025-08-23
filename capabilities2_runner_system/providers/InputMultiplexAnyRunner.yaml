@@ -3,6 +3,6 @@
 name: InputMultiplexAnyRunner
 spec_type: provider
 spec_version: 1.1
-description: "The capability provider for the system_capabilities/InputMultiplexAnyRunner interface"
-implements: system_capabilities/InputMultiplexAnyRunner
+description: "The capability provider for the capabilities2_runner_system/InputMultiplexAnyRunner interface"
+implements: capabilities2_runner_system/InputMultiplexAnyRunner
 runner: capabilities2_runner::InputMultiplexAnyRunner
