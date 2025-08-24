@@ -30,5 +30,14 @@
 
   <export>
     <build_type>ament_cmake</build_type>
+
+    <!-- CapabilityGetRunner -->
+    <capability_interface>
+      interfaces/CapabilityGetRunner.yaml
+    </capability_interface>
+
+    <capability_provider>
+      providers/CapabilityGetRunner.yaml
+    </capability_provider>
   </export>
 </package>

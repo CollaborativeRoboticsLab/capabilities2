@@ -11,26 +11,18 @@ mkdir -p /home/$USER/capabilities_ws/src
 cd /home/$USER/capabilities_ws/src
 ```
 
-### Tinyxml2 Installation
-
-Clone and install the tinyXML2 package
-
-```bash
-git clone https://github.com/leethomason/tinyxml2.git
-cd tinyxml2
-make install
-```
-
 ### Cloning the Packages
 
 Clone the package using Git
 
 ```bash
-git clone -b capabilities2-server-fabric https://github.com/CollaborativeRoboticsLab/capabilities2.git
-git clone -b develop https://github.com/CollaborativeRoboticsLab/std_capabilities.git
-git clone https://github.com/AIResearchLab/nav_stack.git
+git clone https://github.com/CollaborativeRoboticsLab/capabilities2.git
 ```
 
+Optionally you can clone
+```bash
+git https://github.com/CollaborativeRoboticsLab/std_capabilities.git
+```
 ### Dependency installation
 
 Move the terminal to workspace root and install dependencies.
@@ -49,3 +41,9 @@ Use colcon to build the packages:
 ```bash
 colcon build
 ```
+
+### Additional installtions
+
+[Fabric](fabric_setup.md) \
+[Prompt Tools](./prompt_tools_setup.md) \
+[Nav2 stack](./nav2_setup.md)

@@ -57,6 +57,14 @@ install(DIRECTORY include/
   DESTINATION include
 )
 
+install(DIRECTORY interfaces
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(DIRECTORY providers
+  DESTINATION share/${PROJECT_NAME}
+)
+
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 

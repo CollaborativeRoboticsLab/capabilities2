@@ -115,7 +115,7 @@ public:
 
     parameters_[runner_id] = element;
 
-    info_("received new parameters with event id", runner_id);
+    info_("received new parameters with event id : " + std::to_string(runner_id), runner_id);
 
     executionThreadPool[runner_id] = std::thread(&RunnerBase::execution, this, runner_id);
 

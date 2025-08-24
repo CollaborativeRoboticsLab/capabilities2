@@ -11,9 +11,4 @@
             It can handle multiple input streams and route them to the appropriate output.
         </description>
     </class>
-    <class type="capabilities2_runner::CompletionRunner" base_class_type="capabilities2_runner::RunnerBase">
-        <description>
-            A plugin that notifies about the completion of the fabric to the action server
-        </description>
-    </class>
 </library>

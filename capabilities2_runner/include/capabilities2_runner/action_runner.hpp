@@ -93,7 +93,8 @@ public:
               // Trigger on_stopped event if defined
               if (events[runner_id].on_stopped.interface != "")
               {
-                event_(EventType::STOPPED, -1, events[runner_id].on_stopped.interface, events[runner_id].on_stopped.provider);
+                event_(EventType::STOPPED, -1, events[runner_id].on_stopped.interface,
+                       events[runner_id].on_stopped.provider);
                 triggerFunction_(events[runner_id].on_stopped.interface,
                                  update_on_stopped(events[runner_id].on_stopped.parameters));
               }
@@ -116,7 +117,14 @@ public:
       }
     }
 
-    info_("stopping runner");
+    info_("removing event options");
+
+    // remove all event options for this runner instance
+    const auto n = events.size();
+    events.clear();
+    info_("removed event options for " + std::to_string(n) + " runner ids");
+
+    info_("runner cleaned. stopping..");
   }
 
   /**
