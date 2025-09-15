@@ -1,8 +1,8 @@
-# Dependency installation for Prompt Tools Runners
+# Dependency installation for Fabric Runners
 
 ## Clone packages
 
-Clone the fabric package same workspace if its not already availabe in the workspace. Capabilities2 Fabric Runners are dependent on this package.
+Clone the fabric package same workspace if its not already availabe in the workspace. Fabric Runners are dependent on this package.
 
 ```bash
 cd src
@@ -13,7 +13,7 @@ git clone https://github.com/CollaborativeRoboticsLab/fabric.git
 
 ```bash
 cd src
-git clone https://github.com/CollaborativeRoboticsLab/fabric.git
+git clone https://github.com/CollaborativeRoboticsLab/capabilities2_runner_fabric.git
 ```
 
 ## Dependency Installation
