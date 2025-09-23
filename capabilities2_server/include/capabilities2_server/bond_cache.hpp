@@ -13,16 +13,30 @@ namespace capabilities2_server
 
 /**
  * @brief bond cache class
- * keep track of bonds established by clients and assosciated resources
+ *
+ * keep track of bonds established by clients and associated resources
+ * this is used to manage the lifecycle of capabilities based on client bonds
+ * a capability can have multiple bonds from different clients
  *
  */
 class BondCache
 {
 public:
+  /**
+   * @brief Construct a Bond Cache with a specific bond topic
+   *
+   * @param bonds_topic
+   */
   BondCache(const std::string& bonds_topic = "/capabilities/bond") : bonds_topic_(bonds_topic)
   {
   }
 
+  /**
+   * @brief Add a bond to the cache
+   *
+   * @param capability
+   * @param bond_id
+   */
   void add_bond(const std::string& capability, const std::string& bond_id)
   {
     // if capability is not in cache, add it
@@ -41,6 +55,13 @@ public:
     }
   }
 
+  /**
+   * @brief Remove a bond id from the cache for all capabilities
+   *
+   * If a capability has no more bonds, it is removed from the cache
+   *
+   * @param bond_id
+   */
   void remove_bond(const std::string& bond_id)
   {
     // remove bond id from all capability entries
@@ -67,11 +88,20 @@ public:
     }
   }
 
+  /**
+   * @brief Remove a bond id from a specific capability
+   *
+   * if the bond is used by another capability, it is not removed
+   * if the capability has no more bonds, it is removed from the cache
+   *
+   * @param capability
+   * @param bond_id
+   */
   void remove_bond(const std::string& capability, const std::string& bond_id)
   {
     // remove bond id from capability entry
     auto it = std::find(bond_cache_[capability].begin(), bond_cache_[capability].end(), bond_id);
-    
+
     if (it != bond_cache_[capability].end())
     {
       bond_cache_[capability].erase(it);
