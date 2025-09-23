@@ -1,19 +1,15 @@
 # Capabilities2
 
-[![ROS2 Jazzy](https://img.shields.io/badge/ROS2-Jazzy-blue)](https://index.ros.org/doc/ros2/Releases/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Open in Visual Studio Code](https://img.shields.io/badge/vscode-dev-blue)](https://open.vscode.dev/airesearchlab/capabilities2)
-![C++](https://img.shields.io/badge/Code-C++-informational?&logo=c%2b%2b)
 ![ROS](https://img.shields.io/badge/Framework-ROS2-informational?&logo=ROS)
+[![ROS2 Jazzy](https://img.shields.io/badge/ROS2-Jazzy-blue)](https://index.ros.org/doc/ros2/Releases/)
+![C++](https://img.shields.io/badge/Code-C++-informational?&logo=c%2b%2b)
+[![Open in Visual Studio Code](https://img.shields.io/badge/vscode-dev-blue)](https://open.vscode.dev/collaborativeroboticslab/capabilities2)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A reimplementation of the [capabilities](https://github.com/osrf/capabilities) package. This package is implemented using C++17 and extends the capabilities package features. 
+A reimplementation of the [capabilities](https://github.com/osrf/capabilities) package. This package is implemented using `C++` and extends the capabilities package features.
+
 - [capabilities2_server](./capabilities2_server/readme.md) package contains the core of the system.
 - [capabilities2_runner](./capabilities2_server/readme.md) package contains base and template classes for capability implementations.
-
-
-## Extentions
-- [Fabric](https://github.com/CollaborativeRoboticsLab/fabric) package implements a behaviour planning framework that utlizes capabilities2 system.
-
 
 ## System structure
 
@@ -31,13 +27,10 @@ The main usage of `capabilities2` will typically involve creating or customizing
 
 Runners can be created using the runner API parent classes [here](./capabilities2_runner/readme.md). The capabilities service can be started using the [capabilities2_server](./capabilities2_server/readme.md) package.
 
-
 ## Setup Information
+
 - [Installation](./docs/setup.md)
 - [Setup Instructions with devcontainer](./docs/setup_with_dev.md)
-- [Dependency installation for Fabric Runners](./docs/fabric_setup.md)
-- [Dependency installation for Nav2 Runners](./docs/nav2_setup.md)
-- [Dependency installation for Prompt Runners](./docs/prompt_tools_setup.md)
 - [Dependency installation for Foxglove-studio](./docs/foxglove_studio.md)
 
 ## Quick Startup information
@@ -46,16 +39,16 @@ Runners can be created using the runner API parent classes [here](./capabilities
 
 ```bash
 source install/setup.bash
-ros2 launch capabilities2_server server.launch.py
+ros2 launch capabilities2_server capabilities2_server.launch.py
 ```
 
 ## Additional Information
+
 - [Motivation and Example Use Cases](./docs/motivation_and_examples.md)
 - [Design Information](./docs/design.md)
 - [Registering a capability](./capabilities2_server/docs/register.md)
 - [Terminal based capability usage](./capabilities2_server/docs/terminal_usage.md)
 - [Running test scripts](./docs/run_test_scripts.md)
-- [Using with Docker](./docker/docs/startup.md)
 
 ## Acknowledgements
 
@@ -66,6 +59,7 @@ This work is based on the capabilities package developed by the Open Source Robo
 If you use this work in an academic context, please cite the following publication(s):
 
 [Capabilities2 for ROS2: Advanced Skill-Based Control for Human-Robot Interaction](https://dl.acm.org/doi/10.5555/3721488.3721623)
+
 ```latex
 @inproceedings{10.5555/3721488.3721623,
     author = {Pritchard, Michael and Ratnayake, Kalana and Gamage, Buddhi and Jayasuriya, Maleen and Herath, Damith},
