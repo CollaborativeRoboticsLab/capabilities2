@@ -17,12 +17,15 @@ find_package(std_msgs REQUIRED)
 
 set(msg_files
   "msg/Capability.msg"
+  "msg/CapabilityCommand.msg"
+  "msg/CapabilityConnection.msg"
+  "msg/CapabilityEvent.msg"
+  "msg/CapabilityEventStamped.msg"
+  "msg/CapabilityResponse.msg"
   "msg/CapabilitySpec.msg"
+  "msg/NaturalCapability.msg"
   "msg/Remapping.msg"
   "msg/RunningCapability.msg"
-  "msg/NaturalCapability.msg"
-  "msg/CapabilityCommand.msg"
-  "msg/CapabilityResponse.msg"
 )
 
 set(srv_files
