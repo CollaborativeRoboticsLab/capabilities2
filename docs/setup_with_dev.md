@@ -16,16 +16,16 @@ cd /home/$USER/capabilities_ws/src
 Clone the package using Git
 
 ```bash
-git clone -b capabilities2-server-fabric https://github.com/CollaborativeRoboticsLab/capabilities2.git
+git clone -b develop https://github.com/CollaborativeRoboticsLab/capabilities2.git
 git clone -b develop https://github.com/CollaborativeRoboticsLab/std_capabilities.git
-git clone https://github.com/AIResearchLab/nav_stack.git
 ```
 
 ### Devcontainer
 
-A `devcontainer` is provided for developing the capabilities2 meta-package. The container can be used with [Microsoft Visual Studio Code](https://code.visualstudio.com/) and [Remote Development Extention](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack). 
+A `devcontainer` is provided for developing the capabilities2 meta-package. The container can be used with [Microsoft Visual Studio Code](https://code.visualstudio.com/) and [Remote Development Extention](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack).
 
 If there are multiple packages in the workspace as with the usual case, move the `.devcontainer` folder into the parent folder such that it is located as follows,
+
 ```txt
 colcon_ws
 --> build

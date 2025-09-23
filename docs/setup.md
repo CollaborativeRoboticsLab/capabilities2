@@ -20,9 +20,11 @@ git clone https://github.com/CollaborativeRoboticsLab/capabilities2.git
 ```
 
 Optionally you can clone
+
 ```bash
 git https://github.com/CollaborativeRoboticsLab/std_capabilities.git
 ```
+
 ### Dependency installation
 
 Move the terminal to workspace root and install dependencies.
@@ -30,6 +32,7 @@ Move the terminal to workspace root and install dependencies.
 ```bash
 cd /home/$USER/capabilities_ws
 ```
+
 ```bash
 rosdep install --from-paths src --ignore-src -r -y
 ```
@@ -41,9 +44,3 @@ Use colcon to build the packages:
 ```bash
 colcon build
 ```
-
-### Additional installtions
-
-[Fabric](fabric_setup.md) \
-[Prompt Tools](./prompt_tools_setup.md) \
-[Nav2 stack](./nav2_setup.md)
