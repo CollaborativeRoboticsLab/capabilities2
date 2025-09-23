@@ -1,4 +1,16 @@
 <library path="capabilities2_runner">
+    <class type="capabilities2_runner::InputMultiplexAllRunner" base_class_type="capabilities2_runner::RunnerBase">
+        <description>
+            A plugin that Acts as a multiplexer for multiple input streams, allowing them to be processed in a single runner.
+            It can handle multiple input streams and route them to the appropriate output.
+        </description>
+    </class>
+    <class type="capabilities2_runner::InputMultiplexAnyRunner" base_class_type="capabilities2_runner::RunnerBase">
+        <description>
+            A plugin that Acts as a multiplexer for multiple input streams, allowing them to be processed in a single runner.
+            It can handle multiple input streams and route them to the appropriate output.
+        </description>
+    </class>
     <class type="capabilities2_runner::LaunchRunner" base_class_type="capabilities2_runner::RunnerBase">
         <description>
             A plugin that provides capabilities2 launch based runner
@@ -7,6 +19,11 @@
     <class type="capabilities2_runner::DummyRunner" base_class_type="capabilities2_runner::RunnerBase">
         <description>
             A plugin that provides a  dummy-runner to test capabilities2
+        </description>
+    </class>
+    <class type="capabilities2_runner::CapabilityGetRunner" base_class_type="capabilities2_runner::RunnerBase">
+        <description>
+            A plugin that request capabilities from the capabilities server and transfers to an LLM
         </description>
     </class>
 </library>

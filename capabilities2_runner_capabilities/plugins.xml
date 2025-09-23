@@ -1,7 +1,0 @@
-<library path="capabilities2_runner_capabilities">
-    <class type="capabilities2_runner::CapabilityGetRunner" base_class_type="capabilities2_runner::RunnerBase">
-        <description>
-            A plugin that request capabilities from the capabilities server and transfers to an LLM
-        </description>
-    </class>
-</library>

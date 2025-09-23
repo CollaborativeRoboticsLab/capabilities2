@@ -9,7 +9,7 @@
 #include <capabilities2_runner/service_runner.hpp>
 #include <capabilities2_msgs/srv/get_capability_specs.hpp>
 
-namespace capabilities2_runner
+namespace capabilities2_runner_capabilities
 {
 
 /**
@@ -114,4 +114,4 @@ protected:
   }
 };
 
-}  // namespace capabilities2_runner
+}  // namespace capabilities2_runner_capabilities

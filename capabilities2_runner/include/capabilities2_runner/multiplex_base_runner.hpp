@@ -7,6 +7,13 @@
 
 namespace capabilities2_runner
 {
+
+/**
+ * @brief Multiplex Base Runner
+ *
+ * Base class for inter-runner connections that require multiplexing of inputs
+ *
+ */
 class MultiplexBaseRunner : public RunnerBase
 {
 public:
@@ -90,4 +97,5 @@ protected:
   // completed executions
   std::map<int, bool> completed_executions;
 };
+
 }  // namespace capabilities2_runner

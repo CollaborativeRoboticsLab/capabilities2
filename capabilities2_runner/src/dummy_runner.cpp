@@ -1,9 +1,15 @@
 #include <pluginlib/class_list_macros.hpp>
 #include <capabilities2_runner/runner_base.hpp>
-#include <capabilities2_runner/launch_runner.hpp>
 
 namespace capabilities2_runner
 {
+/**
+ * @brief Dummy runner
+ *
+ * A sample runner that can be used to test the functionality of capabilities server.
+ * It does not perform any real action but logs messages when started and stopped.
+ *
+ */
 class DummyRunner : public RunnerBase
 {
 public:
@@ -40,9 +46,6 @@ protected:
 };
 
 }  // namespace capabilities2_runner
-
-// register runner plugins
-PLUGINLIB_EXPORT_CLASS(capabilities2_runner::LaunchRunner, capabilities2_runner::RunnerBase)
 
 // dummy runner
 PLUGINLIB_EXPORT_CLASS(capabilities2_runner::DummyRunner, capabilities2_runner::RunnerBase)
