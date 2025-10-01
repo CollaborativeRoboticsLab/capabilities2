@@ -20,6 +20,7 @@ set(msg_files
   "msg/CapabilityCommand.msg"
   "msg/CapabilityConnection.msg"
   "msg/CapabilityEvent.msg"
+  "msg/CapabilityEventCode.msg"
   "msg/CapabilityEventStamped.msg"
   "msg/CapabilityResponse.msg"
   "msg/CapabilitySpec.msg"
@@ -29,22 +30,22 @@ set(msg_files
 )
 
 set(srv_files
+  "srv/ConnectCapability.srv"
   "srv/EstablishBond.srv"
-  "srv/GetCapabilitySpec.srv"
   "srv/FreeCapability.srv"
+  "srv/GetCapabilitySpec.srv"
   "srv/GetCapabilitySpecs.srv"
   "srv/GetInterfaces.srv"
   "srv/GetProviders.srv"
   "srv/GetRemappings.srv"
   "srv/GetRunningCapabilities.srv"
   "srv/GetSemanticInterfaces.srv"
+  "srv/Launch.srv"
   "srv/RegisterCapability.srv"
   "srv/StartCapability.srv"
   "srv/StopCapability.srv"
-  "srv/UseCapability.srv"
-  "srv/ConfigureCapability.srv"
   "srv/TriggerCapability.srv"
-  "srv/Launch.srv"
+  "srv/UseCapability.srv"
 )
 
 set(action_files

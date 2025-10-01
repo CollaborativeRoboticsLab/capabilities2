@@ -1,0 +1,3 @@
+# connect using an event
+capabilities2_msgs/CapabilityEvent event
+---

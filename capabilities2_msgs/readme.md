@@ -12,6 +12,7 @@ This package contains [ROS2](https://index.ros.org/doc/ros2/) `messages`, `servi
 | `CapabilityCommand.msg` | A message type for a command to a robot. |
 | `CapabilityConnection.msg` | A message type for a connection between capabilities. |
 | `CapabilityEvent.msg` | A message type for an event related to a capability. |
+| `CapabilityEventCode.msg` | event types |
 | `CapabilityEventStamped.msg` | A stamped version of event |
 | `CapabilityResponse.msg` | A message type for a response from a robot related to a capability. |
 | `CapabilitySpec.msg` | A message type for the specification of a capability. |
@@ -39,7 +40,7 @@ This package contains [ROS2](https://index.ros.org/doc/ros2/) `messages`, `servi
 
 New in 0.1.3:
 
-- `ConfigureCapability.srv` - A service type for configuring a capability.
+- `ConnectCapability.srv` - A service type for connecting capabilities together.
 - `Launch.srv` - A service type for launching a launch file.
 - `TriggerCapability.srv` - A service type for triggering a capability.
 
