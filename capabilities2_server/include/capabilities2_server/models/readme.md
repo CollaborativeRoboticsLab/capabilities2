@@ -16,6 +16,13 @@ This directory contains the data models used by the Capabilities2 server.
 |-------|-------------|
 | `predicates` | Represents predicates between capabilities |
 
+### V3 new models (TODO)(Proposal)
+
+| Model | Description |
+|-------|-------------|
+| `running` | Represents active runners that are executing capabilities |
+| `connections` | Represents connections between active runners |
+
 ## Traits
 
 The models can implement various traits to provide additional functionality. The available traits are:
