@@ -3,9 +3,10 @@
 # identifying name for the source that triggered this event
 string trigger_id
 
-# Capabilities which this event pertains to (source and target)
-# also represents connections between capabilities
+# event can pass over a connection
+# could represent connection between capabilities
 # usually via runners
+# Capabilities which this event pertains to (source and target)
 capabilities2_msgs/CapabilityConnection connection
 
 # the event code

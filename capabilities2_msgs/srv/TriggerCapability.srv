@@ -1,3 +1,4 @@
+string bond_id
 string capability
 string parameters
 ---
