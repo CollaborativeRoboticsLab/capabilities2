@@ -1,26 +1,47 @@
 # capabilities2_runner plugin API
 
-This package provides `runner` API for abstract provision of capabilities. Plugins extend the execution functionality of the `capabilities` system. The ROS1 implementation used launch files to start capabilities. The ROS2 implementation uses runners to start capabilities. This allows for more flexibility in how capabilities are started and stopped, or how they are managed, and operate.
+This package provides the `runner` API for abstract provision of capabilities. Runner plugins extend the execution functionality of the `capabilities` system. The ROS1 implementation used launch files to start capabilities. The ROS2 implementation uses runners. This allows for more flexibility in how capabilities are started and stopped, or how they are managed, and operate.
 
-## Runners
+## Runner archetypes
 
-The `capabilities2_runner` package provides runners that can be used to start capabilities and create capabilities. These runners are fully tested (test files are available):
+The `capabilities2_runner` package provides runner patterns that can be used to specialise runners for capabilities and hence create capabilities. These runners are tested:
 
-- `capabilities2_runner::RunnerBase` - The Base class for runners implementing the `Runner` interface which comprises of `start`, `stop` and `trigger` functionality.
-- `capabilities2_runner::ActionRunner` - The Base runner class for capabilities that are implemented as ROS Actions. Overrides `stop` and `trigger` from RunnerBase.
-- `capabilities2_runner::NoTriggerActionRunner` - A Base runner class that is also a derivative of Action Runner which disables trigger functionality. Useful for runners that has to start executing from the beginning. 
-- `capabilities2_runner::LaunchRunner` - Runner for capabilities that are implemented as launch files.
-- `capabilities2_runner::DummyRunner` - A sample runner that can be used to test the functionality of capabilities server.
+| Runner Type | Description |
+|-------------|-------------|
+| `capabilities2_runner::RunnerBase` | The Base class for runners implementing the `Runner` interface which consists of `start`, `stop` and `trigger` functionality. |
+| `capabilities2_runner::ActionRunner` | The Base runner class for capabilities that are implemented as ROS Actions. Overrides `stop` and `trigger` from RunnerBase. |
+| `capabilities2_runner::ServiceRunner` | The Base runner class for capabilities that are implemented as ROS Services. |
+| `capabilities2_runner::TopicRunner` | The Base runner class for capabilities that are implemented as ROS Topics. |
+| `capabilities2_runner::NoTriggerActionRunner` | A Base runner class that is also a derivative of Action Runner which disables trigger functionality. Useful for runners that start executing from the beginning. |
+
+## Standard Runners
+
+The `capabilities2_runner` package provides some standard runners.
+
+| Runner Type | Description |
+|-------------|-------------|
+| `capabilities2_runner::LaunchRunner` | Runner for capabilities that are implemented as launch files. |
+| `capabilities2_runner::DummyRunner` | A sample runner that can be used to test the functionality of capabilities server. |
+
+## System Runners
+
+The `capabilities2_runner_system` package provides system-level runners that can be used to coordinate multiple capabilities through the events system.
+
+| Runner Type | Description |
+|-------------|-------------|
+| `capabilities2_runner_system::InputMultiplexAny` | A runner that multiplexes multiple input capabilities, allowing any of them to trigger the output. |
+| `capabilities2_runner_system::InputMultiplexAll` | A runner that multiplexes multiple input capabilities, requiring all of them to be active to trigger the output. |
 
 ## Experimental Runners
 
 The `capabilities2_runner` package provides experimental runners that can be used to start capabilities. These runners are not fully tested and may not work as expected. The experimental runners are:
 
-- `capabilities2_runner::EnCapRunner` - Base runner class that provides a capability action interface that encapsulates another action.
-- `capabilities2_runner::MultiActionRunner` - Base runner class for capabilities that are implemented using multiple actions.
+| Runner Type | Description |
+|-------------|-------------|
+| `capabilities2_runner::EnCapRunner` | Base runner class that provides a capability action interface that encapsulates another action. |
+| `capabilities2_runner::MultiActionRunner` | Base runner class for capabilities that are implemented using multiple actions. |
 
 ## Runner Inheritance Diagram
-
 
 Following inheritance diagram depicts the inheritance between the above presented *Runners* and *Experimental Runners*.
 
@@ -58,7 +79,7 @@ namespace capabilities2_runner
 
 ### LaunchRunner
 
-The `Launch Runner` inherits from the `capabilities2_runner::NoTriggerActionRunner` and is a special case. To instatiate this runner, provide a launch file path as the `runner` tag in the capability provider.
+The `Launch Runner` inherits from the `capabilities2_runner::NoTriggerActionRunner` and is a special case. To instantiate this runner, provide a launch file path as the `runner` tag in the capability provider.
 
 ```yaml
 # provider ...
@@ -72,7 +93,7 @@ runner: path/to/launch_file.launch.py
 
 ### Creating a a Custom runner
 
-Runners can be created to perform capabilities. The runner can be specified in a capability provider as the `runner` tag:
+The main idea is to allow users to create custom runners for their specific capabilities. Runners can be created to perform capabilities. The runner can be specified in a capability provider as the `runner` tag:
 
 ```yaml
 # provider ...
@@ -103,3 +124,7 @@ An even more complex runner execution pattern is to start the runner, trigger it
 ### Start -> End (no Stop)
 
 The final runner execution pattern is to start the runner and then end it without stopping. This pattern represents a challenge for the runner API, as it is not clear when the runner should be stopped. ROS communications patterns including **Services** and **Actions** are like this type.
+
+## Trigger Parameter Format
+
+Runners can use parameters. These parameters are passed to the runner in the `trigger` function. For more information, see [Parameter Format](./docs/parameter_format.md).
