@@ -1,4 +1,5 @@
-string bond_id
-# connect using an event
-capabilities2_msgs/CapabilityEvent event
+string bond_id # user
+string trigger_id # user specified unique (namespace-like)
+# connect using a connection message
+capabilities2_msgs/CapabilityConnection connection
 ---
