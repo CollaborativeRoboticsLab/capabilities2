@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 project(capabilities2_runner)
 
 # Default to C++17
@@ -15,9 +15,7 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
-find_package(capabilities2_utils REQUIRED)
-find_package(event_logger REQUIRED)
-find_package(event_logger_msgs REQUIRED)
+find_package(capabilities2_events REQUIRED)
 find_package(tinyxml2_vendor REQUIRED)
 find_package(TinyXML2 REQUIRED)  # provided by tinyxml2 upstream, or tinyxml2_vendor
 
@@ -26,7 +24,11 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME} SHARED
-  src/standard_runners.cpp
+  src/capability_get_runner.cpp
+  src/dummy_runner.cpp
+  src/launch_runner.cpp
+  src/multiplex_all_runner.cpp
+  src/multiplex_any_runner.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME}
@@ -34,9 +36,7 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp_action
   pluginlib
   capabilities2_msgs
-  capabilities2_utils
-  event_logger
-  event_logger_msgs
+  capabilities2_events
   TinyXML2
 )
 
@@ -53,6 +53,16 @@ install(DIRECTORY include/
   DESTINATION include
 )
 
+# install capability interfaces and providers
+install(DIRECTORY interfaces
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(DIRECTORY providers
+  DESTINATION share/${PROJECT_NAME}
+)
+
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
+
 ament_package()

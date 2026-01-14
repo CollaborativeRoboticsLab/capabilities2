@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>capabilities2_server</name>
-  <version>0.0.1</version>
+  <version>0.2.0</version>
   <description>
     Package that implements the capabilities2 service, a successor to capabilities
   </description>
@@ -11,6 +11,7 @@
   <maintainer email="kalana.ratnayakemudiyanselage@canberra.edu.au">Kalana Ratnayake</maintainer>
 
   <author email="michael.pritchard@canberra.edu.au">Michael Pritchard</author>
+  <author email="kalana.ratnayakemudiyanselage@canberra.edu.au">Kalana Ratnayake</author>
 
   <license>MIT</license>
 
@@ -22,24 +23,19 @@
   <depend>pluginlib</depend>
   <depend>rclcpp_components</depend>
   <depend>capabilities2_msgs</depend>
+  <depend>capabilities2_events</depend>
   <depend>capabilities2_runner</depend>
-  <depend>capabilities2_utils</depend>
-  <depend>event_logger</depend>
-  <depend>event_logger_msgs</depend>
   <depend>tinyxml2_vendor</depend>
 
   <!-- system dependency -->
   <depend>yaml-cpp</depend>
   <depend>libsqlite3-dev</depend>
   <depend>uuid</depend>
-  <depend>backward_ros</depend>
 
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>launch_ros</exec_depend>
-  <exec_depend>capabilities2_launch_proxy</exec_depend>
+  <!-- <exec_depend>launch_ros</exec_depend> -->
 
   <export>
     <build_type>ament_cmake</build_type>
-    <!-- <build_type>ament_python</build_type> -->
   </export>
 </package>
