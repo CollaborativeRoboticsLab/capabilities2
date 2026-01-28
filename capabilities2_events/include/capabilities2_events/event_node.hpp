@@ -1,0 +1,259 @@
+#pragma once
+
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+#include <functional>
+
+#include <rclcpp/rclcpp.hpp>
+
+#include <capabilities2_events/event_base.hpp>
+
+#include <capabilities2_msgs/msg/capability.hpp>
+#include <capabilities2_msgs/msg/capability_event_code.hpp>
+#include <capabilities2_msgs/msg/capability_connection.hpp>
+
+namespace capabilities2_events
+{
+/**
+ * @brief an event node is a source of an event
+ *
+ * events when emitted will trigger interactions with connected nodes
+ *
+ */
+class EventNode
+{
+private:
+  /**
+   * @brief event pipe structure
+   *
+   * represents a connection from this event node to a target capability
+   * contains the callback to be invoked when the event is emitted
+   *
+   */
+  struct EventPipe
+  {
+    // connection type
+    capabilities2_msgs::msg::CapabilityEventCode type;
+
+    // connection target
+    capabilities2_msgs::msg::Capability target;
+
+    // event callback
+    std::function<void(const std::string&, const std::string&)> callback;
+  };
+
+public:
+  EventNode(std::shared_ptr<EventBase> event_emitter = nullptr)
+    : id_(rclcpp::create_uuid_string()), source_(), event_emitter_(event_emitter), connections_()
+  {
+  }
+
+  virtual ~EventNode() = default;
+
+  /** event handling */
+
+  /**
+   * @brief emit an event from this event node to all matching connections
+   *
+   * @param bond_id
+   * @param event_type
+   * @param parameters
+   */
+  void emit_event(const std::string& bond_id, const capabilities2_msgs::msg::CapabilityEventCode& event_type,
+                  const std::string& parameters)
+  {
+    // check if event emitter is set
+    if (!event_emitter_)
+    {
+      // No event emitter configured - silently skip
+      // This allows runners to work without event system if needed
+      return;
+    }
+
+    // check each connection
+    for (const auto& [conn_id, connection] : connections_)
+    {
+      // extract bond_id from connection_id (format: "bond_id/trigger_id")
+      size_t slash_pos = conn_id.find('/');
+      std::string conn_bond_id = (slash_pos != std::string::npos) ? conn_id.substr(0, slash_pos) : conn_id;
+
+      // get targets for this event type and id namespace
+      if (connection.type.code == event_type.code && bond_id == conn_bond_id)
+      {
+        // parameterise target capability
+        // create a copy of target with updated parameters
+        capabilities2_msgs::msg::Capability target_with_params = connection.target;
+        target_with_params.parameters = parameters;
+
+        // emit event via event api
+        // NOTE: callback invocation is handled by event api
+        // this allows the nodes to be decoupled
+        // nodes just keep track of connections
+        // modifying execution of other nodes is not owned by this class
+        // this lets the execution flow be made thread-safe
+        // in the scope where the thread is owned
+        event_emitter_->emit(conn_id, event_type, source_, target_with_params, connection.callback);
+      }
+    }
+  }
+
+protected:
+  /**
+   * @brief Set the source object
+   *
+   * @param src
+   */
+  void set_source(const capabilities2_msgs::msg::Capability& src)
+  {
+    source_ = src;
+  }
+
+  /**
+   * @brief event emitter for this event node
+   *
+   * allows late binding of event emitter (when a node is initialized)
+   *
+   * @param event_emitter
+   */
+  void set_event_emitter(std::shared_ptr<EventBase> event_emitter)
+  {
+    event_emitter_ = event_emitter;
+  }
+
+  /**
+   * @brief Add a new connection
+   *
+   * from this event node to a target capability with a given event type
+   *
+   * @param connection_id
+   * @param type
+   * @param target
+   * @param event_cb
+   *
+   * @throws event_exception if connection with given id already exists
+   */
+  void add_connection(const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& type,
+                      const capabilities2_msgs::msg::Capability& target,
+                      std::function<void(const std::string&, const std::string&)> event_cb)
+  {
+    // validate connection id
+    if (connections_.find(connection_id) != connections_.end())
+    {
+      throw event_exception("connection with id: " + connection_id + " already exists");
+    }
+
+    // set up an event pipe
+    EventPipe conn;
+    conn.type = type;
+    conn.target = target;
+    conn.callback = event_cb;
+
+    // add connection
+    connections_[connection_id] = conn;
+  }
+
+  /**
+   * @brief Remove a connection by its id
+   *
+   * @param connection_id
+   */
+  void remove_connection(const std::string& connection_id)
+  {
+    // remove connection
+    connections_.erase(connection_id);
+  }
+
+  // helper members
+
+  /**
+   * @brief clear all connections from this event node
+   */
+  void clear_connections()
+  {
+    connections_.clear();
+  }
+
+  /**
+   * @brief List all connections from this event node
+   *
+   * @return std::vector<capabilities2_msgs::msg::CapabilityConnection>
+   */
+  std::vector<capabilities2_msgs::msg::CapabilityConnection> list_connections() const
+  {
+    std::vector<capabilities2_msgs::msg::CapabilityConnection> conns;
+
+    for (const auto& [conn_id, connection] : connections_)
+    {
+      capabilities2_msgs::msg::CapabilityConnection c;
+      c.type = connection.type;
+      c.source = source_;
+      c.target = connection.target;
+      conns.push_back(c);
+    }
+
+    return conns;
+  }
+
+  /**
+   * @brief Check if a connection exists
+   *
+   * @param connection_id
+   * @return true
+   * @return false
+   */
+  bool has_connection(const std::string& connection_id) const
+  {
+    return connections_.find(connection_id) != connections_.end();
+  }
+
+  /**
+   * @brief current connection count
+   *
+   * @return size_t
+   */
+  size_t connection_count() const
+  {
+    return connections_.size();
+  }
+
+  /**
+   * @brief unique id of this event node
+   *
+   * @return const std::string&
+   */
+  const std::string& get_id() const
+  {
+    return id_;
+  }
+
+  /**
+   * @brief source capability of this event node
+   *
+   * @return const capabilities2_msgs::msg::Capability&
+   */
+  const capabilities2_msgs::msg::Capability& get_source() const
+  {
+    return source_;
+  }
+
+private:
+  // unique id of the event node
+  // using uuid string
+  std::string id_;
+
+  // source capability of this event node
+  capabilities2_msgs::msg::Capability source_;
+
+  // event emitter
+  // used to emit events
+  // store as member to avoid passing around
+  std::shared_ptr<EventBase> event_emitter_;
+
+  // connections from this event node to target capabilities
+  // Key: connection_id (format: "bond_id/trigger_id")
+  // Value: EventPipe with type, target, callback
+  std::map<std::string, EventPipe> connections_;
+};
+}  // namespace capabilities2_events
