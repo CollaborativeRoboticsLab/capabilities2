@@ -141,10 +141,26 @@ public:
     return bond_cache_[capability];
   }
 
-  // exists in cache
+  // capability exists in cache
+  // a capability has at least one bond
   bool exists(const std::string& capability)
   {
     return bond_cache_.find(capability) != bond_cache_.end();
+  }
+
+  // bond id exists for a capability
+  // this bond id is associated with this capability
+  bool exists(const std::string& capability, const std::string& bond_id)
+  {
+    // capability exists guard
+    if (!exists(capability))
+    {
+      return false;
+    }
+
+    // check if bond id exists for capability
+    auto& bonds = bond_cache_[capability];
+    return std::find(bonds.begin(), bonds.end(), bond_id) != bonds.end();
   }
 
   // start a live bond
