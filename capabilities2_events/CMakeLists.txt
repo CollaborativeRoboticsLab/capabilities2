@@ -14,16 +14,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
-find_package(tinyxml2_vendor REQUIRED)
-find_package(TinyXML2 REQUIRED)  # provided by tinyxml2 upstream, or tinyxml2_vendor
 
-# find_package(PkgConfig)
-# pkg_check_modules(UUID REQUIRED uuid)
-
-include_directories(include
-  ${TinyXML2_INCLUDE_DIRS}
-  # ${UUID_INCLUDE_DIRS}
-)
+include_directories(include)
 
 # install headers
 install(DIRECTORY include/
@@ -31,7 +23,7 @@ install(DIRECTORY include/
 )
 
 ament_export_include_directories(include)
-ament_export_dependencies(rclcpp capabilities2_msgs TinyXML2 tinyxml2_vendor)
+ament_export_dependencies(rclcpp capabilities2_msgs)
 # ament_export_libraries(${PROJECT_NAME})
 
 ament_package()

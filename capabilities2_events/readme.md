@@ -85,16 +85,16 @@ event_id = connection_id = bond_id + '/' + trigger_id
 
 - [x] instantiate event publisher in server since publisher is defined there
 - [x] store the event class in the api, since api owns runners
-- [ ] then pass event system api object pointer to runners to allow firing events from runners, can be passed to event node parent class
-- [ ] fix duplicate - event, trigger, runner - id - just use names?
-- [ ] remove event_opts type usage
+- [x] then pass event system api object pointer to runners to allow firing events from runners, can be passed to event node parent class
+- [x] fix duplicate - event, trigger, runner - id - just use names?
+- [x] remove event_opts type usage
 
 - [x] implement event node class\
 - [x] inherit event node in runner base class
 - [x] generalise event connections to use a map of event types to connection objects
 - [x] add ability to disconnect events
 - [x] add ability to list current event connections
-- [ ] add ability to connect multiple events of same type to different targets
+- [x] add ability to connect multiple events of same type to different targets
 
 - [ ] add ability to specify parameters for target capability on event connection
 

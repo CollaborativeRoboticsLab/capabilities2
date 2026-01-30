@@ -4,7 +4,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <functional>
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -40,8 +39,8 @@ private:
     // connection target
     capabilities2_msgs::msg::Capability target;
 
-    // event callback
-    std::function<void(const std::string&, const std::string&)> callback;
+    // event callback with signature: (capability, parameters, bond_id)
+    EventBase::event_callback_t callback;
   };
 
 public:
@@ -135,8 +134,7 @@ protected:
    * @throws event_exception if connection with given id already exists
    */
   void add_connection(const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& type,
-                      const capabilities2_msgs::msg::Capability& target,
-                      std::function<void(const std::string&, const std::string&)> event_cb)
+                      const capabilities2_msgs::msg::Capability& target, EventBase::event_callback_t event_cb)
   {
     // validate connection id
     if (connections_.find(connection_id) != connections_.end())
@@ -236,6 +234,14 @@ protected:
   const capabilities2_msgs::msg::Capability& get_source() const
   {
     return source_;
+  }
+
+  /**
+   * @brief event emitter is set on this node
+   */
+  bool is_event_emitter_set() const
+  {
+    return event_emitter_ != nullptr;
   }
 
 private:
