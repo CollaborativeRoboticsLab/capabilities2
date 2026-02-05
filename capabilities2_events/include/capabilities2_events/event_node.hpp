@@ -150,6 +150,10 @@ protected:
 
     // add connection
     connections_[connection_id] = conn;
+
+    // emit connected event
+    emit_event(connection_id.substr(0, connection_id.find('/')),
+               capabilities2_msgs::msg::CapabilityEventCode::CONNECTED, "");
   }
 
   /**
@@ -161,6 +165,10 @@ protected:
   {
     // remove connection
     connections_.erase(connection_id);
+
+    // emit disconnected event
+    emit_event(connection_id.substr(0, connection_id.find('/')),
+               capabilities2_msgs::msg::CapabilityEventCode::DISCONNECTED, "");
   }
 
   // helper members
