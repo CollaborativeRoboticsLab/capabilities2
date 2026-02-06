@@ -4,12 +4,15 @@
 #include <string>
 #include <vector>
 #include <functional>
-#include <tinyxml2.h>
+#include <yaml-cpp/yaml.h>
+// #include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 #include <pluginlib/class_loader.hpp>
+
 #include <capabilities2_server/models/run_config.hpp>
 #include <capabilities2_runner/runner_base.hpp>
-#include <event_logger/event_client.hpp>
+#include <capabilities2_events/event_base.hpp>
+#include <capabilities2_msgs/msg/capability_connection.hpp>
 
 namespace capabilities2_server
 {
@@ -22,7 +25,7 @@ namespace capabilities2_server
  *
  * There are two main types of runners:
  * 1. launch file runner
- * 2. action runner
+ * 2. <resource type> runner - e.g. action, service, topic, etc.
  *
  */
 class RunnerCache
@@ -30,16 +33,6 @@ class RunnerCache
 public:
   RunnerCache() : runner_loader_("capabilities2_runner", "capabilities2_runner::RunnerBase")
   {
-  }
-
-  /**
-   * @brief connect with event interface
-   *
-   * @param event_client pointer to the event client
-   */
-  void connect(std::shared_ptr<EventClient> event_client)
-  {
-    event_ = event_client;
   }
 
   /**
@@ -86,37 +79,58 @@ public:
    * xml parameters are used
    *
    * @param capability capability name to be loaded
-   * @param parameters parameters related to the runner in std::string form for compatibility accross various runners
+   * @param parameters parameters related to the runner in std::string form for compatibility across various runners
+   * @param bond_id unique identifier for the group on connections associated with this runner trigger
    */
-  void trigger_runner(const std::string& capability, const std::string& parameters)
+  void trigger_runner(const std::string& capability, const std::string& parameters, const std::string& bond_id)
   {
+    // TODO: validate trigger id (DEPRECATED?)
+
     // is the runner in the cache
     if (running(capability))
     {
-      runner_cache_[capability]->trigger(parameters);
+      runner_cache_[capability]->trigger(parameters, bond_id);
     }
     else
     {
-      event_->error("Runner not found for capability: " + capability);
       throw capabilities2_runner::runner_exception("capability runner not found: " + capability);
     }
   }
 
   /**
-   * @brief Set triggers for `on_success`, `on_failure`, `on_start`, `on_stop` events
+   * @brief Add state change connection between runners via an event
    *
-   *
-   * @param capability capability from where the events originate
-   * @param on_started on_start event with capability and parameters
-   * @param on_failure on_failure event with capability and parameters
-   * @param on_success on_success event with capability and parameters
-   * @param on_stopped on_stop event with capability and parameters
+   * @param capability capability from where the event originates
+   * @param connection_id unique id for the connection
+   * @param connection connection options for the event
    */
-  void set_runner_triggers(const std::string& capability, capabilities2::event_opts& event_options)
+  void add_connection(const std::string& capability, const std::string& connection_id,
+                      const capabilities2_msgs::msg::CapabilityConnection& connection,
+                      std::shared_ptr<capabilities2_events::EventBase> event_emitter = nullptr)
   {
-    runner_cache_[capability]->attach_events(event_options,
-                                             std::bind(&capabilities2_server::RunnerCache::trigger_runner, this,
-                                                       std::placeholders::_1, std::placeholders::_2));
+    // find the runner in the cache and if not found then throw an error
+    if (!running(capability))
+    {
+      throw capabilities2_runner::runner_exception("capability runner not found: " + capability);
+    }
+
+    // pass the event api to the runner
+    // for emitting events on state changes
+    runner_cache_[capability]->enable_events(event_emitter);
+
+    try
+    {
+      // add connection to the runner
+      // callback signature: (capability, parameters, bond_id)
+      runner_cache_[capability]->add_connection(connection_id, connection.type, connection.target,
+                                                std::bind(&capabilities2_server::RunnerCache::trigger_runner, this,
+                                                          std::placeholders::_1, std::placeholders::_2,
+                                                          std::placeholders::_3));
+    }
+    catch (const capabilities2_events::event_exception& e)
+    {
+      throw capabilities2_runner::runner_exception(e.what());
+    }
   }
 
   /**
@@ -147,7 +161,7 @@ public:
     // runner_cache_[capability].reset();
 
     // remove the runner from map
-    // runner_cache_.erase(capability);
+    runner_cache_.erase(capability);
   }
 
   /**
@@ -226,12 +240,6 @@ private:
 
   // runner plugin loader
   pluginlib::ClassLoader<capabilities2_runner::RunnerBase> runner_loader_;
-
-  // for events publishing
-  std::shared_ptr<EventClient> event_;
-
-  // event string
-  std::string event;
 };
 
 }  // namespace capabilities2_server
