@@ -30,7 +30,7 @@
   <!-- system dependency -->
   <depend>yaml-cpp</depend>
   <depend>libsqlite3-dev</depend>
-  <depend>uuid</depend>
+  <!-- <depend>uuid</depend> -->
 
   <exec_depend>rclpy</exec_depend>
   <!-- <exec_depend>launch_ros</exec_depend> -->

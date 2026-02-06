@@ -26,7 +26,6 @@ The capabilities2 server depends on the following `bondcpp` ROS2 package. See th
 - `sqlite3`
 - `yaml-cpp`
 - `tinyxml2`
-- `uuid`
 
 ## API
 
