@@ -130,16 +130,8 @@ public:
 
   ~RunnerBase()
   {
-    std::scoped_lock lock(mutex_);
-    for (auto& [thread_id, exec_thread] : execution_thread_pool_)
-    {
-      if (exec_thread.joinable())
-      {
-        RCLCPP_ERROR(node_->get_logger(), "Thread %s not cleaned up, detaching", thread_id.c_str());
-        exec_thread.detach();  // don't block, but log the issue
-      }
-    }
-    execution_thread_pool_.clear();
+    // clean up threads on destruction
+    stop_execution(std::chrono::milliseconds(500));
   }
 
   /** runner plugin api */
