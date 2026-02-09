@@ -7,6 +7,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <capabilities2_events/uuid_generator.hpp>
 #include <capabilities2_events/event_base.hpp>
 
 #include <capabilities2_msgs/msg/capability.hpp>
@@ -45,7 +46,7 @@ private:
 
 public:
   EventNode(std::shared_ptr<EventBase> event_emitter = nullptr)
-    : id_(rclcpp::create_uuid_string()), source_(), event_emitter_(event_emitter), connections_()
+    : id_(UUIDGenerator::gen_uuid_str()), source_(), event_emitter_(event_emitter), connections_()
   {
   }
 
@@ -60,8 +61,7 @@ public:
    * @param event_type
    * @param parameters
    */
-  void emit_event(const std::string& bond_id, const capabilities2_msgs::msg::CapabilityEventCode& event_type,
-                  const std::string& parameters)
+  void emit_event(const std::string& bond_id, const uint8_t& event_type, const std::string& parameters)
   {
     // check if event emitter is set
     if (!event_emitter_)
@@ -79,7 +79,7 @@ public:
       std::string conn_bond_id = (slash_pos != std::string::npos) ? conn_id.substr(0, slash_pos) : conn_id;
 
       // get targets for this event type and id namespace
-      if (connection.type.code == event_type.code && bond_id == conn_bond_id)
+      if (connection.type.code == event_type && bond_id == conn_bond_id)
       {
         // parameterise target capability
         // create a copy of target with updated parameters

@@ -21,7 +21,7 @@ public:
   /**
    * @brief see EventBase::emit, specialised to publish events
    */
-  void emit(const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& event_code,
+  void emit(const std::string& connection_id, const uint8_t& event_code,
             const capabilities2_msgs::msg::Capability& source, const capabilities2_msgs::msg::Capability& target,
             EventBase::event_callback_t callback) override
   {
@@ -36,7 +36,7 @@ public:
     capabilities2_msgs::msg::CapabilityEventStamped event_msg;
     event_msg.header.stamp = rclcpp::Clock().now();
     event_msg.trigger_id = trigger_id;
-    event_msg.event_code = event_code;
+    event_msg.event_code.code = event_code;
     event_msg.source = source;
     event_msg.target = target;
 

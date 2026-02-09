@@ -18,8 +18,7 @@
 
   <depend>rclcpp</depend>
   <depend>capabilities2_msgs</depend>
-  <!-- <depend>tinyxml2_vendor</depend> -->
-  <!-- <depend>uuid</depend> -->
+  <depend>uuid</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

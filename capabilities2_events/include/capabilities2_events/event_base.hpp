@@ -66,7 +66,7 @@ public:
    * @param target target capability receiving the event
    * @param callback function to trigger target capability with (capability, parameters, bond_id)
    */
-  virtual void emit(const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& event_code,
+  virtual void emit(const std::string& connection_id, const uint8_t& event_code,
                     const capabilities2_msgs::msg::Capability& source,
                     const capabilities2_msgs::msg::Capability& target, event_callback_t callback)
   {
