@@ -1,12 +1,7 @@
 #pragma once
 
-#include <thread>
-
-#include <tinyxml2.h>
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_action/rclcpp_action.hpp>
-
 #include <capabilities2_runner/service_runner.hpp>
+
 #include <capabilities2_msgs/srv/get_capability_specs.hpp>
 
 namespace capabilities2_runner_capabilities
@@ -18,10 +13,10 @@ namespace capabilities2_runner_capabilities
  * Class to run capabilities2 executor action based capability
  *
  */
-class CapabilityGetRunner : public ServiceRunner<capabilities2_msgs::srv::GetCapabilitySpecs>
+class GetCapabilitySpecsRunner : public ServiceRunner<capabilities2_msgs::srv::GetCapabilitySpecs>
 {
 public:
-  CapabilityGetRunner() : ServiceRunner()
+  GetCapabilitySpecsRunner() : ServiceRunner()
   {
   }
 
@@ -30,8 +25,9 @@ public:
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
+   * @param bond_id unique identifier for the group of connections associated with this runner trigger event
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config, const std::string& bond_id) override
   {
     init_service(node, run_config, "/capabilities/get_capability_specs");
   }
@@ -43,15 +39,15 @@ protected:
    '<Event name=follow_waypoints provider=WaypointRunner x='$value' y='$value' />'
    * @return ActionT::Goal the generated goal
    */
-  virtual capabilities2_msgs::srv::GetCapabilitySpecs::Request generate_request(tinyxml2::XMLElement* parameters,
-                                                                                int id) override
+  virtual capabilities2_msgs::srv::GetCapabilitySpecs::Request generate_request(const std::string& parameters,
+                                                                                const std::string& trigger_id) override
   {
     capabilities2_msgs::srv::GetCapabilitySpecs::Request request;
     return request;
   }
 
   /**
-   * @brief Update on_success event parameters with new data from an CapabilitySpecs message if avaible.
+   * @brief Update on_success event parameters with new data from an CapabilitySpecs message if available.
    *
    * This function is used to inject new data into the XMLElement containing
    * parameters related to the on_success trigger event
@@ -76,7 +72,6 @@ protected:
    * @param parameters
    * @return std::string
    */
-
   virtual std::string update_on_success(std::string& parameters)
   {
     tinyxml2::XMLElement* element = convert_to_xml(parameters);
