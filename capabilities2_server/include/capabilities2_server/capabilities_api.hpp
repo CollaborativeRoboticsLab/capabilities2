@@ -7,7 +7,6 @@
 #include <functional>
 
 #include <tinyxml2.h>
-// #include <uuid/uuid.h>
 #include <yaml-cpp/yaml.h>
 
 #include <rclcpp/rclcpp.hpp>
@@ -17,6 +16,7 @@
 #include <capabilities2_server/bond_cache.hpp>
 #include <capabilities2_server/runner_cache.hpp>
 
+#include <capabilities2_events/uuid_generator.hpp>
 #include <capabilities2_events/event_base.hpp>
 
 #include <capabilities2_msgs/msg/remapping.hpp>
@@ -639,7 +639,7 @@ public:
   const std::string establish_bond(rclcpp::Node::SharedPtr node)
   {
     // create a new unique bond id
-    std::string bond_id = CapabilitiesAPI::gen_bond_id();
+    std::string bond_id = capabilities2_events::UUIDGenerator::gen_uuid_str();
 
     // establish a bond and start liveness functions (on_broken, on_formed)
     // bind the bond id to the callback functions
@@ -671,23 +671,6 @@ public:
     }
   }
 
-public:
-  /**
-   * @brief generate a unique bond id
-   *
-   * @return const std::string
-   */
-  // DEPRECATED: use rclcpp UUID generator instead of uuid library for better compatibility and to remove dependency
-  // static const std::string gen_bond_id()
-  // {
-  //   // create a new uuid for bond id
-  //   uuid_t uuid;
-  //   uuid_generate_random(uuid);
-  //   char uuid_str[40];
-  //   uuid_unparse(uuid, uuid_str);
-  //   return std::string(uuid_str);
-  // }
-
 private:
   // bind a dependency to an internal bond
   // this is a bond without a live external connection
@@ -698,7 +681,7 @@ private:
   {
     // create a new unique bond id
     // std::string bond_id = CapabilitiesAPI::gen_bond_id(); // DEPRECATED
-    std::string bond_id = rclcpp::create_uuid_string();
+    std::string bond_id = capabilities2_events::UUIDGenerator::gen_uuid_str();
 
     // add the bond id to the bond cache
     bond_cache_.add_bond(capability, bond_id);
