@@ -9,6 +9,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <capabilities2_events/event_node.hpp>
+#include <capabilities2_runner/CapabilityOptions.hpp>
 
 namespace capabilities2_runner
 {
@@ -82,22 +83,22 @@ public:
    *
    * @return `true` if element is not nullptr and conversion successful, `false` if element is nullptr
    */
-  static const std::string convert_to_string(tinyxml2::XMLElement* element)
-  {
-    if (element)
-    {
-      tinyxml2::XMLPrinter printer;
+  // static const std::string convert_to_string(tinyxml2::XMLElement* element)
+  // {
+  //   if (element)
+  //   {
+  //     tinyxml2::XMLPrinter printer;
 
-      element->Accept(&printer);
-      std::string parameters = printer.CStr();
-      return parameters;
-    }
-    else
-    {
-      std::string parameters = "";
-      return parameters;
-    }
-  }
+  //     element->Accept(&printer);
+  //     std::string parameters = printer.CStr();
+  //     return parameters;
+  //   }
+  //   else
+  //   {
+  //     std::string parameters = "";
+  //     return parameters;
+  //   }
+  // }
 
   /**
    * @brief convert an XMLElement to std::string
@@ -107,21 +108,21 @@ public:
    *
    * @return `true` if element is not nullptr and conversion successful, `false` if element is nullptr
    */
-  static tinyxml2::XMLElement* convert_to_xml(const std::string& parameters)
-  {
-    tinyxml2::XMLDocument doc;
+  // static tinyxml2::XMLElement* convert_to_xml(const std::string& parameters)
+  // {
+  //   tinyxml2::XMLDocument doc;
 
-    if (parameters != "")
-    {
-      doc.Parse(parameters.c_str());
-      tinyxml2::XMLElement* element = doc.FirstChildElement();
-      return element;
-    }
-    else
-    {
-      return nullptr;
-    }
-  }
+  //   if (parameters != "")
+  //   {
+  //     doc.Parse(parameters.c_str());
+  //     tinyxml2::XMLElement* element = doc.FirstChildElement();
+  //     return element;
+  //   }
+  //   else
+  //   {
+  //     return nullptr;
+  //   }
+  // }
 
 public:
   RunnerBase() : run_config_(), execution_should_stop_(false)
@@ -169,7 +170,7 @@ public:
    * @param bond_id unique identifier for the group of connections associated with this runner trigger event
    *
    */
-  virtual void trigger(const std::string& parameters, const std::string& bond_id)
+  virtual void trigger(const capabilities2::CapabilityOptions& parameters, const std::string& bond_id)
   {
     // TODO: verify parameter formatting (safe xml string or other format)
     // TODO: minimum parameter set?
@@ -354,7 +355,7 @@ protected:
    *
    * NOTE: should call success and failure events appropriately
    */
-  virtual void execution(const std::string& parameters, const std::string& bond_id) = 0;
+  virtual void execution(const capabilities2::CapabilityOptions& parameters, const std::string& bond_id) = 0;
 
   /** */
   void stop_execution(std::chrono::milliseconds timeout = std::chrono::milliseconds(500))
@@ -392,15 +393,13 @@ protected:
   /**
    * @brief Update on_started event parameters with new data if available.
    *
-   * This function is used to inject new data into the XMLElement containing
+   * This function is used to inject new data into the CapabilityOptions containing
    * parameters related to the on_started trigger event
    *
-   * A pattern needs to be implemented in the derived class
-   *
-   * @param parameters pointer to the XMLElement containing parameters
-   * @return pointer to the XMLElement containing updated parameters
+   * @param parameters CapabilityOptions containing parameters
+   * @return CapabilityOptions containing updated parameters
    */
-  virtual std::string update_on_started(std::string& parameters)
+  virtual capabilities2::CapabilityOptions update_on_started(capabilities2::CapabilityOptions& parameters)
   {
     return parameters;
   };
@@ -408,15 +407,15 @@ protected:
   /**
    * @brief Update on_stopped event parameters with new data if available.
    *
-   * This function is used to inject new data into the XMLElement containing
+   * This function is used to inject new data into the CapabilityOptions containing
    * parameters related to the on_stopped trigger event
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters pointer to the XMLElement containing parameters
-   * @return pointer to the XMLElement containing updated parameters
+   * @param parameters CapabilityOptions containing parameters
+   * @return CapabilityOptions containing updated parameters
    */
-  virtual std::string update_on_stopped(std::string& parameters)
+  virtual capabilities2::CapabilityOptions update_on_stopped(capabilities2::CapabilityOptions& parameters)
   {
     return parameters;
   };
@@ -424,15 +423,15 @@ protected:
   /**
    * @brief Update on_failure event parameters with new data if available.
    *
-   * This function is used to inject new data into the XMLElement containing
+   * This function is used to inject new data into the CapabilityOptions containing
    * parameters related to the on_failure trigger event
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters pointer to the XMLElement containing parameters
-   * @return pointer to the XMLElement containing updated parameters
+   * @param parameters CapabilityOptions containing parameters
+   * @return CapabilityOptions containing updated parameters
    */
-  virtual std::string update_on_failure(std::string& parameters)
+  virtual capabilities2::CapabilityOptions update_on_failure(capabilities2::CapabilityOptions& parameters)
   {
     return parameters;
   };
@@ -440,15 +439,15 @@ protected:
   /**
    * @brief Update on_success event parameters with new data if available.
    *
-   * This function is used to inject new data into the XMLElement containing
+   * This function is used to inject new data into the CapabilityOptions containing
    * parameters related to the on_success trigger event
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters pointer to the XMLElement containing parameters
-   * @return pointer to the XMLElement containing updated parameters
+   * @param parameters CapabilityOptions containing parameters
+   * @return CapabilityOptions containing updated parameters
    */
-  virtual std::string update_on_success(std::string& parameters)
+  virtual capabilities2::CapabilityOptions update_on_success(capabilities2::CapabilityOptions& parameters)
   {
     return parameters;
   };
@@ -462,7 +461,7 @@ protected:
    *
    * WARNING: this only gets the first resource found of the given type
    *
-   * @param resource_type
+   * @param resource_type 
    * @param msg_type
    * @return const std::string
    */
@@ -596,7 +595,7 @@ protected:
    * @param bond_id
    * @param parameters
    */
-  void emit_started(const std::string& bond_id, const std::string& parameters = "")
+  void emit_started(const std::string& bond_id, const capabilities2::CapabilityOptions& parameters = capabilities2::CapabilityOptions())
   {
     capabilities2_msgs::msg::CapabilityEventCode event_type;
     event_type.code = capabilities2_msgs::msg::CapabilityEventCode::STARTED;
@@ -609,7 +608,7 @@ protected:
    * @param bond_id
    * @param parameters
    */
-  void emit_stopped(const std::string& bond_id, const std::string& parameters = "")
+  void emit_stopped(const std::string& bond_id, const capabilities2::CapabilityOptions& parameters = capabilities2::CapabilityOptions())
   {
     capabilities2_msgs::msg::CapabilityEventCode event_type;
     event_type.code = capabilities2_msgs::msg::CapabilityEventCode::STOPPED;
@@ -622,7 +621,7 @@ protected:
    * @param bond_id
    * @param parameters
    */
-  void emit_succeeded(const std::string& bond_id, const std::string& parameters = "")
+  void emit_succeeded(const std::string& bond_id, const capabilities2::CapabilityOptions& parameters = capabilities2::CapabilityOptions())
   {
     capabilities2_msgs::msg::CapabilityEventCode event_type;
     event_type.code = capabilities2_msgs::msg::CapabilityEventCode::SUCCEEDED;
@@ -635,7 +634,7 @@ protected:
    * @param bond_id
    * @param parameters
    */
-  void emit_failed(const std::string& bond_id, const std::string& parameters = "")
+  void emit_failed(const std::string& bond_id, const capabilities2::CapabilityOptions& parameters = capabilities2::CapabilityOptions())
   {
     capabilities2_msgs::msg::CapabilityEventCode event_type;
     event_type.code = capabilities2_msgs::msg::CapabilityEventCode::FAILED;

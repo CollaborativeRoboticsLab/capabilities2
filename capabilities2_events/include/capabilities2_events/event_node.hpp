@@ -9,6 +9,7 @@
 
 #include <capabilities2_events/uuid_generator.hpp>
 #include <capabilities2_events/event_base.hpp>
+#include <capabilities2_runner/CapabilityOptions.hpp>
 
 #include <capabilities2_msgs/msg/capability.hpp>
 #include <capabilities2_msgs/msg/capability_event_code.hpp>
@@ -61,7 +62,8 @@ public:
    * @param event_type
    * @param parameters
    */
-  void emit_event(const std::string& bond_id, const uint8_t& event_type, const std::string& parameters)
+  void emit_event(const std::string& bond_id, const capabilities2_msgs::msg::CapabilityEventCode& event_type,
+                  const capabilities2::CapabilityOptions& parameters)
   {
     // check if event emitter is set
     if (!event_emitter_)
@@ -84,7 +86,7 @@ public:
         // parameterise target capability
         // create a copy of target with updated parameters
         capabilities2_msgs::msg::Capability target_with_params = connection.target;
-        target_with_params.parameters = parameters;
+        target_with_params.parameters = parameters.toMsg().parameters;
 
         // emit event via event api
         // NOTE: callback invocation is handled by event api
