@@ -1,9 +1,8 @@
 #pragma once
+
 #include <memory>
 
-#include "rclcpp/rclcpp.hpp"
-#include <tinyxml2.h>
-#include <capabilities2_runner/runner_base.hpp>
+#include <capabilities2_runner/threadtrigger_runner.hpp>
 
 namespace capabilities2_runner
 {
@@ -14,13 +13,13 @@ namespace capabilities2_runner
  * Create an topic subsriber for data grabbing capability
  */
 template <typename TopicT>
-class TopicRunner : public RunnerBase
+class TopicRunner : public ThreadTriggerRunner
 {
 public:
   /**
    * @brief Constructor which needs to be empty due to plugin semantics
    */
-  TopicRunner() : RunnerBase()
+  TopicRunner() : ThreadTriggerRunner()
   {
   }
 
@@ -43,63 +42,10 @@ public:
   }
 
   /**
-   * @brief Trigger process to be executed.
-   *
-   * This method utilizes paramters set via the trigger() function
-   *
-   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
-   */
-  virtual void execution(int id) override
-  {
-    // if parameters are not provided then cannot proceed
-    if (!parameters_[id])
-      throw runner_exception("cannot grab data without parameters");
-
-    // trigger the events related to on_started state
-    if (events[id].on_started.interface != "")
-    {
-      event_(EventType::STARTED, id, events[id].on_started.interface, events[id].on_started.provider);
-      triggerFunction_(events[id].on_started.interface, update_on_started(events[id].on_started.parameters));
-    }
-
-    std::unique_lock<std::mutex> lock(mutex_);
-    completed_ = false;
-
-    info_("Waiting for Message.", id);
-
-    // Conditional wait
-    cv_.wait(lock, [this] { return completed_; });
-    info_("Message Received.", id);
-
-    if (latest_message_)
-    {
-      // trigger the events related to on_success state
-      if (events[id].on_success.interface != "")
-      {
-        event_(EventType::SUCCEEDED, id, events[id].on_success.interface, events[id].on_success.provider);
-        triggerFunction_(events[id].on_success.interface, update_on_success(events[id].on_success.parameters));
-      }
-    }
-    else
-    {
-      error_("Message receving failed.");
-
-      // trigger the events related to on_failure state
-      if (events[id].on_failure.interface != "")
-      {
-        event_(EventType::FAILED, id, events[id].on_failure.interface, events[id].on_failure.provider);
-        triggerFunction_(events[id].on_failure.interface, update_on_failure(events[id].on_failure.parameters));
-      }
-    }
-
-    info_("Thread closing.", id);
-  }
-
-  /**
    * @brief stop function to cease functionality and shutdown
    *
    */
-  virtual void stop() override
+  virtual void stop(const std::string& bond_id) override
   {
     // if the node pointer is empty then throw an error
     // this means that the runner was not started and is being used out of order
@@ -113,22 +59,55 @@ public:
     if (!subscription_)
       throw runner_exception("cannot stop runner subscriber that was not started");
 
-    // Trigger on_stopped event if defined
-    if (events[runner_id].on_stopped.interface != "")
+    // emit stop event
+    emit_stopped(bond_id, update_on_stopped(events[runner_id].on_stopped.parameters));
+
+    RCLCPP_INFO(node_->get_logger(), "runner cleaned. stopping..");
+  }
+
+protected:
+  /**
+   * @brief Trigger process to be executed.
+   *
+   * This method utilizes paramters set via the trigger() function
+   *
+   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
+   * @param thread_id unique identifier for the execution thread
+   */
+  virtual void execution(const std::string& parameters, const std::string& thread_id) override
+  {
+    // split thread_id to get bond_id and trigger_id (format: "bond_id/trigger_id")
+    std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
+    std::string trigger_id = ThreadTriggerRunner::trigger_from_thread_id(thread_id);
+
+    // if parameters are not provided then cannot proceed
+    if (!parameters_[trigger_id])
+      throw runner_exception("cannot grab data without parameters");
+
+    // emit started event
+    emit_started(bond_id, update_on_started(events[trigger_id].on_started.parameters));
+    std::unique_lock<std::mutex> lock(mutex_);
+    completed_ = false;
+
+    RCLCPP_INFO(node_->get_logger(), "Waiting for Message.");
+
+    // Conditional wait
+    cv_.wait(lock, [this] { return completed_; });
+    RCLCPP_INFO(node_->get_logger(), "Message Received.");
+
+    if (latest_message_)
     {
-      event_(EventType::STOPPED, -1, events[runner_id].on_stopped.interface, events[runner_id].on_stopped.provider);
-      triggerFunction_(events[runner_id].on_stopped.interface,
-                       update_on_stopped(events[runner_id].on_stopped.parameters));
+      // emit success event
+      emit_succeeded(bond_id, update_on_success(events[trigger_id].on_success.parameters));
+    }
+    else
+    {
+      RCLCPP_ERROR(node_->get_logger(), "Message receiving failed.");
+      // emit failed event
+      emit_failed(bond_id, update_on_failure(events[trigger_id].on_failure.parameters));
     }
 
-    info_("removing event options");
-
-    // remove all event options for this runner instance
-    const auto n = events.size();
-    events.clear();
-    info_("removed event options for " + std::to_string(n) + " runner ids");
-
-    info_("runner cleaned. stopping..");
+    RCLCPP_INFO(node_->get_logger(), "Thread closing.");
   }
 
 protected:
@@ -152,4 +131,5 @@ protected:
 
   mutable typename TopicT::SharedPtr latest_message_;
 };
+
 }  // namespace capabilities2_runner

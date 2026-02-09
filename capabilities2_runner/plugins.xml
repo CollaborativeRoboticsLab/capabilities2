@@ -21,9 +21,9 @@
             A plugin that provides a  dummy-runner to test capabilities2
         </description>
     </class>
-    <class type="capabilities2_runner::CapabilityGetRunner" base_class_type="capabilities2_runner::RunnerBase">
+    <class type="capabilities2_runner::GetCapabilitySpecsRunner" base_class_type="capabilities2_runner::RunnerBase">
         <description>
-            A plugin that request capabilities from the capabilities server and transfers to an LLM
+            A plugin that request capabilities from the capabilities server
         </description>
     </class>
 </library>

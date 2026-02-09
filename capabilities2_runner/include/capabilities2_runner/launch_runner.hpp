@@ -1,7 +1,6 @@
 #pragma once
 
-#include <capabilities2_runner/runner_base.hpp>
-#include <capabilities2_msgs/srv/launch.hpp>
+#include <capabilities2_runner/notrigger_runner.hpp>
 
 namespace capabilities2_runner
 {
@@ -10,16 +9,15 @@ namespace capabilities2_runner
  * @brief launch runner base class
  *
  * Create a launch file runner to run a launch file based capability
+ * uses process execution to run the launch file and kill the process on stop
  */
-class LaunchRunner : public RunnerBase
+class LaunchRunner : public NoTriggerRunner
 {
 public:
-  using Launch = capabilities2_msgs::srv::Launch;
-
   /**
    * @brief Constructor which needs to be empty due to plugin semantics
    */
-  LaunchRunner() : RunnerBase()
+  LaunchRunner() : NoTriggerRunner()
   {
   }
 
@@ -28,74 +26,27 @@ public:
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
+   * @param bond_id bond identifier for the runner
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config, const std::string& bond_id) override
   {
     init_base(node, run_config);
 
     package_name = run_config_.runner.substr(0, run_config_.runner.find("/"));
     launch_name = run_config_.runner.substr(run_config_.runner.find("/") + 1);
 
-    // create an service client
-    start_service_client_ = node_->create_client<Launch>("/capabilities/launch/start");
+    // start launch process
+    throw runner_exception("launch runner not implemented yet");
 
-    RCLCPP_INFO(node_->get_logger(), "%s waiting for service: /capabilities/launch/start",
-                run_config_.interface.c_str());
-
-    if (!start_service_client_->wait_for_service(std::chrono::seconds(3)))
-    {
-      RCLCPP_ERROR(node_->get_logger(), "%s failed to connect to service: /capabilities/launch/start",
-                   run_config_.interface.c_str());
-      throw runner_exception("Failed to connect to server: /capabilities/launch/start");
-    }
-
-    RCLCPP_INFO(node_->get_logger(), "%s connected to service: /capabilities/launch/start",
-                run_config_.interface.c_str());
-
-    // create an service client
-    stop_service_client_ = node_->create_client<Launch>("/capabilities/launch/stop");
-
-    // wait for action server
-    RCLCPP_INFO(node_->get_logger(), "%s waiting for service: /capabilities/launch/stop",
-                run_config_.interface.c_str());
-
-    if (!stop_service_client_->wait_for_service(std::chrono::seconds(3)))
-    {
-      RCLCPP_ERROR(node_->get_logger(), "%s failed to connect to service: /capabilities/launch/stop",
-                   run_config_.interface.c_str());
-      throw runner_exception("Failed to connect to server: /capabilities/launch/stop");
-    }
-
-    RCLCPP_INFO(node_->get_logger(), "%s connected to service: /capabilities/launch/stop",
-                run_config_.interface.c_str());
-
-    // generate a reequest from launch_name and package_name
-    auto request_msg = std::make_shared<Launch::Request>();
-
-    request_msg->package_name = package_name;
-    request_msg->launch_file_name = launch_name;
-
-    RCLCPP_INFO(node_->get_logger(), "Requesting to launch %s from %s", launch_name.c_str(), package_name.c_str());
-
-    auto result_future = start_service_client_->async_send_request(
-        request_msg, [this](typename rclcpp::Client<Launch>::SharedFuture future) {
-          if (!future.valid())
-          {
-            RCLCPP_ERROR(node_->get_logger(), "Request to launch %s from %s failed", launch_name.c_str(),
-                         package_name.c_str());
-            return;
-          }
-
-          RCLCPP_INFO(node_->get_logger(), "Request to launch %s from %s succeeded", launch_name.c_str(),
-                      package_name.c_str());
-        });
+    // emit started event
+    emit_started(bond_id, "launch started");
   }
 
   /**
    * @brief stop function to cease functionality and shutdown
    *
    */
-  virtual void stop() override
+  virtual void stop(const std::string& bond_id) override
   {
     // if the node pointer is empty then throw an error
     // this means that the runner was not started and is being used out of order
@@ -103,48 +54,16 @@ public:
     if (!node_)
       throw runner_exception("cannot stop runner that was not started");
 
-    // generate a reequest from launch_name and package_name
-    auto request_msg = std::make_shared<Launch::Request>();
+    // stop the launch process
+    throw runner_exception("launch runner not implemented yet");
 
-    request_msg->package_name = package_name;
-    request_msg->launch_file_name = launch_name;
-
-    RCLCPP_INFO(node_->get_logger(), "Requesting to stop %s from %s", launch_name.c_str(), package_name.c_str());
-
-    auto result_future = stop_service_client_->async_send_request(
-        request_msg, [this](typename rclcpp::Client<Launch>::SharedFuture future) {
-          if (!future.valid())
-          {
-            RCLCPP_ERROR(node_->get_logger(), "Request to stop %s from %s failed ", launch_name.c_str(),
-                         package_name.c_str());
-            return;
-          }
-
-          RCLCPP_INFO(node_->get_logger(), "Request to launch %s from %s succeeded ", launch_name.c_str(),
-                      package_name.c_str());
-        });
-
-    info_("stopping runner");
-  }
-
-  // throw on trigger function
-  void trigger(const std::string& parameters) override
-  {
-    throw runner_exception("No Trigger as this is launch runner");
+    // emit stopped event
+    emit_stopped(bond_id, "launch stopped");
   }
 
 protected:
-  // throw on triggerExecution function
-  void execution(int id) override
-  {
-    throw runner_exception("no triggerExecution() this is a no-trigger action runner");
-  }
-
   std::string launch_name;
   std::string package_name;
-
-  rclcpp::Client<Launch>::SharedPtr start_service_client_;
-  rclcpp::Client<Launch>::SharedPtr stop_service_client_;
 };
 
 }  // namespace capabilities2_runner

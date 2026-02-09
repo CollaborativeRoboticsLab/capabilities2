@@ -13,16 +13,19 @@ namespace capabilities2_runner
 class DummyRunner : public RunnerBase
 {
 public:
-  void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) override
+  void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config, const std::string& bond_id) override
   {
     // init the base runner
     init_base(node, run_config);
 
     // do nothing
     RCLCPP_INFO(node_->get_logger(), "Dummy runner started");
+
+    // emit started event
+    emit_started(bond_id, "dummy_parameters");
   }
 
-  void stop() override
+  void stop(const std::string& bond_id) override
   {
     // guard node
     if (!node_)
@@ -30,18 +33,20 @@ public:
 
     // stop the runner
     RCLCPP_INFO(node_->get_logger(), "Dummy runner stopped");
+
+    // emit stopped event
+    emit_stopped(bond_id, "dummy_parameters");
   }
 
-  void trigger(const std::string& parameters) override
+  void trigger(const std::string& parameters, const std::string& bond_id) override
   {
-    RCLCPP_INFO(node_->get_logger(), "Dummy runner cannot trigger");
-  }
+    RCLCPP_WARN(node_->get_logger(), "Dummy runner cannot trigger");
 
-protected:
-  // throw on triggerExecution function
-  void execution(int id) override
-  {
-    RCLCPP_INFO(node_->get_logger(), "Dummy runner does not have triggerExecution()");
+    // emit failed event
+    emit_failed(bond_id, "Dummy runner cannot trigger");
+
+    // throw an exception as this runner does not support trigger execution
+    throw runner_exception("Dummy runner does not support trigger execution");
   }
 };
 

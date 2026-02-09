@@ -24,9 +24,9 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME} SHARED
-  src/capability_get_runner.cpp
   src/dummy_runner.cpp
   src/launch_runner.cpp
+  src/get_capability_specs_runner.cpp
   src/multiplex_all_runner.cpp
   src/multiplex_any_runner.cpp
 )

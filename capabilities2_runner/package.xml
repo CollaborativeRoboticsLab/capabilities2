@@ -22,10 +22,8 @@
   <depend>std_msgs</depend>
   <depend>capabilities2_msgs</depend>
   <depend>capabilities2_events</depend>
-  <depend>tinyxml2_vendor</depend>
 
-  <!-- system dependency -->
-  <depend>uuid</depend>
+  <depend>tinyxml2_vendor</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
@@ -48,13 +46,13 @@
       providers/InputMultiplexAnyRunner.yaml
     </capability_provider>
 
-    <!-- CapabilityGetRunner -->
+    <!-- GetCapabilitySpecsRunner -->
     <capability_interface>
-      interfaces/CapabilityGetRunner.yaml
+      interfaces/GetCapabilitySpecsRunner.yaml
     </capability_interface>
 
     <capability_provider>
-      providers/CapabilityGetRunner.yaml
+      providers/GetCapabilitySpecsRunner.yaml
     </capability_provider>
   </export>
 </package>

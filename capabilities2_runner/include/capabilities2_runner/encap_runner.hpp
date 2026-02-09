@@ -57,14 +57,17 @@ public:
    * call the parent stop and stop the encapsulated action
    *
    */
-  virtual void stop() override
+  virtual void stop(const std::string& bond_id) override
   {
     // stop the encapsulating action server
     encap_action_->cancel_all_goals();
     encap_action_.reset();
 
     // stop the base class
-    ActionRunner::stop();
+    ActionRunner::stop(bond_id);
+
+    // emit stopped event
+    emit_stopped(bond_id, "");
   }
 
   // encapsulated action server related functions
@@ -92,12 +95,6 @@ public:
    */
   virtual void handle_accepted(
       const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Capability>> goal_handle);
-
-  /**
-   * @brief execute the encapsulated action request
-   *
-   */
-  virtual void execute();
 
 private:
   /** encap action server */

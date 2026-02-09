@@ -19,7 +19,7 @@ public:
    *
    * @param parameters not used in this runner
    */
-  virtual void trigger(const std::string& parameters) override
+  virtual void trigger(const std::string& parameters, const std::string& trigger_id) override
   {
     info_("received new parameters for InputMultiplexAnyRunner : " + parameters);
 
