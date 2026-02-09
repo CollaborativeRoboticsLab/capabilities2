@@ -5,7 +5,6 @@
 #include <sstream>
 #include <vector>
 
-#include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <action_msgs/srv/cancel_goal.hpp>
@@ -90,7 +89,7 @@ public:
               }
 
               // emit stopped event
-              emit_stopped(bond_id, update_on_stopped(events[trigger_id].on_stopped.parameters));
+              emit_stopped(bond_id, param_on_stopped());
             });
 
         // wait for action to be stopped. hold the thread for 2 seconds to help keep callbacks in scope
@@ -128,7 +127,7 @@ protected:
     std::string trigger_id = ThreadTriggerRunner::trigger_from_thread_id(thread_id);
 
     // generate a goal from parameters provided
-    goal_msg_ = generate_goal(parameters, trigger_id);
+    goal_msg_ = generate_goal(parameters);
     RCLCPP_INFO(node_->get_logger(), "goal generated for event " + trigger_id);
 
     std::unique_lock<std::mutex> lock(mutex_);
@@ -140,9 +139,6 @@ protected:
           if (goal_handle)
           {
             RCLCPP_INFO(node_->get_logger(), "goal accepted. Waiting for result " + trigger_id);
-
-            // emit started event
-            emit_started(bond_id, update_on_started(events[trigger_id].on_started.parameters));
           }
           else
           {
@@ -172,14 +168,14 @@ protected:
             RCLCPP_INFO(node_->get_logger(), "action succeeded for event " + trigger_id);
 
             // emit success event
-            emit_succeeded(bond_id, update_on_success(events[trigger_id].on_success.parameters));
+            emit_succeeded(bond_id, param_on_success());
           }
           else
           {
             RCLCPP_ERROR(node_->get_logger(), "action failed for event " + trigger_id);
 
             // emit failed event
-            emit_failed(bond_id, update_on_failure(events[trigger_id].on_failure.parameters));
+            emit_failed(bond_id, param_on_failure());
           }
 
           result_ = wrapped_result.result;
@@ -204,11 +200,9 @@ protected:
    * A pattern needs to be implemented in the derived class
    *
    * @param parameters capability options that contain parameters for the trigger
-   * @param trigger_id the trigger_id associated with this execution thread
    * @return ActionT::Goal the generated goal
    */
-  virtual typename ActionT::Goal generate_goal(const capabilities2::CapabilityOptions parameters,
-                                               const std::string& trigger_id) = 0;
+  virtual typename ActionT::Goal generate_goal(const capabilities2::CapabilityOptions parameters) = 0;
 
   /**
    * @brief Generate a std::string from feedback message
@@ -219,11 +213,9 @@ protected:
    * is empty, nothing will be printed on the screen
    *
    * @param msg the feedback message received from the action server
-   * @param trigger_id the trigger_id associated with this feedback message
    * @return ActionT::Feedback the received feedback
    */
-  virtual capabilities2::CapabilityOptions generate_feedback(const typename ActionT::Feedback::ConstSharedPtr msg,
-                                                             const std::string& trigger_id) = 0;
+  virtual capabilities2::CapabilityOptions generate_feedback(const typename ActionT::Feedback::ConstSharedPtr msg) = 0;
 
 protected:
   /**< action client */

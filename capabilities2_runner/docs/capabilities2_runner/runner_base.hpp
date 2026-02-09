@@ -109,6 +109,9 @@ public:
    *
    * @param parameters capability options that contain parameters for the trigger
    * @param bond_id unique identifier for the group of connections associated with this runner trigger event
+   * 
+   * @attention should call success and failure events with parameters and bond_id when the trigger process
+   * completes.
    *
    */
   virtual void trigger(const capabilities2::CapabilityOptions& parameters, const std::string& bond_id) = 0;
@@ -206,19 +209,6 @@ public:
 
 protected:
   // FIXME: implement new event subsystem
-  /**
-   * @brief Update on_started event parameters with new data if available.
-   *
-   * This function is used to inject new data into the CapabilityOptions containing
-   * parameters related to the on_started trigger event
-   *
-   * @param parameters CapabilityOptions containing parameters
-   * @return CapabilityOptions containing updated parameters
-   */
-  virtual capabilities2::CapabilityOptions update_on_started(capabilities2::CapabilityOptions& parameters)
-  {
-    return parameters;
-  };
 
   /**
    * @brief Update on_stopped event parameters with new data if available.
@@ -228,12 +218,11 @@ protected:
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters CapabilityOptions containing parameters
-   * @return CapabilityOptions containing updated parameters
+   * @return CapabilityOptions containing new parameters
    */
-  virtual capabilities2::CapabilityOptions update_on_stopped(capabilities2::CapabilityOptions& parameters)
+  virtual capabilities2::CapabilityOptions param_on_stopped()
   {
-    return parameters;
+    return capabilities2::CapabilityOptions();
   };
 
   /**
@@ -243,13 +232,12 @@ protected:
    * parameters related to the on_failure trigger event
    *
    * A pattern needs to be implemented in the derived class
-   *
-   * @param parameters CapabilityOptions containing parameters
-   * @return CapabilityOptions containing updated parameters
+   * 
+   * @return CapabilityOptions containing new parameters
    */
-  virtual capabilities2::CapabilityOptions update_on_failure(capabilities2::CapabilityOptions& parameters)
+  virtual capabilities2::CapabilityOptions param_on_failure()
   {
-    return parameters;
+    return capabilities2::CapabilityOptions();
   };
 
   /**
@@ -260,12 +248,11 @@ protected:
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters CapabilityOptions containing parameters
-   * @return CapabilityOptions containing updated parameters
+   * @return CapabilityOptions containing new parameters
    */
-  virtual capabilities2::CapabilityOptions update_on_success(capabilities2::CapabilityOptions& parameters)
+  virtual capabilities2::CapabilityOptions param_on_success()
   {
-    return parameters;
+    return capabilities2::CapabilityOptions();
   };
 
   // run config getters

@@ -1,0 +1,17 @@
+%YAML 1.1
+---
+name: TestActionRunner
+spec_version: 1.1
+spec_type: interface
+description: "This capability is a test action runner that can be used to test the action runner functionality."
+option_names: [order]
+options:
+  order:
+    type: int
+    description: "The order of which the fibonacci number is calculated"
+    example: 10
+interface:
+  actions:
+    "/test_action":
+      type: "capabilities2_test_suite::action::TestAction"
+      description: "Test action for testing the action runner functionality"

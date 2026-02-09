@@ -4,7 +4,6 @@
 #include <vector>
 #include <any>
 #include <stdexcept>
-#include <capabilities2_runner/utils/exceptions.hpp>
 #include <capabilities2_msgs/msg/capability_option.hpp>
 #include <capabilities2_msgs/msg/capability.hpp>
 
@@ -43,11 +42,90 @@ enum class OptionType
  * @param key the key of the option
  * @param value the value of the option
  */
-struct Options
+struct Option
 {
   std::string key;
   std::vector<std::string> value;
   OptionType type;
+
+  std::any get_value()
+  {          
+    switch (type)
+          {
+            case OptionType::BOOL:
+              return value[0] == "true";
+            case OptionType::DOUBLE:
+              return std::stod(value[0]);
+            case OptionType::INT:
+              return std::stoi(value[0]);
+            case OptionType::STRING:
+              return value[0];
+            case OptionType::VECTOR_BOOL: {
+              std::vector<bool> vec;
+              for (const auto& v : value)
+                vec.push_back(v == "true");
+              return vec;
+            }
+            case OptionType::VECTOR_DOUBLE: {
+              std::vector<double> vec;
+              for (const auto& v : value)
+                vec.push_back(std::stod(v));
+              return vec;
+            }
+            case OptionType::VECTOR_INT: {
+              std::vector<int> vec;
+              for (const auto& v : value)
+                vec.push_back(std::stoi(v));
+              return vec;
+            }
+            case OptionType::VECTOR_STRING:
+              return value;
+          
+            }
+          }
+
+  void set_value(const OptionType& type, const std::any& value)
+  {
+        switch (type)
+        {
+          case OptionType::BOOL:
+            value[0] = std::any_cast<bool>(value) ? "true" : "false";
+            return;
+          case OptionType::DOUBLE:
+            value[0] = std::to_string(std::any_cast<double>(value));
+            return;
+          case OptionType::INT:
+            value[0] = std::to_string(std::any_cast<int>(value));
+            return;
+          case OptionType::STRING:
+            value[0] = std::any_cast<std::string>(value);
+            return;
+          case OptionType::VECTOR_BOOL: {
+            const auto& vec = std::any_cast<std::vector<bool>>(value);
+            value.clear();
+            for (const auto& v : vec)
+              value.push_back(v ? "true" : "false");
+            return;
+          }
+          case OptionType::VECTOR_DOUBLE: {
+            const auto& vec = std::any_cast<std::vector<double>>(value);
+            value.clear();
+            for (const auto& v : vec)
+              value.push_back(std::to_string(v));
+            return;
+          }
+          case OptionType::VECTOR_INT: {
+            const auto& vec = std::any_cast<std::vector<int>>(value);
+            value.clear();
+            for (const auto& v : vec)
+              value.push_back(std::to_string(v));
+            return;
+          }
+          case OptionType::VECTOR_STRING:
+            value = std::any_cast<std::vector<std::string>>(value);
+            return;
+        }
+  }
 
   capabilities2_msgs::msg::CapabilityOption toMsg() const
   {
@@ -75,10 +153,34 @@ struct Options
  */
 struct CapabilityOptions
 {
-  std::string interface;
-  std::string provider;
-  std::vector<Options> options;
+  std::vector<Option> options = {};
 
+  bool is_empty() const
+  {
+    return options.empty();
+  }
+
+  /**
+   * @brief Check if an option with the given key exists
+   *
+   * @param key the key of the option to check
+   * @return true if the option exists, false otherwise
+   */
+  bool has_value(const std::string& key) const
+  {
+    for (const auto& option : options)
+      if (option.key == key)
+        return true;
+    return false;
+  }
+
+   /**
+    * @brief Get the value of an option by key
+    *
+    * @param key the key of the option to get the value of
+    * @return std::any the value of the option, can be cast to the appropriate type based on the OptionType
+    * @throws options_exception if the key is not found or if there is a type conversion error
+    */
   std::any get_value(const std::string& key) const
   {
     for (const auto& option : options)
@@ -86,37 +188,7 @@ struct CapabilityOptions
       {
         try
         {
-          switch (option.type)
-          {
-            case OptionType::BOOL:
-              return option.value[0] == "true";
-            case OptionType::DOUBLE:
-              return std::stod(option.value[0]);
-            case OptionType::INT:
-              return std::stoi(option.value[0]);
-            case OptionType::STRING:
-              return option.value[0];
-            case OptionType::VECTOR_BOOL: {
-              std::vector<bool> vec;
-              for (const auto& v : option.value)
-                vec.push_back(v == "true");
-              return vec;
-            }
-            case OptionType::VECTOR_DOUBLE: {
-              std::vector<double> vec;
-              for (const auto& v : option.value)
-                vec.push_back(std::stod(v));
-              return vec;
-            }
-            case OptionType::VECTOR_INT: {
-              std::vector<int> vec;
-              for (const auto& v : option.value)
-                vec.push_back(std::stoi(v));
-              return vec;
-            }
-            case OptionType::VECTOR_STRING:
-              return option.value;
-          }
+          return option.get_value();
         }
         catch (const std::exception& e)
         {
@@ -132,44 +204,14 @@ struct CapabilityOptions
     for (auto& option : options)
       if (option.key == key)
       {
-        switch (type)
+        try
         {
-          case OptionType::BOOL:
-            option.value[0] = std::any_cast<bool>(value) ? "true" : "false";
-            return;
-          case OptionType::DOUBLE:
-            option.value[0] = std::to_string(std::any_cast<double>(value));
-            return;
-          case OptionType::INT:
-            option.value[0] = std::to_string(std::any_cast<int>(value));
-            return;
-          case OptionType::STRING:
-            option.value[0] = std::any_cast<std::string>(value);
-            return;
-          case OptionType::VECTOR_BOOL: {
-            const auto& vec = std::any_cast<std::vector<bool>>(value);
-            option.value.clear();
-            for (const auto& v : vec)
-              option.value.push_back(v ? "true" : "false");
-            return;
-          }
-          case OptionType::VECTOR_DOUBLE: {
-            const auto& vec = std::any_cast<std::vector<double>>(value);
-            option.value.clear();
-            for (const auto& v : vec)
-              option.value.push_back(std::to_string(v));
-            return;
-          }
-          case OptionType::VECTOR_INT: {
-            const auto& vec = std::any_cast<std::vector<int>>(value);
-            option.value.clear();
-            for (const auto& v : vec)
-              option.value.push_back(std::to_string(v));
-            return;
-          }
-          case OptionType::VECTOR_STRING:
-            option.value = std::any_cast<std::vector<std::string>>(value);
-            return;
+          option.set_value(type, value);
+          return;
+        }
+        catch (const std::exception& e)
+        {
+          throw options_exception("Failed to set option '" + option.key + "': " + e.what());
         }
       }
 
@@ -177,43 +219,7 @@ struct CapabilityOptions
     Options new_option;
     new_option.key = key;
     new_option.type = type;
-
-    switch (type)
-    {
-      case OptionType::BOOL:
-        new_option.value[0] = std::any_cast<bool>(value) ? "true" : "false";
-        break;
-      case OptionType::DOUBLE:
-        new_option.value[0] = std::to_string(std::any_cast<double>(value));
-        break;
-      case OptionType::INT:
-        new_option.value[0] = std::to_string(std::any_cast<int>(value));
-        break;
-      case OptionType::STRING:
-        new_option.value[0] = std::any_cast<std::string>(value);
-        break;
-      case OptionType::VECTOR_BOOL: {
-        const auto& vec = std::any_cast<std::vector<bool>>(value);
-        for (const auto& v : vec)
-          new_option.value.push_back(v ? "true" : "false");
-        break;
-      }
-      case OptionType::VECTOR_DOUBLE: {
-        const auto& vec = std::any_cast<std::vector<double>>(value);
-        for (const auto& v : vec)
-          new_option.value.push_back(std::to_string(v));
-        break;
-      }
-      case OptionType::VECTOR_INT: {
-        const auto& vec = std::any_cast<std::vector<int>>(value);
-        for (const auto& v : vec)
-          new_option.value.push_back(std::to_string(v));
-        break;
-      }
-      case OptionType::VECTOR_STRING:
-        new_option.value = std::any_cast<std::vector<std::string>>(value);
-        break;
-    };
+    new_option.set_value(type, value);
 
     options.push_back(new_option);
   }
@@ -221,8 +227,6 @@ struct CapabilityOptions
   capabilities2_msgs::msg::Capability toMsg() const
   {
     capabilities2_msgs::msg::Capability msg;
-    msg.interface = interface;
-    msg.provider = provider;
     for (const auto& option : options)
       msg.options.push_back(option.toMsg());
     return msg;
@@ -230,8 +234,6 @@ struct CapabilityOptions
 
   void fromMsg(const capabilities2_msgs::msg::Capability& msg)
   {
-    interface = msg.interface;
-    provider = msg.provider;
     options.clear();
     for (const auto& option_msg : msg.options)
     {

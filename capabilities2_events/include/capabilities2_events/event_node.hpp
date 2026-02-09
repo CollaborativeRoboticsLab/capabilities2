@@ -83,10 +83,22 @@ public:
       // get targets for this event type and id namespace
       if (connection.type.code == event_type && bond_id == conn_bond_id)
       {
-        // parameterise target capability
-        // create a copy of target with updated parameters
+        // parameterise target capability with parameters from the trigger
         capabilities2_msgs::msg::Capability target_with_params = connection.target;
-        target_with_params.parameters = parameters.toMsg().parameters;
+
+        // extend or replace parameters of the target capability if any non empty parameters are provided
+        if (!parameters.is_empty())
+        {
+          // convert parameters to msg format for easier merging
+          auto old_parameters = capabilities2::CapabilityOptions::fromMsg(target_with_params);
+
+          // extend or replace parameters of the target capability
+          for (const auto& param : parameters)
+            old_parameters.set_value(param.key, param.type, param.value);
+
+          // convert back to msg format
+          target_with_params = old_parameters.toMsg();
+        }
 
         // emit event via event api
         // NOTE: callback invocation is handled by event api
