@@ -59,7 +59,7 @@ protected:
    *
    * @param id unique identifier for the execution
    */
-  virtual void execution(const std::string& parameters, const std::string& thread_id) override
+  virtual void execution(const capabilities2::CapabilityOptions& parameters, const std::string& thread_id) override
   {
     // extract trigger_id from thread_id (format: "bond_id/trigger_id")
     size_t slash_pos = thread_id.find('/');

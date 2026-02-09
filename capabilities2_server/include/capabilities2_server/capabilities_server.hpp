@@ -11,7 +11,6 @@
 #include <tinyxml2.h>
 
 #include <rclcpp/rclcpp.hpp>
-// #include <rclcpp_action/rclcpp_action.hpp>
 
 #include <capabilities2_server/capabilities_api.hpp>
 

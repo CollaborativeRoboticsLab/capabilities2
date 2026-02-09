@@ -38,7 +38,7 @@ public:
     emit_stopped(bond_id, "dummy_parameters");
   }
 
-  void trigger(const std::string& parameters, const std::string& bond_id) override
+  void trigger(const capabilities2::CapabilityOptions& parameters, const std::string& bond_id) override
   {
     RCLCPP_WARN(node_->get_logger(), "Dummy runner cannot trigger");
 

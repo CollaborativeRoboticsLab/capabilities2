@@ -119,20 +119,16 @@ protected:
    *
    * This method utilizes paramters set via the trigger() function
    *
-   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
+   * @param parameters pointer to capabilities2::CapabilityOptions that contains parameters
    */
-  virtual void execution(const std::string& parameters, const std::string& thread_id) override
+  virtual void execution(const capabilities2::CapabilityOptions& parameters, const std::string& thread_id) override
   {
     // split thread_id to get bond_id and trigger_id (format: "bond_id/trigger_id")
     std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
     std::string trigger_id = ThreadTriggerRunner::trigger_from_thread_id(thread_id);
 
-    // if parameters are not provided then cannot proceed
-    if (!parameters_[trigger_id])
-      throw runner_exception("cannot trigger action without parameters");
-
-    // generate a goal from parameters if provided
-    goal_msg_ = generate_goal(parameters_[trigger_id], trigger_id);
+    // generate a goal from parameters provided
+    goal_msg_ = generate_goal(parameters, trigger_id);
     RCLCPP_INFO(node_->get_logger(), "goal generated for event " + trigger_id);
 
     std::unique_lock<std::mutex> lock(mutex_);
@@ -207,10 +203,12 @@ protected:
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters
+   * @param parameters capability options that contain parameters for the trigger
+   * @param trigger_id the trigger_id associated with this execution thread
    * @return ActionT::Goal the generated goal
    */
-  virtual typename ActionT::Goal generate_goal(tinyxml2::XMLElement* parameters, const std::string& trigger_id) = 0;
+  virtual typename ActionT::Goal generate_goal(const capabilities2::CapabilityOptions parameters,
+                                               const std::string& trigger_id) = 0;
 
   /**
    * @brief Generate a std::string from feedback message
@@ -220,11 +218,12 @@ protected:
    * A pattern needs to be implemented in the derived class. If the feedback string
    * is empty, nothing will be printed on the screen
    *
-   * @param parameters
+   * @param msg the feedback message received from the action server
+   * @param trigger_id the trigger_id associated with this feedback message
    * @return ActionT::Feedback the received feedback
    */
-  virtual std::string generate_feedback(const typename ActionT::Feedback::ConstSharedPtr msg,
-                                        const std::string& trigger_id) = 0;
+  virtual capabilities2::CapabilityOptions generate_feedback(const typename ActionT::Feedback::ConstSharedPtr msg,
+                                                             const std::string& trigger_id) = 0;
 
 protected:
   /**< action client */

@@ -124,14 +124,16 @@ protected:
   }
 
   /**
-   * @brief Add a new connection
+   * @brief make EventNode::add_connection public method on runner api.
+   * 
+   * add connection to this runner to target capability this allows the runner to emit events on state changes
+   * to the target capability the connection ID format is: "bond_id/trigger_id"  which allows event emission to
+   * extract bond_id for access control
    *
-   * from this event node to a target capability with a given event type
-   *
-   * @param connection_id
-   * @param type
-   * @param target
-   * @param event_cb
+   * @param connection_id unique identifier for the connection (format: "bond_id/trigger_id")
+   * @param type type of event to connect to
+   * @param target target capability to connect to
+   * @param callback callback to trigger target capability with (capability, parameters, bond_id)
    *
    * @throws event_exception if connection with given id already exists
    */
@@ -262,8 +264,7 @@ private:
   // source capability of this event node
   capabilities2_msgs::msg::Capability source_;
 
-  // event emitter
-  // used to emit events
+  // event emitter used to emit events
   // store as member to avoid passing around
   std::shared_ptr<EventBase> event_emitter_;
 
