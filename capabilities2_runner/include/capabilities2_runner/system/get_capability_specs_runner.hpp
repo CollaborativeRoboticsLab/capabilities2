@@ -1,10 +1,9 @@
 #pragma once
 
 #include <capabilities2_runner/service_runner.hpp>
-
 #include <capabilities2_msgs/srv/get_capability_specs.hpp>
 
-namespace capabilities2_runner_capabilities
+namespace capabilities2_runner
 {
 
 /**

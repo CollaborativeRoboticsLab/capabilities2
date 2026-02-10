@@ -7,7 +7,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <capabilities2_events/event_node.hpp>
-#include <capabilities2_runner/CapabilityOptions.hpp>
+#include <capabilities2_events/capability_parameters.hpp>
 
 #include <capabilities2_msgs/msg/capability.hpp>
 #include <capabilities2_msgs/msg/capability_event_code.hpp>
@@ -114,7 +114,7 @@ public:
    * completes.
    *
    */
-  virtual void trigger(const capabilities2::CapabilityOptions& parameters, const std::string& bond_id) = 0;
+  virtual void trigger(const capabilities2::CapabilityParameters& parameters, const std::string& bond_id) = 0;
 
   /**
    * @brief Initializer function for initializing the base runner in place of constructor due to plugin semantics
@@ -220,9 +220,9 @@ protected:
    *
    * @return CapabilityOptions containing new parameters
    */
-  virtual capabilities2::CapabilityOptions param_on_stopped()
+  virtual capabilities2::CapabilityParameters param_on_stopped()
   {
-    return capabilities2::CapabilityOptions();
+    return capabilities2::CapabilityParameters();
   };
 
   /**
@@ -235,9 +235,9 @@ protected:
    * 
    * @return CapabilityOptions containing new parameters
    */
-  virtual capabilities2::CapabilityOptions param_on_failure()
+  virtual capabilities2::CapabilityParameters param_on_failure()
   {
-    return capabilities2::CapabilityOptions();
+    return capabilities2::CapabilityParameters();
   };
 
   /**
@@ -250,9 +250,9 @@ protected:
    *
    * @return CapabilityOptions containing new parameters
    */
-  virtual capabilities2::CapabilityOptions param_on_success()
+  virtual capabilities2::CapabilityParameters param_on_success()
   {
-    return capabilities2::CapabilityOptions();
+    return capabilities2::CapabilityParameters();
   };
 
   // run config getters
@@ -398,9 +398,9 @@ protected:
    * @param parameters
    */
   void emit_started(const std::string& bond_id,
-                    const capabilities2::CapabilityOptions& parameters = capabilities2::CapabilityOptions())
+                    const capabilities2::CapabilityParameters& parameters = capabilities2::CapabilityParameters())
   {
-    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::STARTED, parameters);
+    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::STARTED, parameters.toMsg());
   }
 
   /**
@@ -410,9 +410,9 @@ protected:
    * @param parameters
    */
   void emit_stopped(const std::string& bond_id,
-                    const capabilities2::CapabilityOptions& parameters = capabilities2::CapabilityOptions())
+                    const capabilities2::CapabilityParameters& parameters = capabilities2::CapabilityParameters())
   {
-    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::STOPPED, parameters);
+    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::STOPPED, parameters.toMsg());
   }
 
   /**
@@ -422,9 +422,9 @@ protected:
    * @param parameters
    */
   void emit_succeeded(const std::string& bond_id,
-                      const capabilities2::CapabilityOptions& parameters = capabilities2::CapabilityOptions())
+                      const capabilities2::CapabilityParameters& parameters = capabilities2::CapabilityParameters())
   {
-    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::SUCCEEDED, parameters);
+    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::SUCCEEDED, parameters.toMsg());
   }
 
   /**
@@ -434,9 +434,9 @@ protected:
    * @param parameters
    */
   void emit_failed(const std::string& bond_id,
-                   const capabilities2::CapabilityOptions& parameters = capabilities2::CapabilityOptions())
+                   const capabilities2::CapabilityParameters& parameters = capabilities2::CapabilityParameters())
   {
-    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::FAILED, parameters);
+    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::FAILED, parameters.toMsg());
   }
 
 protected:

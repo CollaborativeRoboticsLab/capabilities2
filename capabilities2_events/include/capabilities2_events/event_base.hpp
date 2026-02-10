@@ -5,6 +5,7 @@
 #include <functional>
 
 #include <rclcpp/rclcpp.hpp>
+#include <capabilities2_events/capability_parameters.hpp>
 #include <capabilities2_msgs/msg/capability.hpp>
 #include <capabilities2_msgs/msg/capability_event.hpp>
 #include <capabilities2_msgs/msg/capability_event_code.hpp>
@@ -42,9 +43,9 @@ class EventBase
 {
 public:
   typedef std::string capability_str_t;
-  typedef std::string parameter_str_t;
+  typedef capabilities2::CapabilityParameters parameter_t;
   typedef std::string access_id_t;
-  typedef std::function<void(const capability_str_t&, const parameter_str_t&, const access_id_t&)> event_callback_t;
+  typedef std::function<void(const capability_str_t&, const parameter_t&, const access_id_t&)> event_callback_t;
 
 public:
   EventBase()
@@ -77,7 +78,7 @@ public:
     // do callback with bond_id for access control
     if (callback)
     {
-      callback(target.capability, target.parameters, bond_id);
+      callback(target.capability, capabilities2::CapabilityParameters(target), bond_id);  
     }
   }
 };

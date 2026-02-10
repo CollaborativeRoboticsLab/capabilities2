@@ -118,9 +118,9 @@ protected:
    *
    * This method utilizes paramters set via the trigger() function
    *
-   * @param parameters pointer to capabilities2::CapabilityOptions that contains parameters
+   * @param parameters pointer to capabilities2::CapabilityParameters that contains parameters
    */
-  virtual void execution(const capabilities2::CapabilityOptions& parameters, const std::string& thread_id) override
+  virtual void execution(const capabilities2::CapabilityParameters& parameters, const std::string& thread_id) override
   {
     // split thread_id to get bond_id and trigger_id (format: "bond_id/trigger_id")
     std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
@@ -202,7 +202,7 @@ protected:
    * @param parameters capability options that contain parameters for the trigger
    * @return ActionT::Goal the generated goal
    */
-  virtual typename ActionT::Goal generate_goal(const capabilities2::CapabilityOptions parameters) = 0;
+  virtual typename ActionT::Goal generate_goal(const capabilities2::CapabilityParameters parameters) = 0;
 
   /**
    * @brief Generate a std::string from feedback message
@@ -215,7 +215,7 @@ protected:
    * @param msg the feedback message received from the action server
    * @return ActionT::Feedback the received feedback
    */
-  virtual capabilities2::CapabilityOptions generate_feedback(const typename ActionT::Feedback::ConstSharedPtr msg) = 0;
+  virtual capabilities2::CapabilityParameters generate_feedback(const typename ActionT::Feedback::ConstSharedPtr msg) = 0;
 
 protected:
   /**< action client */

@@ -82,7 +82,7 @@ public:
    * @param parameters parameters related to the runner in std::string form for compatibility across various runners
    * @param bond_id unique identifier for the group on connections associated with this runner trigger
    */
-  void trigger_runner(const std::string& capability, const capabilities2::CapabilityOptions& parameters, const std::string& bond_id)
+  void trigger_runner(const std::string& capability, const capabilities2::CapabilityParameters& parameters, const std::string& bond_id)
   {
     // TODO: validate trigger id (DEPRECATED?)
 

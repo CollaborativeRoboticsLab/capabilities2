@@ -1,7 +1,0 @@
-<library path="capabilities2_test_suite">
-    <class type="capabilities2_runner::TestActionRunner" base_class_type="capabilities2_runner::RunnerBase">
-        <description>
-            A plugin that provide test functionality for action_runner.
-        </description>
-    </class>
-</library>

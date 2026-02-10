@@ -9,7 +9,6 @@
 
 #include <capabilities2_events/uuid_generator.hpp>
 #include <capabilities2_events/event_base.hpp>
-#include <capabilities2_runner/CapabilityOptions.hpp>
 
 #include <capabilities2_msgs/msg/capability.hpp>
 #include <capabilities2_msgs/msg/capability_event_code.hpp>
@@ -58,12 +57,12 @@ public:
   /**
    * @brief emit an event from this event node to all matching connections
    *
-   * @param bond_id
-   * @param event_type
-   * @param parameters
+   * @param bond_id the bond_id to match connections with (extracted from connection_id) for access control
+   * @param event_type the type of event being emitted
+   * @param msg_parameters the new parameters to emit with the event
    */
-  void emit_event(const std::string& bond_id, const capabilities2_msgs::msg::CapabilityEventCode& event_type,
-                  const capabilities2::CapabilityOptions& parameters)
+  void emit_event(const std::string& bond_id, const uint8_t& event_type,
+                  capabilities2::CapabilityParameters parameters = capabilities2::CapabilityParameters())
   {
     // check if event emitter is set
     if (!event_emitter_)
@@ -84,21 +83,16 @@ public:
       if (connection.type.code == event_type && bond_id == conn_bond_id)
       {
         // parameterise target capability with parameters from the trigger
-        capabilities2_msgs::msg::Capability target_with_params = connection.target;
+        auto old_parameters = capabilities2::CapabilityParameters(connection.target);
 
         // extend or replace parameters of the target capability if any non empty parameters are provided
         if (!parameters.is_empty())
-        {
-          // convert parameters to msg format for easier merging
-          auto old_parameters = capabilities2::CapabilityOptions::fromMsg(target_with_params);
+          for (auto& option : parameters.options)
+            old_parameters.set_value(option.key, option.type, option.get_value());
 
-          // extend or replace parameters of the target capability
-          for (const auto& param : parameters)
-            old_parameters.set_value(param.key, param.type, param.value);
-
-          // convert back to msg format
-          target_with_params = old_parameters.toMsg();
-        }
+        auto target_with_params = old_parameters.toMsg();
+        target_with_params.interface = connection.target.interface;
+        target_with_params.provider = connection.target.provider; 
 
         // emit event via event api
         // NOTE: callback invocation is handled by event api
@@ -137,7 +131,7 @@ protected:
 
   /**
    * @brief make EventNode::add_connection public method on runner api.
-   * 
+   *
    * add connection to this runner to target capability this allows the runner to emit events on state changes
    * to the target capability the connection ID format is: "bond_id/trigger_id"  which allows event emission to
    * extract bond_id for access control
@@ -169,7 +163,7 @@ protected:
 
     // emit connected event
     emit_event(connection_id.substr(0, connection_id.find('/')),
-               capabilities2_msgs::msg::CapabilityEventCode::CONNECTED, "");
+               capabilities2_msgs::msg::CapabilityEventCode::CONNECTED);
   }
 
   /**
@@ -184,7 +178,7 @@ protected:
 
     // emit disconnected event
     emit_event(connection_id.substr(0, connection_id.find('/')),
-               capabilities2_msgs::msg::CapabilityEventCode::DISCONNECTED, "");
+               capabilities2_msgs::msg::CapabilityEventCode::DISCONNECTED);
   }
 
   // helper members

@@ -84,7 +84,7 @@ protected:
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    * @param thread_id unique identifier for the execution thread
    */
-  virtual void execution(const capabilities2::CapabilityOptions& parameters, const std::string& thread_id) override
+  virtual void execution(const capabilities2::CapabilityParameters& parameters, const std::string& thread_id) override
   {
     // split thread_id to get bond_id and trigger_id (format: "bond_id/trigger_id")
     std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
@@ -144,18 +144,18 @@ protected:
    * @param parameters
    * @return ServiceT::Request the generated request
    */
-  virtual typename ServiceT::Request generate_request(const capabilities2::CapabilityOptions& parameters, const std::string& trigger_id) = 0;
+  virtual typename ServiceT::Request generate_request(const capabilities2::CapabilityParameters& parameters, const std::string& trigger_id) = 0;
 
   /**
    * @brief Process the reponse and print data as required
    *
    * @param response service reponse message
    * @param trigger_id thread id associated with this response used for logging and event emission
-   * @return capabilities2::CapabilityOptions containing updated parameters for the on_success event if needed
+   * @return capabilities2::CapabilityParameters containing updated parameters for the on_success event if needed
    * 
    * A pattern needs to be implemented in the derived class for processing the response and extracting data if needed, currently does nothing.
    */
-  virtual capabilities2::CapabilityOptions process_response(typename ServiceT::Response::SharedPtr response, const std::string& trigger_id)
+  virtual capabilities2::CapabilityParameters process_response(typename ServiceT::Response::SharedPtr response, const std::string& trigger_id)
   {
   }
 

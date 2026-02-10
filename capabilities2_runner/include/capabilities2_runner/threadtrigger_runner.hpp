@@ -7,10 +7,7 @@
 #include <thread>
 
 #include <capabilities2_runner/runner_base.hpp>
-#include <capabilities2_runner/CapabilityOptions.hpp>
-
 #include <capabilities2_events/uuid_generator.hpp>
-
 #include <capabilities2_msgs/msg/capability_event_code.hpp>
 
 namespace capabilities2_runner
@@ -73,7 +70,7 @@ public:
    * @param bond_id unique identifier for the group of connections associated with this runner trigger event
    *
    */
-  virtual void trigger(const capabilities2::CapabilityOptions& parameters, const std::string& bond_id) override
+  virtual void trigger(const capabilities2::CapabilityParameters& parameters, const std::string& bond_id) override
   {
     // create a thread id
     std::string trigger_id = capabilities2_events::UUIDGenerator::gen_uuid_str();
@@ -112,7 +109,7 @@ protected:
    *
    * @attention: Should be implemented on derieved classes and should call success and failure events appropriately
    */
-  virtual void execution(const capabilities2::CapabilityOptions& parameters, const std::string& thread_id) = 0;
+  virtual void execution(const capabilities2::CapabilityParameters& parameters, const std::string& thread_id) = 0;
 
 private:
   /** */
