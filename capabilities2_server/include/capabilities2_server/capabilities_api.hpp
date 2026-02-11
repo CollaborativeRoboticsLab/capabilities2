@@ -200,7 +200,7 @@ public:
    * @param parameters
    * @param bond_id
    */
-  void trigger_capability(const std::string& capability, const capabilities2::CapabilityParameters& parameters, const std::string& bond_id)
+  void trigger_capability(const std::string& capability, const capabilities2_events::EventParameters& parameters, const std::string& bond_id)
   {
     // validate bond
     if (!bond_cache_.exists(capability, bond_id))

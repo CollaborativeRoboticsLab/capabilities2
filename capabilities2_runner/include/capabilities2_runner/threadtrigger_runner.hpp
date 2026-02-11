@@ -70,7 +70,7 @@ public:
    * @param bond_id unique identifier for the group of connections associated with this runner trigger event
    *
    */
-  virtual void trigger(const capabilities2::CapabilityParameters& parameters, const std::string& bond_id) override
+  virtual void trigger(const capabilities2_events::EventParameters& parameters, const std::string& bond_id) override
   {
     // create a thread id
     std::string trigger_id = capabilities2_events::UUIDGenerator::gen_uuid_str();
@@ -88,7 +88,7 @@ public:
     }
 
     // emit trigger event
-    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::TRIGGERED, (""));
+    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::TRIGGERED);
 
     // BUG: thread management?
 
@@ -109,7 +109,7 @@ protected:
    *
    * @attention: Should be implemented on derieved classes and should call success and failure events appropriately
    */
-  virtual void execution(const capabilities2::CapabilityParameters& parameters, const std::string& thread_id) = 0;
+  virtual void execution(const capabilities2_events::EventParameters& parameters, const std::string& thread_id) = 0;
 
 private:
   /** */

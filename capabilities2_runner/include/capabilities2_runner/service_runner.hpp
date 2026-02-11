@@ -70,7 +70,7 @@ public:
       throw runner_exception("cannot stop runner action that was not started");
 
     // emit stopped event
-    emit_stopped(bond_id, update_on_stopped(events[runner_id].on_stopped.parameters));
+    emit_stopped(bond_id);
 
     RCLCPP_INFO(node_->get_logger(), "runner cleaned. stopping..");
   }
@@ -84,19 +84,14 @@ protected:
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    * @param thread_id unique identifier for the execution thread
    */
-  virtual void execution(const capabilities2::CapabilityParameters& parameters, const std::string& thread_id) override
+  virtual void execution(const capabilities2_events::EventParameters& parameters, const std::string& thread_id) override
   {
     // split thread_id to get bond_id and trigger_id (format: "bond_id/trigger_id")
     std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
     std::string trigger_id = ThreadTriggerRunner::trigger_from_thread_id(thread_id);
 
-    // if parameters are not provided then cannot proceed
-    if (!parameters_[trigger_id])
-      throw runner_exception("cannot trigger service without parameters");
-
     // generate a goal from parameters if provided
-    auto request_msg =
-        std::make_shared<typename ServiceT::Request>(generate_request(parameters_[trigger_id], trigger_id));
+    auto request_msg = std::make_shared<typename ServiceT::Request>(generate_request(parameters));
 
     RCLCPP_INFO(node_->get_logger(), "request generated for event :" + trigger_id);
 
@@ -110,17 +105,17 @@ protected:
             RCLCPP_ERROR(node_->get_logger(), "get result call failed");
 
             // emit failed event
-            emit_failed(bond_id, update_on_failure(events[trigger_id].on_failure.parameters));
+            emit_failed(bond_id, param_on_failure());
           }
           else
           {
             RCLCPP_INFO(node_->get_logger(), "get result call succeeded for event :" + trigger_id);
 
             response_ = future.get();
-            process_response(response_, trigger_id);
+            process_response(response_);
 
             // emit success event
-            emit_succeeded(bond_id, update_on_success(events[trigger_id].on_success.parameters));
+            emit_succeeded(bond_id, param_on_success());
           }
 
           completed_ = true;
@@ -141,10 +136,10 @@ protected:
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters
+   * @param parameters 
    * @return ServiceT::Request the generated request
    */
-  virtual typename ServiceT::Request generate_request(const capabilities2::CapabilityParameters& parameters, const std::string& trigger_id) = 0;
+  virtual typename ServiceT::Request generate_request(const capabilities2_events::EventParameters& parameters) = 0;
 
   /**
    * @brief Process the reponse and print data as required
@@ -152,10 +147,11 @@ protected:
    * @param response service reponse message
    * @param trigger_id thread id associated with this response used for logging and event emission
    * @return capabilities2::CapabilityParameters containing updated parameters for the on_success event if needed
-   * 
-   * A pattern needs to be implemented in the derived class for processing the response and extracting data if needed, currently does nothing.
+   *
+   * A pattern needs to be implemented in the derived class for processing the response and extracting data if needed,
+   * currently does nothing.
    */
-  virtual capabilities2::CapabilityParameters process_response(typename ServiceT::Response::SharedPtr response, const std::string& trigger_id)
+  virtual std::string process_response(typename ServiceT::Response::SharedPtr response)
   {
   }
 

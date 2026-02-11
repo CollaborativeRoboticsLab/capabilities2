@@ -7,7 +7,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <capabilities2_events/event_node.hpp>
-#include <capabilities2_events/capability_parameters.hpp>
+#include <capabilities2_events/event_parameters.hpp>
 
 #include <capabilities2_msgs/msg/capability.hpp>
 #include <capabilities2_msgs/msg/capability_event_code.hpp>
@@ -114,7 +114,7 @@ public:
    * completes.
    *
    */
-  virtual void trigger(const capabilities2::CapabilityParameters& parameters, const std::string& bond_id) = 0;
+  virtual void trigger(const capabilities2_events::EventParameters& parameters, const std::string& bond_id) = 0;
 
   /**
    * @brief Initializer function for initializing the base runner in place of constructor due to plugin semantics
@@ -162,7 +162,7 @@ public:
    */
   void add_connection(const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& type,
                       const capabilities2_msgs::msg::Capability& target,
-                      std::function<void(const std::string&, const std::string&, const std::string&)> callback)
+                      std::function<void(const std::string&, const capabilities2_events::EventParameters&, const std::string&)> callback)
   {
     EventNode::add_connection(connection_id, type, target, callback);
   }
@@ -209,22 +209,7 @@ public:
 
 protected:
   // FIXME: implement new event subsystem
-
-  /**
-   * @brief Update on_stopped event parameters with new data if available.
-   *
-   * This function is used to inject new data into the CapabilityOptions containing
-   * parameters related to the on_stopped trigger event
-   *
-   * A pattern needs to be implemented in the derived class
-   *
-   * @return CapabilityOptions containing new parameters
-   */
-  virtual capabilities2::CapabilityParameters param_on_stopped()
-  {
-    return capabilities2::CapabilityParameters();
-  };
-
+  
   /**
    * @brief Update on_failure event parameters with new data if available.
    *
@@ -235,9 +220,9 @@ protected:
    * 
    * @return CapabilityOptions containing new parameters
    */
-  virtual capabilities2::CapabilityParameters param_on_failure()
+  virtual capabilities2_events::EventParameters param_on_failure()
   {
-    return capabilities2::CapabilityParameters();
+    return capabilities2_events::EventParameters();
   };
 
   /**
@@ -250,9 +235,9 @@ protected:
    *
    * @return CapabilityOptions containing new parameters
    */
-  virtual capabilities2::CapabilityParameters param_on_success()
+  virtual capabilities2_events::EventParameters param_on_success()
   {
-    return capabilities2::CapabilityParameters();
+    return capabilities2_events::EventParameters();
   };
 
   // run config getters
@@ -398,9 +383,9 @@ protected:
    * @param parameters
    */
   void emit_started(const std::string& bond_id,
-                    const capabilities2::CapabilityParameters& parameters = capabilities2::CapabilityParameters())
+                    const capabilities2_events::EventParameters& parameters = capabilities2_events::EventParameters())
   {
-    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::STARTED, parameters.toMsg());
+    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::STARTED, parameters);
   }
 
   /**
@@ -410,9 +395,9 @@ protected:
    * @param parameters
    */
   void emit_stopped(const std::string& bond_id,
-                    const capabilities2::CapabilityParameters& parameters = capabilities2::CapabilityParameters())
+                    const capabilities2_events::EventParameters& parameters = capabilities2_events::EventParameters())
   {
-    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::STOPPED, parameters.toMsg());
+    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::STOPPED, parameters);
   }
 
   /**
@@ -422,9 +407,9 @@ protected:
    * @param parameters
    */
   void emit_succeeded(const std::string& bond_id,
-                      const capabilities2::CapabilityParameters& parameters = capabilities2::CapabilityParameters())
+                      const capabilities2_events::EventParameters& parameters = capabilities2_events::EventParameters())
   {
-    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::SUCCEEDED, parameters.toMsg());
+    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::SUCCEEDED, parameters);
   }
 
   /**
@@ -434,9 +419,9 @@ protected:
    * @param parameters
    */
   void emit_failed(const std::string& bond_id,
-                   const capabilities2::CapabilityParameters& parameters = capabilities2::CapabilityParameters())
+                   const capabilities2_events::EventParameters& parameters = capabilities2_events::EventParameters())
   {
-    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::FAILED, parameters.toMsg());
+    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::FAILED, parameters);
   }
 
 protected:

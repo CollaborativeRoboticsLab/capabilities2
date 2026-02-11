@@ -5,9 +5,9 @@
 #include <any>
 #include <stdexcept>
 #include <capabilities2_msgs/msg/capability.hpp>
-#include <capabilities2_msgs/msg/capability_option.hpp>
+#include <capabilities2_msgs/msg/capability_parameter.hpp>
 
-namespace capabilities2
+namespace capabilities2_events
 {
 
 struct options_exception : public std::runtime_error
@@ -54,7 +54,7 @@ struct Parameter
   {
   }
 
-  Parameter(const capabilities2_msgs::msg::CapabilityOption& msg)
+  Parameter(const capabilities2_msgs::msg::CapabilityParameter& msg)
   {
     key = msg.key;
     value = msg.value;
@@ -143,9 +143,9 @@ struct Parameter
     }
   }
 
-  capabilities2_msgs::msg::CapabilityOption toMsg() const
+  capabilities2_msgs::msg::CapabilityParameter toMsg() const
   {
-    capabilities2_msgs::msg::CapabilityOption msg;
+    capabilities2_msgs::msg::CapabilityParameter msg;
     msg.key = key;
     msg.value = value;
     msg.type = static_cast<int>(type);
@@ -160,18 +160,18 @@ struct Parameter
  * @param provider the provider of the capability
  * @param options the options for the capability
  */
-struct CapabilityParameters
+struct EventParameters
 {
   std::vector<Parameter> options = {};
 
-  CapabilityParameters() = default;
+  EventParameters() = default;
 
-  CapabilityParameters(const capabilities2_msgs::msg::Capability& msg)
+  EventParameters(const capabilities2_msgs::msg::Capability& msg)
   {
     options.clear();
     for (const auto& option_msg : msg.parameters)
     {
-      Parameter option (option_msg);
+      auto option = Parameter(option_msg);
       options.push_back(option);
     }
   }

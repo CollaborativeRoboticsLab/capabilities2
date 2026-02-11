@@ -62,7 +62,7 @@ public:
    * @param msg_parameters the new parameters to emit with the event
    */
   void emit_event(const std::string& bond_id, const uint8_t& event_type,
-                  capabilities2::CapabilityParameters parameters = capabilities2::CapabilityParameters())
+                  capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
     // check if event emitter is set
     if (!event_emitter_)
@@ -83,16 +83,19 @@ public:
       if (connection.type.code == event_type && bond_id == conn_bond_id)
       {
         // parameterise target capability with parameters from the trigger
-        auto old_parameters = capabilities2::CapabilityParameters(connection.target);
+        auto old_parameters = capabilities2_events::EventParameters(connection.target);
 
         // extend or replace parameters of the target capability if any non empty parameters are provided
         if (!parameters.is_empty())
           for (auto& option : parameters.options)
             old_parameters.set_value(option.key, option.type, option.get_value());
 
+        // create a new target capability message with updated parameters to emit with the event
         auto target_with_params = old_parameters.toMsg();
-        target_with_params.interface = connection.target.interface;
-        target_with_params.provider = connection.target.provider; 
+
+        // copy capability and provider from original target as parameters only contains the options
+        target_with_params.capability = connection.target.capability;
+        target_with_params.provider = connection.target.provider;
 
         // emit event via event api
         // NOTE: callback invocation is handled by event api

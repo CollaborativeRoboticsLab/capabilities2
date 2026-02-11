@@ -38,8 +38,8 @@ protected:
    '<Event name=follow_waypoints provider=WaypointRunner x='$value' y='$value' />'
    * @return ActionT::Goal the generated goal
    */
-  virtual capabilities2_msgs::srv::GetCapabilitySpecs::Request generate_request(const std::string& parameters,
-                                                                                const std::string& trigger_id) override
+  virtual capabilities2_msgs::srv::GetCapabilitySpecs::Request
+  generate_request(const capabilities2_events::EventParameters& parameters, const std::string& trigger_id) override
   {
     capabilities2_msgs::srv::GetCapabilitySpecs::Request request;
     return request;
@@ -71,10 +71,9 @@ protected:
    * @param parameters
    * @return std::string
    */
-  virtual std::string update_on_success(std::string& parameters)
+  virtual std::string update_on_success(capabilities2_events::EventParameters& parameters)
   {
-    tinyxml2::XMLElement* element = convert_to_xml(parameters);
-
+    
     // Create the OccupancyGrid element as a child of the existing parameters element
     tinyxml2::XMLElement* capabilitySpecsElement = element->GetDocument()->NewElement("CapabilitySpecs");
     element->InsertEndChild(capabilitySpecsElement);
@@ -108,4 +107,4 @@ protected:
   }
 };
 
-}  // namespace capabilities2_runner_capabilities
+}  // namespace capabilities2_runner
