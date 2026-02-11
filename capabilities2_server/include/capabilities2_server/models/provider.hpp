@@ -4,6 +4,7 @@
 #include <yaml-cpp/yaml.h>
 #include <capabilities2_server/models/header.hpp>
 #include <capabilities2_server/models/remappable_base.hpp>
+#include <capabilities2_server/models/defineable_base.hpp>
 #include <capabilities2_server/models/predicateable_base.hpp>
 #include <capabilities2_server/utils/sql_safe.hpp>
 
@@ -42,6 +43,7 @@ struct provider_model_t : public remappable_base_t, predicateable_base_t
     {
       remappings.from_yaml(node["remappings"]);
     }
+    
     // definition
     defineable_base_t::from_yaml(node);
   }
