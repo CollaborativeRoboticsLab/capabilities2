@@ -1,6 +1,6 @@
 #pragma once
 
-#include <capabilities2_runner_system/multiplex_base_runner.hpp>
+#include <capabilities2_runner/multiplex_base_runner.hpp>
 
 namespace capabilities2_runner
 {

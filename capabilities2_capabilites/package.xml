@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>capabilities2_runner_system</name>
+  <name>capabilities2_capabilites</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
 
@@ -24,8 +24,6 @@
   <depend>std_msgs</depend>
   <depend>capabilities2_msgs</depend>
   <depend>capabilities2_runner</depend>
-  <depend>capabilities2_utils</depend>
-  <depend>fabric_msgs</depend>
   <depend>event_logger</depend>
   <depend>event_logger_msgs</depend>
   <depend>tinyxml2_vendor</depend>
@@ -33,23 +31,13 @@
   <export>
     <build_type>ament_cmake</build_type>
 
-    <!-- InputMultiplexAllRunner -->
+    <!-- CapabilityGetRunner -->
     <capability_interface>
-      interfaces/InputMultiplexAllRunner.yaml
+      interfaces/CapabilityGetRunner.yaml
     </capability_interface>
 
     <capability_provider>
-      providers/InputMultiplexAllRunner.yaml
+      providers/CapabilityGetRunner.yaml
     </capability_provider>
-
-    <!-- InputMultiplexAnyRunner -->
-    <capability_interface>
-      interfaces/InputMultiplexAnyRunner.yaml
-    </capability_interface>
-
-    <capability_provider>
-      providers/InputMultiplexAnyRunner.yaml
-    </capability_provider>
-
   </export>
 </package>
