@@ -50,10 +50,6 @@ struct Parameter
 
   Parameter() = default;
 
-  Parameter(std::string key, std::vector<std::string> value, OptionType type) : key(key), value(value), type(type)
-  {
-  }
-
   Parameter(const capabilities2_msgs::msg::CapabilityParameter& msg)
   {
     key = msg.key;
@@ -96,8 +92,11 @@ struct Parameter
     }
   }
 
-  void set_value(const OptionType& type, const std::any& new_value)
+  void set_value(std::string new_key, std::any new_value, OptionType new_type)
   {
+    key = new_key;
+    type = new_type;
+
     switch (type)
     {
       case OptionType::BOOL:
@@ -140,6 +139,9 @@ struct Parameter
       case OptionType::VECTOR_STRING:
         value = std::any_cast<std::vector<std::string>>(new_value);
         return;
+
+      default:
+        throw options_exception("Unsupported OptionType");
     }
   }
 
@@ -226,14 +228,14 @@ struct EventParameters
    * @param value the value to set, should be castable to the appropriate type based on the OptionType
    * @throws options_exception if there is a type conversion error
    */
-  void set_value(const std::string& key, const OptionType& type, const std::any& value)
+  void set_value(const std::string& key,  const std::any& value, const OptionType& type)
   {
     for (auto& option : options)
       if (option.key == key)
       {
         try
         {
-          option.set_value(type, value);
+          option.set_value(key, value, type);
           return;
         }
         catch (const std::exception& e)
@@ -243,8 +245,8 @@ struct EventParameters
       }
 
     // Parameter not found, add new one
-    Parameter new_option(key, {}, type);
-    new_option.set_value(type, value);
+    Parameter new_option;
+    new_option.set_value(key, value, type);
     options.push_back(new_option);
   }
 

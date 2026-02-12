@@ -88,7 +88,7 @@ public:
         // extend or replace parameters of the target capability if any non empty parameters are provided
         if (!parameters.is_empty())
           for (auto& option : parameters.options)
-            old_parameters.set_value(option.key, option.type, option.get_value());
+            old_parameters.set_value(option.key, option.get_value(), option.type);
 
         // create a new target capability message with updated parameters to emit with the event
         auto target_with_params = old_parameters.toMsg();
