@@ -67,7 +67,7 @@ public:
     ActionRunner::stop(bond_id);
 
     // emit stopped event
-    emit_stopped(bond_id, "");
+    emit_stopped(bond_id, param_on_stopped());
   }
 
   // encapsulated action server related functions

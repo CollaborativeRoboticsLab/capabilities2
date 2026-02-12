@@ -70,7 +70,7 @@ public:
    * @param bond_id unique identifier for the group of connections associated with this runner trigger event
    *
    */
-  virtual void trigger(const capabilities2_events::EventParameters& parameters, const std::string& bond_id) override
+  virtual void trigger(capabilities2_events::EventParameters& parameters, const std::string& bond_id) override
   {
     // create a thread id
     std::string trigger_id = capabilities2_events::UUIDGenerator::gen_uuid_str();
@@ -84,7 +84,7 @@ public:
       std::scoped_lock lock(mutex_);
       // TODO: consider emitting on start event here
       // emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::ON_STARTED, updated_on_started(parameters));
-      execution_thread_pool_[thread_id] = std::thread(&ThreadTriggerRunner::execution, this, parameters, thread_id);
+      execution_thread_pool_[thread_id] = std::thread(&ThreadTriggerRunner::execution, this, std::ref(parameters), thread_id);
     }
 
     // emit trigger event
@@ -109,7 +109,7 @@ protected:
    *
    * @attention: Should be implemented on derieved classes and should call success and failure events appropriately
    */
-  virtual void execution(const capabilities2_events::EventParameters& parameters, const std::string& thread_id) = 0;
+  virtual void execution(capabilities2_events::EventParameters& parameters, const std::string& thread_id) = 0;
 
 private:
   /** */
@@ -125,15 +125,8 @@ private:
       {
         if (exec_thread.joinable())
         {
-          if (exec_thread.try_join_for(timeout))
-          {
-            RCLCPP_DEBUG(node_->get_logger(), "execution %s joined successfully", thread_id.c_str());
-          }
-          else
-          {
-            RCLCPP_ERROR(node_->get_logger(), "execution %s did not stop in time, detaching", thread_id.c_str());
-            exec_thread.detach();  // don't block, but log the issue
-          }
+          // TODO: FIX THIS FUTURE MICHAEL
+          exec_thread.join();
         }
       }
 

@@ -16,10 +16,10 @@ class NoTriggerRunner : public RunnerBase
 {
 public:
   // throw on trigger function
-  void trigger(const capabilities2::CapabilityParameters& parameters, const std::string& bond_id) override
+  void trigger(capabilities2_events::EventParameters& parameters, const std::string& bond_id) override
   {
     // emit failed event
-    emit_failed(bond_id, "cannot trigger this is a no-trigger runner");
+    emit_failed(bond_id, param_on_failure());
 
     throw runner_exception("cannot trigger this is a no-trigger runner");
   }

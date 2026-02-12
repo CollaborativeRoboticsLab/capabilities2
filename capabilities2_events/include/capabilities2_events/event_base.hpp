@@ -45,7 +45,7 @@ public:
   typedef std::string capability_str_t;
   typedef capabilities2_events::EventParameters parameter_t;
   typedef std::string access_id_t;
-  typedef std::function<void(const capability_str_t&, const parameter_t&, const access_id_t&)> event_callback_t;
+  typedef std::function<void(const capability_str_t&, parameter_t, const access_id_t&)> event_callback_t;
 
 public:
   EventBase()

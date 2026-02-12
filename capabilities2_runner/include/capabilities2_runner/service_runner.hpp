@@ -40,15 +40,15 @@ public:
     service_client_ = node_->create_client<ServiceT>(service_name);
 
     // wait for service server
-    RCLCPP_INFO(node_->get_logger(), "waiting for service: " + service_name);
+    RCLCPP_INFO(node_->get_logger(), "waiting for service: %s", service_name.c_str());
 
     if (!service_client_->wait_for_service(std::chrono::seconds(3)))
     {
-      RCLCPP_ERROR(node_->get_logger(), "failed to connect to service: " + service_name);
+      RCLCPP_ERROR(node_->get_logger(), "failed to connect to service: %s", service_name.c_str());
       throw runner_exception("failed to connect to server");
     }
 
-    RCLCPP_INFO(node_->get_logger(), "connected with service: " + service_name);
+    RCLCPP_INFO(node_->get_logger(), "connected with service: %s", service_name.c_str());
   }
 
   /**
@@ -70,7 +70,7 @@ public:
       throw runner_exception("cannot stop runner action that was not started");
 
     // emit stopped event
-    emit_stopped(bond_id);
+    emit_stopped(bond_id, param_on_stopped());
 
     RCLCPP_INFO(node_->get_logger(), "runner cleaned. stopping..");
   }
@@ -84,7 +84,7 @@ protected:
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    * @param thread_id unique identifier for the execution thread
    */
-  virtual void execution(const capabilities2_events::EventParameters& parameters, const std::string& thread_id) override
+  virtual void execution(capabilities2_events::EventParameters& parameters, const std::string& thread_id) override
   {
     // split thread_id to get bond_id and trigger_id (format: "bond_id/trigger_id")
     std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
@@ -93,13 +93,15 @@ protected:
     // generate a goal from parameters if provided
     auto request_msg = std::make_shared<typename ServiceT::Request>(generate_request(parameters));
 
-    RCLCPP_INFO(node_->get_logger(), "request generated for event :" + trigger_id);
+    RCLCPP_INFO(node_->get_logger(), "request generated for event :%s", trigger_id.c_str());
 
-    std::unique_lock<std::mutex> lock(mutex_);
-    completed_ = false;
+    std::mutex block_mutex;
+    std::unique_lock<std::mutex> lock(block_mutex);
+    std::condition_variable cv;
+    bool completed = false;
 
     auto result_future = service_client_->async_send_request(
-        request_msg, [this, trigger_id](typename rclcpp::Client<ServiceT>::SharedFuture future) {
+        request_msg, [this,  &trigger_id, &completed, &bond_id, &cv](typename rclcpp::Client<ServiceT>::SharedFuture future) {
           if (!future.valid())
           {
             RCLCPP_ERROR(node_->get_logger(), "get result call failed");
@@ -109,7 +111,7 @@ protected:
           }
           else
           {
-            RCLCPP_INFO(node_->get_logger(), "get result call succeeded for event :" + trigger_id);
+            RCLCPP_INFO(node_->get_logger(), "get result call succeeded for event :%s", trigger_id.c_str());
 
             response_ = future.get();
             process_response(response_);
@@ -118,12 +120,12 @@ protected:
             emit_succeeded(bond_id, param_on_success());
           }
 
-          completed_ = true;
-          cv_.notify_all();
+          completed = true;
+          cv.notify_all();
         });
 
     // Conditional wait
-    cv_.wait(lock, [this] { return completed_; });
+    cv.wait(lock, [&completed] { return completed; });
     RCLCPP_INFO(node_->get_logger(), "Service request complete. Thread closing.");
   }
 
@@ -139,14 +141,14 @@ protected:
    * @param parameters 
    * @return ServiceT::Request the generated request
    */
-  virtual typename ServiceT::Request generate_request(const capabilities2_events::EventParameters& parameters) = 0;
+  virtual typename ServiceT::Request generate_request(capabilities2_events::EventParameters& parameters) = 0;
 
   /**
    * @brief Process the reponse and print data as required
    *
    * @param response service reponse message
    * @param trigger_id thread id associated with this response used for logging and event emission
-   * @return capabilities2::CapabilityParameters containing updated parameters for the on_success event if needed
+   * @return capabilities2_events::EventParameters containing updated parameters for the on_success event if needed
    *
    * A pattern needs to be implemented in the derived class for processing the response and extracting data if needed,
    * currently does nothing.

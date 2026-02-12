@@ -1,5 +1,6 @@
 string capability
 string preferred_provider
+string bond_id
 ---
 uint8 result
 uint8 RESULT_SUCCESS=0

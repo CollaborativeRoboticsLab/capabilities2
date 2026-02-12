@@ -15,6 +15,7 @@
 #include <capabilities2_server/capabilities_api.hpp>
 
 #include <capabilities2_events/published_event.hpp>
+#include <capabilities2_events/event_parameters.hpp>
 
 #include <capabilities2_msgs/msg/capability_spec.hpp>
 #include <capabilities2_msgs/msg/capability_event_stamped.hpp>
@@ -233,7 +234,7 @@ public:
 
     // try starting capability
     // TODO: handle errors
-    start_capability(shared_from_this(), req->capability, req->preferred_provider);
+    start_capability(shared_from_this(), req->capability, req->preferred_provider, req->bond_id);
 
     // set response
     res->result = capabilities2_msgs::srv::StartCapability::Response::RESULT_SUCCESS;
@@ -249,7 +250,7 @@ public:
 
     // try stopping capability
     // TODO: handle errors
-    stop_capability(req->capability);
+    stop_capability(req->capability, req->bond_id);
 
     // set response
     res->successful = true;
@@ -261,7 +262,7 @@ public:
                              std::shared_ptr<capabilities2_msgs::srv::TriggerCapability::Response> res)
   {
     // make sure capability is not empty
-    if (req->capability.empty())
+    if (req->capability.capability.empty())
     {
       RCLCPP_ERROR(get_logger(), "trigger_capability: capability is empty");
       return;
@@ -276,7 +277,7 @@ public:
 
     // try triggering capability
     // TODO: handle errors
-    trigger_capability(req->capability, req->parameters, req->bond_id);
+    trigger_capability(req->capability.capability, capabilities2_events::EventParameters(req->capability), req->bond_id);
 
     // response is empty
   }

@@ -4,6 +4,10 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <condition_variable>
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
@@ -46,15 +50,15 @@ public:
     action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name);
 
     // wait for action server
-    RCLCPP_INFO(node_->get_logger(), "waiting for action: " + action_name);
+    RCLCPP_INFO(node_->get_logger(), "waiting for action: %s", action_name.c_str());
 
     if (!action_client_->wait_for_action_server(std::chrono::seconds(1000)))
     {
-      RCLCPP_ERROR(node_->get_logger(), "failed to connect to action: " + action_name);
+      RCLCPP_ERROR(node_->get_logger(), "failed to connect to action: %s", action_name.c_str());
       throw runner_exception("failed to connect to action server");
     }
 
-    RCLCPP_INFO(node_->get_logger(), "connected with action: " + action_name);
+    RCLCPP_INFO(node_->get_logger(), "connected with action: %s", action_name.c_str());
   }
 
   /**
@@ -81,7 +85,7 @@ public:
       try
       {
         auto cancel_future = action_client_->async_cancel_goal(
-            goal_handle_, [this](action_msgs::srv::CancelGoal_Response::SharedPtr response) {
+            goal_handle_, [this, &bond_id](action_msgs::srv::CancelGoal_Response::SharedPtr response) {
               if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE)
               {
                 // throw runner_exception("failed to cancel runner");
@@ -89,7 +93,7 @@ public:
               }
 
               // emit stopped event
-              emit_stopped(bond_id);
+              emit_stopped(bond_id, param_on_stopped());
             });
 
         // wait for action to be stopped. hold the thread for 2 seconds to help keep callbacks in scope
@@ -104,7 +108,7 @@ public:
       }
       catch (const rclcpp_action::exceptions::UnknownGoalHandleError& e)
       {
-        RCLCPP_ERROR(node_->get_logger(), "failed to cancel goal: " + std::string(e.what()));
+        RCLCPP_ERROR(node_->get_logger(), "failed to cancel goal: %s", e.what());
         throw runner_exception(e.what());
       }
     }
@@ -120,7 +124,7 @@ protected:
    *
    * @param parameters pointer to capabilities2_events::EventParameters that contains parameters
    */
-  virtual void execution(const capabilities2_events::EventParameters& parameters, const std::string& thread_id) override
+  virtual void execution(capabilities2_events::EventParameters& parameters, const std::string& thread_id) override
   {
     // split thread_id to get bond_id and trigger_id (format: "bond_id/trigger_id")
     std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
@@ -128,67 +132,69 @@ protected:
 
     // generate a goal from parameters provided
     goal_msg_ = generate_goal(parameters);
-    RCLCPP_INFO(node_->get_logger(), "goal generated for event " + trigger_id);
+    RCLCPP_INFO(node_->get_logger(), "goal generated for trigger %s", trigger_id.c_str());
 
-    std::unique_lock<std::mutex> lock(mutex_);
-    completed_ = false;
+    std::mutex block_mutex;
+    std::condition_variable cv;
+    bool completed = false;
+    std::unique_lock<std::mutex> lock(block_mutex);
 
     // trigger the action client with goal
     send_goal_options_.goal_response_callback =
-        [this, trigger_id](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
+        [this, &trigger_id](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
           if (goal_handle)
           {
-            RCLCPP_INFO(node_->get_logger(), "goal accepted. Waiting for result " + trigger_id);
+            RCLCPP_INFO(node_->get_logger(), "goal accepted. Waiting for result for trigger %s", trigger_id.c_str());
           }
           else
           {
-            RCLCPP_ERROR(node_->get_logger(), "goal rejected for event " + trigger_id);
+            RCLCPP_ERROR(node_->get_logger(), "goal rejected for trigger %s", trigger_id.c_str());
           }
 
           // store goal handle to be used with stop funtion
           goal_handle_ = goal_handle;
         };
 
-    send_goal_options_.feedback_callback =
-        [this, trigger_id](typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle,
-                           const typename ActionT::Feedback::ConstSharedPtr feedback_msg) {
-          std::string feedback = generate_feedback(feedback_msg);
+    send_goal_options_.feedback_callback = [this, &trigger_id](
+                                               typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle,
+                                               const typename ActionT::Feedback::ConstSharedPtr feedback_msg) {
+      std::string feedback = generate_feedback(feedback_msg);
 
-          if (feedback != "")
-          {
-            RCLCPP_INFO(node_->get_logger(), "received feedback: " + feedback + " for event " + trigger_id);
-          }
-        };
+      if (feedback != "")
+      {
+        RCLCPP_INFO(node_->get_logger(), "received feedback:  %s for trigger %s", feedback.c_str(), trigger_id.c_str());
+      }
+    };
 
     send_goal_options_.result_callback =
-        [this, trigger_id](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
-          RCLCPP_INFO(node_->get_logger(), "received result for event " + trigger_id);
+        [this, &trigger_id, &completed, &cv,
+         &bond_id](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
+          RCLCPP_INFO(node_->get_logger(), "received result for trigger %s", trigger_id.c_str());
           if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
           {
-            RCLCPP_INFO(node_->get_logger(), "action succeeded for event " + trigger_id);
-
+            RCLCPP_INFO(node_->get_logger(), "action succeeded for trigger %s", trigger_id.c_str());
             // emit success event
             emit_succeeded(bond_id, param_on_success());
           }
           else
           {
-            RCLCPP_ERROR(node_->get_logger(), "action failed for event " + trigger_id);
+            RCLCPP_ERROR(node_->get_logger(), "action failed for trigger %s", trigger_id.c_str());
 
             // emit failed event
             emit_failed(bond_id, param_on_failure());
           }
 
           result_ = wrapped_result.result;
-          completed_ = true;
-          cv_.notify_all();
+          completed = true;
+          cv.notify_all();
         };
 
     goal_handle_future_ = action_client_->async_send_goal(goal_msg_, send_goal_options_);
-    RCLCPP_INFO(node_->get_logger(), "goal sent. Waiting for acceptance for event " + trigger_id);
+    RCLCPP_INFO(node_->get_logger(), "goal sent. Waiting for acceptance for trigger %s", trigger_id.c_str());
 
     // Conditional wait
-    cv_.wait(lock, [this] { return completed_; });
-    RCLCPP_INFO(node_->get_logger(), "action complete. Thread closing for event " + trigger_id);
+    cv.wait(lock, [&completed] { return completed; });
+    RCLCPP_INFO(node_->get_logger(), "action complete. Thread closing for trigger %s", trigger_id.c_str());
   }
 
   /**
@@ -202,7 +208,7 @@ protected:
    * @param parameters capability options that contain parameters for the trigger
    * @return ActionT::Goal the generated goal
    */
-  virtual typename ActionT::Goal generate_goal(const capabilities2_events::EventParameters& parameters) = 0;
+  virtual typename ActionT::Goal generate_goal(capabilities2_events::EventParameters& parameters) = 0;
 
   /**
    * @brief Generate a std::string from feedback message

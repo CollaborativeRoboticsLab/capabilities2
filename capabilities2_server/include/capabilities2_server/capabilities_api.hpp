@@ -66,10 +66,12 @@ public:
    * @param node ros node pointer of the ros server
    * @param capability capability name to be started
    * @param provider provider of the capability
+   * @param bond_id bond_id of the capability instance to be started
    *
    * @return `true` if capability started successfully. else returns `false`
    */
-  bool start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider)
+  bool start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
+                        const std::string& bond_id)
   {
     // return value
     bool value = true;
@@ -87,7 +89,7 @@ public:
       bind_dependency(run.interface);
 
       // add the runner to the cache
-      value = value and start_capability(node, run.interface, run.provider);
+      value = value and start_capability(node, run.interface, run.provider, bond_id);
     }
 
     // get the provider specification for the capability
@@ -100,7 +102,7 @@ public:
     // TODO: consider the logic for multiple runners per capability
     try
     {
-      runner_cache_.add_runner(node, capability, run_config);
+      runner_cache_.add_runner(node, capability, run_config, bond_id);
 
       // log
       RCLCPP_INFO(logging_->get_logger(), "started capability: %s with provider: %s", capability.c_str(),
@@ -111,7 +113,6 @@ public:
     catch (const capabilities2_runner::runner_exception& e)
     {
       RCLCPP_WARN(logging_->get_logger(), "could not start runner: %s", e.what());
-
       return false;
     }
   }
@@ -120,8 +121,9 @@ public:
    * @brief Stop a capability. Internal function only. Do not used this function externally.
    *
    * @param capability capability name to be stopped
+   * @param bond_id bond_id of the capability instance to be stopped
    */
-  void stop_capability(const std::string& capability)
+  void stop_capability(const std::string& capability, const std::string& bond_id)
   {
     // make sure provider exists
     // this can happen if dependencies fail to resolve in the first place
@@ -149,7 +151,7 @@ public:
       // stop the dependency if no more bonds
       if (!bond_cache_.exists(run.interface))
       {
-        stop_capability(run.interface);
+        stop_capability(run.interface, bond_id);
       }
     }
 
@@ -157,7 +159,7 @@ public:
     // this will implicitly stop the runner
     try
     {
-      runner_cache_.remove_runner(capability);
+      runner_cache_.remove_runner(capability, bond_id);
     }
     catch (const capabilities2_runner::runner_exception& e)
     {
@@ -186,7 +188,7 @@ public:
     {
       // stop the capability
       RCLCPP_INFO(logging_->get_logger(), "stopping freed capability: %s", capability.c_str());
-      stop_capability(capability);
+      stop_capability(capability, bond_id);
     }
   }
 
@@ -200,7 +202,8 @@ public:
    * @param parameters
    * @param bond_id
    */
-  void trigger_capability(const std::string& capability, const capabilities2_events::EventParameters& parameters, const std::string& bond_id)
+  void trigger_capability(const std::string& capability, capabilities2_events::EventParameters parameters,
+                          const std::string& bond_id)
   {
     // validate bond
     if (!bond_cache_.exists(capability, bond_id))
@@ -239,7 +242,7 @@ public:
     bond_cache_.add_bond(capability, bond_id);
 
     // start the capability with the provider
-    return start_capability(node, capability, provider);
+    return start_capability(node, capability, provider, bond_id);
   }
 
   /**

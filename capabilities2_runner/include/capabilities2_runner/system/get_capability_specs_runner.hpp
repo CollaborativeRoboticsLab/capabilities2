@@ -29,6 +29,9 @@ public:
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config, const std::string& bond_id) override
   {
     init_service(node, run_config, "/capabilities/get_capability_specs");
+
+    // emit start event
+    emit_started(bond_id, param_on_started());
   }
 
 protected:
@@ -39,20 +42,17 @@ protected:
    * @return ActionT::Goal the generated goal
    */
   virtual capabilities2_msgs::srv::GetCapabilitySpecs::Request
-  generate_request(const capabilities2_events::EventParameters& parameters) override
+  generate_request(capabilities2_events::EventParameters& parameters) override
   {
     capabilities2_msgs::srv::GetCapabilitySpecs::Request request;
     return request;
   }
 
   /**
-   * @brief Update on_success event parameters with new data from an CapabilitySpecs message if available.
-   *
-   * This function is used to inject new data into the XMLElement containing
-   * parameters related to the on_success trigger event
-   *
-   * @param parameters
-   * @return std::string
+   * @brief This function overrides the param_on_success() function from RunnerBase to provide specific implementation for the GetCapabilitySpecsRunner
+   * 
+   * @param parameters EventParameters containing parameters for the trigger event
+   * @return EventParameters updated parameters for on_success event
    */
   virtual capabilities2_events::EventParameters param_on_success()
   {
@@ -69,7 +69,7 @@ protected:
     capabilities2_events::EventParameters parameters;
 
     // Set the capability specs as a parameter for the on_success event
-    parameters.set_value("capability_specs", capability_spec_strings, capabilities2_events::OptionType::VECTOR_STRING);
+    parameters.set_value("CapabilitySpecs", capability_spec_strings, capabilities2_events::OptionType::VECTOR_STRING);
     return parameters;
   }
 };

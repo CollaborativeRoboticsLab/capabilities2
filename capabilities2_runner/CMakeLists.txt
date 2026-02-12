@@ -24,9 +24,7 @@ include_directories(
 add_library(${PROJECT_NAME} SHARED
   src/dummy_runner.cpp
   src/launch_runner.cpp
-  src/system/get_capability_specs_runner.cpp
-  src/system/multiplex_all_runner.cpp
-  src/system/multiplex_any_runner.cpp
+  src/system/system_runners.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME}

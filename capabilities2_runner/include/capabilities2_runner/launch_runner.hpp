@@ -39,7 +39,7 @@ public:
     throw runner_exception("launch runner not implemented yet");
 
     // emit started event
-    emit_started(bond_id, "launch started");
+    emit_started(bond_id, param_on_started());
   }
 
   /**
@@ -58,7 +58,7 @@ public:
     throw runner_exception("launch runner not implemented yet");
 
     // emit stopped event
-    emit_stopped(bond_id, "launch stopped");
+    emit_stopped(bond_id, param_on_stopped());
   }
 
 protected:

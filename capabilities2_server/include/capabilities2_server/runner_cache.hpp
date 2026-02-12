@@ -43,7 +43,7 @@ public:
    * @param run_config run_config of the runner to be loaded
    */
   void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability,
-                  const models::run_config_model_t& run_config)
+                  const models::run_config_model_t& run_config, const std::string& bond_id)
   {
     // if the runner exists then throw an error preserving uniqueness
     if (running(capability))
@@ -70,7 +70,7 @@ public:
     }
 
     // start the runner
-    runner_cache_[capability]->start(node, run_config.to_runner_opts());
+    runner_cache_[capability]->start(node, run_config.to_runner_opts(), bond_id);
   }
 
   /**
@@ -82,7 +82,7 @@ public:
    * @param parameters parameters related to the runner in std::string form for compatibility across various runners
    * @param bond_id unique identifier for the group on connections associated with this runner trigger
    */
-  void trigger_runner(const std::string& capability, const capabilities2_events::EventParameters& parameters, const std::string& bond_id)
+  void trigger_runner(const std::string& capability, capabilities2_events::EventParameters parameters, const std::string& bond_id)
   {
     // TODO: validate trigger id (DEPRECATED?)
 
@@ -137,8 +137,11 @@ public:
    * @brief Remove a given runner
    *
    * @param capability capability to be removed
+   * @param bond_id bond_id of the capability instance to be removed
+    *
+    * This will stop the runner and remove it from the cache. If the runner is not found then an error is thrown.
    */
-  void remove_runner(const std::string& capability)
+  void remove_runner(const std::string& capability, const std::string& bond_id)
   {
     // find the runner in the cache and if not found then throw an error
     if (!running(capability))
@@ -149,7 +152,7 @@ public:
     // safely stop the runner
     try
     {
-      runner_cache_[capability]->stop();
+      runner_cache_[capability]->stop(bond_id);
     }
     catch (const capabilities2_runner::runner_exception& e)
     {
