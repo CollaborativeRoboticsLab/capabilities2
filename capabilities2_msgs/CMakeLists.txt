@@ -27,6 +27,7 @@ set(msg_files
   "msg/NaturalCapability.msg"
   "msg/Remapping.msg"
   "msg/RunningCapability.msg"
+  "msg/CapabilityParameter.msg"
 )
 
 set(srv_files

@@ -7,6 +7,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <capabilities2_events/event_node.hpp>
+#include <capabilities2_events/event_parameters.hpp>
 
 #include <capabilities2_msgs/msg/capability.hpp>
 #include <capabilities2_msgs/msg/capability_event_code.hpp>
@@ -66,8 +67,7 @@ struct runner_opts
 /**
  * @brief base class for all runners
  *
- * Defines the runner plugin api
- * inherits from EventNode to provide event emission
+ * Defines the runner plugin api. Inherits from EventNode to provide event emission
  *
  */
 class RunnerBase : public capabilities2_events::EventNode
@@ -89,52 +89,32 @@ public:
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
    *
-   * NOTE: must call init_base in derived class implementation
-   * NOTE: should call start event
+   * @attention Must call init_base in derived class implementation and should call start event
    */
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config, const std::string& bond_id) = 0;
 
   /**
    * @brief stop the runner
    *
-   * NOTE: should clean up threads
-   * NOTE: should call stop event
+   * @attention should clean up threads and should call stop event
    */
   virtual void stop(const std::string& bond_id) = 0;
 
   /**
    * FIXME: implement new event subsystem
-   *
    * @brief Trigger the runner
    *
    * This method allows insertion of parameters in a runner after it has been initialized. it is an approach
    * to parameterise capabilities. Internally starts up RunnerBase::triggerExecution in a thread
    *
-   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
+   * @param parameters capability options that contain parameters for the trigger
    * @param bond_id unique identifier for the group of connections associated with this runner trigger event
    *
+   * @attention should call success and failure events with parameters and bond_id when the trigger process
+   * completes.
+   *
    */
-  // TODO: verify parameter formatting (safe xml string or other format)
-  // TODO: minimum parameter set?
-
-  // DEPRECATED: extract trigger id from parameters
-  // // extract the unique id for the runner and use that as the thread id
-  // tinyxml2::XMLElement* element = nullptr;
-  // element = convert_to_xml(parameters);
-  // if (!element)
-  // {
-  //   // when this is empty it means that the trigger activation was performed
-  //   // by a registered user
-  //   // this is valid but we need to get a unique trigger id for the runner
-  //   // to proceed safely
-  //   RCLCPP_WARN(node_->get_logger(), "no trigger parameters provided");
-  // }
-
-  // std::string trigger_id = "";
-  // element->QueryStringAttribute("id", &trigger_id);
-
-  // parameters_[trigger_id] = element;
-  virtual void trigger(const std::string& parameters, const std::string& bond_id) = 0;
+  virtual void trigger(capabilities2_events::EventParameters& parameters, const std::string& bond_id) = 0;
 
   /**
    * @brief Initializer function for initializing the base runner in place of constructor due to plugin semantics
@@ -169,22 +149,22 @@ public:
   }
 
   /**
-   * @brief make EventNode::add_connection public method on runner api
+   * @brief make EventNode::add_connection public method on runner api.
    *
-   * @param connection_id
-   * @param type
-   * @param target
-   * @param callback
+   * add connection to this runner to target capability this allows the runner to emit events on state changes
+   * to the target capability the connection ID format is: "bond_id/trigger_id"  which allows event emission to
+   * extract bond_id for access control
+   *
+   * @param connection_id unique identifier for the connection (format: "bond_id/trigger_id")
+   * @param type type of event to connect to
+   * @param target target capability to connect to
+   * @param callback callback to trigger target capability with (capability, parameters, bond_id)
    */
-  void add_connection(const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& type,
-                      const capabilities2_msgs::msg::Capability& target,
-                      std::function<void(const std::string&, const std::string&, const std::string&)> callback)
+  void add_connection(
+      const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& type,
+      const capabilities2_msgs::msg::Capability& target,
+      std::function<void(const std::string&, capabilities2_events::EventParameters, const std::string&)> callback)
   {
-    // add connection to this runner to target capability
-    // this allows the runner to emit events on state changes
-    // to the target capability
-    // the connection ID format is: "bond_id/trigger_id"
-    // which allows event emission to extract bond_id for access control
     EventNode::add_connection(connection_id, type, target, callback);
   }
 
@@ -230,70 +210,65 @@ public:
 
 protected:
   // FIXME: implement new event subsystem
-  // STATE CHANGE PARAMETER HELPERS
 
   /**
    * @brief Update on_started event parameters with new data if available.
    *
-   * This function is used to inject new data into the XMLElement containing
+   * This function is used to inject new data into the CapabilityOptions containing
    * parameters related to the on_started trigger event
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters pointer to the XMLElement containing parameters
-   * @return pointer to the XMLElement containing updated parameters
+   * @return CapabilityOptions containing new parameters
    */
-  virtual std::string update_on_started(std::string& parameters)
+  virtual capabilities2_events::EventParameters param_on_started()
   {
-    return parameters;
+    return capabilities2_events::EventParameters();
   };
 
   /**
    * @brief Update on_stopped event parameters with new data if available.
    *
-   * This function is used to inject new data into the XMLElement containing
+   * This function is used to inject new data into the CapabilityOptions containing
    * parameters related to the on_stopped trigger event
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters pointer to the XMLElement containing parameters
-   * @return pointer to the XMLElement containing updated parameters
+   * @return CapabilityOptions containing new parameters
    */
-  virtual std::string update_on_stopped(std::string& parameters)
+  virtual capabilities2_events::EventParameters param_on_stopped()
   {
-    return parameters;
+    return capabilities2_events::EventParameters();
   };
 
   /**
    * @brief Update on_failure event parameters with new data if available.
    *
-   * This function is used to inject new data into the XMLElement containing
+   * This function is used to inject new data into the CapabilityOptions containing
    * parameters related to the on_failure trigger event
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters pointer to the XMLElement containing parameters
-   * @return pointer to the XMLElement containing updated parameters
+   * @return CapabilityOptions containing new parameters
    */
-  virtual std::string update_on_failure(std::string& parameters)
+  virtual capabilities2_events::EventParameters param_on_failure()
   {
-    return parameters;
+    return capabilities2_events::EventParameters();
   };
 
   /**
    * @brief Update on_success event parameters with new data if available.
    *
-   * This function is used to inject new data into the XMLElement containing
+   * This function is used to inject new data into the CapabilityOptions containing
    * parameters related to the on_success trigger event
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters pointer to the XMLElement containing parameters
-   * @return pointer to the XMLElement containing updated parameters
+   * @return CapabilityOptions containing new parameters
    */
-  virtual std::string update_on_success(std::string& parameters)
+  virtual capabilities2_events::EventParameters param_on_success()
   {
-    return parameters;
+    return capabilities2_events::EventParameters();
   };
 
   // run config getters
@@ -438,7 +413,8 @@ protected:
    * @param bond_id
    * @param parameters
    */
-  void emit_started(const std::string& bond_id, const std::string& parameters = "")
+  void emit_started(const std::string& bond_id,
+                    capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
     emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::STARTED, parameters);
   }
@@ -449,7 +425,8 @@ protected:
    * @param bond_id
    * @param parameters
    */
-  void emit_stopped(const std::string& bond_id, const std::string& parameters = "")
+  void emit_stopped(const std::string& bond_id,
+                    capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
     emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::STOPPED, parameters);
   }
@@ -460,7 +437,8 @@ protected:
    * @param bond_id
    * @param parameters
    */
-  void emit_succeeded(const std::string& bond_id, const std::string& parameters = "")
+  void emit_succeeded(const std::string& bond_id,
+                      capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
     emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::SUCCEEDED, parameters);
   }
@@ -471,7 +449,8 @@ protected:
    * @param bond_id
    * @param parameters
    */
-  void emit_failed(const std::string& bond_id, const std::string& parameters = "")
+  void emit_failed(const std::string& bond_id,
+                   capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
     emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::FAILED, parameters);
   }

@@ -57,11 +57,12 @@ public:
   /**
    * @brief emit an event from this event node to all matching connections
    *
-   * @param bond_id
-   * @param event_type
-   * @param parameters
+   * @param bond_id the bond_id to match connections with (extracted from connection_id) for access control
+   * @param event_type the type of event being emitted
+   * @param msg_parameters the new parameters to emit with the event
    */
-  void emit_event(const std::string& bond_id, const uint8_t& event_type, const std::string& parameters)
+  void emit_event(const std::string& bond_id, const uint8_t& event_type,
+                  capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
     // check if event emitter is set
     if (!event_emitter_)
@@ -81,10 +82,20 @@ public:
       // get targets for this event type and id namespace
       if (connection.type.code == event_type && bond_id == conn_bond_id)
       {
-        // parameterise target capability
-        // create a copy of target with updated parameters
-        capabilities2_msgs::msg::Capability target_with_params = connection.target;
-        target_with_params.parameters = parameters;
+        // parameterise target capability with parameters from the trigger
+        auto old_parameters = capabilities2_events::EventParameters(connection.target);
+
+        // extend or replace parameters of the target capability if any non empty parameters are provided
+        if (!parameters.is_empty())
+          for (auto& option : parameters.options)
+            old_parameters.set_value(option.key, option.get_value(), option.type);
+
+        // create a new target capability message with updated parameters to emit with the event
+        auto target_with_params = old_parameters.toMsg();
+
+        // copy capability and provider from original target as parameters only contains the options
+        target_with_params.capability = connection.target.capability;
+        target_with_params.provider = connection.target.provider;
 
         // emit event via event api
         // NOTE: callback invocation is handled by event api
@@ -122,14 +133,16 @@ protected:
   }
 
   /**
-   * @brief Add a new connection
+   * @brief make EventNode::add_connection public method on runner api.
    *
-   * from this event node to a target capability with a given event type
+   * add connection to this runner to target capability this allows the runner to emit events on state changes
+   * to the target capability the connection ID format is: "bond_id/trigger_id"  which allows event emission to
+   * extract bond_id for access control
    *
-   * @param connection_id
-   * @param type
-   * @param target
-   * @param event_cb
+   * @param connection_id unique identifier for the connection (format: "bond_id/trigger_id")
+   * @param type type of event to connect to
+   * @param target target capability to connect to
+   * @param callback callback to trigger target capability with (capability, parameters, bond_id)
    *
    * @throws event_exception if connection with given id already exists
    */
@@ -153,7 +166,7 @@ protected:
 
     // emit connected event
     emit_event(connection_id.substr(0, connection_id.find('/')),
-               capabilities2_msgs::msg::CapabilityEventCode::CONNECTED, "");
+               capabilities2_msgs::msg::CapabilityEventCode::CONNECTED);
   }
 
   /**
@@ -168,7 +181,7 @@ protected:
 
     // emit disconnected event
     emit_event(connection_id.substr(0, connection_id.find('/')),
-               capabilities2_msgs::msg::CapabilityEventCode::DISCONNECTED, "");
+               capabilities2_msgs::msg::CapabilityEventCode::DISCONNECTED);
   }
 
   // helper members
@@ -260,8 +273,7 @@ private:
   // source capability of this event node
   capabilities2_msgs::msg::Capability source_;
 
-  // event emitter
-  // used to emit events
+  // event emitter used to emit events
   // store as member to avoid passing around
   std::shared_ptr<EventBase> event_emitter_;
 

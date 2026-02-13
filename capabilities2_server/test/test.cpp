@@ -32,7 +32,7 @@ int main(int argc, char** argv)
   spec.type = capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_PROVIDER;
   spec.content = data;
 
-  for (const auto& s : node.get_sematic_interfaces("std_capabilities/empty"))
+  for (const auto& s : node.get_semantic_interfaces("std_capabilities/empty"))
   {
     std::cout << s << std::endl;
   }

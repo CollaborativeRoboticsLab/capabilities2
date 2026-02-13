@@ -70,7 +70,7 @@ public:
     }
 
     // start the runner
-    runner_cache_[capability]->start(node, run_config.to_runner_opts());
+    runner_cache_[capability]->start(node, run_config.to_runner_opts(), "");
   }
 
   /**
@@ -82,7 +82,7 @@ public:
    * @param parameters parameters related to the runner in std::string form for compatibility across various runners
    * @param bond_id unique identifier for the group on connections associated with this runner trigger
    */
-  void trigger_runner(const std::string& capability, const std::string& parameters, const std::string& bond_id)
+  void trigger_runner(const std::string& capability, capabilities2_events::EventParameters parameters, const std::string& bond_id)
   {
     // TODO: validate trigger id (DEPRECATED?)
 
@@ -137,6 +137,9 @@ public:
    * @brief Remove a given runner
    *
    * @param capability capability to be removed
+   * @param bond_id bond_id of the capability instance to be removed
+    *
+    * This will stop the runner and remove it from the cache. If the runner is not found then an error is thrown.
    */
   void remove_runner(const std::string& capability)
   {
@@ -149,7 +152,7 @@ public:
     // safely stop the runner
     try
     {
-      runner_cache_[capability]->stop();
+      runner_cache_[capability]->stop("");
     }
     catch (const capabilities2_runner::runner_exception& e)
     {

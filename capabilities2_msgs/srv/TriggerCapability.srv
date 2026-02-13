@@ -1,4 +1,3 @@
 string bond_id
-string capability
-string parameters
+capabilities2_msgs/Capability capability
 ---

@@ -66,6 +66,7 @@ public:
    * @param node ros node pointer of the ros server
    * @param capability capability name to be started
    * @param provider provider of the capability
+   * @param bond_id bond_id of the capability instance to be started
    *
    * @return `true` if capability started successfully. else returns `false`
    */
@@ -111,7 +112,6 @@ public:
     catch (const capabilities2_runner::runner_exception& e)
     {
       RCLCPP_WARN(logging_->get_logger(), "could not start runner: %s", e.what());
-
       return false;
     }
   }
@@ -120,6 +120,7 @@ public:
    * @brief Stop a capability. Internal function only. Do not used this function externally.
    *
    * @param capability capability name to be stopped
+   * @param bond_id bond_id of the capability instance to be stopped
    */
   void stop_capability(const std::string& capability)
   {
@@ -200,7 +201,8 @@ public:
    * @param parameters
    * @param bond_id
    */
-  void trigger_capability(const std::string& capability, const std::string& parameters, const std::string& bond_id)
+  void trigger_capability(const std::string& capability, capabilities2_events::EventParameters parameters,
+                          const std::string& bond_id)
   {
     // validate bond
     if (!bond_cache_.exists(capability, bond_id))

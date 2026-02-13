@@ -22,7 +22,7 @@ public:
     RCLCPP_INFO(node_->get_logger(), "Dummy runner started");
 
     // emit started event
-    emit_started(bond_id, "dummy_parameters");
+    emit_started(bond_id, param_on_started());
   }
 
   void stop(const std::string& bond_id) override
@@ -35,15 +35,15 @@ public:
     RCLCPP_INFO(node_->get_logger(), "Dummy runner stopped");
 
     // emit stopped event
-    emit_stopped(bond_id, "dummy_parameters");
+    emit_stopped(bond_id, param_on_stopped());
   }
 
-  void trigger(const std::string& parameters, const std::string& bond_id) override
+  void trigger(capabilities2_events::EventParameters& parameters, const std::string& bond_id) override
   {
     RCLCPP_WARN(node_->get_logger(), "Dummy runner cannot trigger");
 
     // emit failed event
-    emit_failed(bond_id, "Dummy runner cannot trigger");
+    emit_failed(bond_id, param_on_failure());
 
     // throw an exception as this runner does not support trigger execution
     throw runner_exception("Dummy runner does not support trigger execution");

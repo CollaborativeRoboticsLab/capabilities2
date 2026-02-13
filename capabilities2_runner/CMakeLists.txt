@@ -16,8 +16,6 @@ find_package(rclcpp_action REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_events REQUIRED)
-find_package(tinyxml2_vendor REQUIRED)
-find_package(TinyXML2 REQUIRED)  # provided by tinyxml2 upstream, or tinyxml2_vendor
 
 include_directories(
   include
@@ -26,9 +24,7 @@ include_directories(
 add_library(${PROJECT_NAME} SHARED
   src/dummy_runner.cpp
   src/launch_runner.cpp
-  src/get_capability_specs_runner.cpp
-  src/multiplex_all_runner.cpp
-  src/multiplex_any_runner.cpp
+  src/system/system_runners.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME}
@@ -37,7 +33,6 @@ ament_target_dependencies(${PROJECT_NAME}
   pluginlib
   capabilities2_msgs
   capabilities2_events
-  TinyXML2
 )
 
 pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)

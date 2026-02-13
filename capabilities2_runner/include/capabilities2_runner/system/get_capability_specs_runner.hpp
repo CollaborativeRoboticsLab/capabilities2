@@ -1,10 +1,9 @@
 #pragma once
 
 #include <capabilities2_runner/service_runner.hpp>
-
 #include <capabilities2_msgs/srv/get_capability_specs.hpp>
 
-namespace capabilities2_runner_capabilities
+namespace capabilities2_runner
 {
 
 /**
@@ -30,6 +29,9 @@ public:
   virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config, const std::string& bond_id) override
   {
     init_service(node, run_config, "/capabilities/get_capability_specs");
+
+    // emit start event
+    emit_started(bond_id, param_on_started());
   }
 
 protected:
@@ -39,74 +41,37 @@ protected:
    '<Event name=follow_waypoints provider=WaypointRunner x='$value' y='$value' />'
    * @return ActionT::Goal the generated goal
    */
-  virtual capabilities2_msgs::srv::GetCapabilitySpecs::Request generate_request(const std::string& parameters,
-                                                                                const std::string& trigger_id) override
+  virtual capabilities2_msgs::srv::GetCapabilitySpecs::Request
+  generate_request(capabilities2_events::EventParameters& parameters) override
   {
     capabilities2_msgs::srv::GetCapabilitySpecs::Request request;
     return request;
   }
 
   /**
-   * @brief Update on_success event parameters with new data from an CapabilitySpecs message if available.
-   *
-   * This function is used to inject new data into the XMLElement containing
-   * parameters related to the on_success trigger event
-   *
-   *  <CapabilitySpecs>
-   *      <CapabilitySpec package="robot_navigation" type="capability_interface"
-   * default_provider="robot_navigation/navigation_provider"> <content> name: Navigation dependencies:
-   *                  - MapServer
-   *                  - PathPlanner
-   *          </content>
-   *      </CapabilitySpec>
-   *      <CapabilitySpec package="robot_perception" type="capability_interface">
-   *          <content>
-   *              name: ObjectDetection
-   *              dependencies:
-   *                  - Camera
-   *                  - ImageProcessor
-   *          </content>
-   *      </CapabilitySpec>
-   *  </CapabilitySpecs>
-   *
-   * @param parameters
-   * @return std::string
+   * @brief This function overrides the param_on_success() function from RunnerBase to provide specific implementation for the GetCapabilitySpecsRunner
+   * 
+   * @param parameters EventParameters containing parameters for the trigger event
+   * @return EventParameters updated parameters for on_success event
    */
-  virtual std::string update_on_success(std::string& parameters)
+  virtual capabilities2_events::EventParameters param_on_success()
   {
-    tinyxml2::XMLElement* element = convert_to_xml(parameters);
-
-    // Create the OccupancyGrid element as a child of the existing parameters element
-    tinyxml2::XMLElement* capabilitySpecsElement = element->GetDocument()->NewElement("CapabilitySpecs");
-    element->InsertEndChild(capabilitySpecsElement);
-
+    // Create an Event Parameter with CapabilitySpecs content
+    std::vector<std::string> capability_spec_strings;
     for (const auto& spec : response_->capability_specs)
     {
-      // Create a <CapabilitySpec> element
-      tinyxml2::XMLElement* specElement = element->GetDocument()->NewElement("CapabilitySpec");
-
-      // Set attributes
-      specElement->SetAttribute("package", spec.package.c_str());
-      specElement->SetAttribute("type", spec.type.c_str());
-
-      if (!spec.default_provider.empty())
-      {
-        specElement->SetAttribute("default_provider", spec.default_provider.c_str());
-      }
-
-      // Add content as a child element inside <CapabilitySpec>
-      tinyxml2::XMLElement* contentElement = element->GetDocument()->NewElement("content");
-      contentElement->SetText(spec.content.c_str());
-      specElement->InsertEndChild(contentElement);
-
-      // Append <CapabilitySpec> to <CapabilitySpecs>
-      capabilitySpecsElement->InsertEndChild(specElement);
+      std::string spec_string = "package: " + spec.package + ", type: " + spec.type +
+                                ", default_provider: " + spec.default_provider + ", content: " + spec.content;
+      capability_spec_strings.push_back(spec_string);
     }
 
-    // Convert updated XML back to string and return
-    std::string result = convert_to_string(element);
-    return result;
+    // Create EventParameters and set the capability specs as a parameter for the on_success event
+    capabilities2_events::EventParameters parameters;
+
+    // Set the capability specs as a parameter for the on_success event
+    parameters.set_value("CapabilitySpecs", capability_spec_strings, capabilities2_events::OptionType::VECTOR_STRING);
+    return parameters;
   }
 };
 
-}  // namespace capabilities2_runner_capabilities
+}  // namespace capabilities2_runner
