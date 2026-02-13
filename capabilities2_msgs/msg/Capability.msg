@@ -5,4 +5,4 @@ string capability
 string provider
 
 # Trigger parameters
-CapabilityOption[] parameters
+CapabilityParameter[] parameters

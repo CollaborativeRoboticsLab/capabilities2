@@ -28,22 +28,13 @@
   <export>
     <build_type>ament_cmake</build_type>
 
-    <!-- InputMultiplexAllRunner -->
+    <!-- InputMultiplexRunner -->
     <capability_interface>
-      interfaces/InputMultiplexAllRunner.yaml
+      interfaces/InputMultiplexRunner.yaml
     </capability_interface>
 
     <capability_provider>
-      providers/InputMultiplexAllRunner.yaml
-    </capability_provider>
-
-    <!-- InputMultiplexAnyRunner -->
-    <capability_interface>
-      interfaces/InputMultiplexAnyRunner.yaml
-    </capability_interface>
-
-    <capability_provider>
-      providers/InputMultiplexAnyRunner.yaml
+      providers/InputMultiplexRunner.yaml
     </capability_provider>
 
     <!-- GetCapabilitySpecsRunner -->

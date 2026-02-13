@@ -60,7 +60,7 @@ public:
       throw runner_exception("cannot stop runner subscriber that was not started");
 
     // emit stop event
-    emit_stopped(bond_id, update_on_stopped(events[runner_id].on_stopped.parameters));
+    emit_stopped(bond_id, param_on_stopped());
 
     RCLCPP_INFO(node_->get_logger(), "runner cleaned. stopping..");
   }
@@ -74,19 +74,17 @@ protected:
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    * @param thread_id unique identifier for the execution thread
    */
-  virtual void execution(const capabilities2::CapabilityOptions& parameters, const std::string& thread_id) override
+  virtual void execution(capabilities2_events::EventParameters parameters, const std::string& thread_id) override
   {
     // split thread_id to get bond_id and trigger_id (format: "bond_id/trigger_id")
     std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
     std::string trigger_id = ThreadTriggerRunner::trigger_from_thread_id(thread_id);
 
-    // if parameters are not provided then cannot proceed
-    if (!parameters_[trigger_id])
-      throw runner_exception("cannot grab data without parameters");
-
     // emit started event
-    emit_started(bond_id, update_on_started(events[trigger_id].on_started.parameters));
-    std::unique_lock<std::mutex> lock(mutex_);
+    emit_started(bond_id, param_on_started());
+
+    // block until a message is received in the callback and stored in latest_message_
+    std::unique_lock<std::mutex> lock(block_mutex_);
     completed_ = false;
 
     RCLCPP_INFO(node_->get_logger(), "Waiting for Message.");
@@ -98,13 +96,13 @@ protected:
     if (latest_message_)
     {
       // emit success event
-      emit_succeeded(bond_id, update_on_success(events[trigger_id].on_success.parameters));
+      emit_succeeded(bond_id, param_on_success());
     }
     else
     {
       RCLCPP_ERROR(node_->get_logger(), "Message receiving failed.");
       // emit failed event
-      emit_failed(bond_id, update_on_failure(events[trigger_id].on_failure.parameters));
+      emit_failed(bond_id, param_on_failure());
     }
 
     RCLCPP_INFO(node_->get_logger(), "Thread closing.");
@@ -127,9 +125,22 @@ protected:
     cv_.notify_all();
   }
 
+  /**
+   * @brief parameter to be used in the on_started event emission
+   */
   typename rclcpp::Subscription<TopicT>::SharedPtr subscription_;
 
+  /**
+   * @brief parameter to store the latest message received in the callback for use in the trigger execution
+   */
   mutable typename TopicT::SharedPtr latest_message_;
+
+  /**
+   * @brief condition variable and mutex for synchronizing the callback and trigger execution
+   */
+  std::condition_variable cv_;
+  std::mutex block_mutex_;
+  bool completed_;
 };
 
 }  // namespace capabilities2_runner

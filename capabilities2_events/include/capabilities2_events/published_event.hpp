@@ -35,10 +35,10 @@ public:
 
     capabilities2_msgs::msg::CapabilityEventStamped event_msg;
     event_msg.header.stamp = rclcpp::Clock().now();
-    event_msg.trigger_id = trigger_id;
-    event_msg.event_code.code = event_code;
-    event_msg.source = source;
-    event_msg.target = target;
+    event_msg.event.trigger_id = trigger_id;
+    event_msg.event.code.code = event_code;
+    event_msg.event.connection.source = source;
+    event_msg.event.connection.target = target;
 
     // publish event
     event_pub_->publish(event_msg);
@@ -56,10 +56,10 @@ public:
   {
     capabilities2_msgs::msg::CapabilityEventStamped event_msg;
     event_msg.header.stamp = rclcpp::Clock().now();
-    event_msg.event_code.code = capabilities2_msgs::msg::CapabilityEventCode::SERVER_READY;
-    event_msg.source.capability = "capabilities2_server";
-    event_msg.source.provider = "capabilities2_server";
-    event_msg.description = msg;
+    event_msg.event.connection.source.capability = "capabilities2_server";
+    event_msg.event.connection.source.provider = "capabilities2_server";
+    event_msg.event.code.code = capabilities2_msgs::msg::CapabilityEventCode::SERVER_READY;
+    event_msg.event.description = msg;
 
     event_pub_->publish(event_msg);
   }
@@ -73,10 +73,10 @@ public:
   {
     capabilities2_msgs::msg::CapabilityEventStamped event_msg;
     event_msg.header.stamp = rclcpp::Clock().now();
-    event_msg.event_code.code = capabilities2_msgs::msg::CapabilityEventCode::PROCESS_LAUNCHED;
-    event_msg.source.capability = "capabilities2_server";
-    event_msg.source.provider = "capabilities2_server";
-    event_msg.description = "Process launched with PID: " + pid;
+    event_msg.event.connection.source.capability = "capabilities2_server";
+    event_msg.event.connection.source.provider = "capabilities2_server";
+    event_msg.event.code.code = capabilities2_msgs::msg::CapabilityEventCode::LAUNCHED;
+    event_msg.event.description = "Process launched with PID: " + pid;
 
     event_pub_->publish(event_msg);
   }
@@ -90,10 +90,10 @@ public:
   {
     capabilities2_msgs::msg::CapabilityEventStamped event_msg;
     event_msg.header.stamp = rclcpp::Clock().now();
-    event_msg.event_code.code = capabilities2_msgs::msg::CapabilityEventCode::PROCESS_TERMINATED;
-    event_msg.source.capability = "capabilities2_server";
-    event_msg.source.provider = "capabilities2_server";
-    event_msg.description = "Process terminated with PID: " + pid;
+    event_msg.event.connection.source.capability = "capabilities2_server";
+    event_msg.event.connection.source.provider = "capabilities2_server";
+    event_msg.event.code.code = capabilities2_msgs::msg::CapabilityEventCode::TERMINATED;
+    event_msg.event.description = "Process terminated with PID: " + pid;
 
     event_pub_->publish(event_msg);
   }
