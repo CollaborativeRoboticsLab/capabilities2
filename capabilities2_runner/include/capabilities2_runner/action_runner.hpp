@@ -124,7 +124,7 @@ protected:
    *
    * @param parameters pointer to capabilities2_events::EventParameters that contains parameters
    */
-  virtual void execution(capabilities2_events::EventParameters& parameters, const std::string& thread_id) override
+  virtual void execution(capabilities2_events::EventParameters parameters, const std::string& thread_id) override
   {
     // split thread_id to get bond_id and trigger_id (format: "bond_id/trigger_id")
     std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);

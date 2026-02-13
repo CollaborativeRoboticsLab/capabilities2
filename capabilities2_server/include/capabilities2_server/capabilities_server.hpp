@@ -234,7 +234,7 @@ public:
 
     // try starting capability
     // TODO: handle errors
-    start_capability(shared_from_this(), req->capability, req->preferred_provider, req->bond_id);
+    start_capability(shared_from_this(), req->capability, req->preferred_provider);
 
     // set response
     res->result = capabilities2_msgs::srv::StartCapability::Response::RESULT_SUCCESS;
@@ -250,7 +250,7 @@ public:
 
     // try stopping capability
     // TODO: handle errors
-    stop_capability(req->capability, req->bond_id);
+    stop_capability(req->capability);
 
     // set response
     res->successful = true;

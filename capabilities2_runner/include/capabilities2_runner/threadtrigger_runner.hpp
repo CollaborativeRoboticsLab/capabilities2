@@ -84,7 +84,7 @@ public:
       std::scoped_lock lock(mutex_);
       // TODO: consider emitting on start event here
       // emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::ON_STARTED, updated_on_started(parameters));
-      execution_thread_pool_[thread_id] = std::thread(&ThreadTriggerRunner::execution, this, std::ref(parameters), thread_id);
+      execution_thread_pool_[thread_id] = std::thread(&ThreadTriggerRunner::execution, this, parameters, thread_id);
     }
 
     // emit trigger event
@@ -109,7 +109,7 @@ protected:
    *
    * @attention: Should be implemented on derieved classes and should call success and failure events appropriately
    */
-  virtual void execution(capabilities2_events::EventParameters& parameters, const std::string& thread_id) = 0;
+  virtual void execution(capabilities2_events::EventParameters parameters, const std::string& thread_id) = 0;
 
 private:
   /** */

@@ -78,9 +78,30 @@ public:
     // do callback with bond_id for access control
     if (callback)
     {
-      callback(target.capability, capabilities2_events::EventParameters(target), bond_id);  
+      callback(target.capability, capabilities2_events::EventParameters(target), bond_id);
     }
   }
+
+  /**
+   * @brief on server ready event
+   *
+   * @param msg
+   */
+  virtual void on_server_ready(const std::string& msg) = 0;
+
+  /**
+   * @brief on process launched event
+   *
+   * @param pid
+   */
+  virtual void on_process_launched(const std::string& pid) = 0;
+
+  /**
+   * @brief on process terminated event
+   *
+   * @param pid
+   */
+  virtual void on_process_terminated(const std::string& pid) = 0;
 };
 
 }  // namespace capabilities2_events

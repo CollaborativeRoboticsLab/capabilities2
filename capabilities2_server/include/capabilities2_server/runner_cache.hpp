@@ -43,7 +43,7 @@ public:
    * @param run_config run_config of the runner to be loaded
    */
   void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability,
-                  const models::run_config_model_t& run_config, const std::string& bond_id)
+                  const models::run_config_model_t& run_config)
   {
     // if the runner exists then throw an error preserving uniqueness
     if (running(capability))
@@ -70,7 +70,7 @@ public:
     }
 
     // start the runner
-    runner_cache_[capability]->start(node, run_config.to_runner_opts(), bond_id);
+    runner_cache_[capability]->start(node, run_config.to_runner_opts(), "");
   }
 
   /**
@@ -141,7 +141,7 @@ public:
     *
     * This will stop the runner and remove it from the cache. If the runner is not found then an error is thrown.
    */
-  void remove_runner(const std::string& capability, const std::string& bond_id)
+  void remove_runner(const std::string& capability)
   {
     // find the runner in the cache and if not found then throw an error
     if (!running(capability))
@@ -152,7 +152,7 @@ public:
     // safely stop the runner
     try
     {
-      runner_cache_[capability]->stop(bond_id);
+      runner_cache_[capability]->stop("");
     }
     catch (const capabilities2_runner::runner_exception& e)
     {

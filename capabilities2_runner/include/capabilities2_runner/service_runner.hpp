@@ -84,7 +84,7 @@ protected:
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    * @param thread_id unique identifier for the execution thread
    */
-  virtual void execution(capabilities2_events::EventParameters& parameters, const std::string& thread_id) override
+  virtual void execution(capabilities2_events::EventParameters parameters, const std::string& thread_id) override
   {
     // split thread_id to get bond_id and trigger_id (format: "bond_id/trigger_id")
     std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
