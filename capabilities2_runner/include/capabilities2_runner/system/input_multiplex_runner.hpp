@@ -58,18 +58,8 @@ protected:
     std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
     std::string trigger_id = ThreadTriggerRunner::trigger_from_thread_id(thread_id);
 
-    int input_count = 1;
-    int multiplex_id = 0;
-
-    if (parameters.has_value("input_count"))
-      input_count = std::any_cast<int>(parameters.get_value("input_count"));
-    else
-      RCLCPP_WARN(node_->get_logger(), "No 'input_count' parameter found in event parameters. Defaulting to 1.");
-
-    if (parameters.has_value("multiplex_id"))
-      multiplex_id = std::any_cast<int>(parameters.get_value("multiplex_id"));
-    else
-      RCLCPP_WARN(node_->get_logger(), "No 'multiplex_id' parameter found in event parameters. Defaulting to 0.");
+    int input_count = std::any_cast<int>(parameters.get_value("input_count", 1, capabilities2_events::OptionType::INT));
+    int multiplex_id = std::any_cast<int>(parameters.get_value("id", 0, capabilities2_events::OptionType::INT));
 
     // track the input count for the runner_id
     if (input_count_tracker.find(multiplex_id) == input_count_tracker.end())

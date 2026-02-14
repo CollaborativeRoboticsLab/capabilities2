@@ -30,6 +30,7 @@ enum class OptionType
   DOUBLE,
   INT,
   STRING,
+  UNCONVERTED,
   VECTOR_BOOL,
   VECTOR_DOUBLE,
   VECTOR_INT,
@@ -57,8 +58,13 @@ struct Parameter
     type = static_cast<OptionType>(msg.type);
   }
 
-  std::any get_value()
+  std::any get_value(OptionType new_type = OptionType::STRING)
   {
+    // if current type is UNCONVERTED, give priority to new_type set
+    // during the get_value() execution
+    if (new_type == OptionType::UNCONVERTED)
+      type = new_type;
+
     switch (type)
     {
       case OptionType::BOOL:
@@ -115,6 +121,9 @@ struct Parameter
         value.clear();
         value.push_back(std::any_cast<std::string>(new_value));
         return;
+      case OptionType::UNCONVERTED:
+        value.clear();
+        value.push_back(std::any_cast<std::string>(new_value));
       case OptionType::VECTOR_BOOL: {
         const auto& vec = std::any_cast<std::vector<bool>>(new_value);
         value.clear();
@@ -204,20 +213,25 @@ struct EventParameters
    * @return std::any the value of the option, can be cast to the appropriate type based on the OptionType
    * @throws options_exception if the key is not found or if there is a type conversion error
    */
-  std::any get_value(const std::string& key)
+  std::any get_value(const std::string& key, std::any default_value, OptionType new_type = OptionType::STRING)
   {
-    for (auto& option : options)
-      if (option.key == key)
+    if (has_value(key))
+      for (auto& option : options)
       {
-        try
+        if (option.key == key)
         {
-          return option.get_value();
-        }
-        catch (const std::exception& e)
-        {
-          throw options_exception("Failed to convert option '" + option.key + "': " + e.what());
+          try
+          {
+            return option.get_value(new_type);
+          }
+          catch (const std::exception& e)
+          {
+            throw options_exception("Failed to convert option '" + option.key + "': " + e.what());
+          }
         }
       }
+    else
+      return default_value;
   }
 
   /**
@@ -228,7 +242,7 @@ struct EventParameters
    * @param value the value to set, should be castable to the appropriate type based on the OptionType
    * @throws options_exception if there is a type conversion error
    */
-  void set_value(const std::string& key,  const std::any& value, const OptionType& type)
+  void set_value(const std::string& key, const std::any& value, const OptionType& type)
   {
     for (auto& option : options)
       if (option.key == key)
@@ -259,4 +273,4 @@ struct EventParameters
   }
 };
 
-}  // namespace capabilities2
+}  // namespace capabilities2_events
