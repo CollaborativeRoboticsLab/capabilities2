@@ -58,13 +58,8 @@ struct Parameter
     type = static_cast<OptionType>(msg.type);
   }
 
-  std::any get_value(OptionType new_type = OptionType::STRING)
+  std::any get_value()
   {
-    // if current type is UNCONVERTED, give priority to new_type set
-    // during the get_value() execution
-    if (new_type == OptionType::UNCONVERTED)
-      type = new_type;
-
     switch (type)
     {
       case OptionType::BOOL:
@@ -121,9 +116,6 @@ struct Parameter
         value.clear();
         value.push_back(std::any_cast<std::string>(new_value));
         return;
-      case OptionType::UNCONVERTED:
-        value.clear();
-        value.push_back(std::any_cast<std::string>(new_value));
       case OptionType::VECTOR_BOOL: {
         const auto& vec = std::any_cast<std::vector<bool>>(new_value);
         value.clear();
@@ -213,7 +205,7 @@ struct EventParameters
    * @return std::any the value of the option, can be cast to the appropriate type based on the OptionType
    * @throws options_exception if the key is not found or if there is a type conversion error
    */
-  std::any get_value(const std::string& key, std::any default_value, OptionType new_type = OptionType::STRING)
+  std::any get_value(const std::string& key, std::any default_value)
   {
     if (has_value(key))
       for (auto& option : options)
@@ -222,7 +214,7 @@ struct EventParameters
         {
           try
           {
-            return option.get_value(new_type);
+            return option.get_value();
           }
           catch (const std::exception& e)
           {

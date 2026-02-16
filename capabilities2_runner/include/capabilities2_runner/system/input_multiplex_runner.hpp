@@ -58,8 +58,8 @@ protected:
     std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
     std::string trigger_id = ThreadTriggerRunner::trigger_from_thread_id(thread_id);
 
-    int input_count = std::any_cast<int>(parameters.get_value("input_count", 1, capabilities2_events::OptionType::INT));
-    int multiplex_id = std::any_cast<int>(parameters.get_value("id", 0, capabilities2_events::OptionType::INT));
+    int input_count = std::any_cast<int>(parameters.get_value("input_count", 1));
+    int multiplex_id = std::any_cast<int>(parameters.get_value("id", 0));
 
     // track the input count for the runner_id
     if (input_count_tracker.find(multiplex_id) == input_count_tracker.end())
