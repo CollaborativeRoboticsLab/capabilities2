@@ -416,6 +416,7 @@ protected:
   void emit_started(const std::string& bond_id,
                     capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
+    RCLCPP_INFO(node_->get_logger(), "emitting STARTED event with bond_id: %s", bond_id.c_str());
     emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::STARTED, parameters);
   }
 
@@ -428,6 +429,7 @@ protected:
   void emit_stopped(const std::string& bond_id,
                     capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
+    RCLCPP_INFO(node_->get_logger(), "emitting STOPPED event with bond_id: %s", bond_id.c_str());
     emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::STOPPED, parameters);
   }
 
@@ -440,6 +442,7 @@ protected:
   void emit_succeeded(const std::string& bond_id,
                       capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
+    RCLCPP_INFO(node_->get_logger(), "emitting SUCCEEDED event with bond_id: %s", bond_id.c_str());
     emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::SUCCEEDED, parameters);
   }
 
@@ -452,6 +455,7 @@ protected:
   void emit_failed(const std::string& bond_id,
                    capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
+    RCLCPP_INFO(node_->get_logger(), "emitting FAILED event with bond_id: %s", bond_id.c_str());
     emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::FAILED, parameters);
   }
 
