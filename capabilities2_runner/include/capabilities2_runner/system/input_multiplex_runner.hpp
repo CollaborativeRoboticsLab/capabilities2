@@ -25,14 +25,14 @@ public:
     init_base(node, run_config);
 
     // emit started event
-    emit_started(bond_id, param_on_started());
+    emit_started(bond_id, "", param_on_started());
   }
 
   /**
    * @brief stop function to cease functionality and shutdown
    *
    */
-  virtual void stop(const std::string& bond_id) override
+  virtual void stop(const std::string& bond_id, const std::string& instance_id = "") override
   {
     // if the node pointer is empty then throw an error
     // this means that the runner was not started and is being used out of order
@@ -41,7 +41,7 @@ public:
       throw runner_exception("cannot stop runner that was not started");
 
     // emit stopped event
-    emit_stopped(bond_id, param_on_stopped());
+    emit_stopped(bond_id, instance_id, param_on_stopped());
 
     RCLCPP_INFO(node_->get_logger(), "stopping runner");
   }
@@ -50,13 +50,14 @@ protected:
   /**
    * @brief Trigger process to be executed.
    *
-   * @param id unique identifier for the execution
+   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
+   * @param thread_id unique identifier for the execution thread
    */
   virtual void execution(capabilities2_events::EventParameters parameters, const std::string& thread_id) override
   {
-    // split thread_id to get bond_id and trigger_id (format: "bond_id/trigger_id")
+    // split thread_id to get bond_id and instance_id (format: "bond_id/instance_id")
     std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
-    std::string trigger_id = ThreadTriggerRunner::trigger_from_thread_id(thread_id);
+    std::string instance_id = ThreadTriggerRunner::instance_from_thread_id(thread_id);
 
     int input_count = std::any_cast<int>(parameters.get_value("input_count", 1));
     int multiplex_id = std::any_cast<int>(parameters.get_value("id", 0));
@@ -76,22 +77,22 @@ protected:
     if (input_count_tracker[multiplex_id] == expected_input_count[multiplex_id])
     {
       RCLCPP_INFO(node_->get_logger(),
-                  "multiplex_id: %d has received all expected inputs. Executing process for trigger_id: %s",
-                  multiplex_id, trigger_id.c_str());
+                  "multiplex_id: %d has received all expected inputs. Executing process for instance_id: %s",
+                  multiplex_id, instance_id.c_str());
 
       // If on_success is defined, emit success event will trigger it. If not defined, it will be a no-op.
-      emit_succeeded(bond_id, param_on_success());
+      emit_succeeded(bond_id, instance_id, param_on_success());
 
-      RCLCPP_INFO(node_->get_logger(), "execution successful for trigger_id: %s", trigger_id.c_str());
+      RCLCPP_INFO(node_->get_logger(), "execution successful for instance_id: %s", instance_id.c_str());
     }
     else
     {
       RCLCPP_INFO(node_->get_logger(),
-                  "multiplex_id: %d pending expected inputs. Current count: %d/%d for trigger_id: %s", multiplex_id,
-                  input_count_tracker[multiplex_id], expected_input_count[multiplex_id], trigger_id.c_str());
+                  "multiplex_id: %d pending expected inputs. Current count: %d/%d for instance_id: %s", multiplex_id,
+                  input_count_tracker[multiplex_id], expected_input_count[multiplex_id], instance_id.c_str());
     }
 
-    RCLCPP_INFO(node_->get_logger(), "multiplexing complete. Thread closing for trigger_id: %s", thread_id.c_str());
+    RCLCPP_INFO(node_->get_logger(), "multiplexing complete. Thread closing for instance_id: %s", instance_id.c_str());
   }
 
 protected:

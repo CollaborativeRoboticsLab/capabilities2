@@ -36,17 +36,17 @@ public:
   }
 
   /**
-   * @brief helper function to extract trigger_id from thread_id
+   * @brief helper function to extract instance_id from thread_id
    *
-   * @param thread_id unique identifier for the execution thread, format: "bond_id/trigger_id"
+   * @param thread_id unique identifier for the execution thread, format: "bond_id/instance_id"
    * @return const std::string
    */
-  static const std::string trigger_from_thread_id(const std::string& thread_id)
+  static const std::string instance_from_thread_id(const std::string& thread_id)
   {
-    // extract trigger_id from thread_id (format: "bond_id/trigger_id")
+    // extract instance_id from thread_id (format: "bond_id/instance_id")
     size_t slash_pos = thread_id.find('/');
-    std::string trigger_id = (slash_pos != std::string::npos) ? thread_id.substr(slash_pos + 1) : "";
-    return trigger_id;
+    std::string instance_id = (slash_pos != std::string::npos) ? thread_id.substr(slash_pos + 1) : "";
+    return instance_id;
   }
 
 public:
@@ -68,16 +68,14 @@ public:
    *
    * @param parameters pointer to tinyxml2::XMLElement that contains parameters
    * @param bond_id unique identifier for the group of connections associated with this runner trigger event
-   *
+   * @param instance_id unique identifier for the instance associated with this runner trigger event
    */
-  virtual void trigger(capabilities2_events::EventParameters& parameters, const std::string& bond_id) override
+  virtual void trigger(capabilities2_events::EventParameters& parameters, const std::string& bond_id,
+                       const std::string& instance_id) override
   {
-    // create a thread id
-    std::string trigger_id = capabilities2_events::UUIDGenerator::gen_uuid_str();
-
     // namespace the thread id with bond id for later
     // could list all threads related to a bond if needed
-    std::string thread_id = bond_id + "/" + trigger_id;
+    std::string thread_id = bond_id + "/" + instance_id;
 
     // start execution thread
     {
@@ -88,14 +86,14 @@ public:
     }
 
     // emit trigger event
-    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::TRIGGERED);
+    emit_event(bond_id, instance_id, capabilities2_msgs::msg::CapabilityEventCode::TRIGGERED);
 
     // BUG: thread management?
 
     // TODO: consider emitting on stop event here
     // emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::ON_STOPPED, updated_on_stopped(parameters));
 
-    RCLCPP_DEBUG(node_->get_logger(), "started execution thread for runner id: %s", trigger_id.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "started execution thread for thread id: %s", thread_id.c_str());
   }
 
 protected:

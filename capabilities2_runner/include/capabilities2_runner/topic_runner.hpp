@@ -45,7 +45,7 @@ public:
    * @brief stop function to cease functionality and shutdown
    *
    */
-  virtual void stop(const std::string& bond_id) override
+  virtual void stop(const std::string& bond_id, const std::string& instance_id = "") override
   {
     // if the node pointer is empty then throw an error
     // this means that the runner was not started and is being used out of order
@@ -53,14 +53,14 @@ public:
     if (!node_)
       throw runner_exception("cannot stop runner that was not started");
 
-    // throw an error if the service client is null
-    // this can happen if the runner is not able to find the action resource
+    // throw an error if the subscription is null
+    // this can happen if the runner is not able to find the topic resource
 
     if (!subscription_)
       throw runner_exception("cannot stop runner subscriber that was not started");
 
     // emit stop event
-    emit_stopped(bond_id, param_on_stopped());
+    emit_stopped(bond_id, instance_id, param_on_stopped());
 
     RCLCPP_INFO(node_->get_logger(), "runner cleaned. stopping..");
   }
@@ -76,12 +76,12 @@ protected:
    */
   virtual void execution(capabilities2_events::EventParameters parameters, const std::string& thread_id) override
   {
-    // split thread_id to get bond_id and trigger_id (format: "bond_id/trigger_id")
+    // split thread_id to get bond_id and instance_id (format: "bond_id/instance_id")
     std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
-    std::string trigger_id = ThreadTriggerRunner::trigger_from_thread_id(thread_id);
+    std::string instance_id = ThreadTriggerRunner::instance_from_thread_id(thread_id);
 
     // emit started event
-    emit_started(bond_id, param_on_started());
+    emit_started(bond_id, instance_id, param_on_started());
 
     // block until a message is received in the callback and stored in latest_message_
     std::unique_lock<std::mutex> lock(block_mutex_);
@@ -96,13 +96,13 @@ protected:
     if (latest_message_)
     {
       // emit success event
-      emit_succeeded(bond_id, param_on_success());
+      emit_succeeded(bond_id, instance_id, param_on_success());
     }
     else
     {
       RCLCPP_ERROR(node_->get_logger(), "Message receiving failed.");
       // emit failed event
-      emit_failed(bond_id, param_on_failure());
+      emit_failed(bond_id, instance_id, param_on_failure());
     }
 
     RCLCPP_INFO(node_->get_logger(), "Thread closing.");

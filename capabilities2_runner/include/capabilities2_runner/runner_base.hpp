@@ -98,7 +98,7 @@ public:
    *
    * @attention should clean up threads and should call stop event
    */
-  virtual void stop(const std::string& bond_id) = 0;
+  virtual void stop(const std::string& bond_id, const std::string& instance_id = "") = 0;
 
   /**
    * FIXME: implement new event subsystem
@@ -109,12 +109,13 @@ public:
    *
    * @param parameters capability options that contain parameters for the trigger
    * @param bond_id unique identifier for the group of connections associated with this runner trigger event
-   *
+   * @param instance_id unique identifier for the instance of the capability
    * @attention should call success and failure events with parameters and bond_id when the trigger process
    * completes.
    *
    */
-  virtual void trigger(capabilities2_events::EventParameters& parameters, const std::string& bond_id) = 0;
+  virtual void trigger(capabilities2_events::EventParameters& parameters, const std::string& bond_id,
+                       const std::string& instance_id = "") = 0;
 
   /**
    * @brief Initializer function for initializing the base runner in place of constructor due to plugin semantics
@@ -159,13 +160,14 @@ public:
    * @param type type of event to connect to
    * @param target target capability to connect to
    * @param callback callback to trigger target capability with (capability, parameters, bond_id)
+   * @param target_id optional identifier for a target connection
    */
   void add_connection(
       const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& type,
-      const capabilities2_msgs::msg::Capability& target,
-      std::function<void(const std::string&, capabilities2_events::EventParameters, const std::string&)> callback)
+      const capabilities2_msgs::msg::Capability& target, const std::string& target_id,
+      std::function<void(const std::string&, const std::string&, const std::string&, capabilities2_events::EventParameters)> callback)
   {
-    EventNode::add_connection(connection_id, type, target, callback);
+    EventNode::add_connection(connection_id, type, target, target_id, callback);
   }
 
   /**
@@ -413,11 +415,11 @@ protected:
    * @param bond_id
    * @param parameters
    */
-  void emit_started(const std::string& bond_id,
+  void emit_started(const std::string& bond_id, const std::string& instance_id,
                     capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
     RCLCPP_INFO(node_->get_logger(), "emitting STARTED event with bond_id: %s", bond_id.c_str());
-    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::STARTED, parameters);
+    emit_event(bond_id, instance_id, capabilities2_msgs::msg::CapabilityEventCode::STARTED, parameters);
   }
 
   /**
@@ -426,11 +428,11 @@ protected:
    * @param bond_id
    * @param parameters
    */
-  void emit_stopped(const std::string& bond_id,
+  void emit_stopped(const std::string& bond_id, const std::string& instance_id,
                     capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
     RCLCPP_INFO(node_->get_logger(), "emitting STOPPED event with bond_id: %s", bond_id.c_str());
-    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::STOPPED, parameters);
+    emit_event(bond_id, instance_id, capabilities2_msgs::msg::CapabilityEventCode::STOPPED, parameters);
   }
 
   /**
@@ -439,11 +441,11 @@ protected:
    * @param bond_id
    * @param parameters
    */
-  void emit_succeeded(const std::string& bond_id,
+  void emit_succeeded(const std::string& bond_id, const std::string& instance_id,
                       capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
     RCLCPP_INFO(node_->get_logger(), "emitting SUCCEEDED event with bond_id: %s", bond_id.c_str());
-    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::SUCCEEDED, parameters);
+    emit_event(bond_id, instance_id, capabilities2_msgs::msg::CapabilityEventCode::SUCCEEDED, parameters);
   }
 
   /**
@@ -452,11 +454,11 @@ protected:
    * @param bond_id
    * @param parameters
    */
-  void emit_failed(const std::string& bond_id,
+  void emit_failed(const std::string& bond_id, const std::string& instance_id,
                    capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
     RCLCPP_INFO(node_->get_logger(), "emitting FAILED event with bond_id: %s", bond_id.c_str());
-    emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::FAILED, parameters);
+    emit_event(bond_id, instance_id, capabilities2_msgs::msg::CapabilityEventCode::FAILED, parameters);
   }
 
 protected:

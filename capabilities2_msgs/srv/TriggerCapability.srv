@@ -1,3 +1,4 @@
 string bond_id
+string instance_id
 capabilities2_msgs/Capability capability
 ---

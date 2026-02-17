@@ -31,7 +31,7 @@ public:
     init_service(node, run_config, "/capabilities/get_capability_specs");
 
     // emit start event
-    emit_started(bond_id, param_on_started());
+    emit_started(bond_id, "", param_on_started());
   }
 
 protected:

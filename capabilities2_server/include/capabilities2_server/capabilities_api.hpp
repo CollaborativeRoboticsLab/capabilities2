@@ -200,9 +200,10 @@ public:
    * @param capability
    * @param parameters
    * @param bond_id
+   * @param instance_id
    */
-  void trigger_capability(const std::string& capability, capabilities2_events::EventParameters parameters,
-                          const std::string& bond_id)
+  void trigger_capability(const std::string& bond_id, const std::string& capability, const std::string& instance_id,
+                          capabilities2_events::EventParameters parameters)
   {
     // validate bond
     if (!bond_cache_.exists(capability, bond_id))
@@ -215,7 +216,7 @@ public:
     // trigger the runner
     try
     {
-      runner_cache_.trigger_runner(capability, parameters, bond_id);
+      runner_cache_.trigger_runner(bond_id, capability, instance_id, parameters);
     }
     catch (const capabilities2_runner::runner_exception& e)
     {
@@ -252,8 +253,9 @@ public:
    * Each running capability is a node that can be connected to other capabilities
    * these connections emit events when the capability states change
    */
-  void connect_capability(const std::string& trigger_id,
-                          const capabilities2_msgs::msg::CapabilityConnection& connection, const std::string& bond_id)
+  void connect_capability(const std::string& bond_id, const std::string& instance_id,
+                          const std::string& child_instance_id,
+                          const capabilities2_msgs::msg::CapabilityConnection& connection)
   {
     // TODO: implement connection storage for non-running capabilities
     // could also implicitly increment use counts for capabilities with this bond
@@ -280,11 +282,11 @@ public:
     {
       // new id for trigger - accounting for the bond
       // lets use uri style id with bond and trigger id
-      const std::string connection_id = bond_id + '/' + trigger_id;
+      const std::string connection_id = bond_id + '/' + instance_id;
       // need to pass event emitter to the runner cache so that it can be set in the runner
       // this allows the runner to emit events on state changes
       // default runner behaviour does not use event subsystem
-      runner_cache_.add_connection(connection.source.capability, connection_id, connection, event_);
+      runner_cache_.add_connection(connection.source.capability, connection_id, connection, child_instance_id, event_);
 
       // log
       RCLCPP_INFO(logging_->get_logger(), "set 'type %d' connection for runner: %s with id: %s", connection.type.code,

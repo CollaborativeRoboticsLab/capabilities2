@@ -39,14 +39,14 @@ public:
     throw runner_exception("launch runner not implemented yet");
 
     // emit started event
-    emit_started(bond_id, param_on_started());
+    emit_started(bond_id, "", param_on_started());
   }
 
   /**
    * @brief stop function to cease functionality and shutdown
    *
    */
-  virtual void stop(const std::string& bond_id) override
+  virtual void stop(const std::string& bond_id, const std::string& instance_id = "") override
   {
     // if the node pointer is empty then throw an error
     // this means that the runner was not started and is being used out of order
@@ -58,7 +58,7 @@ public:
     throw runner_exception("launch runner not implemented yet");
 
     // emit stopped event
-    emit_stopped(bond_id, param_on_stopped());
+    emit_stopped(bond_id, instance_id, param_on_stopped());
   }
 
 protected:

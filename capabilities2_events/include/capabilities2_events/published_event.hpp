@@ -23,7 +23,7 @@ public:
    */
   void emit(const std::string& connection_id, const uint8_t& event_code,
             const capabilities2_msgs::msg::Capability& source, const capabilities2_msgs::msg::Capability& target,
-            EventBase::event_callback_t callback) override
+            const std::string target_instance_id, EventBase::event_callback_t callback) override
   {
     // split connection id to get trigger id
     std::string trigger_id = connection_id;
@@ -44,7 +44,7 @@ public:
     event_pub_->publish(event_msg);
 
     // call super
-    EventBase::emit(connection_id, event_code, source, target, callback);
+    EventBase::emit(connection_id, event_code, source, target, target_instance_id, callback);
   }
 
   /**
@@ -94,6 +94,42 @@ public:
     event_msg.event.connection.source.provider = "capabilities2_server";
     event_msg.event.code.code = capabilities2_msgs::msg::CapabilityEventCode::TERMINATED;
     event_msg.event.description = "Process terminated with PID: " + pid;
+
+    event_pub_->publish(event_msg);
+  }
+
+  void on_triggered(const std::string& trigger_id)
+  {
+    capabilities2_msgs::msg::CapabilityEventStamped event_msg;
+    event_msg.header.stamp = rclcpp::Clock().now();
+    event_msg.event.connection.source.capability = "capabilities2_server";
+    event_msg.event.connection.source.provider = "capabilities2_server";
+    event_msg.event.code.code = capabilities2_msgs::msg::CapabilityEventCode::TRIGGERED;
+    event_msg.event.description = "Triggered event with ID: " + trigger_id;
+
+    event_pub_->publish(event_msg);
+  }
+
+  void on_connected(const std::string& source, const std::string& target)
+  {
+    capabilities2_msgs::msg::CapabilityEventStamped event_msg;
+    event_msg.header.stamp = rclcpp::Clock().now();
+    event_msg.event.connection.source.capability = "capabilities2_server";
+    event_msg.event.connection.source.provider = "capabilities2_server";
+    event_msg.event.code.code = capabilities2_msgs::msg::CapabilityEventCode::CONNECTED;
+    event_msg.event.description = "Connected event from " + source + " to " + target;
+
+    event_pub_->publish(event_msg);
+  }
+
+  void on_disconnected(const std::string& source, const std::string& target)
+  {
+    capabilities2_msgs::msg::CapabilityEventStamped event_msg;
+    event_msg.header.stamp = rclcpp::Clock().now();
+    event_msg.event.connection.source.capability = "capabilities2_server";
+    event_msg.event.connection.source.provider = "capabilities2_server";
+    event_msg.event.code.code = capabilities2_msgs::msg::CapabilityEventCode::DISCONNECTED;
+    event_msg.event.description = "Disconnected event from " + source + " to " + target;
 
     event_pub_->publish(event_msg);
   }

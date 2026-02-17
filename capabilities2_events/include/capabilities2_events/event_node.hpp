@@ -42,6 +42,9 @@ private:
 
     // event callback with signature: (capability, parameters, bond_id)
     EventBase::event_callback_t callback;
+
+    // child instance id
+    std::string target_id;
   };
 
 public:
@@ -61,7 +64,7 @@ public:
    * @param event_type the type of event being emitted
    * @param msg_parameters the new parameters to emit with the event
    */
-  void emit_event(const std::string& bond_id, const uint8_t& event_type,
+  void emit_event(const std::string& bond_id, const std::string& instance_id, const uint8_t& event_type,
                   capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
     // check if event emitter is set
@@ -78,9 +81,10 @@ public:
       // extract bond_id from connection_id (format: "bond_id/trigger_id")
       size_t slash_pos = conn_id.find('/');
       std::string conn_bond_id = (slash_pos != std::string::npos) ? conn_id.substr(0, slash_pos) : conn_id;
+      std::string conn_instance_id = (slash_pos != std::string::npos) ? conn_id.substr(slash_pos + 1) : "";
 
       // get targets for this event type and id namespace
-      if (connection.type.code == event_type && bond_id == conn_bond_id)
+      if (connection.type.code == event_type && bond_id == conn_bond_id && instance_id == conn_instance_id)
       {
         // parameterise target capability with parameters from the trigger
         auto old_parameters = capabilities2_events::EventParameters(connection.target);
@@ -104,7 +108,8 @@ public:
         // modifying execution of other nodes is not owned by this class
         // this lets the execution flow be made thread-safe
         // in the scope where the thread is owned
-        event_emitter_->emit(conn_id, event_type, source_, target_with_params, connection.callback);
+        event_emitter_->emit(conn_id, event_type, source_, target_with_params, connection.target_id,
+                             connection.callback);
       }
     }
   }
@@ -142,12 +147,14 @@ protected:
    * @param connection_id unique identifier for the connection (format: "bond_id/trigger_id")
    * @param type type of event to connect to
    * @param target target capability to connect to
-   * @param callback callback to trigger target capability with (capability, parameters, bond_id)
+   * @param target_instance_id optional identifier for a target connection
+   * @param event_cb callback to trigger target capability with (capability, parameters, bond_id, target_instance_id)
    *
    * @throws event_exception if connection with given id already exists
    */
   void add_connection(const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& type,
-                      const capabilities2_msgs::msg::Capability& target, EventBase::event_callback_t event_cb)
+                      const capabilities2_msgs::msg::Capability& target, std::string target_instance_id,
+                      EventBase::event_callback_t event_cb)
   {
     // validate connection id
     if (connections_.find(connection_id) != connections_.end())
@@ -160,13 +167,16 @@ protected:
     conn.type = type;
     conn.target = target;
     conn.callback = event_cb;
+    conn.target_id = target_instance_id;
 
     // add connection
     connections_[connection_id] = conn;
 
-    // emit connected event
-    emit_event(connection_id.substr(0, connection_id.find('/')),
-               capabilities2_msgs::msg::CapabilityEventCode::CONNECTED);
+    if (event_emitter_)
+    {
+      // emit connected event
+      event_emitter_->on_connected(source_.capability, target.capability);
+    }
   }
 
   /**
@@ -177,11 +187,19 @@ protected:
   void remove_connection(const std::string& connection_id)
   {
     // remove connection
+    auto it = connections_.find(connection_id);
+    if (it == connections_.end())
+    {
+      throw event_exception("connection with id: " + connection_id + " does not exist");
+    }
+    auto target = it->second.target;
     connections_.erase(connection_id);
 
     // emit disconnected event
-    emit_event(connection_id.substr(0, connection_id.find('/')),
-               capabilities2_msgs::msg::CapabilityEventCode::DISCONNECTED);
+    if (event_emitter_)
+    {
+      event_emitter_->on_disconnected(source_.capability, target.capability);
+    }
   }
 
   // helper members

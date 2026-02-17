@@ -81,15 +81,17 @@ public:
    * @param capability capability name to be loaded
    * @param parameters parameters related to the runner in std::string form for compatibility across various runners
    * @param bond_id unique identifier for the group on connections associated with this runner trigger
+   * @param instance_id unique identifier for the instance of the capability
    */
-  void trigger_runner(const std::string& capability, capabilities2_events::EventParameters parameters, const std::string& bond_id)
+  void trigger_runner(const std::string& bond_id, const std::string& capability, const std::string& instance_id,
+                      capabilities2_events::EventParameters parameters)
   {
     // TODO: validate trigger id (DEPRECATED?)
 
     // is the runner in the cache
     if (running(capability))
     {
-      runner_cache_[capability]->trigger(parameters, bond_id);
+      runner_cache_[capability]->trigger(parameters, bond_id, instance_id);
     }
     else
     {
@@ -106,6 +108,7 @@ public:
    */
   void add_connection(const std::string& capability, const std::string& connection_id,
                       const capabilities2_msgs::msg::CapabilityConnection& connection,
+                      std::string child_instance_id = "",
                       std::shared_ptr<capabilities2_events::EventBase> event_emitter = nullptr)
   {
     // find the runner in the cache and if not found then throw an error
@@ -121,11 +124,11 @@ public:
     try
     {
       // add connection to the runner
-      // callback signature: (capability, parameters, bond_id)
-      runner_cache_[capability]->add_connection(connection_id, connection.type, connection.target,
+      // callback signature: (capability, parameters, bond_id, instance_id)
+      runner_cache_[capability]->add_connection(connection_id, connection.type, connection.target, child_instance_id,
                                                 std::bind(&capabilities2_server::RunnerCache::trigger_runner, this,
                                                           std::placeholders::_1, std::placeholders::_2,
-                                                          std::placeholders::_3));
+                                                          std::placeholders::_3, std::placeholders::_4));
     }
     catch (const capabilities2_events::event_exception& e)
     {
@@ -138,8 +141,8 @@ public:
    *
    * @param capability capability to be removed
    * @param bond_id bond_id of the capability instance to be removed
-    *
-    * This will stop the runner and remove it from the cache. If the runner is not found then an error is thrown.
+   *
+   * This will stop the runner and remove it from the cache. If the runner is not found then an error is thrown.
    */
   void remove_runner(const std::string& capability)
   {

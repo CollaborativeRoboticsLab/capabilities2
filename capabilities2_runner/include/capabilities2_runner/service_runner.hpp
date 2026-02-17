@@ -55,7 +55,7 @@ public:
    * @brief stop function to cease functionality and shutdown
    *
    */
-  virtual void stop(const std::string& bond_id) override
+  virtual void stop(const std::string& bond_id, const std::string& instance_id = "") override
   {
     // if the node pointer is empty then throw an error
     // this means that the runner was not started and is being used out of order
@@ -70,7 +70,7 @@ public:
       throw runner_exception("cannot stop runner action that was not started");
 
     // emit stopped event
-    emit_stopped(bond_id, param_on_stopped());
+    emit_stopped(bond_id, instance_id, param_on_stopped());
 
     RCLCPP_INFO(node_->get_logger(), "runner cleaned. stopping..");
   }
@@ -86,14 +86,14 @@ protected:
    */
   virtual void execution(capabilities2_events::EventParameters parameters, const std::string& thread_id) override
   {
-    // split thread_id to get bond_id and trigger_id (format: "bond_id/trigger_id")
+    // split thread_id to get bond_id and instance_id (format: "bond_id/instance_id")
     std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
-    std::string trigger_id = ThreadTriggerRunner::trigger_from_thread_id(thread_id);
+    std::string instance_id = ThreadTriggerRunner::instance_from_thread_id(thread_id);
 
     // generate a goal from parameters if provided
     auto request_msg = std::make_shared<typename ServiceT::Request>(generate_request(parameters));
 
-    RCLCPP_INFO(node_->get_logger(), "request generated for event :%s", trigger_id.c_str());
+    RCLCPP_INFO(node_->get_logger(), "request generated for event :%s", instance_id.c_str());
 
     std::mutex block_mutex;
     std::unique_lock<std::mutex> lock(block_mutex);
@@ -101,23 +101,23 @@ protected:
     bool completed = false;
 
     auto result_future = service_client_->async_send_request(
-        request_msg, [this,  &trigger_id, &completed, &bond_id, &cv](typename rclcpp::Client<ServiceT>::SharedFuture future) {
+        request_msg, [this,  &instance_id, &completed, &bond_id, &cv](typename rclcpp::Client<ServiceT>::SharedFuture future) {
           if (!future.valid())
           {
             RCLCPP_ERROR(node_->get_logger(), "get result call failed");
 
             // emit failed event
-            emit_failed(bond_id, param_on_failure());
+            emit_failed(bond_id, instance_id, param_on_failure());
           }
           else
           {
-            RCLCPP_INFO(node_->get_logger(), "get result call succeeded for event :%s", trigger_id.c_str());
+            RCLCPP_INFO(node_->get_logger(), "get result call succeeded for event :%s", instance_id.c_str());
 
             response_ = future.get();
             process_response(response_);
 
             // emit success event
-            emit_succeeded(bond_id, param_on_success());
+            emit_succeeded(bond_id, instance_id, param_on_success());
           }
 
           completed = true;

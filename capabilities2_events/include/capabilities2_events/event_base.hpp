@@ -45,7 +45,9 @@ public:
   typedef std::string capability_str_t;
   typedef capabilities2_events::EventParameters parameter_t;
   typedef std::string access_id_t;
-  typedef std::function<void(const capability_str_t&, parameter_t, const access_id_t&)> event_callback_t;
+  typedef std::string target_instance_id_t;
+  typedef std::function<void(const access_id_t&, const capability_str_t&, const target_instance_id_t&, parameter_t)>
+      event_callback_t;
 
 public:
   EventBase()
@@ -65,11 +67,13 @@ public:
    * @param event_code type of event being emitted
    * @param source source capability emitting the event
    * @param target target capability receiving the event
-   * @param callback function to trigger target capability with (capability, parameters, bond_id)
+   * @param target_instance_id target instance identifier
+   * @param callback function to trigger target capability with (capability, parameters, bond_id, target_instance_id)
    */
   virtual void emit(const std::string& connection_id, const uint8_t& event_code,
                     const capabilities2_msgs::msg::Capability& source,
-                    const capabilities2_msgs::msg::Capability& target, event_callback_t callback)
+                    const capabilities2_msgs::msg::Capability& target, const std::string target_instance_id,
+                    event_callback_t callback)
   {
     // extract bond_id from connection_id (format: "bond_id/trigger_id")
     size_t slash_pos = connection_id.find('/');
@@ -78,7 +82,7 @@ public:
     // do callback with bond_id for access control
     if (callback)
     {
-      callback(target.capability, capabilities2_events::EventParameters(target), bond_id);
+      callback(bond_id, target.capability, target_instance_id, capabilities2_events::EventParameters(target));
     }
   }
 
@@ -102,6 +106,29 @@ public:
    * @param pid
    */
   virtual void on_process_terminated(const std::string& pid) = 0;
+
+  /**
+   * @brief on triggered event from server
+   *
+   * @param trigger_id
+   */
+  virtual void on_triggered(const std::string& trigger_id) = 0;
+
+  /**
+   * @brief on connected event from server
+   *
+   * @param source
+   * @param target
+   */
+  virtual void on_connected(const std::string& source, const std::string& target) = 0;
+
+  /**
+   * @brief on disconnected event from server
+   *
+   * @param source
+   * @param target
+   */
+  virtual void on_disconnected(const std::string& source, const std::string& target) = 0;
 };
 
 }  // namespace capabilities2_events

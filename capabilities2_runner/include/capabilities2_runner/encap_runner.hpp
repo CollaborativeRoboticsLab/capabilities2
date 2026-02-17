@@ -57,17 +57,17 @@ public:
    * call the parent stop and stop the encapsulated action
    *
    */
-  virtual void stop(const std::string& bond_id) override
+  virtual void stop(const std::string& bond_id, const std::string& instance_id = "") override
   {
     // stop the encapsulating action server
     encap_action_->cancel_all_goals();
     encap_action_.reset();
 
     // stop the base class
-    ActionRunner::stop(bond_id);
+    ActionRunner::stop(bond_id, instance_id);
 
     // emit stopped event
-    emit_stopped(bond_id, param_on_stopped());
+    emit_stopped(bond_id, instance_id, param_on_stopped());
   }
 
   // encapsulated action server related functions

@@ -275,9 +275,17 @@ public:
       return;
     }
 
+    // make sure instance id is provided
+    if (req->instance_id.empty())
+    {
+      RCLCPP_ERROR(get_logger(), "trigger_capability: instance_id is empty");
+      return;
+    }
+
     // try triggering capability
     // TODO: handle errors
-    trigger_capability(req->capability.capability, capabilities2_events::EventParameters(req->capability), req->bond_id);
+    trigger_capability(req->bond_id, req->capability.capability, req->instance_id,
+                       capabilities2_events::EventParameters(req->capability));
 
     // response is empty
   }
@@ -349,15 +357,26 @@ public:
       return;
     }
 
-    // need to have a trigger id
-    if (req->trigger_id.empty())
+    // need to have a instance id
+    if (req->instance_id.empty())
     {
-      RCLCPP_ERROR(get_logger(), "connect_capability: trigger_id is empty");
+      RCLCPP_ERROR(get_logger(), "connect_capability: instance_id is empty");
       return;
     }
 
+    // optional to have a child instance id
+    std::string child_instance_id = "";
+    if (req->child_instance_id.empty())
+    {
+      RCLCPP_WARN(get_logger(), "connect_capability: child_instance_id is empty.");
+    }
+    else
+    {
+      child_instance_id = req->child_instance_id;
+    }
+
     // api connect capability
-    connect_capability(req->trigger_id, req->connection, req->bond_id);
+    connect_capability(req->bond_id, req->instance_id, child_instance_id, req->connection);
 
     // response is empty
   }
