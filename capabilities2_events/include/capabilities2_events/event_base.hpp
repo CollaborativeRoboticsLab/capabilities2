@@ -46,8 +46,7 @@ public:
   typedef capabilities2_events::EventParameters parameter_t;
   typedef std::string access_id_t;
   typedef std::string target_instance_id_t;
-  typedef std::function<void(const access_id_t&, const capability_str_t&, const target_instance_id_t&, parameter_t)>
-      event_callback_t;
+  typedef std::function<void(const access_id_t&, const capability_str_t&, const target_instance_id_t&, parameter_t)> event_callback_t;
 
 public:
   EventBase()
@@ -75,15 +74,13 @@ public:
   {
     // extract bond_id from connection_id (format: "bond_id/instance_id/target_instance_id")
     size_t first_pos = connection_id.find('/');
-    size_t second_pos = connection_id.find('/', first_pos + 1);
 
     std::string bond_id = (first_pos != std::string::npos) ? connection_id.substr(0, first_pos) : connection_id;
-    std::string target_id = (second_pos != std::string::npos) ? connection_id.substr(second_pos + 1) : "";
 
     // do callback with bond_id for access control
     if (callback)
     {
-      callback(bond_id, target.capability, target_id, capabilities2_events::EventParameters(target));
+      callback(bond_id, target.capability, target.instance_id, capabilities2_events::EventParameters(target));
     }
   }
 

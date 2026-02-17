@@ -42,9 +42,6 @@ private:
 
     // event callback with signature: (capability, parameters, bond_id)
     EventBase::event_callback_t callback;
-
-    // child instance id
-    std::string target_id;
   };
 
 public:
@@ -81,6 +78,7 @@ public:
       // extract bond_id from connection_id (format: "bond_id/instance_id/target_instance_id")
       size_t first_pos = conn_id.find('/');
       size_t second_pos = conn_id.find('/', first_pos + 1);
+
       std::string conn_bond_id = (first_pos != std::string::npos) ? conn_id.substr(0, first_pos) : conn_id;
       std::string conn_instance_id =
           (second_pos != std::string::npos) ? conn_id.substr(first_pos + 1, second_pos - first_pos - 1) : "";
@@ -102,6 +100,7 @@ public:
         // copy capability and provider from original target as parameters only contains the options
         target_with_params.capability = connection.target.capability;
         target_with_params.provider = connection.target.provider;
+        target_with_params.instance_id = connection.target.instance_id;
 
         // emit event via event api
         // NOTE: callback invocation is handled by event api

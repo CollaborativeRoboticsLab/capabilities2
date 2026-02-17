@@ -105,7 +105,8 @@ public:
    * @param capability capability from where the event originates
    * @param connection_id unique id for the connection
    * @param connection connection options for the event
-   * @param event_emitter event emitter to be used by this runner for emitting events on state changes to the target capability
+   * @param event_emitter event emitter to be used by this runner for emitting events on state changes to the target
+   * capability
    */
   void add_connection(const std::string& capability, const std::string& connection_id,
                       const capabilities2_msgs::msg::CapabilityConnection& connection,

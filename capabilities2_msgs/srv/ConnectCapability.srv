@@ -1,6 +1,4 @@
 string bond_id                      # user
-string instance_id                  # optional user specified
-string target_instance_id           # optional user specified
 
 # connect using a connection message
 capabilities2_msgs/CapabilityConnection connection

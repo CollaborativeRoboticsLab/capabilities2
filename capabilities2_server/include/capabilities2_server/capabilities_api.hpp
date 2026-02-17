@@ -253,9 +253,7 @@ public:
    * Each running capability is a node that can be connected to other capabilities
    * these connections emit events when the capability states change
    */
-  void connect_capability(const std::string& bond_id, const std::string& instance_id,
-                          const std::string& target_instance_id,
-                          const capabilities2_msgs::msg::CapabilityConnection& connection)
+  void connect_capability(const std::string& bond_id, const capabilities2_msgs::msg::CapabilityConnection& connection)
   {
     // TODO: implement connection storage for non-running capabilities
     // could also implicitly increment use counts for capabilities with this bond
@@ -282,7 +280,7 @@ public:
     {
       // create a unique connection id for the connection using the bond_id and instance ids 
       //(format: "bond_id/instance_id/target_instance_id")
-      const std::string connection_id = bond_id + '/' + instance_id + '/' + target_instance_id;
+      const std::string connection_id = bond_id + '/' + connection.source.instance_id + '/' + connection.target.instance_id;
 
       // need to pass event emitter to the runner cache so that it can be set in the runner
       // this allows the runner to emit events on state changes
