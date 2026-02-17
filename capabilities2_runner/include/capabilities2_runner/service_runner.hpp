@@ -153,9 +153,7 @@ protected:
    * A pattern needs to be implemented in the derived class for processing the response and extracting data if needed,
    * currently does nothing.
    */
-  virtual std::string process_response(typename ServiceT::Response::SharedPtr response)
-  {
-  }
+  virtual void process_response(typename ServiceT::Response::SharedPtr /*response*/) {}
 
   typename rclcpp::Client<ServiceT>::SharedPtr service_client_;
   typename ServiceT::Response::SharedPtr response_;

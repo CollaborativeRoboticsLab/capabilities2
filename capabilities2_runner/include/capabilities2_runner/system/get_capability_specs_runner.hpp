@@ -54,7 +54,7 @@ protected:
    * @param parameters EventParameters containing parameters for the trigger event
    * @return EventParameters updated parameters for on_success event
    */
-  virtual capabilities2_events::EventParameters param_on_success()
+  virtual capabilities2_events::EventParameters param_on_success() override
   {
     // Create an Event Parameter with CapabilitySpecs content
     std::vector<std::string> capability_spec_strings;
@@ -67,10 +67,17 @@ protected:
 
     // Create EventParameters and set the capability specs as a parameter for the on_success event
     capabilities2_events::EventParameters parameters;
-
-    // Set the capability specs as a parameter for the on_success event
     parameters.set_value("CapabilitySpecs", capability_spec_strings, capabilities2_events::OptionType::VECTOR_STRING);
+
+    RCLCPP_INFO(node_->get_logger(), "GetCapabilitySpecsRunner creating param_on_success with %zu capability specs", capability_spec_strings.size());
+
     return parameters;
+  }
+
+  virtual void process_response(typename capabilities2_msgs::srv::GetCapabilitySpecs::Response::SharedPtr response) override
+  {
+    // This function can be used to log the response or perform any additional processing if needed
+    RCLCPP_INFO(node_->get_logger(), "GetCapabilitySpecsRunner received response with %zu capability specs", response->capability_specs.size());
   }
 };
 

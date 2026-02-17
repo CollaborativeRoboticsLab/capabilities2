@@ -1,6 +1,6 @@
 %YAML 1.1
 ---
-name: CapabilityGetRunner
+name: GetCapabilitySpecsRunner
 spec_version: 1.1
 spec_type: interface
 description: "This capability depends on the capabilities2 server functionalities and allows an decision making authority such as an LLM extract 
