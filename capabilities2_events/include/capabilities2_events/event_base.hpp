@@ -67,22 +67,23 @@ public:
    * @param event_code type of event being emitted
    * @param source source capability emitting the event
    * @param target target capability receiving the event
-   * @param target_instance_id target instance identifier
    * @param callback function to trigger target capability with (capability, parameters, bond_id, target_instance_id)
    */
   virtual void emit(const std::string& connection_id, const uint8_t& event_code,
                     const capabilities2_msgs::msg::Capability& source,
-                    const capabilities2_msgs::msg::Capability& target, const std::string target_instance_id,
-                    event_callback_t callback)
+                    const capabilities2_msgs::msg::Capability& target, event_callback_t callback)
   {
-    // extract bond_id from connection_id (format: "bond_id/trigger_id")
-    size_t slash_pos = connection_id.find('/');
-    std::string bond_id = (slash_pos != std::string::npos) ? connection_id.substr(0, slash_pos) : connection_id;
+    // extract bond_id from connection_id (format: "bond_id/instance_id/target_instance_id")
+    size_t first_pos = connection_id.find('/');
+    size_t second_pos = connection_id.find('/', first_pos + 1);
+
+    std::string bond_id = (first_pos != std::string::npos) ? connection_id.substr(0, first_pos) : connection_id;
+    std::string target_id = (second_pos != std::string::npos) ? connection_id.substr(second_pos + 1) : "";
 
     // do callback with bond_id for access control
     if (callback)
     {
-      callback(bond_id, target.capability, target_instance_id, capabilities2_events::EventParameters(target));
+      callback(bond_id, target.capability, target_id, capabilities2_events::EventParameters(target));
     }
   }
 

@@ -115,7 +115,7 @@ public:
    *
    */
   virtual void trigger(capabilities2_events::EventParameters& parameters, const std::string& bond_id,
-                       const std::string& instance_id = "") = 0;
+                       const std::string& instance_id) = 0;
 
   /**
    * @brief Initializer function for initializing the base runner in place of constructor due to plugin semantics
@@ -160,14 +160,14 @@ public:
    * @param type type of event to connect to
    * @param target target capability to connect to
    * @param callback callback to trigger target capability with (capability, parameters, bond_id)
-   * @param target_id optional identifier for a target connection
    */
-  void add_connection(
-      const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& type,
-      const capabilities2_msgs::msg::Capability& target, const std::string& target_id,
-      std::function<void(const std::string&, const std::string&, const std::string&, capabilities2_events::EventParameters)> callback)
+  void add_connection(const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& type,
+                      const capabilities2_msgs::msg::Capability& target,
+                      std::function<void(const std::string&, const std::string&, const std::string&,
+                                         capabilities2_events::EventParameters)>
+                          callback)
   {
-    EventNode::add_connection(connection_id, type, target, target_id, callback);
+    EventNode::add_connection(connection_id, type, target, callback);
   }
 
   /**

@@ -23,19 +23,17 @@ public:
    */
   void emit(const std::string& connection_id, const uint8_t& event_code,
             const capabilities2_msgs::msg::Capability& source, const capabilities2_msgs::msg::Capability& target,
-            const std::string target_instance_id, EventBase::event_callback_t callback) override
+            EventBase::event_callback_t callback) override
   {
-    // split connection id to get trigger id
-    std::string trigger_id = connection_id;
-    size_t slash_pos = connection_id.find('/');
-    if (slash_pos != std::string::npos)
-    {
-      trigger_id = connection_id.substr(slash_pos + 1);
-    }
+    // split connection id to get trigger id. Assuming connection_id format is "bond_id/instance_id/target_instance_id"
+    size_t first_pos = connection_id.find('/');
+    size_t second_pos = connection_id.find('/', first_pos + 1);
+
+    std::string instance_id = (second_pos != std::string::npos) ? connection_id.substr(first_pos + 1, second_pos - first_pos - 1) : "";
 
     capabilities2_msgs::msg::CapabilityEventStamped event_msg;
     event_msg.header.stamp = rclcpp::Clock().now();
-    event_msg.event.trigger_id = trigger_id;
+    event_msg.event.trigger_id = instance_id;
     event_msg.event.code.code = event_code;
     event_msg.event.connection.source = source;
     event_msg.event.connection.target = target;
@@ -44,7 +42,7 @@ public:
     event_pub_->publish(event_msg);
 
     // call super
-    EventBase::emit(connection_id, event_code, source, target, target_instance_id, callback);
+    EventBase::emit(connection_id, event_code, source, target, callback);
   }
 
   /**

@@ -105,10 +105,10 @@ public:
    * @param capability capability from where the event originates
    * @param connection_id unique id for the connection
    * @param connection connection options for the event
+   * @param event_emitter event emitter to be used by this runner for emitting events on state changes to the target capability
    */
   void add_connection(const std::string& capability, const std::string& connection_id,
                       const capabilities2_msgs::msg::CapabilityConnection& connection,
-                      std::string child_instance_id = "",
                       std::shared_ptr<capabilities2_events::EventBase> event_emitter = nullptr)
   {
     // find the runner in the cache and if not found then throw an error
@@ -125,7 +125,7 @@ public:
     {
       // add connection to the runner
       // callback signature: (capability, parameters, bond_id, instance_id)
-      runner_cache_[capability]->add_connection(connection_id, connection.type, connection.target, child_instance_id,
+      runner_cache_[capability]->add_connection(connection_id, connection.type, connection.target,
                                                 std::bind(&capabilities2_server::RunnerCache::trigger_runner, this,
                                                           std::placeholders::_1, std::placeholders::_2,
                                                           std::placeholders::_3, std::placeholders::_4));

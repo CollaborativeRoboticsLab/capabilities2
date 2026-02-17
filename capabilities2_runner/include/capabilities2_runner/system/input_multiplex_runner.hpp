@@ -60,25 +60,24 @@ protected:
     std::string instance_id = ThreadTriggerRunner::instance_from_thread_id(thread_id);
 
     int input_count = std::any_cast<int>(parameters.get_value("input_count", 1));
-    int multiplex_id = std::any_cast<int>(parameters.get_value("id", 0));
 
     // track the input count for the runner_id
-    if (input_count_tracker.find(multiplex_id) == input_count_tracker.end())
+    if (input_count_tracker.find(instance_id) == input_count_tracker.end())
     {
-      input_count_tracker[multiplex_id] = 1;
-      expected_input_count[multiplex_id] = input_count;
+      input_count_tracker[instance_id] = 1;
+      expected_input_count[instance_id] = input_count;
     }
     else
     {
-      input_count_tracker[multiplex_id] += 1;
+      input_count_tracker[instance_id] += 1;
     }
 
-    // check if the input count has reached the expected input count for the multiplex_id and if so execute the process
-    if (input_count_tracker[multiplex_id] == expected_input_count[multiplex_id])
+    // check if the input count has reached the expected input count for the instance_id and if so execute the process
+    if (input_count_tracker[instance_id] == expected_input_count[instance_id])
     {
       RCLCPP_INFO(node_->get_logger(),
-                  "multiplex_id: %d has received all expected inputs. Executing process for instance_id: %s",
-                  multiplex_id, instance_id.c_str());
+                  "instance_id: %s has received all expected inputs. Executing process for instance_id: %s",
+                  instance_id.c_str(), instance_id.c_str());
 
       // If on_success is defined, emit success event will trigger it. If not defined, it will be a no-op.
       emit_succeeded(bond_id, instance_id, param_on_success());
@@ -88,8 +87,8 @@ protected:
     else
     {
       RCLCPP_INFO(node_->get_logger(),
-                  "multiplex_id: %d pending expected inputs. Current count: %d/%d for instance_id: %s", multiplex_id,
-                  input_count_tracker[multiplex_id], expected_input_count[multiplex_id], instance_id.c_str());
+                  "instance_id: %s pending expected inputs. Current count: %d/%d for instance_id: %s", instance_id.c_str(),
+                  input_count_tracker[instance_id], expected_input_count[instance_id], instance_id.c_str());
     }
 
     RCLCPP_INFO(node_->get_logger(), "multiplexing complete. Thread closing for instance_id: %s", instance_id.c_str());
@@ -97,13 +96,13 @@ protected:
 
 protected:
   // input count tracker
-  std::map<int, int> input_count_tracker;
+  std::map<std::string, int> input_count_tracker;
 
   // expected input count
-  std::map<int, int> expected_input_count;
+  std::map<std::string, int> expected_input_count;
 
   // completed executions
-  std::map<int, bool> completed_executions;
+  std::map<std::string, bool> completed_executions;
 };
 
 }  // namespace capabilities2_runner

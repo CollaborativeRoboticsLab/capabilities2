@@ -254,7 +254,7 @@ public:
    * these connections emit events when the capability states change
    */
   void connect_capability(const std::string& bond_id, const std::string& instance_id,
-                          const std::string& child_instance_id,
+                          const std::string& target_instance_id,
                           const capabilities2_msgs::msg::CapabilityConnection& connection)
   {
     // TODO: implement connection storage for non-running capabilities
@@ -280,13 +280,14 @@ public:
 
     try
     {
-      // new id for trigger - accounting for the bond
-      // lets use uri style id with bond and trigger id
-      const std::string connection_id = bond_id + '/' + instance_id;
+      // create a unique connection id for the connection using the bond_id and instance ids 
+      //(format: "bond_id/instance_id/target_instance_id")
+      const std::string connection_id = bond_id + '/' + instance_id + '/' + target_instance_id;
+
       // need to pass event emitter to the runner cache so that it can be set in the runner
       // this allows the runner to emit events on state changes
       // default runner behaviour does not use event subsystem
-      runner_cache_.add_connection(connection.source.capability, connection_id, connection, child_instance_id, event_);
+      runner_cache_.add_connection(connection.source.capability, connection_id, connection, event_);
 
       // log
       RCLCPP_INFO(logging_->get_logger(), "set 'type %d' connection for runner: %s with id: %s", connection.type.code,
