@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>capabilities2_capabilites</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+
+
+  <maintainer email="kalanaratnayake95@gmail.com">Kalana Ratnayake</maintainer>
+  <maintainer email="kalana.ratnayakemudiyanselage@canberra.edu.au">Kalana Ratnayake</maintainer>
+
+  <author email="kalana.ratnayakemudiyanselage@canberra.edu.au">Kalana Ratnayake</author>
+  
+  <license>TODO: License declaration</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <depend>rclcpp</depend>
+  <depend>rclcpp_action</depend>
+  <depend>pluginlib</depend>
+  <depend>std_msgs</depend>
+  <depend>capabilities2_msgs</depend>
+  <depend>capabilities2_runner</depend>
+  <depend>event_logger</depend>
+  <depend>event_logger_msgs</depend>
+  <depend>tinyxml2_vendor</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+
+    <!-- CapabilityGetRunner -->
+    <capability_interface>
+      interfaces/CapabilityGetRunner.yaml
+    </capability_interface>
+
+    <capability_provider>
+      providers/CapabilityGetRunner.yaml
+    </capability_provider>
+  </export>
+</package>
