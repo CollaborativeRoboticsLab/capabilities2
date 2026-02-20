@@ -1,25 +1,25 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>capabilities2</name>
-  <version>0.0.1</version>
+  <version>0.2.0</version>
   <description>
-    meta-package for the capabilities2 interface
+    meta-package for the capabilities2 framework
   </description>
 
   <maintainer email="michael.pritchard@canberra.edu.au">Michael Pritchard</maintainer>
-  <maintainer email="mppritchard3@hotmail.com">mik-p</maintainer>
   <maintainer email="kalana.ratnayakemudiyanselage@canberra.edu.au">Kalana Ratnayake</maintainer>
 
   <author email="michael.pritchard@canberra.edu.au">Michael Pritchard</author>
+  <author email="kalana.ratnayakemudiyanselage@canberra.edu.au">Kalana Ratnayake</author>
 
   <license>MIT</license>
 
-  <url type="repository">https://github.com/AIResearchLab/capabilities2</url>
+  <url type="repository">https://github.com/CollaborativeRoboticsLab/capabilities2</url>
 
   <exec_depend>capabilities2_msgs</exec_depend>
-  <exec_depend>capabilities2_server</exec_depend>
+  <exec_depend>capabilities2_events</exec_depend>
   <exec_depend>capabilities2_runner</exec_depend>
-  <exec_depend>capabilities2_launch_proxy</exec_depend>
+  <exec_depend>capabilities2_server</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -3,16 +3,14 @@
 #include <stdexcept>
 #include <string>
 #include <functional>
-#include <mutex>
-#include <thread>
-#include <tinyxml2.h>
+
 #include <rclcpp/rclcpp.hpp>
 
-#include <capabilities2_utils/event_types.hpp>
+#include <capabilities2_events/event_node.hpp>
+#include <capabilities2_events/event_parameters.hpp>
 
-#include <event_logger_msgs/msg/event.hpp>
-#include <event_logger_msgs/msg/event_capability.hpp>
-#include <event_logger/event_client.hpp>
+#include <capabilities2_msgs/msg/capability.hpp>
+#include <capabilities2_msgs/msg/capability_event_code.hpp>
 
 namespace capabilities2_runner
 {
@@ -66,13 +64,16 @@ struct runner_opts
   int input_count;
 };
 
-class RunnerBase
+/**
+ * @brief base class for all runners
+ *
+ * Defines the runner plugin api. Inherits from EventNode to provide event emission
+ *
+ */
+class RunnerBase : public capabilities2_events::EventNode
 {
 public:
-  using Event = event_logger_msgs::msg::Event;
-  using EventType = capabilities2::event_t;
-
-  RunnerBase() : run_config_()
+  RunnerBase() : node_(nullptr), run_config_()
   {
   }
 
@@ -87,40 +88,34 @@ public:
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
-   * @param print_
+   *
+   * @attention Must call init_base in derived class implementation and should call start event
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config) = 0;
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config, const std::string& bond_id) = 0;
 
   /**
    * @brief stop the runner
    *
+   * @attention should clean up threads and should call stop event
    */
-  virtual void stop() = 0;
+  virtual void stop(const std::string& bond_id, const std::string& instance_id = "") = 0;
 
   /**
+   * FIXME: implement new event subsystem
    * @brief Trigger the runner
    *
    * This method allows insertion of parameters in a runner after it has been initialized. it is an approach
    * to parameterise capabilities. Internally starts up RunnerBase::triggerExecution in a thread
    *
-   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
+   * @param parameters capability options that contain parameters for the trigger
+   * @param bond_id unique identifier for the group of connections associated with this runner trigger event
+   * @param instance_id unique identifier for the instance of the capability
+   * @attention should call success and failure events with parameters and bond_id when the trigger process
+   * completes.
    *
    */
-  virtual void trigger(const std::string& parameters)
-  {
-    // extract the unique id for the runner and use that as the thread id
-    tinyxml2::XMLElement * element = nullptr;
-    element = convert_to_xml(parameters);
-    element->QueryIntAttribute("id", &runner_id);
-
-    parameters_[runner_id] = element;
-
-    info_("received new parameters with event id : " + std::to_string(runner_id), runner_id);
-
-    executionThreadPool[runner_id] = std::thread(&RunnerBase::execution, this, runner_id);
-
-    info_("started execution", runner_id);
-  }
+  virtual void trigger(capabilities2_events::EventParameters& parameters, const std::string& bond_id,
+                       const std::string& instance_id) = 0;
 
   /**
    * @brief Initializer function for initializing the base runner in place of constructor due to plugin semantics
@@ -130,32 +125,49 @@ public:
    */
   void init_base(rclcpp::Node::SharedPtr node, const runner_opts& run_config)
   {
+    // store node connection source
+    capabilities2_msgs::msg::Capability source_capability;
+    source_capability.capability = run_config.interface;
+    source_capability.provider = run_config.provider;
+    set_source(source_capability);
+
     // store node pointer and opts
     node_ = node;
     run_config_ = run_config;
-
-    current_inputs_ = 0;
-    runner_id = 0;
-
-    event_client_ = std::make_shared<EventClient>(node_, "runner", "/events");
   }
 
   /**
-   * @brief attach events to the runner
+   * @brief enable events system for this runner
    *
-   * @param event_option event_options related for the action
-   * @param triggerFunction external function that triggers capability runners
-   *
-   * @return number of attached events
+   * @param events event emitter to be used by this runner
    */
-  virtual void attach_events(capabilities2::event_opts& event_option,
-                    std::function<void(const std::string&, const std::string&)> triggerFunction)
+  void enable_events(std::shared_ptr<capabilities2_events::EventBase> events)
   {
-    info_("accepted event options with ID : " + std::to_string(event_option.event_id));
+    if (!is_event_emitter_set())
+    {
+      set_event_emitter(events);
+    }
+  }
 
-    triggerFunction_ = triggerFunction;
-
-    events[event_option.event_id] = event_option;
+  /**
+   * @brief make EventNode::add_connection public method on runner api.
+   *
+   * add connection to this runner to target capability this allows the runner to emit events on state changes
+   * to the target capability the connection ID format is: "bond_id/trigger_id"  which allows event emission to
+   * extract bond_id for access control
+   *
+   * @param connection_id unique identifier for the connection (format: "bond_id/trigger_id")
+   * @param type type of event to connect to
+   * @param target target capability to connect to
+   * @param callback callback to trigger target capability with (capability, parameters, bond_id)
+   */
+  void add_connection(const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& type,
+                      const capabilities2_msgs::msg::Capability& target,
+                      std::function<void(const std::string&, const std::string&, const std::string&,
+                                         capabilities2_events::EventParameters)>
+                          callback)
+  {
+    EventNode::add_connection(connection_id, type, target, callback);
   }
 
   /**
@@ -198,136 +210,69 @@ public:
     return run_config_.pid;
   }
 
-  /**
-   * @brief Get the execution status of runner. 
-   * 
-   * @return `true` if execution is complete, `false` otherwise.
-   */
-  const bool get_completion_status() const
-  {
-    return execution_complete_;
-  }
-
 protected:
-  /**
-   * @brief Trigger process to be executed.
-   *
-   * This method utilizes paramters set via the trigger() function
-   * 
-   * @param id unique identifier for the runner id. used to track the correct 
-   * triggers and subsequent events.
-   *
-   */
-  virtual void execution(int id) = 0;
+  // FIXME: implement new event subsystem
 
   /**
-   * @brief Update on_started event parameters with new data if avaible.
+   * @brief Update on_started event parameters with new data if available.
    *
-   * This function is used to inject new data into the XMLElement containing
+   * This function is used to inject new data into the CapabilityOptions containing
    * parameters related to the on_started trigger event
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters pointer to the XMLElement containing parameters
-   * @return pointer to the XMLElement containing updated parameters
+   * @return CapabilityOptions containing new parameters
    */
-  virtual std::string update_on_started(std::string& parameters)
+  virtual capabilities2_events::EventParameters param_on_started()
   {
-    return parameters;
+    return capabilities2_events::EventParameters();
   };
 
   /**
-   * @brief Update on_stopped event parameters with new data if avaible.
+   * @brief Update on_stopped event parameters with new data if available.
    *
-   * This function is used to inject new data into the XMLElement containing
+   * This function is used to inject new data into the CapabilityOptions containing
    * parameters related to the on_stopped trigger event
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters pointer to the XMLElement containing parameters
-   * @return pointer to the XMLElement containing updated parameters
+   * @return CapabilityOptions containing new parameters
    */
-  virtual std::string update_on_stopped(std::string& parameters)
+  virtual capabilities2_events::EventParameters param_on_stopped()
   {
-    return parameters;
+    return capabilities2_events::EventParameters();
   };
 
   /**
-   * @brief Update on_failure event parameters with new data if avaible.
+   * @brief Update on_failure event parameters with new data if available.
    *
-   * This function is used to inject new data into the XMLElement containing
+   * This function is used to inject new data into the CapabilityOptions containing
    * parameters related to the on_failure trigger event
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters pointer to the XMLElement containing parameters
-   * @return pointer to the XMLElement containing updated parameters
+   * @return CapabilityOptions containing new parameters
    */
-  virtual std::string update_on_failure(std::string& parameters)
+  virtual capabilities2_events::EventParameters param_on_failure()
   {
-    return parameters;
+    return capabilities2_events::EventParameters();
   };
 
   /**
-   * @brief Update on_success event parameters with new data if avaible.
+   * @brief Update on_success event parameters with new data if available.
    *
-   * This function is used to inject new data into the XMLElement containing
+   * This function is used to inject new data into the CapabilityOptions containing
    * parameters related to the on_success trigger event
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters pointer to the XMLElement containing parameters
-   * @return pointer to the XMLElement containing updated parameters
+   * @return CapabilityOptions containing new parameters
    */
-  virtual std::string update_on_success(std::string& parameters)
+  virtual capabilities2_events::EventParameters param_on_success()
   {
-    return parameters;
+    return capabilities2_events::EventParameters();
   };
 
-  /**
-   * @brief convert an XMLElement to std::string
-   *
-   * @param element XMLElement element to be converted
-   * @param paramters parameter to hold std::string
-   *
-   * @return `true` if element is not nullptr and conversion successful, `false` if element is nullptr
-   */
-  std::string convert_to_string(tinyxml2::XMLElement* element)
-  {
-    if (element)
-    {
-      element->Accept(&printer);
-      std::string parameters = printer.CStr();
-      return parameters;
-    }
-    else
-    {
-      std::string parameters = "";
-      return parameters;
-    }
-  }
-
-  /**
-   * @brief convert an XMLElement to std::string
-   *
-   * @param element XMLElement element to be converted
-   * @param paramters parameter to hold std::string
-   *
-   * @return `true` if element is not nullptr and conversion successful, `false` if element is nullptr
-   */
-  tinyxml2::XMLElement* convert_to_xml(const std::string& parameters)
-  {
-    if (parameters != "")
-    {
-      doc.Parse(parameters.c_str());
-      tinyxml2::XMLElement* element = doc.FirstChildElement();
-      return element;
-    }
-    else
-    {
-      return nullptr;
-    }
-  }
   // run config getters
 
   /**
@@ -461,106 +406,65 @@ protected:
     return get_first_resource_name("action");
   }
 
-protected:
-  void info_(const std::string text, int thread_id = -1)
+  // FIXME: implement new event subsystem
+  // STATE CHANGE HELPERS
+
+  /**
+   * @brief emit STARTED event
+   *
+   * @param bond_id
+   * @param parameters
+   */
+  void emit_started(const std::string& bond_id, const std::string& instance_id,
+                    capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
-    auto message = Event();
-
-    message.header.stamp = node_->now();
-    message.origin_node = "runners";
-    message.source.capability = run_config_.interface;
-    message.source.provider = run_config_.provider;
-    message.target.capability = "";
-    message.target.provider = "";
-    message.thread_id = thread_id;
-    message.type = Event::INFO;
-    message.content = text;
-    message.pid = -1;
-    message.event = Event::UNDEFINED;
-
-    event_client_->publish(message);
-  }
-
-  void error_(const std::string text, int thread_id = -1)
-  {
-    auto message = Event();
-
-    message.header.stamp = node_->now();
-    message.origin_node = "runners";
-    message.source.capability = run_config_.interface;
-    message.source.provider = run_config_.provider;
-    message.target.capability = "";
-    message.target.provider = "";
-    message.thread_id = thread_id;
-    message.type = Event::ERROR;
-    message.content = text;
-    message.pid = -1;
-    message.event = Event::UNDEFINED;
-
-    event_client_->publish(message);
-  }
-
-  void output_(const std::string text, const std::string element, int thread_id = -1)
-  {
-    auto message = Event();
-
-    message.header.stamp = node_->now();
-    message.origin_node = "runners";
-    message.source.capability = run_config_.interface;
-    message.source.provider = run_config_.provider;
-    message.target.capability = "";
-    message.target.provider = "";
-    message.thread_id = thread_id;
-    message.type = Event::INFO;
-    message.content = text + " : " + element;
-    message.pid = -1;
-    message.event = Event::UNDEFINED;
-
-    event_client_->publish(message);
-  }
-
-  void event_(EventType event = EventType::IDLE, int thread_id = -1, const std::string& target_capability = "",
-              const std::string& target_provider = "")
-  {
-    auto message = Event();
-
-    message.header.stamp = node_->now();
-    message.origin_node = "runners";
-    message.source.capability = run_config_.interface;
-    message.source.provider = run_config_.provider;
-    message.target.capability = target_capability;
-    message.target.provider = target_provider;
-    message.thread_id = thread_id;
-    message.type = Event::RUNNER_EVENT;
-    message.pid = -1;
-
-    switch (event)
-    {
-      case EventType::IDLE:
-        message.event = Event::IDLE;
-        break;
-      case EventType::STARTED:
-        message.event = Event::STARTED;
-        break;
-      case EventType::STOPPED:
-        message.event = Event::STOPPED;
-        break;
-      case EventType::FAILED:
-        message.event = Event::FAILED;
-        break;
-      case EventType::SUCCEEDED:
-        message.event = Event::SUCCEEDED;
-        break;
-      default:
-        message.event = Event::UNDEFINED;
-        break;
-    }
-
-    event_client_->publish(message);
+    RCLCPP_INFO(node_->get_logger(), "emitting STARTED event with bond_id: %s", bond_id.c_str());
+    emit_event(bond_id, instance_id, capabilities2_msgs::msg::CapabilityEventCode::STARTED, parameters);
   }
 
   /**
-   * @brief shared pointer to the capabilities node. Allows to use ros node related functionalities
+   * @brief emit STOPPED event
+   *
+   * @param bond_id
+   * @param parameters
+   */
+  void emit_stopped(const std::string& bond_id, const std::string& instance_id,
+                    capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
+  {
+    RCLCPP_INFO(node_->get_logger(), "emitting STOPPED event with bond_id: %s", bond_id.c_str());
+    emit_event(bond_id, instance_id, capabilities2_msgs::msg::CapabilityEventCode::STOPPED, parameters);
+  }
+
+  /**
+   * @brief emit SUCCEEDED event
+   *
+   * @param bond_id
+   * @param parameters
+   */
+  void emit_succeeded(const std::string& bond_id, const std::string& instance_id,
+                      capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
+  {
+    RCLCPP_INFO(node_->get_logger(), "emitting SUCCEEDED event with bond_id: %s", bond_id.c_str());
+    emit_event(bond_id, instance_id, capabilities2_msgs::msg::CapabilityEventCode::SUCCEEDED, parameters);
+  }
+
+  /**
+   * @brief emit FAILED event
+   *
+   * @param bond_id
+   * @param parameters
+   */
+  void emit_failed(const std::string& bond_id, const std::string& instance_id,
+                   capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
+  {
+    RCLCPP_INFO(node_->get_logger(), "emitting FAILED event with bond_id: %s", bond_id.c_str());
+    emit_event(bond_id, instance_id, capabilities2_msgs::msg::CapabilityEventCode::FAILED, parameters);
+  }
+
+protected:
+  /**
+   * @brief shared pointer to the capabilities node
+   * Allows to use ros node related functionalities
    */
   rclcpp::Node::SharedPtr node_;
 
@@ -568,71 +472,6 @@ protected:
    * @brief run_config_ runner configuration
    */
   runner_opts run_config_;
-
-  /**
-   * @brief dictionary of events
-   */
-  std::map<int, capabilities2::event_opts> events;
-
-  /**
-   * @brief unique id for the runner
-   */
-  int runner_id;
-
-  /**
-   * @brief curent number of trigger signals received
-   */
-  int current_inputs_;
-
-  /**
-   * @brief system runner completion tracking
-   */
-  bool execution_complete_;
-
-  /**
-   * @brief pointer to XMLElement which contain parameters
-   */
-  std::map<int, tinyxml2::XMLElement*> parameters_;
-
-  /**
-   * @brief dictionary of threads that executes the triggerExecution functionality
-   */
-  std::map<int, std::thread> executionThreadPool;
-
-  /**
-   * @brief mutex for threadpool synchronisation.
-   */
-  std::mutex mutex_;
-
-  /**
-   * @brief conditional variable for threadpool synchronisation.
-   */
-  std::condition_variable cv_;
-
-  /**
-   * @brief flag for threadpool synchronisation.
-   */
-  bool completed_;
-
-  /**
-   * @brief external function that triggers capability runners
-   */
-  std::function<void(const std::string, const std::string)> triggerFunction_;
-
-  /**
-   * @brief XMLElement that is used to convert xml strings to std::string
-   */
-  tinyxml2::XMLPrinter printer;
-
-  /**
-   * @brief XMLElement that is used to convert std::string to xml strings
-   */
-  tinyxml2::XMLDocument doc;
-
-  /**
-   * @brief client for publishing events
-   */
-  std::shared_ptr<EventClient> event_client_;
 };
 
 }  // namespace capabilities2_runner

@@ -1,9 +1,8 @@
 #pragma once
 
-#include "rclcpp/rclcpp.hpp"
+#include <chrono>
 
-#include <tinyxml2.h>
-#include <capabilities2_runner/runner_base.hpp>
+#include <capabilities2_runner/threadtrigger_runner.hpp>
 
 namespace capabilities2_runner
 {
@@ -14,13 +13,13 @@ namespace capabilities2_runner
  * Create an server client to run an service based capability
  */
 template <typename ServiceT>
-class ServiceRunner : public RunnerBase
+class ServiceRunner : public ThreadTriggerRunner
 {
 public:
   /**
    * @brief Constructor which needs to be empty due to plugin semantics
    */
-  ServiceRunner() : RunnerBase()
+  ServiceRunner() : ThreadTriggerRunner()
   {
   }
 
@@ -37,91 +36,26 @@ public:
     // initialize the runner base by storing node pointer and run config
     init_base(node, run_config);
 
-    // create an service client
+    // create a service client
     service_client_ = node_->create_client<ServiceT>(service_name);
 
-    // wait for action server
-    info_("waiting for service: " + service_name);
+    // wait for service server
+    RCLCPP_INFO(node_->get_logger(), "waiting for service: %s", service_name.c_str());
 
     if (!service_client_->wait_for_service(std::chrono::seconds(3)))
     {
-      error_("failed to connect to service: " + service_name);
+      RCLCPP_ERROR(node_->get_logger(), "failed to connect to service: %s", service_name.c_str());
       throw runner_exception("failed to connect to server");
     }
 
-    info_("connected with service: " + service_name);
-  }
-
-  /**
-   * @brief Trigger process to be executed.
-   *
-   * This method utilizes paramters set via the trigger() function
-   *
-   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
-   */
-  virtual void execution(int id) override
-  {
-    // if parameters are not provided then cannot proceed
-    if (!parameters_[id])
-      throw runner_exception("cannot trigger service without parameters");
-
-    // generate a goal from parameters if provided
-    auto request_msg = std::make_shared<typename ServiceT::Request>(generate_request(parameters_[id], id));
-
-    info_("request generated for event :", id);
-
-    std::unique_lock<std::mutex> lock(mutex_);
-    completed_ = false;
-
-    auto result_future = service_client_->async_send_request(
-        request_msg, [this, id](typename rclcpp::Client<ServiceT>::SharedFuture future) {
-          if (!future.valid())
-          {
-            error_("get result call failed");
-
-            // trigger the events related to on_failure state
-            if (events[id].on_failure.interface != "")
-            {
-              event_(EventType::FAILED, id, events[id].on_failure.interface, events[id].on_failure.provider);
-              triggerFunction_(events[id].on_failure.interface, update_on_failure(events[id].on_failure.parameters));
-            }
-          }
-          else
-          {
-            info_("get result call succeeded", id);
-
-            response_ = future.get();
-            process_response(response_, id);
-
-            // trigger the events related to on_success state
-            if (events[id].on_success.interface != "")
-            {
-              event_(EventType::SUCCEEDED, id, events[id].on_success.interface, events[id].on_success.provider);
-              triggerFunction_(events[id].on_success.interface, update_on_success(events[id].on_success.parameters));
-            }
-          }
-
-          completed_ = true;
-          cv_.notify_all();
-        });
-
-    // trigger the events related to on_started state
-    if (events[id].on_started.interface != "")
-    {
-      event_(EventType::STARTED, id, events[id].on_started.interface, events[id].on_started.provider);
-      triggerFunction_(events[id].on_started.interface, update_on_started(events[id].on_started.parameters));
-    }
-
-    // Conditional wait
-    cv_.wait(lock, [this] { return completed_; });
-    info_("Service request complete. Thread closing.", id);
+    RCLCPP_INFO(node_->get_logger(), "connected with service: %s", service_name.c_str());
   }
 
   /**
    * @brief stop function to cease functionality and shutdown
    *
    */
-  virtual void stop() override
+  virtual void stop(const std::string& bond_id, const std::string& instance_id = "") override
   {
     // if the node pointer is empty then throw an error
     // this means that the runner was not started and is being used out of order
@@ -135,22 +69,64 @@ public:
     if (!service_client_)
       throw runner_exception("cannot stop runner action that was not started");
 
-    // Trigger on_stopped event if defined
-    if (events[runner_id].on_stopped.interface != "")
-    {
-      event_(EventType::STOPPED, -1, events[runner_id].on_stopped.interface, events[runner_id].on_stopped.provider);
-      triggerFunction_(events[runner_id].on_stopped.interface,
-                       update_on_stopped(events[runner_id].on_stopped.parameters));
-    }
+    // emit stopped event
+    emit_stopped(bond_id, instance_id, param_on_stopped());
 
-    info_("removing event options");
+    RCLCPP_INFO(node_->get_logger(), "runner cleaned. stopping..");
+  }
 
-    // remove all event options for this runner instance
-    const auto n = events.size();
-    events.clear();
-    info_("removed event options for " + std::to_string(n) + " runner ids");
+protected:
+  /**
+   * @brief Trigger process to be executed.
+   *
+   * This method utilizes paramters set via the trigger() function
+   *
+   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
+   * @param thread_id unique identifier for the execution thread
+   */
+  virtual void execution(capabilities2_events::EventParameters parameters, const std::string& thread_id) override
+  {
+    // split thread_id to get bond_id and instance_id (format: "bond_id/instance_id")
+    std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
+    std::string instance_id = ThreadTriggerRunner::instance_from_thread_id(thread_id);
 
-    info_("runner cleaned. stopping..");
+    // generate a goal from parameters if provided
+    auto request_msg = std::make_shared<typename ServiceT::Request>(generate_request(parameters));
+
+    RCLCPP_INFO(node_->get_logger(), "request generated for event :%s", instance_id.c_str());
+
+    std::mutex block_mutex;
+    std::unique_lock<std::mutex> lock(block_mutex);
+    std::condition_variable cv;
+    bool completed = false;
+
+    auto result_future = service_client_->async_send_request(
+        request_msg, [this,  &instance_id, &completed, &bond_id, &cv](typename rclcpp::Client<ServiceT>::SharedFuture future) {
+          if (!future.valid())
+          {
+            RCLCPP_ERROR(node_->get_logger(), "get result call failed");
+
+            // emit failed event
+            emit_failed(bond_id, instance_id, param_on_failure());
+          }
+          else
+          {
+            RCLCPP_INFO(node_->get_logger(), "get result call succeeded for event :%s", instance_id.c_str());
+
+            response_ = future.get();
+            process_response(response_);
+
+            // emit success event
+            emit_succeeded(bond_id, instance_id, param_on_success());
+          }
+
+          completed = true;
+          cv.notify_all();
+        });
+
+    // Conditional wait
+    cv.wait(lock, [&completed] { return completed; });
+    RCLCPP_INFO(node_->get_logger(), "Service request complete. Thread closing.");
   }
 
 protected:
@@ -162,20 +138,22 @@ protected:
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters
+   * @param parameters 
    * @return ServiceT::Request the generated request
    */
-  virtual typename ServiceT::Request generate_request(tinyxml2::XMLElement* parameters, int id) = 0;
+  virtual typename ServiceT::Request generate_request(capabilities2_events::EventParameters& parameters) = 0;
 
   /**
    * @brief Process the reponse and print data as required
    *
-   * @param response service reponse
-   * @param id thread id
+   * @param response service reponse message
+   * @param trigger_id thread id associated with this response used for logging and event emission
+   * @return capabilities2_events::EventParameters containing updated parameters for the on_success event if needed
+   *
+   * A pattern needs to be implemented in the derived class for processing the response and extracting data if needed,
+   * currently does nothing.
    */
-  virtual void process_response(typename ServiceT::Response::SharedPtr response, int id)
-  {
-  }
+  virtual void process_response(typename ServiceT::Response::SharedPtr /*response*/) {}
 
   typename rclcpp::Client<ServiceT>::SharedPtr service_client_;
   typename ServiceT::Response::SharedPtr response_;

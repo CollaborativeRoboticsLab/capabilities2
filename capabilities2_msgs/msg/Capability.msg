@@ -4,5 +4,8 @@ string capability
 # Used provider
 string provider
 
-# trigger parameters
-string parameters
+# Trigger parameters
+CapabilityParameter[] parameters
+
+# What instance this is being referred
+string instance_id

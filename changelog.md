@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 (2025-09-16)
+
+- add new service types
+- upgrade event subsystem
+- implement basic db traits
+- add system and capability runner plugins
+- threaded runner execution
+- runners can be chained through trigger
+- triggering between runners handled by dynamic link list style structure
+- event system upgraded and refactored to be more generic and easier to use
+
 ## 0.1.2 (2024-09-20)
 
 - working on bt runner plugins

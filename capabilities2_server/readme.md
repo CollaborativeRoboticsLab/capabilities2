@@ -26,7 +26,6 @@ The capabilities2 server depends on the following `bondcpp` ROS2 package. See th
 - `sqlite3`
 - `yaml-cpp`
 - `tinyxml2`
-- `uuid`
 
 ## API
 
@@ -46,25 +45,22 @@ The capabilities2 server exposes the following Service API (see [capabilities2_m
 | `~/get_capability_specs`     | `GetCapabilitySpecs.srv`    | Get all raw specifications in the capabilities server |
 | `~/get_running_capabilities` | `GetRunningCapabilities.srv`| Get the currently running capabilities |
 | `~/establish_bond`           | `EstablishBond.srv`         | Establish a bond with the capabilities server to use capabilities |
-| `~/use_capability`           | `UseCapability.srv`         | Use a capability |
-| `~/free_capability`          | `FreeCapability.srv`        | Free a capability (when done using it, when all users are done the capability is freed) |
+| `~/use_capability`           | `UseCapability.srv`         | Use a capability - must be bonded |
+| `~/free_capability`          | `FreeCapability.srv`        | Free a capability (when done using it, when all users are done the capability is freed) - must be bonded |
 | `~/start_capability`         | `StartCapability.srv`       | Start a capability (this is a forceful start, and ignores use and free logic) |
 | `~/stop_capability`          | `StopCapability.srv`        | Stop a capability (this is a forceful stop, and ignores use and free logic) |
 | `~/register_capability`      | `RegisterCapability.srv`    | Register a capability with the capabilities server |
-| `~/trigger_capability`      | `TriggerCapability.srv`    | Trigger a capability |
-| `~/configure_capability`      | `ConfigureCapability.srv`    | Configure a capability with `on_start`, `on_end`, `on_success`, `on_failure` events|
-
+| `~/trigger_capability`       | `TriggerCapability.srv`     | Trigger a capability - must be bonded |
+| `~/connect_capability`       | `ConnectCapability.srv`     | Configure a capability with `on_start`, `on_end`, `on_success`, `on_failure` event connections - must be bonded |
 
 ### Topics
 
 The capabilities2 server exposes the following Topics API:
 
 | Topic | Message | Description |
-| :---  | :---            | :---        |
-| `~/events`  | `GetInterfaces.srv`         | Publish capability events |
-| `~/bonds`   | `GetSemanticInterfaces.srv` | Maintain bonds with capability users - [Bond API](https://wiki.ros.org/bond) |
-
-<br>
+| :---  | :--- | :--- |
+| `~/events`  | `CapabilityEventStamped.msg`    | Publish capability events |
+| `~/bonds`   | `bond/Status.msg`               | Maintain bonds with capability users - [Bond API](https://wiki.ros.org/bond) |
 
 ## Additional Information
 

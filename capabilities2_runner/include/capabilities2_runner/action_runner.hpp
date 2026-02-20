@@ -1,17 +1,19 @@
 #pragma once
 
 #include <string>
-#include <chrono>
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <condition_variable>
 
-#include <tinyxml2.h>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <action_msgs/srv/cancel_goal.hpp>
 
-#include <capabilities2_runner/runner_base.hpp>
+#include <capabilities2_runner/threadtrigger_runner.hpp>
 
 namespace capabilities2_runner
 {
@@ -22,13 +24,13 @@ namespace capabilities2_runner
  * Create an action client to run an action based capability
  */
 template <typename ActionT>
-class ActionRunner : public RunnerBase
+class ActionRunner : public ThreadTriggerRunner
 {
 public:
   /**
    * @brief Constructor which needs to be empty due to plugin semantics
    */
-  ActionRunner() : RunnerBase()
+  ActionRunner() : ThreadTriggerRunner()
   {
   }
 
@@ -48,22 +50,22 @@ public:
     action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name);
 
     // wait for action server
-    info_("waiting for action: " + action_name);
+    RCLCPP_INFO(node_->get_logger(), "waiting for action: %s", action_name.c_str());
 
     if (!action_client_->wait_for_action_server(std::chrono::seconds(1000)))
     {
-      error_("failed to connect to action: " + action_name);
+      RCLCPP_ERROR(node_->get_logger(), "failed to connect to action: %s", action_name.c_str());
       throw runner_exception("failed to connect to action server");
     }
 
-    info_("connected with action: " + action_name);
+    RCLCPP_INFO(node_->get_logger(), "connected with action: %s", action_name.c_str());
   }
 
   /**
    * @brief stop function to cease functionality and shutdown
    *
    */
-  virtual void stop() override
+  virtual void stop(const std::string& bond_id, const std::string& instance_id = "") override
   {
     // if the node pointer is empty then throw an error
     // this means that the runner was not started and is being used out of order
@@ -83,21 +85,15 @@ public:
       try
       {
         auto cancel_future = action_client_->async_cancel_goal(
-            goal_handle_, [this](action_msgs::srv::CancelGoal_Response::SharedPtr response) {
+            goal_handle_, [this, &bond_id, &instance_id](action_msgs::srv::CancelGoal_Response::SharedPtr response) {
               if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE)
               {
                 // throw runner_exception("failed to cancel runner");
-                error_("Runner cancellation failed.");
+                RCLCPP_ERROR(node_->get_logger(), "Runner cancellation failed.");
               }
 
-              // Trigger on_stopped event if defined
-              if (events[runner_id].on_stopped.interface != "")
-              {
-                event_(EventType::STOPPED, -1, events[runner_id].on_stopped.interface,
-                       events[runner_id].on_stopped.provider);
-                triggerFunction_(events[runner_id].on_stopped.interface,
-                                 update_on_stopped(events[runner_id].on_stopped.parameters));
-              }
+              // emit stopped event
+              emit_stopped(bond_id, instance_id, param_on_stopped());
             });
 
         // wait for action to be stopped. hold the thread for 2 seconds to help keep callbacks in scope
@@ -112,116 +108,95 @@ public:
       }
       catch (const rclcpp_action::exceptions::UnknownGoalHandleError& e)
       {
-        error_("failed to cancel goal: " + std::string(e.what()));
+        RCLCPP_ERROR(node_->get_logger(), "failed to cancel goal: %s", e.what());
         throw runner_exception(e.what());
       }
     }
 
-    info_("removing event options");
-
-    // remove all event options for this runner instance
-    const auto n = events.size();
-    events.clear();
-    info_("removed event options for " + std::to_string(n) + " runner ids");
-
-    info_("runner cleaned. stopping..");
+    RCLCPP_INFO(node_->get_logger(), "runner cleaned. stopping..");
   }
 
+protected:
   /**
    * @brief Trigger process to be executed.
    *
    * This method utilizes paramters set via the trigger() function
    *
-   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
+   * @param parameters pointer to capabilities2_events::EventParameters that contains parameters
    */
-  virtual void execution(int id) override
+  virtual void execution(capabilities2_events::EventParameters parameters, const std::string& thread_id) override
   {
-    // if parameters are not provided then cannot proceed
-    if (!parameters_[id])
-      throw runner_exception("cannot trigger action without parameters");
+    // split thread_id to get bond_id and instance_id (format: "bond_id/instance_id")
+    std::string bond_id = ThreadTriggerRunner::bond_from_thread_id(thread_id);
+    std::string instance_id = ThreadTriggerRunner::instance_from_thread_id(thread_id);
 
-    // generate a goal from parameters if provided
-    goal_msg_ = generate_goal(parameters_[id], id);
+    // generate a goal from parameters provided
+    goal_msg_ = generate_goal(parameters);
+    RCLCPP_INFO(node_->get_logger(), "goal generated for instance %s", instance_id.c_str());
 
-    info_("goal generated for event ", id);
-
-    std::unique_lock<std::mutex> lock(mutex_);
-    completed_ = false;
+    std::mutex block_mutex;
+    std::condition_variable cv;
+    bool completed = false;
+    std::unique_lock<std::mutex> lock(block_mutex);
 
     // trigger the action client with goal
     send_goal_options_.goal_response_callback =
-        [this, id](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
+        [this, &instance_id](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
           if (goal_handle)
           {
-            info_("goal accepted. Waiting for result", id);
-
-            // trigger the events related to on_started state
-            if (events[id].on_started.interface != "")
-            {
-              event_(EventType::STARTED, id, events[id].on_started.interface, events[id].on_started.provider);
-              triggerFunction_(events[id].on_started.interface, update_on_started(events[id].on_started.parameters));
-            }
+            RCLCPP_INFO(node_->get_logger(), "goal accepted. Waiting for result for instance %s", instance_id.c_str());
           }
           else
           {
-            error_("goal rejected", id);
+            RCLCPP_ERROR(node_->get_logger(), "goal rejected for instance %s", instance_id.c_str());
           }
 
           // store goal handle to be used with stop funtion
           goal_handle_ = goal_handle;
         };
 
-    send_goal_options_.feedback_callback =
-        [this, id](typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle,
-                   const typename ActionT::Feedback::ConstSharedPtr feedback_msg) {
-          std::string feedback = generate_feedback(feedback_msg);
+    send_goal_options_.feedback_callback = [this, &instance_id](
+                                               typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle,
+                                               const typename ActionT::Feedback::ConstSharedPtr feedback_msg) {
+      std::string feedback = generate_feedback(feedback_msg);
 
-          if (feedback != "")
-          {
-            info_("received feedback: " + feedback, id);
-          }
-        };
+      if (feedback != "")
+      {
+        RCLCPP_INFO(node_->get_logger(), "received feedback:  %s for instance %s", feedback.c_str(), instance_id.c_str());
+      }
+    };
 
     send_goal_options_.result_callback =
-        [this, id](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
-          info_("received result", id);
+        [this, &instance_id, &completed, &cv,
+         &bond_id, &instance_id](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
+          RCLCPP_INFO(node_->get_logger(), "received result for instance %s", instance_id.c_str());
           if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
           {
-            info_("action succeeded.", id);
-
-            // trigger the events related to on_success state
-            if (events[id].on_success.interface != "")
-            {
-              event_(EventType::SUCCEEDED, id, events[id].on_success.interface, events[id].on_success.provider);
-              triggerFunction_(events[id].on_success.interface, update_on_success(events[id].on_success.parameters));
-            }
+            RCLCPP_INFO(node_->get_logger(), "action succeeded for instance %s", instance_id.c_str());
+            // emit success event
+            emit_succeeded(bond_id, instance_id, param_on_success());
           }
           else
           {
-            error_("action failed", id);
+            RCLCPP_ERROR(node_->get_logger(), "action failed for instance %s", instance_id.c_str());
 
-            // trigger the events related to on_failure state
-            if (events[id].on_failure.interface != "")
-            {
-              event_(EventType::FAILED, id, events[id].on_failure.interface, events[id].on_failure.provider);
-              triggerFunction_(events[id].on_failure.interface, update_on_failure(events[id].on_failure.parameters));
-            }
+            // emit failed event
+            emit_failed(bond_id, instance_id, param_on_failure());
           }
 
           result_ = wrapped_result.result;
-          completed_ = true;
-          cv_.notify_all();
+          completed = true;
+          cv.notify_all();
         };
 
     goal_handle_future_ = action_client_->async_send_goal(goal_msg_, send_goal_options_);
-    info_("goal sent. Waiting for acceptance.", id);
+    RCLCPP_INFO(node_->get_logger(), "goal sent. Waiting for acceptance for instance %s", instance_id.c_str());
 
     // Conditional wait
-    cv_.wait(lock, [this] { return completed_; });
-    info_("action complete. Thread closing.", id);
+    cv.wait(lock, [&completed] { return completed; });
+    RCLCPP_INFO(node_->get_logger(), "action complete. Thread closing for instance %s", instance_id.c_str());
   }
 
-protected:
   /**
    * @brief Generate a goal from parameters
    *
@@ -230,10 +205,10 @@ protected:
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters
+   * @param parameters capability options that contain parameters for the instance
    * @return ActionT::Goal the generated goal
    */
-  virtual typename ActionT::Goal generate_goal(tinyxml2::XMLElement* parameters, int id) = 0;
+  virtual typename ActionT::Goal generate_goal(capabilities2_events::EventParameters& parameters) = 0;
 
   /**
    * @brief Generate a std::string from feedback message
@@ -243,11 +218,12 @@ protected:
    * A pattern needs to be implemented in the derived class. If the feedback string
    * is empty, nothing will be printed on the screen
    *
-   * @param parameters
+   * @param msg the feedback message received from the action server
    * @return ActionT::Feedback the received feedback
    */
   virtual std::string generate_feedback(const typename ActionT::Feedback::ConstSharedPtr msg) = 0;
 
+protected:
   /**< action client */
   typename rclcpp_action::Client<ActionT>::SharedPtr action_client_;
 

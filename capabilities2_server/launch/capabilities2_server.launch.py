@@ -17,8 +17,11 @@ def generate_launch_description():
         LaunchDescription: The launch description for capabilities2 server
     """
     # load config file
-    server_config = os.path.join(get_package_share_directory(
-        'capabilities2_server'), 'config', 'capabilities.yaml')
+    server_config = os.path.join(
+        get_package_share_directory('capabilities2_server'),
+        'config',
+        'capabilities.yaml'
+    )
 
     # create cap node
     capabilities2 = Node(

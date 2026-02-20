@@ -1,0 +1,5 @@
+string bond_id                      # user
+
+# connect using a connection message
+capabilities2_msgs/CapabilityConnection connection
+---

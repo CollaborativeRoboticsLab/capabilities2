@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 project(capabilities2_server)
 
 # Default to C++17
@@ -18,16 +18,13 @@ find_package(rclcpp_components REQUIRED)
 find_package(bondcpp REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
+find_package(capabilities2_events REQUIRED)
 find_package(capabilities2_runner REQUIRED)
-find_package(capabilities2_utils REQUIRED)
-find_package(event_logger REQUIRED)
-find_package(event_logger_msgs REQUIRED)
 find_package(tinyxml2_vendor REQUIRED)
 find_package(TinyXML2 REQUIRED)  # provided by tinyxml2 upstream, or tinyxml2_vendor
-find_package(backward_ros REQUIRED)
 
-find_package(PkgConfig)
-pkg_check_modules(UUID REQUIRED uuid)
+# find_package(PkgConfig)
+# pkg_check_modules(UUID REQUIRED uuid)
 
 # Find SQLite3
 find_package(SQLite3)
@@ -38,7 +35,7 @@ find_package(yaml-cpp REQUIRED)
 include_directories(include
   ${SQLITE3_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
-  ${UUID_INCLUDE_DIRS}
+  # ${UUID_INCLUDE_DIRS}
 )
 
 #######################################################################
@@ -52,7 +49,7 @@ add_library(${PROJECT_NAME}_comp SHARED
 target_link_libraries(${PROJECT_NAME}_comp
   ${SQLITE3_LIBRARIES}
   ${YAML_CPP_LIBRARIES}
-  ${UUID_LIBRARIES}
+  # ${UUID_LIBRARIES}
 )
 
 ament_target_dependencies(${PROJECT_NAME}_comp
@@ -62,14 +59,12 @@ ament_target_dependencies(${PROJECT_NAME}_comp
   pluginlib
   rclcpp_components
   capabilities2_msgs
+  capabilities2_events
   capabilities2_runner
-  capabilities2_utils
-  event_logger
-  event_logger_msgs
   TinyXML2
   SQLite3
   yaml-cpp
-  UUID
+  # UUID
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}_comp
@@ -87,7 +82,7 @@ install(TARGETS ${PROJECT_NAME}_comp
 )
 
 ############################################################################
-# node implementation that compiles as a executable 
+# node implementation that compiles as a executable
 ############################################################################
 
 add_executable(${PROJECT_NAME}_node
@@ -95,7 +90,7 @@ add_executable(${PROJECT_NAME}_node
 )
 
 target_link_libraries(${PROJECT_NAME}_node
-  ${UUID_LIBRARIES}
+  # ${UUID_LIBRARIES}
   ${SQLITE3_LIBRARIES}
   ${YAML_CPP_LIBRARIES}
 )
@@ -106,14 +101,12 @@ ament_target_dependencies(${PROJECT_NAME}_node
   bondcpp
   pluginlib
   capabilities2_msgs
+  capabilities2_events
   capabilities2_runner
-  capabilities2_utils
-  event_logger
-  event_logger_msgs
   TinyXML2
   SQLite3
   yaml-cpp
-  UUID
+  # UUID
 )
 
 install(TARGETS ${PROJECT_NAME}_node
@@ -128,7 +121,7 @@ target_link_libraries(test_capabilities_server
   ${PROJECT_NAME}_comp
   ${SQLITE3_LIBRARIES}
   ${YAML_CPP_LIBRARIES}
-  ${UUID_LIBRARIES}
+  # ${UUID_LIBRARIES}
 )
 add_dependencies(test_capabilities_server ${PROJECT_NAME}_comp)
 
