@@ -15,6 +15,7 @@ This directory contains the data models used by the Capabilities2 server.
 | Model | Description |
 |-------|-------------|
 | `predicates` | Represents predicates between capabilities |
+| `assurances` | Represents assurances for capabilities such as success rate, run time, resource use |
 
 ### V3 new models (TODO)(Proposal)
 
@@ -22,6 +23,8 @@ This directory contains the data models used by the Capabilities2 server.
 |-------|-------------|
 | `running` | Represents active runners that are executing capabilities |
 | `connections` | Represents connections between active runners |
+| `definition` | model text defining function of capability |
+| `parameters` | parameters of a capability |
 
 ## Traits
 
@@ -51,3 +54,9 @@ The models can have relationships with each other. The available relationships a
 | `implements` | A provider implements an interface |
 | `depends_on` | A provider depends on another provider |
 | `redefines` | A semantic interface redefines an interface |
+
+### V2 new relationships (TODO)
+
+| Relationship | Description |
+|--------------|-------------|
+| `
