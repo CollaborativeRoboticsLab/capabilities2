@@ -1,0 +1,3 @@
+string bond_id
+capabilities2_msgs/Capability capability
+---

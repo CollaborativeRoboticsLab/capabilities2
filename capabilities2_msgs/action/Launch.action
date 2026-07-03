@@ -8,4 +8,3 @@ std_msgs/Header header
 ---
 # feedback
 std_msgs/Header header
-capabilities2_msgs/CapabilityEvent event

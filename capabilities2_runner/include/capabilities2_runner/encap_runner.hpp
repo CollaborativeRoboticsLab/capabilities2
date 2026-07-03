@@ -33,21 +33,15 @@ public:
    * this is deferred since the action client topic name is not known at this level
    * of abstraction
    *
-   * @param node
-   * @param run_config
-   * @param action_name
-   * @param on_started
-   * @param on_terminated
-   * @param on_stopped
+   * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
+   * @param run_config runner configuration loaded from the yaml file
+   * @param action_name action name used in the yaml file, used to load specific configuration from the run_config
    */
   virtual void init_encapsulated_action(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                                        const std::string& action_name,
-                                        std::function<void(const std::string&)> on_started = nullptr,
-                                        std::function<void(const std::string&)> on_terminated = nullptr,
-                                        std::function<void(const std::string&)> on_stopped = nullptr)
+                                        const std::string& action_name, std::function<void(Event&)> print)
   {
     // init the base action runner
-    init_action(node, run_config, action_name, on_started, on_terminated, on_stopped);
+    init_action(node, run_config, action_name, print);
 
     // create an encapsulating action server
     encap_action_ = rclcpp_action::create_server<capabilities2_msgs::action::Capability>(
@@ -63,14 +57,17 @@ public:
    * call the parent stop and stop the encapsulated action
    *
    */
-  virtual void stop() override
+  virtual void stop(const std::string& bond_id, const std::string& instance_id = "") override
   {
     // stop the encapsulating action server
     encap_action_->cancel_all_goals();
     encap_action_.reset();
 
     // stop the base class
-    ActionRunner::stop();
+    ActionRunner::stop(bond_id, instance_id);
+
+    // emit stopped event
+    emit_stopped(bond_id, instance_id, param_on_stopped());
   }
 
   // encapsulated action server related functions
@@ -98,12 +95,6 @@ public:
    */
   virtual void handle_accepted(
       const std::shared_ptr<rclcpp_action::ServerGoalHandle<capabilities2_msgs::action::Capability>> goal_handle);
-
-  /**
-   * @brief execute the encapsulated action request
-   *
-   */
-  virtual void execute();
 
 private:
   /** encap action server */

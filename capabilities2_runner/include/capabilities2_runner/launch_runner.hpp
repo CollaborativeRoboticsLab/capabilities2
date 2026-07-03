@@ -1,10 +1,6 @@
 #pragma once
 
-#include <filesystem>
-#include <ament_index_cpp/get_package_share_directory.hpp>
-#include <std_msgs/msg/string.hpp>
-#include <capabilities2_msgs/action/launch.hpp>
-#include <capabilities2_runner/notrigger_action_runner.hpp>
+#include <capabilities2_runner/notrigger_runner.hpp>
 
 namespace capabilities2_runner
 {
@@ -13,55 +9,61 @@ namespace capabilities2_runner
  * @brief launch runner base class
  *
  * Create a launch file runner to run a launch file based capability
+ * uses process execution to run the launch file and kill the process on stop
  */
-class LaunchRunner : public NoTriggerActionRunner<capabilities2_msgs::action::Launch>
+class LaunchRunner : public NoTriggerRunner
 {
 public:
-  LaunchRunner() : NoTriggerActionRunner()
+  /**
+   * @brief Constructor which needs to be empty due to plugin semantics
+   */
+  LaunchRunner() : NoTriggerRunner()
   {
   }
 
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                     std::function<void(const std::string&)> on_started = nullptr,
-                     std::function<void(const std::string&)> on_terminated = nullptr,
-                     std::function<void(const std::string&)> on_stopped = nullptr) override
+  /**
+   * @brief Starter function for starting the launch runner
+   *
+   * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
+   * @param run_config runner configuration loaded from the yaml file
+   * @param bond_id bond identifier for the runner
+   */
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config, const std::string& bond_id) override
   {
-    // store node pointer and run_config
-    init_action(node, run_config, "capabilities_launch_proxy/launch", on_started, on_terminated, on_stopped);
+    init_base(node, run_config);
 
-    // get the package path from environment variable
-    std::string package_path;
-    try
-    {
-      package_path = ament_index_cpp::get_package_share_directory(get_package_name());
-    }
-    catch (const std::exception& e)
-    {
-      RCLCPP_ERROR(node_->get_logger(), "Failed to get package share directory: %s", e.what());
-      throw runner_exception("failed to get package share directory");
-    }
+    package_name = run_config_.runner.substr(0, run_config_.runner.find("/"));
+    launch_name = run_config_.runner.substr(run_config_.runner.find("/") + 1);
 
-    // resolve launch path
-    // get full path to launch file
-    // join package path with package name using path functions
-    std::string launch_file_path = std::filesystem::path(package_path).append(run_config_.runner).string();
+    // start launch process
+    throw runner_exception("launch runner not implemented yet");
 
-    // the launch file path
-    RCLCPP_DEBUG(node_->get_logger(), "launch file path: %s", launch_file_path.c_str());
-
-    // create a launch goal
-    capabilities2_msgs::action::Launch::Goal goal;
-    goal.launch_file_path = launch_file_path;
-
-    send_goal_options_.result_callback = nullptr;
-
-    // launch runner using action client
-    action_client_->async_send_goal(goal, send_goal_options_);
+    // emit started event
+    emit_started(bond_id, "", param_on_started());
   }
 
-private:
-  /** launch file path */
-  std::string launch_file_path;
+  /**
+   * @brief stop function to cease functionality and shutdown
+   *
+   */
+  virtual void stop(const std::string& bond_id, const std::string& instance_id = "") override
+  {
+    // if the node pointer is empty then throw an error
+    // this means that the runner was not started and is being used out of order
+
+    if (!node_)
+      throw runner_exception("cannot stop runner that was not started");
+
+    // stop the launch process
+    throw runner_exception("launch runner not implemented yet");
+
+    // emit stopped event
+    emit_stopped(bond_id, instance_id, param_on_stopped());
+  }
+
+protected:
+  std::string launch_name;
+  std::string package_name;
 };
 
 }  // namespace capabilities2_runner

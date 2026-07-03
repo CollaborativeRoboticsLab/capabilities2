@@ -2,7 +2,7 @@
 
 ![ROS](https://img.shields.io/badge/Framework-ROS-informational?&logo=ROS)
 
-This package contains [ROS2](https://index.ros.org/doc/ros2/) messages, services, and actions for the capabilities2 interface.
+This package contains [ROS2](https://index.ros.org/doc/ros2/) `messages`, `services`, and `actions` for the capabilities2 framework.
 
 ## Message Types
 
@@ -10,7 +10,10 @@ This package contains [ROS2](https://index.ros.org/doc/ros2/) messages, services
 | --- | --- |
 | `Capability.msg` | A message type for a capability of a robot. |
 | `CapabilityCommand.msg` | A message type for a command to a robot. |
+| `CapabilityConnection.msg` | A message type for a connection between capabilities. |
 | `CapabilityEvent.msg` | A message type for an event related to a capability. |
+| `CapabilityEventCode.msg` | event types |
+| `CapabilityEventStamped.msg` | A stamped version of event |
 | `CapabilityResponse.msg` | A message type for a response from a robot related to a capability. |
 | `CapabilitySpec.msg` | A message type for the specification of a capability. |
 | `NaturalCapability.msg` | A message type for a natural capability of a robot. |
@@ -34,6 +37,12 @@ This package contains [ROS2](https://index.ros.org/doc/ros2/) messages, services
 | `StartCapability.srv` | A service type for starting a capability. |
 | `StopCapability.srv` | A service type for stopping a capability. |
 | `UseCapability.srv` | A service type for using a capability. |
+
+New in 0.1.3:
+
+- `ConnectCapability.srv` - A service type for connecting capabilities together.
+- `Launch.srv` - A service type for launching a launch file.
+- `TriggerCapability.srv` - A service type for triggering a capability.
 
 ## Action Types
 

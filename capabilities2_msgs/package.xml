@@ -1,15 +1,17 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>capabilities2_msgs</name>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <description>
     This package provides message service and action formats for capabilities2 interface
   </description>
 
   <maintainer email="michael.pritchard@canberra.edu.au">Michael Pritchard</maintainer>
   <maintainer email="mppritchard3@hotmail.com">mik-p</maintainer>
+  <maintainer email="kalana.ratnayakemudiyanselage@canberra.edu.au">Kalana Ratnayake</maintainer>
 
   <author email="michael.pritchard@canberra.edu.au">Michael Pritchard</author>
+  <author email="kalana.ratnayakemudiyanselage@canberra.edu.au">Kalana Ratnayake</author>
 
   <license>MIT</license>
 

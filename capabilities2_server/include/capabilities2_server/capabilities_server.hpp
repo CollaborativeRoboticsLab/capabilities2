@@ -7,25 +7,26 @@
 #include <fstream>
 #include <filesystem>
 #include <functional>
-
 #include <stdlib.h>
-
 #include <tinyxml2.h>
 
 #include <rclcpp/rclcpp.hpp>
-#include <rclcpp_action/rclcpp_action.hpp>
 
 #include <capabilities2_server/capabilities_api.hpp>
 
-#include <capabilities2_msgs/msg/capability_event.hpp>
+#include <capabilities2_events/published_event.hpp>
+#include <capabilities2_events/event_parameters.hpp>
+
 #include <capabilities2_msgs/msg/capability_spec.hpp>
-#include <capabilities2_msgs/msg/capability_connection.hpp>
+#include <capabilities2_msgs/msg/capability_event_stamped.hpp>
 #include <capabilities2_msgs/srv/establish_bond.hpp>
 #include <capabilities2_msgs/srv/start_capability.hpp>
 #include <capabilities2_msgs/srv/stop_capability.hpp>
 #include <capabilities2_msgs/srv/free_capability.hpp>
+#include <capabilities2_msgs/srv/trigger_capability.hpp>
 #include <capabilities2_msgs/srv/use_capability.hpp>
 #include <capabilities2_msgs/srv/register_capability.hpp>
+#include <capabilities2_msgs/srv/connect_capability.hpp>
 #include <capabilities2_msgs/srv/get_interfaces.hpp>
 #include <capabilities2_msgs/srv/get_semantic_interfaces.hpp>
 #include <capabilities2_msgs/srv/get_providers.hpp>
@@ -33,7 +34,6 @@
 #include <capabilities2_msgs/srv/get_capability_specs.hpp>
 #include <capabilities2_msgs/srv/get_remappings.hpp>
 #include <capabilities2_msgs/srv/get_running_capabilities.hpp>
-#include <capabilities2_msgs/action/connections.hpp>
 
 namespace capabilities2_server
 {
@@ -59,12 +59,32 @@ class CapabilitiesServer : public rclcpp::Node, public CapabilitiesAPI
 {
 public:
   CapabilitiesServer(const rclcpp::NodeOptions& options = rclcpp::NodeOptions())
-    : Node("capabilities", options), CapabilitiesAPI()
+    : Node("capabilities2", options), CapabilitiesAPI()
+  {
+    try
+    {
+      // Only call setup if this object is already owned by a shared_ptr
+      if (shared_from_this())
+      {
+        initialize();
+      }
+    }
+    catch (const std::bad_weak_ptr&)
+    {
+      // Not yet safe — probably standalone without make_shared
+    }
+  }
+
+  /**
+   * @brief Initializes the capabilities server node.
+   *
+   */
+  void initialize()
   {
     // params interface
     // loop rate
     declare_parameter("loop_rate", 5.0);
-    double loop_hz_ = get_parameter("loop_rate").as_double();
+    loop_hz_ = get_parameter("loop_rate").as_double();
 
     // db file
     declare_parameter("db_file", "~/.ros/capabilities/capabilities.sqlite3");
@@ -109,8 +129,10 @@ public:
     }
 
     // pubs
-    // events
-    event_pub_ = create_publisher<capabilities2_msgs::msg::CapabilityEvent>("~/events", 10);
+    event_pub_ = create_publisher<capabilities2_msgs::msg::CapabilityEventStamped>("~/events", 10);
+
+    // event publisher uses event subsystem
+    event_ = std::make_shared<capabilities2_events::PublishedEvent>(event_pub_);
 
     // subs
 
@@ -135,10 +157,20 @@ public:
         "~/free_capability",
         std::bind(&CapabilitiesServer::free_capability_cb, this, std::placeholders::_1, std::placeholders::_2));
 
+    // trigger capability
+    trigger_capability_srv_ = create_service<capabilities2_msgs::srv::TriggerCapability>(
+        "~/trigger_capability",
+        std::bind(&CapabilitiesServer::trigger_capability_cb, this, std::placeholders::_1, std::placeholders::_2));
+
     // use capability
     use_capability_srv_ = create_service<capabilities2_msgs::srv::UseCapability>(
         "~/use_capability",
         std::bind(&CapabilitiesServer::use_capability_cb, this, std::placeholders::_1, std::placeholders::_2));
+
+    // connect capabilities to each other
+    connect_capability_srv_ = create_service<capabilities2_msgs::srv::ConnectCapability>(
+        "~/connect_capability",
+        std::bind(&CapabilitiesServer::connect_capability_cb, this, std::placeholders::_1, std::placeholders::_2));
 
     // register capability
     register_capability_srv_ = create_service<capabilities2_msgs::srv::RegisterCapability>(
@@ -174,19 +206,11 @@ public:
         "~/get_running_capabilities", std::bind(&CapabilitiesServer::get_running_capabilities_cb, this,
                                                 std::placeholders::_1, std::placeholders::_2));
 
-    // create publishing event callbacks by binding the event publisher and event message callbacks
-    // handled by the API class and passed around to runners
-    // on started, stopped, and terminated lambdas binding event_pub_
-    // init events system callbacks with lambdas
-    init_events([this](const std::string& cap) { event_pub_->publish(on_capability_started(cap)); },
-                [this](const std::string& cap) { event_pub_->publish(on_capability_stopped(cap)); },
-                [this](const std::string& cap) { event_pub_->publish(on_capability_terminated(cap)); });
-
     // log ready
     RCLCPP_INFO(get_logger(), "capabilities server started");
 
-    // publish ready event
-    event_pub_->publish(on_server_ready());
+    // fire/publish ready event
+    event_->on_server_ready("capabilities server start up complete");
   }
 
   // service callbacks
@@ -204,6 +228,10 @@ public:
   void start_capability_cb(const std::shared_ptr<capabilities2_msgs::srv::StartCapability::Request> req,
                            std::shared_ptr<capabilities2_msgs::srv::StartCapability::Response> res)
   {
+    // log warning about using unsafe start service
+    RCLCPP_WARN(get_logger(), "start_capability service is unsafe and intended for internal use only. "
+                              "Use use_capability service with established bond instead.");
+
     // try starting capability
     // TODO: handle errors
     start_capability(shared_from_this(), req->capability, req->preferred_provider);
@@ -216,6 +244,10 @@ public:
   void stop_capability_cb(const std::shared_ptr<capabilities2_msgs::srv::StopCapability::Request> req,
                           std::shared_ptr<capabilities2_msgs::srv::StopCapability::Response> res)
   {
+    // log warning about using unsafe stop service
+    RCLCPP_WARN(get_logger(), "stop_capability service is unsafe and intended for internal use only. "
+                              "Use free_capability service with established bond instead.");
+
     // try stopping capability
     // TODO: handle errors
     stop_capability(req->capability);
@@ -224,7 +256,42 @@ public:
     res->successful = true;
   }
 
+  // trigger capability
+  // requires a bond to be established
+  void trigger_capability_cb(const std::shared_ptr<capabilities2_msgs::srv::TriggerCapability::Request> req,
+                             std::shared_ptr<capabilities2_msgs::srv::TriggerCapability::Response> res)
+  {
+    // make sure capability is not empty
+    if (req->capability.capability.empty())
+    {
+      RCLCPP_ERROR(get_logger(), "trigger_capability: capability is empty");
+      return;
+    }
+
+    // make sure bond id is provided
+    if (req->bond_id.empty())
+    {
+      RCLCPP_ERROR(get_logger(), "trigger_capability: bond_id is empty");
+      return;
+    }
+
+    // make sure instance id is provided
+    if (req->capability.instance_id.empty())
+    {
+      RCLCPP_ERROR(get_logger(), "trigger_capability: instance_id is empty");
+      return;
+    }
+
+    // try triggering capability
+    // TODO: handle errors
+    trigger_capability(req->bond_id, req->capability.capability, req->capability.instance_id,
+                       capabilities2_events::EventParameters(req->capability));
+
+    // response is empty
+  }
+
   // free capability
+  // requires bond to be established
   void free_capability_cb(const std::shared_ptr<capabilities2_msgs::srv::FreeCapability::Request> req,
                           std::shared_ptr<capabilities2_msgs::srv::FreeCapability::Response> res)
   {
@@ -248,6 +315,7 @@ public:
   }
 
   // use capability
+  // requires bond to be established
   void use_capability_cb(const std::shared_ptr<capabilities2_msgs::srv::UseCapability::Request> req,
                          std::shared_ptr<capabilities2_msgs::srv::UseCapability::Response> res)
   {
@@ -272,6 +340,39 @@ public:
 
     // use capability with this bond
     use_capability(shared_from_this(), req->capability, req->preferred_provider, req->bond_id);
+
+    // response is empty
+  }
+
+  // FIXME: repair this to use new event subsystem
+  // connect capability
+  // requires bond to be established
+  void connect_capability_cb(const std::shared_ptr<capabilities2_msgs::srv::ConnectCapability::Request> req,
+                             std::shared_ptr<capabilities2_msgs::srv::ConnectCapability::Response> res)
+  {
+    // need to have a bond established
+    if (req->bond_id.empty())
+    {
+      RCLCPP_ERROR(get_logger(), "connect_capability: bond_id is empty");
+      return;
+    }
+
+    // need to have a instance id
+    if (req->connection.source.instance_id.empty())
+    {
+      RCLCPP_ERROR(get_logger(), "connect_capability: instance_id is empty");
+      return;
+    }
+
+    // need to have a target instance id
+    if (req->connection.target.instance_id.empty())
+    {
+      RCLCPP_ERROR(get_logger(), "connect_capability: target_instance_id is empty");
+      return;
+    }
+
+    // api connect capability
+    connect_capability(req->bond_id, req->connection);
 
     // response is empty
   }
@@ -311,7 +412,7 @@ public:
   {
     // set response
     // get semantic interfaces for given interface
-    res->semantic_interfaces = get_sematic_interfaces(req->interface);
+    res->semantic_interfaces = get_semantic_interfaces(req->interface);
   }
 
   // get providers
@@ -374,43 +475,55 @@ public:
   }
 
 private:
-  /**
-   * @brief Load capabilities from a package path
-   *
-   * @param package_path
-   */
   void load_capabilities(const std::string& package_path)
   {
     RCLCPP_DEBUG(get_logger(), "Loading capabilities from package path: %s", package_path.c_str());
+
     // check if path exists
     if (!std::filesystem::exists(package_path))
     {
       RCLCPP_ERROR(get_logger(), "package path does not exist: %s", package_path.c_str());
       return;
     }
+
     // find packages in path
-    std::vector<std::string> packages;
+    std::vector<std::string> packages_root, packages_install;
+
     for (const auto& entry : std::filesystem::directory_iterator(package_path))
     {
       if (entry.is_directory())
       {
-        packages.push_back(entry.path().filename());
+        std::string name(entry.path().filename());
+
+        if (std::filesystem::exists(package_path + "/" + name + "/package.xml"))
+        {
+          packages_root.push_back(name);
+        }
+        else if (std::filesystem::exists(package_path + "/" + name + "/share/" + name + "/package.xml"))
+        {
+          packages_install.push_back(name);
+        }
       }
     }
-    // load capabilities from packages
-    for (const auto& package : packages)
+
+    // load capabilities from packages in /opt/ros/*/share
+    for (const auto& package : packages_root)
     {
-      RCLCPP_DEBUG(get_logger(), "loading capabilities from package: %s", package.c_str());
+      RCLCPP_DEBUG(get_logger(), "Loading capabilities from package: %s", package.c_str());
+
       // package.xml exports
       std::string package_xml = package_path + "/" + package + "/package.xml";
+
       // check if package.xml exists
       if (!std::filesystem::exists(package_xml))
       {
-        RCLCPP_DEBUG(get_logger(), "package.xml does not exist: %s", package_xml.c_str());
+        RCLCPP_ERROR(get_logger(), "package.xml does not exist: %s", package_xml.c_str());
         continue;
       }
+
       // parse package.xml
       tinyxml2::XMLDocument doc;
+
       try
       {
         parse_package_xml(package_xml, doc);
@@ -420,13 +533,16 @@ private:
         RCLCPP_ERROR(get_logger(), "failed to parse package.xml file: %s", e.what());
         continue;
       }
+
       // get exports
       tinyxml2::XMLElement* exports = doc.FirstChildElement("package")->FirstChildElement("export");
+
       if (exports == nullptr)
       {
-        RCLCPP_DEBUG(get_logger(), "No exports found in package.xml file: %s", package_xml.c_str());
+        RCLCPP_ERROR(get_logger(), "No exports found in package.xml file: %s", package_xml.c_str());
         continue;
       }
+
       // get capability specs of each type using a lambda
       auto get_capability_specs = [&](const std::string& spec_type) {
         // get capability spec
@@ -452,8 +568,9 @@ private:
           {
             // read spec file
             load_spec_content(package_path + "/" + package + "/" + spec_path, capability_spec);
+
             // add capability to db
-            RCLCPP_INFO(get_logger(), "adding capability: %s", (package + "/" + spec_path).c_str());
+            RCLCPP_INFO(get_logger(), "adding capability: %s/%s", package.c_str(), spec_path.c_str());
             add_capability(capability_spec);
           }
           catch (const std::runtime_error& e)
@@ -462,6 +579,90 @@ private:
           }
         }
       };
+
+      // get interface specs
+      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_INTERFACE);
+      // get semantic interface specs
+      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::SEMANTIC_CAPABILITY_INTERFACE);
+      // get provider specs
+      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_PROVIDER);
+    }
+
+    // load capabilities from packages in workspace install folder
+    for (const auto& package : packages_install)
+    {
+      RCLCPP_DEBUG(get_logger(), "Loading capabilities from package: %s", package.c_str());
+
+      // package.xml exports
+      std::string package_xml = package_path + "/" + package + "/share/" + package + "/package.xml";
+
+      // check if package.xml exists
+      if (!std::filesystem::exists(package_xml))
+      {
+        RCLCPP_ERROR(get_logger(), "package.xml does not exist: %s", package_xml.c_str());
+        continue;
+      }
+
+      // parse package.xml
+      tinyxml2::XMLDocument doc;
+
+      try
+      {
+        parse_package_xml(package_xml, doc);
+      }
+      catch (const std::runtime_error& e)
+      {
+        RCLCPP_ERROR(get_logger(), "failed to parse package.xml file: %s", e.what());
+        continue;
+      }
+
+      // get exports
+      tinyxml2::XMLElement* exports = doc.FirstChildElement("package")->FirstChildElement("export");
+
+      if (exports == nullptr)
+      {
+        RCLCPP_ERROR(get_logger(), "No exports found in package.xml file: %s", package_xml.c_str());
+        continue;
+      }
+
+      // get capability specs of each type using a lambda
+      auto get_capability_specs = [&](const std::string& spec_type) {
+        // get capability spec
+        for (tinyxml2::XMLElement* spec = exports->FirstChildElement(spec_type.c_str()); spec != nullptr;
+             spec = spec->NextSiblingElement(spec_type.c_str()))
+        {
+          // read spec relative path for spec file from element contents
+          std::string spec_path = spec->GetText();
+          // clear white spaces
+          spec_path.erase(std::remove_if(spec_path.begin(), spec_path.end(), isspace), spec_path.end());
+          // remove leading slash
+          if (spec_path[0] == '/')
+          {
+            spec_path = spec_path.substr(1);
+          }
+          // create a spec message
+          capabilities2_msgs::msg::CapabilitySpec capability_spec;
+          // add package details
+          capability_spec.package = package;
+          capability_spec.type = spec_type;
+          // try load spec file
+          try
+          {
+            // read spec file
+            load_spec_content(package_path + "/" + package + "/share/" + package + "/" + spec_path, capability_spec);
+
+            // add capability to db
+            RCLCPP_INFO(get_logger(), "adding capability: %s/%s", package.c_str(), spec_path.c_str());
+
+            add_capability(capability_spec);
+          }
+          catch (const std::runtime_error& e)
+          {
+            RCLCPP_ERROR(get_logger(), "failed to load spec file: %s", e.what());
+          }
+        }
+      };
+
       // get interface specs
       get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_INTERFACE);
       // get semantic interface specs
@@ -527,12 +728,9 @@ private:
   // loop hz
   double loop_hz_;
 
-  /** capabilities_fabric launch thread */
-  std::shared_ptr<std::thread> fabric_launch_thread;
-
   // publishers
   // event publisher
-  rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEvent>::SharedPtr event_pub_;
+  rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEventStamped>::SharedPtr event_pub_;
 
   // services
   // establish bond
@@ -543,6 +741,10 @@ private:
   rclcpp::Service<capabilities2_msgs::srv::StopCapability>::SharedPtr stop_capability_srv_;
   // free capability
   rclcpp::Service<capabilities2_msgs::srv::FreeCapability>::SharedPtr free_capability_srv_;
+  // connect capability
+  rclcpp::Service<capabilities2_msgs::srv::ConnectCapability>::SharedPtr connect_capability_srv_;
+  // trigger capability
+  rclcpp::Service<capabilities2_msgs::srv::TriggerCapability>::SharedPtr trigger_capability_srv_;
   // use capability
   rclcpp::Service<capabilities2_msgs::srv::UseCapability>::SharedPtr use_capability_srv_;
   // register capability
@@ -561,9 +763,6 @@ private:
   rclcpp::Service<capabilities2_msgs::srv::GetRemappings>::SharedPtr get_remappings_srv_;
   // get running capabilities
   rclcpp::Service<capabilities2_msgs::srv::GetRunningCapabilities>::SharedPtr get_running_capabilities_srv_;
-
-  /** action server that exposes cabapilities fabric*/
-  std::shared_ptr<rclcpp_action::Server<capabilities2_msgs::action::Connections>> capabilities_fabric_server;
 };
 
 }  // namespace capabilities2_server

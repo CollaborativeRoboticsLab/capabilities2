@@ -1,16 +1,16 @@
-std_msgs/Header header
-# Capability which this event pertains to
-string capability
-# Capability provider which this event pertains to
-string provider
+# the capability event message
 
-# Event types
-string LAUNCHED="launched"
-string STOPPED="stopped"
-string TERMINATED="terminated"
-string SERVER_READY="server_ready"
-# Event type
-string type
+# identifying name for the source that triggered this event
+string trigger_id
 
-# PID of the related process
-int32 pid
+# event can pass over a connection
+# could represent connection between capabilities
+# usually via runners
+# Capabilities which this event pertains to (source and target)
+capabilities2_msgs/CapabilityConnection connection
+
+# the event code
+capabilities2_msgs/CapabilityEventCode code
+
+# optional event message
+string description

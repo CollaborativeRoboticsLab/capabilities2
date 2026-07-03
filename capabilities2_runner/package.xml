@@ -1,15 +1,16 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>capabilities2_runner</name>
-  <version>0.0.1</version>
+  <version>0.2.0</version>
   <description>
-    Package for capabilities2 runners, managed running different types of capabilities
+    Package for capabilities2 runners, plugin base classes, system-level and capability specific runner plugins
   </description>
 
   <maintainer email="michael.pritchard@canberra.edu.au">Michael Pritchard</maintainer>
-  <maintainer email="mppritchard3@hotmail.com">mik-p</maintainer>
+  <maintainer email="kalana.ratnayakemudiyanselage@canberra.edu.au">Kalana Ratnayake</maintainer>
 
   <author email="michael.pritchard@canberra.edu.au">Michael Pritchard</author>
+  <author email="kalana.ratnayakemudiyanselage@canberra.edu.au">Kalana Ratnayake</author>
 
   <license>MIT</license>
 
@@ -20,12 +21,29 @@
   <depend>pluginlib</depend>
   <depend>std_msgs</depend>
   <depend>capabilities2_msgs</depend>
+  <depend>capabilities2_events</depend>
 
-  <!-- system dependency -->
-  <depend>uuid</depend>
-  <depend>tinyxml2</depend>
+  <depend>tinyxml2_vendor</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
+
+    <!-- InputMultiplexRunner -->
+    <capability_interface>
+      interfaces/InputMultiplexRunner.yaml
+    </capability_interface>
+
+    <capability_provider>
+      providers/InputMultiplexRunner.yaml
+    </capability_provider>
+
+    <!-- GetCapabilitySpecsRunner -->
+    <capability_interface>
+      interfaces/GetCapabilitySpecsRunner.yaml
+    </capability_interface>
+
+    <capability_provider>
+      providers/GetCapabilitySpecsRunner.yaml
+    </capability_provider>
   </export>
 </package>

@@ -4,8 +4,10 @@
 #include <yaml-cpp/yaml.h>
 #include <capabilities2_server/models/header.hpp>
 #include <capabilities2_server/models/remappable_base.hpp>
+#include <capabilities2_server/models/defineable_base.hpp>
 #include <capabilities2_server/models/predicateable_base.hpp>
 #include <capabilities2_server/models/defineable_base.hpp>
+#include <capabilities2_server/utils/sql_safe.hpp>
 
 namespace capabilities2_server
 {
@@ -20,7 +22,7 @@ namespace models
  * the provider can be specific to a robot implementation of a general capability
  *
  */
-struct provider_model_t : public remappable_base_t, predicateable_base_t, public defineable_base_t
+struct provider_model_t : public remappable_base_t, public predicateable_base_t, public defineable_base_t
 {
   header_model_t header;
   std::string implements;
@@ -42,6 +44,7 @@ struct provider_model_t : public remappable_base_t, predicateable_base_t, public
     {
       remappings.from_yaml(node["remappings"]);
     }
+    
     // definition
     defineable_base_t::from_yaml(node);
   }
@@ -75,8 +78,9 @@ struct provider_model_t : public remappable_base_t, predicateable_base_t, public
   {
     YAML::Node deps;
     deps["depends_on"] = depends_on;
-    return header.to_sql_values() + ", '" + implements + "', '" + YAML::Dump(deps["depends_on"]) + "', '" +
-           YAML::Dump(remappings.to_yaml()) + "', '" + runner + "', '" + definition_str + "'";
+
+    return header.to_sql_values() + ", '" + implements + "', '" + to_sql_safe(YAML::Dump(deps["depends_on"])) + "', '" +
+           to_sql_safe(YAML::Dump(remappings.to_yaml())) + "', '" + runner + "', '" + definition_str + "'";
   }
 };
 

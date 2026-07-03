@@ -3,9 +3,14 @@
 #include <stdexcept>
 #include <string>
 #include <functional>
-#include <optional>
-#include <tinyxml2.h>
+
 #include <rclcpp/rclcpp.hpp>
+
+#include <capabilities2_events/event_node.hpp>
+#include <capabilities2_events/event_parameters.hpp>
+
+#include <capabilities2_msgs/msg/capability.hpp>
+#include <capabilities2_msgs/msg/capability_event_code.hpp>
 
 namespace capabilities2_runner
 {
@@ -56,12 +61,19 @@ struct runner_opts
   std::string runner;
   std::string started_by;
   std::string pid;
+  int input_count;
 };
 
-class RunnerBase
+/**
+ * @brief base class for all runners
+ *
+ * Defines the runner plugin api. Inherits from EventNode to provide event emission
+ *
+ */
+class RunnerBase : public capabilities2_events::EventNode
 {
 public:
-  RunnerBase() : run_config_()
+  RunnerBase() : node_(nullptr), run_config_()
   {
   }
 
@@ -76,54 +88,86 @@ public:
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
-   * @param on_started pointer to function to execute on starting the runner
-   * @param on_terminated pointer to function to execute on terminating the runner
-   * @param on_stopped pointer to function to execute on stopping the runner
+   *
+   * @attention Must call init_base in derived class implementation and should call start event
    */
-  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                     std::function<void(const std::string&)> on_started = nullptr,
-                     std::function<void(const std::string&)> on_terminated = nullptr,
-                     std::function<void(const std::string&)> on_stopped = nullptr) = 0;
+  virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config, const std::string& bond_id) = 0;
 
   /**
    * @brief stop the runner
    *
+   * @attention should clean up threads and should call stop event
    */
-  virtual void stop() = 0;
+  virtual void stop(const std::string& bond_id, const std::string& instance_id = "") = 0;
 
   /**
-   * @brief trigger the runner
+   * FIXME: implement new event subsystem
+   * @brief Trigger the runner
    *
-   * this method allows insertion of parameters in a runner after it has been initialized
-   * it is an approach to parameterise capabilities
+   * This method allows insertion of parameters in a runner after it has been initialized. it is an approach
+   * to parameterise capabilities. Internally starts up RunnerBase::triggerExecution in a thread
    *
-   * @param parameters pointer to tinyxml2::XMLElement that contains parameters
+   * @param parameters capability options that contain parameters for the trigger
+   * @param bond_id unique identifier for the group of connections associated with this runner trigger event
+   * @param instance_id unique identifier for the instance of the capability
+   * @attention should call success and failure events with parameters and bond_id when the trigger process
+   * completes.
    *
-   * @return std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>> function pointer to invoke
-   * elsewhere such as an event callback
    */
-  virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
-  trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) = 0;
+  virtual void trigger(capabilities2_events::EventParameters& parameters, const std::string& bond_id,
+                       const std::string& instance_id) = 0;
 
   /**
    * @brief Initializer function for initializing the base runner in place of constructor due to plugin semantics
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
-   * @param on_started pointer to function to execute on starting the runner
-   * @param on_terminated pointer to function to execute on terminating the runner
    */
-  void init_base(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                 std::function<void(const std::string&)> on_started = nullptr,
-                 std::function<void(const std::string&)> on_terminated = nullptr,
-                 std::function<void(const std::string&)> on_stopped = nullptr)
+  void init_base(rclcpp::Node::SharedPtr node, const runner_opts& run_config)
   {
+    // store node connection source
+    capabilities2_msgs::msg::Capability source_capability;
+    source_capability.capability = run_config.interface;
+    source_capability.provider = run_config.provider;
+    set_source(source_capability);
+
     // store node pointer and opts
     node_ = node;
     run_config_ = run_config;
-    on_started_ = on_started;
-    on_terminated_ = on_terminated;
-    on_stopped_ = on_stopped;
+  }
+
+  /**
+   * @brief enable events system for this runner
+   *
+   * @param events event emitter to be used by this runner
+   */
+  void enable_events(std::shared_ptr<capabilities2_events::EventBase> events)
+  {
+    if (!is_event_emitter_set())
+    {
+      set_event_emitter(events);
+    }
+  }
+
+  /**
+   * @brief make EventNode::add_connection public method on runner api.
+   *
+   * add connection to this runner to target capability this allows the runner to emit events on state changes
+   * to the target capability the connection ID format is: "bond_id/trigger_id"  which allows event emission to
+   * extract bond_id for access control
+   *
+   * @param connection_id unique identifier for the connection (format: "bond_id/trigger_id")
+   * @param type type of event to connect to
+   * @param target target capability to connect to
+   * @param callback callback to trigger target capability with (capability, parameters, bond_id)
+   */
+  void add_connection(const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& type,
+                      const capabilities2_msgs::msg::Capability& target,
+                      std::function<void(const std::string&, const std::string&, const std::string&,
+                                         capabilities2_events::EventParameters)>
+                          callback)
+  {
+    EventNode::add_connection(connection_id, type, target, callback);
   }
 
   /**
@@ -167,6 +211,68 @@ public:
   }
 
 protected:
+  // FIXME: implement new event subsystem
+
+  /**
+   * @brief Update on_started event parameters with new data if available.
+   *
+   * This function is used to inject new data into the CapabilityOptions containing
+   * parameters related to the on_started trigger event
+   *
+   * A pattern needs to be implemented in the derived class
+   *
+   * @return CapabilityOptions containing new parameters
+   */
+  virtual capabilities2_events::EventParameters param_on_started()
+  {
+    return capabilities2_events::EventParameters();
+  };
+
+  /**
+   * @brief Update on_stopped event parameters with new data if available.
+   *
+   * This function is used to inject new data into the CapabilityOptions containing
+   * parameters related to the on_stopped trigger event
+   *
+   * A pattern needs to be implemented in the derived class
+   *
+   * @return CapabilityOptions containing new parameters
+   */
+  virtual capabilities2_events::EventParameters param_on_stopped()
+  {
+    return capabilities2_events::EventParameters();
+  };
+
+  /**
+   * @brief Update on_failure event parameters with new data if available.
+   *
+   * This function is used to inject new data into the CapabilityOptions containing
+   * parameters related to the on_failure trigger event
+   *
+   * A pattern needs to be implemented in the derived class
+   *
+   * @return CapabilityOptions containing new parameters
+   */
+  virtual capabilities2_events::EventParameters param_on_failure()
+  {
+    return capabilities2_events::EventParameters();
+  };
+
+  /**
+   * @brief Update on_success event parameters with new data if available.
+   *
+   * This function is used to inject new data into the CapabilityOptions containing
+   * parameters related to the on_success trigger event
+   *
+   * A pattern needs to be implemented in the derived class
+   *
+   * @return CapabilityOptions containing new parameters
+   */
+  virtual capabilities2_events::EventParameters param_on_success()
+  {
+    return capabilities2_events::EventParameters();
+  };
+
   // run config getters
 
   /**
@@ -300,36 +406,72 @@ protected:
     return get_first_resource_name("action");
   }
 
+  // FIXME: implement new event subsystem
+  // STATE CHANGE HELPERS
+
+  /**
+   * @brief emit STARTED event
+   *
+   * @param bond_id
+   * @param parameters
+   */
+  void emit_started(const std::string& bond_id, const std::string& instance_id,
+                    capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
+  {
+    RCLCPP_INFO(node_->get_logger(), "emitting STARTED event with bond_id: %s", bond_id.c_str());
+    emit_event(bond_id, instance_id, capabilities2_msgs::msg::CapabilityEventCode::STARTED, parameters);
+  }
+
+  /**
+   * @brief emit STOPPED event
+   *
+   * @param bond_id
+   * @param parameters
+   */
+  void emit_stopped(const std::string& bond_id, const std::string& instance_id,
+                    capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
+  {
+    RCLCPP_INFO(node_->get_logger(), "emitting STOPPED event with bond_id: %s", bond_id.c_str());
+    emit_event(bond_id, instance_id, capabilities2_msgs::msg::CapabilityEventCode::STOPPED, parameters);
+  }
+
+  /**
+   * @brief emit SUCCEEDED event
+   *
+   * @param bond_id
+   * @param parameters
+   */
+  void emit_succeeded(const std::string& bond_id, const std::string& instance_id,
+                      capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
+  {
+    RCLCPP_INFO(node_->get_logger(), "emitting SUCCEEDED event with bond_id: %s", bond_id.c_str());
+    emit_event(bond_id, instance_id, capabilities2_msgs::msg::CapabilityEventCode::SUCCEEDED, parameters);
+  }
+
+  /**
+   * @brief emit FAILED event
+   *
+   * @param bond_id
+   * @param parameters
+   */
+  void emit_failed(const std::string& bond_id, const std::string& instance_id,
+                   capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
+  {
+    RCLCPP_INFO(node_->get_logger(), "emitting FAILED event with bond_id: %s", bond_id.c_str());
+    emit_event(bond_id, instance_id, capabilities2_msgs::msg::CapabilityEventCode::FAILED, parameters);
+  }
+
 protected:
   /**
-   * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
+   * @brief shared pointer to the capabilities node
+   * Allows to use ros node related functionalities
    */
   rclcpp::Node::SharedPtr node_;
 
   /**
-   * @param node runner configuration
+   * @brief run_config_ runner configuration
    */
   runner_opts run_config_;
-
-  /**
-   * @param node pointer to function to execute on starting the runner
-   */
-  std::function<void(const std::string&)> on_started_;
-
-  /**
-   * @param node pointer to function to execute on terminating the runner
-   */
-  std::function<void(const std::string&)> on_terminated_;
-
-  /**
-   * @param node pointer to function to execute on stopping the runner
-   */
-  std::function<void(const std::string&)> on_stopped_;
-
-  /**
-   * @param node pointer to function to execute on result
-   */
-  std::function<void(const std::string&)> on_result_;
 };
 
 }  // namespace capabilities2_runner

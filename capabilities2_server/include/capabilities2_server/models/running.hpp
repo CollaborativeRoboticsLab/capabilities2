@@ -23,10 +23,10 @@ struct capability_model_t
  * it is derived from interfaces, semantic interfaces, and providers.
  *
  */
-struct running_model_t
+struct running_model_t : public capability_model_t
 {
-  std::string interface;
-  std::string provider;
+  // std::string interface;
+  // std::string provider;
   std::vector<capability_model_t> dependencies;
   std::string started_by;
   std::string pid;

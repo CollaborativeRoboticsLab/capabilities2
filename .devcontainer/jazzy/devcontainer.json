@@ -1,0 +1,10 @@
+{
+  "name": "capabilities2 jazzy base",
+  "dockerFile": "Dockerfile",
+  "remoteUser": "ubuntu",
+  "runArgs": [
+    "--network=host"
+  ],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/colcon_ws/src/${localWorkspaceFolderBasename},type=bind",
+  "workspaceFolder": "/home/ubuntu/colcon_ws"
+}
