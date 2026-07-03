@@ -28,5 +28,3 @@ RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc
 
 # make sure folders exist
 WORKDIR /home/ubuntu/colcon_ws/src
-
-RUN git clone https://github.com/CollaborativeRoboticsLab/capabilities2_test_suite.git
