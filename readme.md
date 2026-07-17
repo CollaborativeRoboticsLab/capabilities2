@@ -9,7 +9,7 @@
 A reimplementation of the [capabilities](https://github.com/osrf/capabilities) package. This package is implemented using `C++` and extends the capabilities package features.
 
 - [capabilities2_server](./capabilities2_server/readme.md) package contains the core of the system.
-- [capabilities2_runner](./capabilities2_server/readme.md) package contains base and template classes for capability implementations.
+- [capabilities2_runner](./capabilities2_runner/readme.md) package contains base and template classes for capability implementations.
 
 ## System structure
 

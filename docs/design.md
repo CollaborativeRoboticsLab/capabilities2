@@ -12,4 +12,4 @@ The runners feature which is new in `capabilities2` allows capabilities to be ex
 
 #### launch runner
 
-To enable the launch functionality from `capabilities` in `capabilities2`, a `launch runner` has been implemented. Due to the design of the launch system in ROS2, it was necessary to create a `launch_proxy` node which uses the `python` launch API to start and stop launch files. The runner allows uses an action to start and stop launch files, and keep track of running launch files.
+To preserve compatibility with the original `capabilities` package, `capabilities2` still keeps a `LaunchRunner` interface in the codebase. An initial implementation existed, but launch-file execution is now intentionally deferred because of incompatibilities with the current ROS2 launch system. A separate replacement approach is being developed, and launch-runner documentation will be restored once that work is ready.

@@ -12,7 +12,7 @@ The `capabilities2_runner` package provides runner patterns that can be used to 
 | `capabilities2_runner::ActionRunner` | The Base runner class for capabilities that are implemented as ROS Actions. Overrides `stop` and `trigger` from RunnerBase. |
 | `capabilities2_runner::ServiceRunner` | The Base runner class for capabilities that are implemented as ROS Services. |
 | `capabilities2_runner::TopicRunner` | The Base runner class for capabilities that are implemented as ROS Topics. |
-| `capabilities2_runner::NoTriggerActionRunner` | A Base runner class that is also a derivative of Action Runner which disables trigger functionality. Useful for runners that start executing from the beginning. |
+| `capabilities2_runner::NoTriggerRunner` | A base runner class that disables trigger functionality. Useful for runners that begin work immediately from `start`. |
 
 ## Standard Runners
 
@@ -20,17 +20,10 @@ The `capabilities2_runner` package provides some standard runners.
 
 | Runner Type | Description |
 |-------------|-------------|
-| `capabilities2_runner::LaunchRunner` | Runner for capabilities that are implemented as launch files. |
+| `capabilities2_runner::LaunchRunner` | Deferred launch-file runner kept for compatibility planning. The current implementation is intentionally disabled. |
 | `capabilities2_runner::DummyRunner` | A sample runner that can be used to test the functionality of capabilities server. |
-
-## System Runners
-
-The `capabilities2_runner_system` package provides system-level runners that can be used to coordinate multiple capabilities through the events system.
-
-| Runner Type | Description |
-|-------------|-------------|
-| `capabilities2_runner_system::InputMultiplexAny` | A runner that multiplexes multiple input capabilities, allowing any of them to trigger the output. |
-| `capabilities2_runner_system::InputMultiplexAll` | A runner that multiplexes multiple input capabilities, requiring all of them to be active to trigger the output. |
+| `capabilities2_runner::GetCapabilitySpecsRunner` | A runner that requests capability specifications from the capabilities server. |
+| `capabilities2_runner::InputMultiplexRunner` | A runner that multiplexes multiple input capabilities through the events system. |
 
 ## Experimental Runners
 
@@ -39,7 +32,6 @@ The `capabilities2_runner` package provides experimental runners that can be use
 | Runner Type | Description |
 |-------------|-------------|
 | `capabilities2_runner::EnCapRunner` | Base runner class that provides a capability action interface that encapsulates another action. |
-| `capabilities2_runner::MultiActionRunner` | Base runner class for capabilities that are implemented using multiple actions. |
 
 ## Runner Inheritance Diagram
 
@@ -62,16 +54,15 @@ namespace capabilities2_runner
   public:
     // start the runner
     virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                     std::function<void(const std::string&)> on_started = nullptr,
-                     std::function<void(const std::string&)> on_terminated = nullptr,
-                     std::function<void(const std::string&)> on_stopped = nullptr) = 0;
+                       const std::string& bond_id) = 0;
 
     // stop the runner
-    virtual void stop() = 0;
+    virtual void stop(const std::string& bond_id, const std::string& instance_id = "") = 0;
 
     // trigger the runner
-    virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
-    trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) = 0;
+    virtual void trigger(capabilities2_events::EventParameters& parameters,
+                         const std::string& bond_id,
+                         const std::string& instance_id) = 0;
   };
 
 } // namespace capabilities2_runner
@@ -79,19 +70,9 @@ namespace capabilities2_runner
 
 ### LaunchRunner
 
-The `Launch Runner` inherits from the `capabilities2_runner::NoTriggerActionRunner` and is a special case. To instantiate this runner, provide a launch file path as the `runner` tag in the capability provider.
+The `LaunchRunner` inherits from `capabilities2_runner::NoTriggerRunner`, but it is intentionally deferred in the current codebase. The class and plugin entry are kept so that launch support can be restored once the replacement approach for the current ROS2 launch system is ready. For now, do not configure providers to depend on launch-file execution through this runner.
 
-```yaml
-# provider ...
-name: my_provider
-spec_version: 1
-spec_type: provider
-implements: my_capability
-# the runner to use is an exported plugin name based on RunnerBase
-runner: path/to/launch_file.launch.py
-```
-
-### Creating a a Custom runner
+### Creating a Custom runner
 
 The main idea is to allow users to create custom runners for their specific capabilities. Runners can be created to perform capabilities. The runner can be specified in a capability provider as the `runner` tag:
 

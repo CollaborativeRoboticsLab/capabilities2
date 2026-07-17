@@ -23,4 +23,10 @@ then request to use a capability
 ros2 service call /capabilities/use_capability capabilities2_msgs/srv/UseCapability
 ```
 
+running capabilities can also be connected together through the event system. this requires a valid bond and both the source and target capabilities to already be running.
+
+```bash
+ros2 service call /capabilities/connect_capability capabilities2_msgs/srv/ConnectCapability
+```
+
 This capability can be freed by calling the `free_capability` service, or just let the bond expire. The capability will be freed automatically.

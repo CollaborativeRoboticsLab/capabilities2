@@ -4,13 +4,13 @@ Capabilities features can be tested using the provided test scripts. The test sc
 
 ```bash
 source install/setup.bash
-ros2 launch capabilities2_server server.launch.py
+ros2 launch capabilities2_server capabilities2_server.launch.py
 ```
 
 The test scripts are written to test against the `std_capabilities` package. Make sure that the `std_capabilities` package is copied along with the `capabilities2` package to the `capabilities2_ws/src` folder and is built and sourced before running the test scripts.
 
-> **Note**: The test scripts use the `bondby` package. Make sure to install the `bondpy` package before running the test scripts. \
-> `sudo apt install ros-$ROS_DISTRO-bondy`
+> **Note**: The test scripts use the `bondpy` package. Make sure it is installed before running the test scripts. \
+> `sudo apt install ros-$ROS_DISTRO-bondpy`
 
 Run the tests with python3. The test scripts are located in the `capabilities2_server/test` directory. Make sure to source the workspace before running the test.
 
@@ -30,15 +30,4 @@ python3 call_establish_bond.py
 | [call_get_specs.py](../capabilities2_server/test/call_get_specs.py) | Get all the loaded spec files |
 | [call_register_cap.py](../capabilities2_server/test/call_register_cap.py) | Register a new specification file |
 
-There is another test script in the `capabilities2_launch_proxy` package that tests using a capability.
-
-```bash
-# example
-source install/setup.bash
-cd src/capabilities2/capabilities2_launch_proxy/test
-python3 call_establish_bond.py
-```
-
-| Test Script | Description |
-| --- | --- |
-| [call_use_launch_runner.py](../capabilities2_launch_proxy/test/call_use_launch_runner.py) | Test using a launch runner based capability. This tests the bond, use, and get running features of the capabilities server |
+Launch-runner-specific tests are currently not provided. The `LaunchRunner` header and plugin entry remain in the codebase, but launch support is intentionally deferred until a replacement approach for the current ROS2 launch system is ready.

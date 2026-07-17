@@ -22,7 +22,7 @@ git clone https://github.com/CollaborativeRoboticsLab/capabilities2.git
 Optionally you can clone
 
 ```bash
-git https://github.com/CollaborativeRoboticsLab/std_capabilities.git
+git clone https://github.com/CollaborativeRoboticsLab/std_capabilities.git
 ```
 
 ### Dependency installation
