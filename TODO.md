@@ -6,11 +6,10 @@
 - [x] better docs
 - [x] BUG: handle "'" in db queries
 - [x] BUG: escape db function variables
-- [ ] close or change communication to launch proxy so that it can't be accessed from ros network
-- [ ] BUG: fix issue with connecting to services and actions started using launch proxy
-- [ ] Launch proxy does not work, maybe remove and note as future work, or suggest alternatives
+- [x] document deferred launch-runner support and planned replacement for current ROS2 launch incompatibilities
+- [ ] restore launch-runner support once the replacement approach is ready
 - [x] add descriptions to packages with TODO in package.xml
-- [ ] standardise trigger prototype
+- [x] standardise trigger prototype
 - [x] bump cmake min version to 3.16
 - [ ] check thread safety for runner execution threads
 - [ ] add note on threaded execution in base trigger function
@@ -28,8 +27,8 @@
 
 - [x] remove fan out project work
 - [x] merge various system runners into base runner package
-- [ ] custom logger needs to be removed
-- [ ] events should be incorporated as core function
-- [ ] server, runner base, api have event
+- [x] custom logger needs to be removed
+- [x] events should be incorporated as core function
+- [x] server, runner base, api have event
 - [ ] increment package versions
 - [ ] interfaces and providers for cap caps

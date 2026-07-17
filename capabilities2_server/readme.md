@@ -14,10 +14,10 @@ The capabilities2 server is implemented as a [ROS2 Component](https://docs.ros.o
 
 ```bash
 source install/setup.bash
-ros2 launch capabilities2_server server.launch.py
+ros2 launch capabilities2_server capabilities2_server.launch.py
 ```
 
-Refer `capabilities2_server/config/capabilities.yaml` for launch arguments.
+Refer `capabilities2_server/config/capabilities.yaml` for the default node parameters loaded by the launch file.
 
 ## System dependencies
 
@@ -51,7 +51,7 @@ The capabilities2 server exposes the following Service API (see [capabilities2_m
 | `~/stop_capability`          | `StopCapability.srv`        | Stop a capability (this is a forceful stop, and ignores use and free logic) |
 | `~/register_capability`      | `RegisterCapability.srv`    | Register a capability with the capabilities server |
 | `~/trigger_capability`       | `TriggerCapability.srv`     | Trigger a capability - must be bonded |
-| `~/connect_capability`       | `ConnectCapability.srv`     | Configure a capability with `on_start`, `on_end`, `on_success`, `on_failure` event connections - must be bonded |
+| `~/connect_capability`       | `ConnectCapability.srv`     | Connect two running capabilities through the event system using a `CapabilityConnection` message - must be bonded |
 
 ### Topics
 

@@ -1,6 +1,6 @@
 # Basic Tutorial
 
-This tutorial will guide you through the basic steps of using the `capabiliites2`. It will cover the following topics:
+This tutorial will guide you through the basic steps of using `capabilities2`. It will cover the following topics:
 
 1. [Creating a capability](#creating-a-capability) using yaml model files.
 2. [Run the capabilities server](#run-the-capabilities-server) to serve the capability.
@@ -8,7 +8,7 @@ This tutorial will guide you through the basic steps of using the `capabiliites2
 
 The tutorial will create a simple capability that prints "Hello, World!" to the console, using talker-listener nodes as a backend sub-system.
 
-The capabilities server will serve the capability, and the spawn a runner that will execute the capability.
+The capabilities server will serve the capability, and then spawn a runner that will execute the capability.
 
 ## Creating a capability
 
@@ -64,69 +64,45 @@ Add the following to the `package.xml` file in the `hello_capability_world` pack
 
 ### Create a runner plugin
 
-Create a C++ class that implements the provider. This class will be used to run the capability. Create a new file `talker.cpp` in the `src` directory of the `hello_capability_world` package. The class should inherit from the `capabilities2_runner::RunnerBase` class, and should be exorted as a plugin.
+Create a C++ class that implements the provider. This class will be used to run the capability. Create a new file `talker.cpp` in the `src` directory of the `hello_capability_world` package. In this example, the capability publishes immediately when started, so the class can inherit from `capabilities2_runner::NoTriggerRunner` and be exported as a plugin.
 
 ```cpp
 // talker.cpp
 #include "rclcpp/rclcpp.hpp"
 #include "pluginlib/class_list_macros.hpp"
-#include "capabilities2_runner/runner_base.hpp"
+#include "capabilities2_runner/notrigger_runner.hpp"
 #include "std_msgs/msg/string.hpp"
 
 namespace hello_capability_world
 {
-class Talker : public capabilities2_runner::RunnerBase
+class Talker : public capabilities2_runner::NoTriggerRunner
 {
 public:
-    Talker() = default;
+  Talker() = default;
 
-    // implement the start method
-    virtual void start(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                        std::function<void(const std::string&)> on_started = nullptr,
-                        std::function<void(const std::string&)> on_terminated = nullptr,
-                        std::function<void(const std::string&)> on_stopped = nullptr)
+  void start(
+    rclcpp::Node::SharedPtr node,
+    const capabilities2_runner::runner_opts& run_config,
+    const std::string& bond_id) override
     {
-        // init base class gets node info and sets up the event handlers
-        init_base(node, run_config, on_started, on_terminated, on_stopped);
+    // init base class gets node info and stores the runner configuration
+    init_base(node, run_config);
 
         // create a publisher to the chatter topic
-        // can now use the internal node (node_) to create the publisher since it was set up in the base class
-        // the 'chatter' topic is defined in the talker_interface.yaml file so it could be collected programmatically
-        // the topic name is passed in the run_config
-        // in this example, we are hardcoding the topic name
         auto chatter_pub = node_->create_publisher<std_msgs::msg::String>("chatter", 10);
 
-        // send a starting runner event
-        if (on_started)
-        {
-            on_started(get_interface());
-        }
+    emit_started(bond_id, "", param_on_started());
 
         // send a message to the chatter topic
-        chatter_pub->publish(std_msgs::msg::String().set_data("Hello, World!"));
-
-        // send a terminated runner event
-        if (on_terminated)
-        {
-            on_terminated(get_interface());
-        }
+    std_msgs::msg::String msg;
+    msg.data = "Hello, World!";
+    chatter_pub->publish(msg);
     }
 
-    // the other virtual methods are not implemented in this example
-    // the stop method is used to stop the capability
-    // this method is not implemented in this example but it does emit a stopped event
-    virtual void stop() {
-        // stop the runner event
-        if (on_stopped)
-        {
-            on_stopped(get_interface());
-        }
+  void stop(const std::string& bond_id, const std::string& instance_id = "") override
+  {
+    emit_stopped(bond_id, instance_id, param_on_stopped());
     }
-
-    // the trigger method is used to trigger the capability with parameters after it has been started
-    // this method is not implemented in this example
-    virtual std::optional<std::function<void(std::shared_ptr<tinyxml2::XMLElement>)>>
-    trigger(std::shared_ptr<tinyxml2::XMLElement> parameters = nullptr) {}
 };
 } // namespace hello_capability_world
 
@@ -136,7 +112,7 @@ PLUGINLIB_EXPORT_CLASS(hello_capability_world::Talker, capabilities2_runner::Run
 
 #### Export the plugin in the CMakeLists.txt
 
-Follow the [creating a plugin]() tutorial from ROS2 to export a plugin.
+Follow the ROS2 pluginlib pattern to export the runner plugin.
 
 ```xml
 <!-- plugins.xml -->
@@ -149,7 +125,16 @@ Follow the [creating a plugin]() tutorial from ROS2 to export a plugin.
 
 ```cmake
 # CMakeLists.txt
-ament_export_interfaces(export_hello_capability_world HAS_LIBRARY_TARGET)
+add_library(${PROJECT_NAME} SHARED src/talker.cpp)
+
+ament_target_dependencies(${PROJECT_NAME}
+  rclcpp
+  pluginlib
+  capabilities2_runner
+  std_msgs
+)
+
+pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
 ```
 
 ## Run the capabilities server
@@ -173,11 +158,11 @@ Create a new config file in the `hello_capability_world` package. This file will
       - /home/ubuntu/colcon_ws/src/capabilities2 # absolute paths for now, these paths assume the capabilities2 package is in the colcon workspace of the ubuntu user (devcontainer user)
 ```
 
-Launch the capabilities server using the launch file and pass the config file as an argument.
+Run the capabilities server node and provide the config file with ROS parameters.
 
 ```bash
-# run the capabilities server using the launch file
-ros2 launch capabilities2_server capabilities2_server.launch.py config_file:=/path/to/hello_capability_world/config/hello_capability_world.yaml
+# run the capabilities server node with the config file
+ros2 run capabilities2_server capabilities2_server_node --ros-args --params-file /path/to/hello_capability_world/config/hello_capability_world.yaml
 ```
 
 We also need to run the talker-listener nodes as well. The talker-listener nodes are provided by the `demo_nodes_cpp` package. We can run the talker-listener nodes using the following command:

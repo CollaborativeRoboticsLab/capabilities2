@@ -27,7 +27,7 @@ Represents the link between two nodes.
 
 | model data | description |
 |---|---|
-| type | the type of connection (e.g., ON_START, ON_STOP, ON_SUCCESS, ON_FAILURE) |
+| type | the type of connection (e.g., STARTED, STOPPED, SUCCEEDED, FAILED) |
 | source | the source capability that emits the event |
 | target | the target capability to invoke when the event is emitted |
 
@@ -56,6 +56,38 @@ etc..
 3. When a capability emits an event (e.g., STARTED), the event system checks for any connections matching that event type from the source capability
 4. For each matching connection, the target capability is invoked accordingly (e.g., started, stopped, etc.)
 
+## Example usage
+
+After a bond is established and both capabilities are running, a client can connect them through `ConnectCapability.srv`.
+
+```bash
+ros2 service call /capabilities/connect_capability capabilities2_msgs/srv/ConnectCapability "{
+	bond_id: '<bond-id>',
+	connection: {
+		type: {code: 1},
+		source: {
+			capability: 'demo_pkg/source_capability',
+			provider: 'demo_pkg/source_provider',
+			instance_id: 'source_instance'
+		},
+		target: {
+			capability: 'demo_pkg/target_capability',
+			provider: 'demo_pkg/target_provider',
+			instance_id: 'target_instance',
+			parameters: [
+				{
+					key: 'mode',
+					value: ['auto'],
+					type: 3
+				}
+			]
+		}
+	}
+}"
+```
+
+in this example, `type.code: 1` corresponds to `STARTED`. when the source capability emits a `STARTED` event for `source_instance`, the target capability is triggered for `target_instance`. any parameters specified on the target capability are carried through the connection and merged with event parameters at emission time.
+
 ### Event Emission Triggering
 
 There are two ways events can be tracked for emission:
@@ -83,19 +115,5 @@ event_id = connection_id = bond_id + '/' + trigger_id
 
 #### To Do
 
-- [x] instantiate event publisher in server since publisher is defined there
-- [x] store the event class in the api, since api owns runners
-- [x] then pass event system api object pointer to runners to allow firing events from runners, can be passed to event node parent class
-- [x] fix duplicate - event, trigger, runner - id - just use names?
-- [x] remove event_opts type usage
-
-- [x] implement event node class\
-- [x] inherit event node in runner base class
-- [x] generalise event connections to use a map of event types to connection objects
-- [x] add ability to disconnect events
-- [x] add ability to list current event connections
-- [x] add ability to connect multiple events of same type to different targets
-
-- [ ] add ability to specify parameters for target capability on event connection
-
+- [x] add ability to specify parameters for target capability on event connection
 - [ ] add ability to specify event connections in capability definition files

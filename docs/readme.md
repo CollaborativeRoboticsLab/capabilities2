@@ -1,6 +1,6 @@
 # Docs
 
-For detailed information about the code, build the code documentation using Doxygen. see [`capabilities2_documentation`](./capabilities2_documentation/).
+For detailed information about the code, build the code documentation using Doxygen. see [`capabilities2_documentation`](../capabilities2_documentation/).
 
 ```bash
 # in the devcontainer
@@ -24,6 +24,6 @@ A capabilities runner is a plugin that allows capabilities to be executed in a m
 
 This package contains messages for the capabilities2 package. See the [capabilities2_msgs](../capabilities2_msgs/readme.md) package for more information.
 
-## Capabilities Launch Proxy
+## Launch Runner Status
 
-The capabilities launch proxy is a node that uses the Python launch API to start and stop launch files. It is used by the launch runner to start and stop launch files. See the [capabilities2_launch_proxy](../capabilities2_launch_proxy/readme.md) package for more information.
+The `LaunchRunner` interface is still kept in the `capabilities2_runner` package, but launch-file execution support is intentionally deferred because of incompatibilities with the current ROS2 launch system. Documentation for launch-based capability execution will be restored once the replacement solution is ready.
