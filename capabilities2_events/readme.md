@@ -53,8 +53,9 @@ etc..
 
 1. A user establishes a bond with the capabilities2_server
 2. The user connects capabilities together by specifying event connections (source capability, event type, target capability)
-3. When a capability emits an event (e.g., STARTED), the event system checks for any connections matching that event type from the source capability
-4. For each matching connection, the target capability is invoked accordingly (e.g., started, stopped, etc.)
+3. The server namespaces the connection using the bond id, the source capability instance id, and the target capability instance id
+4. When a capability emits an event (e.g., STARTED), the event system checks for any connections matching that event type from the source capability, bond, and source instance id
+5. For each matching connection, the target capability is invoked accordingly (e.g., started, stopped, etc.)
 
 ## Example usage
 
@@ -88,6 +89,28 @@ ros2 service call /capabilities/connect_capability capabilities2_msgs/srv/Connec
 
 in this example, `type.code: 1` corresponds to `STARTED`. when the source capability emits a `STARTED` event for `source_instance`, the target capability is triggered for `target_instance`. any parameters specified on the target capability are carried through the connection and merged with event parameters at emission time.
 
+### Event namespacing
+
+event connections are scoped in three ways:
+
+1. by bond id, so one client cannot trigger another client's event wiring
+2. by source capability instance id, so only the matching running source instance emits to that connection
+3. by target capability instance id, so the event carries the intended destination instance when the callback is invoked
+
+the connection identifier built by the server currently has this format:
+
+```text
+bond_id/source_instance_id/target_instance_id
+```
+
+the source capability runner stores this connection id and, during event emission, matches on:
+
+- event type
+- bond id
+- source instance id
+
+when a match is found, the target capability and target instance id are forwarded through the callback. the published event message also uses the source instance id as the `trigger_id` field.
+
 ### Event Emission Triggering
 
 There are two ways events can be tracked for emission:
@@ -99,13 +122,11 @@ This works out to mean that a STARTED capability will implicitly start its depen
 
 ### Event trigger ID
 
-The event trigger ID is a unique identifier for the event connection. It also needs to account for multiple clients. It is constructed using URI format from the bond ID and the trigger ID specified by the user:
+the published event message exposes a `trigger_id` field. in the current implementation this is populated from the source capability instance id, not from a separate user-defined trigger namespace.
 
-```
-string connection_id = '<bond_id>/<trigger_id>'
-uuid bond_id -> provided on bond establishment
-string trigger_id -> user specified id for the connection
-event_id = connection_id = bond_id + '/' + trigger_id
+```text
+connection_id = bond_id + '/' + source_instance_id + '/' + target_instance_id
+published trigger_id = source_instance_id
 ```
 
 ### Notes
