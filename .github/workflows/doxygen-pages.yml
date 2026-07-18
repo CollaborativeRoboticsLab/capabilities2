@@ -1,0 +1,86 @@
+name: Build and Deploy Docs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - Doxygen
+      - README.md
+      - docs/**
+      - '**/*.md'
+      - '**/*.dox'
+      - '**/*.h'
+      - '**/*.hh'
+      - '**/*.hpp'
+      - '**/*.hxx'
+      - '**/*.c'
+      - '**/*.cc'
+      - '**/*.cpp'
+      - '**/*.cxx'
+      - '**/*.py'
+      - .github/workflows/doxygen-pages.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - Doxygen
+      - README.md
+      - docs/**
+      - '**/*.md'
+      - '**/*.dox'
+      - '**/*.h'
+      - '**/*.hh'
+      - '**/*.hpp'
+      - '**/*.hxx'
+      - '**/*.c'
+      - '**/*.cc'
+      - '**/*.cpp'
+      - '**/*.cxx'
+      - '**/*.py'
+      - .github/workflows/doxygen-pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Doxygen
+        run: sudo apt-get update && sudo apt-get install -y doxygen
+
+      - name: Build HTML documentation
+        run: |
+          doxygen Doxygen
+          touch docs/html/.nojekyll
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/html
+
+  deploy-pages:
+    if: github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch
+    needs: build-docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

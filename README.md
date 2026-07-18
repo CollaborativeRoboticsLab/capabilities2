@@ -46,6 +46,7 @@ ros2 launch capabilities2_server capabilities2_server.launch.py
 
 - [Motivation and Example Use Cases](./docs/motivation_and_examples.md)
 - [Design Information](./docs/design.md)
+- [Generated API and docs site](./docs/readme.md)
 - [Registering a capability](./capabilities2_server/docs/register.md)
 - [Terminal based capability usage](./capabilities2_server/docs/terminal_usage.md)
 - [Running test scripts](./docs/run_test_scripts.md)
