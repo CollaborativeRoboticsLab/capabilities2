@@ -1,9 +1,0 @@
-<map id="capabilities2_runner::NoTriggerRunner" name="capabilities2_runner::NoTriggerRunner">
-<area shape="rect" id="Node000001" title="no&#45;trigger runner" alt="" coords="6,181,161,221"/>
-<area shape="rect" id="Node000004" href="$classcapabilities2__runner_1_1LaunchRunner.html" title="launch runner base class" alt="" coords="6,269,161,309"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="86,235,86,269,81,269,81,235"/>
-<area shape="rect" id="Node000002" href="$classcapabilities2__runner_1_1RunnerBase.html" title="base class for all runners" alt="" coords="6,93,161,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="86,147,86,181,81,181,81,147"/>
-<area shape="rect" id="Node000003" href="$classcapabilities2__events_1_1EventNode.html" title="an event node is a source of an event" alt="" coords="5,5,161,45"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="86,59,86,93,81,93,81,59"/>
-</map>

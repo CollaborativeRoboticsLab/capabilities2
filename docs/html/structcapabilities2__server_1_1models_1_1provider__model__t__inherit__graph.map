@@ -1,9 +1,0 @@
-<map id="capabilities2_server::models::provider_model_t" name="capabilities2_server::models::provider_model_t">
-<area shape="rect" id="Node000001" title="provider model" alt="" coords="228,91,428,131"/>
-<area shape="rect" id="Node000002" href="$structcapabilities2__server_1_1models_1_1remappable__base__t.html" title="remappable base model definition" alt="" coords="11,5,175,60"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="188,62,268,89,267,94,187,67"/>
-<area shape="rect" id="Node000003" href="$structcapabilities2__server_1_1models_1_1predicateable__base__t.html" title="predicateable model base type" alt="" coords="5,84,180,139"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="194,109,228,109,228,114,194,114"/>
-<area shape="rect" id="Node000004" href="$structcapabilities2__server_1_1models_1_1defineable__base__t.html" title="defineable base" alt="" coords="15,163,170,217"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="182,157,266,129,268,134,184,162"/>
-</map>

@@ -1,5 +1,0 @@
-<map id="capabilities2_server::models::modifiable_base_t" name="capabilities2_server::models::modifiable_base_t">
-<area shape="rect" id="Node000001" title="base model for all models that can be modified" alt="" coords="23,5,178,60"/>
-<area shape="rect" id="Node000002" href="$structcapabilities2__server_1_1models_1_1header__model__t.html" title="the header model is a simple model for the header of a capability type it includes the name,..." alt="" coords="5,108,196,148"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,74,103,108,98,108,98,74"/>
-</map>
