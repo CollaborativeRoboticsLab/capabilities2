@@ -3,6 +3,9 @@
 The documentation site is generated with Doxygen from the existing Markdown in this `docs/` tree together with comments from the source code. The Doxygen configuration lives at the repository root in [`Doxygen`](../Doxygen).
 
 ```bash
+# install doxygen if it is not already available
+sudo apt-get update && sudo apt-get install -y doxygen
+
 # from the repository root
 doxygen Doxygen
 ```
