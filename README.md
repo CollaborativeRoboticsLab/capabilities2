@@ -51,6 +51,16 @@ ros2 launch capabilities2_server capabilities2_server.launch.py
 - [Terminal based capability usage](./capabilities2_server/docs/terminal_usage.md)
 - [Running test scripts](./docs/run_test_scripts.md)
 
+### Docs
+
+For detailed information about the code, build the code documentation using Doxygen. see [`capabilities2_documentation`](./capabilities2_documentation/).
+
+```bash
+# in the devcontainer
+cd capabilities2_documentation
+doxygen Doxyfile
+```
+Open [`capabilities2_documentation/html/index.html`](./capabilities2_documentation/html/index.html) in a browser for Documentation.
 ## Acknowledgements
 
 This work is based on the capabilities package developed by the Open Source Robotics Foundation. [github.com/osrf/capabilities](https://github.com/osrf/capabilities).
