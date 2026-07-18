@@ -1,0 +1,7 @@
+<map id="capabilities2_server::models::semantic_interface_model_t" name="capabilities2_server::models::semantic_interface_model_t">
+<area shape="rect" id="Node000001" title="semantic interface model" alt="" coords="228,45,439,100"/>
+<area shape="rect" id="Node000002" href="$structcapabilities2__server_1_1models_1_1remappable__base__t.html" title="remappable base model definition" alt="" coords="11,5,175,60"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="189,46,228,53,228,58,188,51"/>
+<area shape="rect" id="Node000003" href="$structcapabilities2__server_1_1models_1_1predicateable__base__t.html" title="predicateable model base type" alt="" coords="5,84,180,139"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="193,93,227,87,228,92,194,98"/>
+</map>

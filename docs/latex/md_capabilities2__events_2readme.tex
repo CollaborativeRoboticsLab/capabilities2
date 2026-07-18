@@ -1,0 +1,156 @@
+\chapter{Capabilities2 Events}
+\hypertarget{md_capabilities2__events_2readme}{}\label{md_capabilities2__events_2readme}\index{Capabilities2 Events@{Capabilities2 Events}}
+\label{md_capabilities2__events_2readme_autotoc_md0}%
+\Hypertarget{md_capabilities2__events_2readme_autotoc_md0}%
+ This package provides an event handling subsystem for the Capabilities2 framework. Events form the basis of inter-\/capability communication, allowing capabilities to respond to state changes in other capabilities. This facilitates the creation of complex behaviours through the composition of simpler capabilities.\hypertarget{md_capabilities2__events_2readme_autotoc_md1}{}\doxysection{\texorpdfstring{features}{features}}\label{md_capabilities2__events_2readme_autotoc_md1}
+
+\begin{DoxyItemize}
+\item Uses capability event messages
+\item helpers for integration with the \doxylink{namespacecapabilities2__runner}{capabilities2\+\_\+runner}, and \doxylink{namespacecapabilities2__server}{capabilities2\+\_\+server} packages
+\item system for connecting capabilities together based on events. e.\+g. capability state transitions occur based on events from other capabilities
+\end{DoxyItemize}\hypertarget{md_capabilities2__events_2readme_autotoc_md2}{}\doxysection{\texorpdfstring{Model}{Model}}\label{md_capabilities2__events_2readme_autotoc_md2}
+The event system is based around the concepts of nodes, connections, events.\hypertarget{md_capabilities2__events_2readme_autotoc_md3}{}\doxysubsection{\texorpdfstring{Node}{Node}}\label{md_capabilities2__events_2readme_autotoc_md3}
+Represents a capability that can emit events and has connections to other capabilities.
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ model data   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ description    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ model data   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ description    }\\\cline{1-2}
+\endhead
+id   &unique identifier for the node    \\\cline{1-2}
+connections   &a map of connections. The source i always {\itshape this} node   \\\cline{1-2}
+\end{longtabu}
+\hypertarget{md_capabilities2__events_2readme_autotoc_md4}{}\doxysubsection{\texorpdfstring{Connection}{Connection}}\label{md_capabilities2__events_2readme_autotoc_md4}
+Represents the link between two nodes.
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ model data   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ description    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ model data   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ description    }\\\cline{1-2}
+\endhead
+type   &the type of connection (e.\+g., STARTED, STOPPED, SUCCEEDED, FAILED)    \\\cline{1-2}
+source   &the source capability that emits the event    \\\cline{1-2}
+target   &the target capability to invoke when the event is emitted   \\\cline{1-2}
+\end{longtabu}
+\hypertarget{md_capabilities2__events_2readme_autotoc_md5}{}\doxysubsection{\texorpdfstring{Event}{Event}}\label{md_capabilities2__events_2readme_autotoc_md5}
+Represents a specific event that can be emitted by a node (e.\+g., STARTED, STOPPED, SUCCEEDED, FAILED)\hypertarget{md_capabilities2__events_2readme_autotoc_md6}{}\doxysubsection{\texorpdfstring{event types}{event types}}\label{md_capabilities2__events_2readme_autotoc_md6}
+State transitions are as defined in the event code message\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{IDLE,\ //\ initial\ state}
+\DoxyCodeLine{STARTED,\ //\ when\ capability\ is\ started}
+\DoxyCodeLine{STOPPED,\ //\ when\ capability\ is\ stopped}
+\DoxyCodeLine{//\ TRIGGERED,\ //\ when\ capability\ is\ TRIGGERED}
+\DoxyCodeLine{FAILED,\ //\ when\ capability\ has\ FAILED}
+\DoxyCodeLine{SUCCEEDED\ //\ when\ capability\ has\ SUCCEEDED}
+\DoxyCodeLine{etc..}
+
+\end{DoxyCode}
+\hypertarget{md_capabilities2__events_2readme_autotoc_md7}{}\doxysection{\texorpdfstring{Flow}{Flow}}\label{md_capabilities2__events_2readme_autotoc_md7}
+
+\begin{DoxyEnumerate}
+\item A user establishes a bond with the \doxylink{namespacecapabilities2__server}{capabilities2\+\_\+server}
+\item The user connects capabilities together by specifying event connections (source capability, event type, target capability)
+\item The server namespaces the connection using the bond id, the source capability instance id, and the target capability instance id
+\item When a capability emits an event (e.\+g., STARTED), the event system checks for any connections matching that event type from the source capability, bond, and source instance id
+\item For each matching connection, the target capability is invoked accordingly (e.\+g., started, stopped, etc.)
+\end{DoxyEnumerate}\hypertarget{md_capabilities2__events_2readme_autotoc_md8}{}\doxysection{\texorpdfstring{Example usage}{Example usage}}\label{md_capabilities2__events_2readme_autotoc_md8}
+After a bond is established and both capabilities are running, a client can connect them through {\ttfamily Connect\+Capability.\+srv}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{ros2\ service\ call\ /capabilities/connect\_capability\ capabilities2\_msgs/srv/ConnectCapability\ "{}\{}
+\DoxyCodeLine{\ \ bond\_id:\ '<bond-\/id>',}
+\DoxyCodeLine{\ \ connection:\ \{}
+\DoxyCodeLine{\ \ \ \ type:\ \{code:\ 1\},}
+\DoxyCodeLine{\ \ \ \ source:\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ capability:\ 'demo\_pkg/source\_capability',}
+\DoxyCodeLine{\ \ \ \ \ \ provider:\ 'demo\_pkg/source\_provider',}
+\DoxyCodeLine{\ \ \ \ \ \ instance\_id:\ 'source\_instance'}
+\DoxyCodeLine{\ \ \ \ \},}
+\DoxyCodeLine{\ \ \ \ target:\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ capability:\ 'demo\_pkg/target\_capability',}
+\DoxyCodeLine{\ \ \ \ \ \ provider:\ 'demo\_pkg/target\_provider',}
+\DoxyCodeLine{\ \ \ \ \ \ instance\_id:\ 'target\_instance',}
+\DoxyCodeLine{\ \ \ \ \ \ parameters:\ [}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ key:\ 'mode',}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ value:\ ['auto'],}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ type:\ 3}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \ \ ]}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\ \ \}}
+\DoxyCodeLine{\}"{}}
+
+\end{DoxyCode}
+
+
+in this example, {\ttfamily type.\+code\+: 1} corresponds to {\ttfamily STARTED}. when the source capability emits a {\ttfamily STARTED} event for {\ttfamily source\+\_\+instance}, the target capability is triggered for {\ttfamily target\+\_\+instance}. any parameters specified on the target capability are carried through the connection and merged with event parameters at emission time.\hypertarget{md_capabilities2__events_2readme_autotoc_md9}{}\doxysubsection{\texorpdfstring{Event namespacing}{Event namespacing}}\label{md_capabilities2__events_2readme_autotoc_md9}
+event connections are scoped in three ways\+:
+
+
+\begin{DoxyEnumerate}
+\item by bond id, so one client cannot trigger another client\textquotesingle{}s event wiring
+\item by source capability instance id, so only the matching running source instance emits to that connection
+\item by target capability instance id, so the event carries the intended destination instance when the callback is invoked
+\end{DoxyEnumerate}
+
+the connection identifier built by the server currently has this format\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{bond\_id/source\_instance\_id/target\_instance\_id}
+
+\end{DoxyCode}
+
+
+the source capability runner stores this connection id and, during event emission, matches on\+:
+
+
+\begin{DoxyItemize}
+\item event type
+\item bond id
+\item source instance id
+\end{DoxyItemize}
+
+when a match is found, the target capability and target instance id are forwarded through the callback. the published event message also uses the source instance id as the {\ttfamily trigger\+\_\+id} field.\hypertarget{md_capabilities2__events_2readme_autotoc_md10}{}\doxysubsection{\texorpdfstring{Event Emission Triggering}{Event Emission Triggering}}\label{md_capabilities2__events_2readme_autotoc_md10}
+There are two ways events can be tracked for emission\+:
+
+
+\begin{DoxyEnumerate}
+\item the connection is for STARTED or STOPPED events -\/ these are persistently tracked and become dependencies between capabilities
+\item the connection is for SUCCEEDED or FAILED events -\/ these are one-\/shot events that are emitted when a running capability is triggered to succeed or fail
+\end{DoxyEnumerate}
+
+This works out to mean that a STARTED capability will implicitly start its dependent capabilities, and immediately run their trigger action.\hypertarget{md_capabilities2__events_2readme_autotoc_md11}{}\doxysubsection{\texorpdfstring{Event trigger ID}{Event trigger ID}}\label{md_capabilities2__events_2readme_autotoc_md11}
+the published event message exposes a {\ttfamily trigger\+\_\+id} field. in the current implementation this is populated from the source capability instance id, not from a separate user-\/defined trigger namespace.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{connection\_id\ =\ bond\_id\ +\ '/'\ +\ source\_instance\_id\ +\ '/'\ +\ target\_instance\_id}
+\DoxyCodeLine{published\ trigger\_id\ =\ source\_instance\_id}
+
+\end{DoxyCode}
+\hypertarget{md_capabilities2__events_2readme_autotoc_md12}{}\doxysubsection{\texorpdfstring{Notes}{Notes}}\label{md_capabilities2__events_2readme_autotoc_md12}
+
+\begin{DoxyItemize}
+\item a single publisher is used for all event messages, this is at the top level (\doxylink{namespacecapabilities2__server}{capabilities2\+\_\+server})
+\item events are fired from runners
+\end{DoxyItemize}\hypertarget{md_capabilities2__events_2readme_autotoc_md13}{}\doxysubsubsection{\texorpdfstring{To Do}{To Do}}\label{md_capabilities2__events_2readme_autotoc_md13}
+
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]} add ability to specify parameters for target capability on event connection
+\item \mbox{[} \mbox{]} add ability to specify event connections in capability definition files 
+\end{DoxyItemize}

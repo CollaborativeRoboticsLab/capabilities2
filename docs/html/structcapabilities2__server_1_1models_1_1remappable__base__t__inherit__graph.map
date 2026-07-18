@@ -1,0 +1,7 @@
+<map id="capabilities2_server::models::remappable_base_t" name="capabilities2_server::models::remappable_base_t">
+<area shape="rect" id="Node000001" title="remappable base model definition" alt="" coords="5,34,169,89"/>
+<area shape="rect" id="Node000002" href="$structcapabilities2__server_1_1models_1_1provider__model__t.html" title="provider model" alt="" coords="223,5,423,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="182,44,222,38,223,43,183,49"/>
+<area shape="rect" id="Node000003" href="$structcapabilities2__server_1_1models_1_1semantic__interface__model__t.html" title="semantic interface model" alt="" coords="217,70,428,125"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="183,73,217,79,217,84,182,79"/>
+</map>

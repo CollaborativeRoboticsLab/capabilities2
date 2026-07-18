@@ -1,0 +1,50 @@
+\doxysection{defineable\+\_\+base.\+hpp}
+\hypertarget{defineable__base_8hpp_source}{}\label{defineable__base_8hpp_source}\index{capabilities2\_server/include/capabilities2\_server/models/defineable\_base.hpp@{capabilities2\_server/include/capabilities2\_server/models/defineable\_base.hpp}}
+\mbox{\hyperlink{defineable__base_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <yaml-\/cpp/yaml.h>}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__server}{capabilities2\_server}}}
+\DoxyCodeLine{00007\ \{}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{keyword}{namespace\ }models}
+\DoxyCodeLine{00010\ \{}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00021\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1defineable__base__t}{defineable\_base\_t}}}
+\DoxyCodeLine{00022\ \{}
+\DoxyCodeLine{00023\ \ \ \textcolor{comment}{//\ the\ definition\ stored\ as\ a\ string}}
+\DoxyCodeLine{00024\ \ \ std::string\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1defineable__base__t_a42cc3313c4a42b7024a455a6b1a4af8a}{definition\_str}}\ =\ \textcolor{stringliteral}{"{}"{}};\ \ \textcolor{comment}{//\ optional\ property}}
+\DoxyCodeLine{00025\ \ \ \textcolor{comment}{//\ is\ the\ definition\ valid}}
+\DoxyCodeLine{00026\ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1defineable__base__t_a5d607a31ac2fa6e91c3503795336b8f0}{valid}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1defineable__base__t_ae1bfa5befe1ab21658aeb3e733471f63}{from\_yaml}}(\textcolor{keyword}{const}\ YAML::Node\&\ node)}
+\DoxyCodeLine{00029\ \ \ \{}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{comment}{//\ try\ get\ the\ definition\ as\ a\ string}}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keywordflow}{if}\ (node[\textcolor{stringliteral}{"{}definition"{}}])}
+\DoxyCodeLine{00032\ \ \ \ \ \{}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1defineable__base__t_a42cc3313c4a42b7024a455a6b1a4af8a}{definition\_str}}\ =\ node[\textcolor{stringliteral}{"{}definition"{}}].as<std::string>();}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1defineable__base__t_a5d607a31ac2fa6e91c3503795336b8f0}{valid}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00035\ \ \ \ \ \}}
+\DoxyCodeLine{00036\ \ \ \}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ YAML::Node\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1defineable__base__t_a1cdd384efe4e025a1e5d85438ab2bae1}{to\_yaml}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00039\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00040\ \ \ \ \ YAML::Node\ node;}
+\DoxyCodeLine{00041\ \ \ \ \ node[\textcolor{stringliteral}{"{}definition"{}}]\ =\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1defineable__base__t_a42cc3313c4a42b7024a455a6b1a4af8a}{definition\_str}};}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordflow}{return}\ node;}
+\DoxyCodeLine{00043\ \ \ \}}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \textcolor{comment}{//\ is\ the\ definition\ valid}}
+\DoxyCodeLine{00046\ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1defineable__base__t_a85af59696809d15f7c890864a80bee96}{defined}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00047\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1defineable__base__t_a5d607a31ac2fa6e91c3503795336b8f0}{valid}};}
+\DoxyCodeLine{00049\ \ \ \}}
+\DoxyCodeLine{00050\ \};}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \}\ \ \textcolor{comment}{//\ namespace\ models}}
+\DoxyCodeLine{00053\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_server}}
+
+\end{DoxyCode}

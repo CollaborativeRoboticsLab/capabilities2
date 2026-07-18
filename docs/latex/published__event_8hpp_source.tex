@@ -1,0 +1,128 @@
+\doxysection{published\+\_\+event.\+hpp}
+\hypertarget{published__event_8hpp_source}{}\label{published__event_8hpp_source}\index{capabilities2\_events/include/capabilities2\_events/published\_event.hpp@{capabilities2\_events/include/capabilities2\_events/published\_event.hpp}}
+\mbox{\hyperlink{published__event_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{event__base_8hpp}{capabilities2\_events/event\_base.hpp}}>}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <rclcpp/rclcpp.hpp>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/msg/capability\_event\_stamped.hpp>}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__events}{capabilities2\_events}}}
+\DoxyCodeLine{00009\ \{}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent}{PublishedEvent}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase}{EventBase}}}
+\DoxyCodeLine{00012\ \{}
+\DoxyCodeLine{00013\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00014\ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a171a4a05b8abbd64093cb19cf2935f1d}{PublishedEvent}}(rclcpp::Publisher<capabilities2\_msgs::msg::CapabilityEventStamped>::SharedPtr\ event\_pub)}
+\DoxyCodeLine{00015\ \ \ \ \ :\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase}{EventBase}}(),\ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a9512517a8907ce9986c103dd45b4f453}{event\_pub\_}}(event\_pub)}
+\DoxyCodeLine{00016\ \ \ \{}
+\DoxyCodeLine{00017\ \ \ \}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a6ab23da65edf53a46acb69d5c0e961cc}{\string~PublishedEvent}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00024\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a53e7f3937b84b488db674020a2b90b5a}{emit}}(\textcolor{keyword}{const}\ std::string\&\ connection\_id,\ \textcolor{keyword}{const}\ uint8\_t\&\ event\_code,}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ capabilities2\_msgs::msg::Capability\&\ source,\ \textcolor{keyword}{const}\ capabilities2\_msgs::msg::Capability\&\ target,}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a01f110c6b7c9517f8f8ae134b8b22c8e}{EventBase::event\_callback\_t}}\ callback)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00027\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{comment}{//\ split\ connection\ id\ to\ get\ trigger\ id.\ Assuming\ connection\_id\ format\ is\ "{}bond\_id/instance\_id/target\_instance\_id"{}}}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ first\_pos\ =\ connection\_id.find(\textcolor{charliteral}{'/'});}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ second\_pos\ =\ connection\_id.find(\textcolor{charliteral}{'/'},\ first\_pos\ +\ 1);}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \ \ \ \ std::string\ instance\_id\ =\ (second\_pos\ !=\ std::string::npos)\ ?\ connection\_id.substr(first\_pos\ +\ 1,\ second\_pos\ -\/\ first\_pos\ -\/\ 1)\ :\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \ \ capabilities2\_msgs::msg::CapabilityEventStamped\ event\_msg;}
+\DoxyCodeLine{00035\ \ \ \ \ event\_msg.header.stamp\ =\ rclcpp::Clock().now();}
+\DoxyCodeLine{00036\ \ \ \ \ event\_msg.event.trigger\_id\ =\ instance\_id;}
+\DoxyCodeLine{00037\ \ \ \ \ event\_msg.event.code.code\ =\ event\_code;}
+\DoxyCodeLine{00038\ \ \ \ \ event\_msg.event.connection.source\ =\ source;}
+\DoxyCodeLine{00039\ \ \ \ \ event\_msg.event.connection.target\ =\ target;}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{//\ publish\ event}}
+\DoxyCodeLine{00042\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a9512517a8907ce9986c103dd45b4f453}{event\_pub\_}}-\/>publish(event\_msg);}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{comment}{//\ call\ super}}
+\DoxyCodeLine{00045\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a0fadc2464ce9a54a913aa55e806b7d8c}{EventBase::emit}}(connection\_id,\ event\_code,\ source,\ target,\ callback);}
+\DoxyCodeLine{00046\ \ \ \}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00053\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_aa27e427c12928212ca6b0d9073808787}{on\_server\_ready}}(\textcolor{keyword}{const}\ std::string\&\ msg)}
+\DoxyCodeLine{00054\ \ \ \{}
+\DoxyCodeLine{00055\ \ \ \ \ capabilities2\_msgs::msg::CapabilityEventStamped\ event\_msg;}
+\DoxyCodeLine{00056\ \ \ \ \ event\_msg.header.stamp\ =\ rclcpp::Clock().now();}
+\DoxyCodeLine{00057\ \ \ \ \ event\_msg.event.connection.source.capability\ =\ \textcolor{stringliteral}{"{}capabilities2\_server"{}};}
+\DoxyCodeLine{00058\ \ \ \ \ event\_msg.event.connection.source.provider\ =\ \textcolor{stringliteral}{"{}capabilities2\_server"{}};}
+\DoxyCodeLine{00059\ \ \ \ \ event\_msg.event.code.code\ =\ capabilities2\_msgs::msg::CapabilityEventCode::SERVER\_READY;}
+\DoxyCodeLine{00060\ \ \ \ \ event\_msg.event.description\ =\ msg;}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a9512517a8907ce9986c103dd45b4f453}{event\_pub\_}}-\/>publish(event\_msg);}
+\DoxyCodeLine{00063\ \ \ \}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00070\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a7877d7f7f5112f7505286366eb1d20c4}{on\_process\_launched}}(\textcolor{keyword}{const}\ std::string\&\ pid)}
+\DoxyCodeLine{00071\ \ \ \{}
+\DoxyCodeLine{00072\ \ \ \ \ capabilities2\_msgs::msg::CapabilityEventStamped\ event\_msg;}
+\DoxyCodeLine{00073\ \ \ \ \ event\_msg.header.stamp\ =\ rclcpp::Clock().now();}
+\DoxyCodeLine{00074\ \ \ \ \ event\_msg.event.connection.source.capability\ =\ \textcolor{stringliteral}{"{}capabilities2\_server"{}};}
+\DoxyCodeLine{00075\ \ \ \ \ event\_msg.event.connection.source.provider\ =\ \textcolor{stringliteral}{"{}capabilities2\_server"{}};}
+\DoxyCodeLine{00076\ \ \ \ \ event\_msg.event.code.code\ =\ capabilities2\_msgs::msg::CapabilityEventCode::LAUNCHED;}
+\DoxyCodeLine{00077\ \ \ \ \ event\_msg.event.description\ =\ \textcolor{stringliteral}{"{}Process\ launched\ with\ PID:\ "{}}\ +\ pid;}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a9512517a8907ce9986c103dd45b4f453}{event\_pub\_}}-\/>publish(event\_msg);}
+\DoxyCodeLine{00080\ \ \ \}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00087\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a91694a1cf354c72670fd65207986955a}{on\_process\_terminated}}(\textcolor{keyword}{const}\ std::string\&\ pid)}
+\DoxyCodeLine{00088\ \ \ \{}
+\DoxyCodeLine{00089\ \ \ \ \ capabilities2\_msgs::msg::CapabilityEventStamped\ event\_msg;}
+\DoxyCodeLine{00090\ \ \ \ \ event\_msg.header.stamp\ =\ rclcpp::Clock().now();}
+\DoxyCodeLine{00091\ \ \ \ \ event\_msg.event.connection.source.capability\ =\ \textcolor{stringliteral}{"{}capabilities2\_server"{}};}
+\DoxyCodeLine{00092\ \ \ \ \ event\_msg.event.connection.source.provider\ =\ \textcolor{stringliteral}{"{}capabilities2\_server"{}};}
+\DoxyCodeLine{00093\ \ \ \ \ event\_msg.event.code.code\ =\ capabilities2\_msgs::msg::CapabilityEventCode::TERMINATED;}
+\DoxyCodeLine{00094\ \ \ \ \ event\_msg.event.description\ =\ \textcolor{stringliteral}{"{}Process\ terminated\ with\ PID:\ "{}}\ +\ pid;}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a9512517a8907ce9986c103dd45b4f453}{event\_pub\_}}-\/>publish(event\_msg);}
+\DoxyCodeLine{00097\ \ \ \}}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a5d840357942cab6bcd4a214d7b03b774}{on\_triggered}}(\textcolor{keyword}{const}\ std::string\&\ trigger\_id)}
+\DoxyCodeLine{00100\ \ \ \{}
+\DoxyCodeLine{00101\ \ \ \ \ capabilities2\_msgs::msg::CapabilityEventStamped\ event\_msg;}
+\DoxyCodeLine{00102\ \ \ \ \ event\_msg.header.stamp\ =\ rclcpp::Clock().now();}
+\DoxyCodeLine{00103\ \ \ \ \ event\_msg.event.connection.source.capability\ =\ \textcolor{stringliteral}{"{}capabilities2\_server"{}};}
+\DoxyCodeLine{00104\ \ \ \ \ event\_msg.event.connection.source.provider\ =\ \textcolor{stringliteral}{"{}capabilities2\_server"{}};}
+\DoxyCodeLine{00105\ \ \ \ \ event\_msg.event.code.code\ =\ capabilities2\_msgs::msg::CapabilityEventCode::TRIGGERED;}
+\DoxyCodeLine{00106\ \ \ \ \ event\_msg.event.description\ =\ \textcolor{stringliteral}{"{}Triggered\ event\ with\ ID:\ "{}}\ +\ trigger\_id;}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a9512517a8907ce9986c103dd45b4f453}{event\_pub\_}}-\/>publish(event\_msg);}
+\DoxyCodeLine{00109\ \ \ \}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_ae8bacbe30ab75a4703dda81b102b3a13}{on\_connected}}(\textcolor{keyword}{const}\ std::string\&\ source,\ \textcolor{keyword}{const}\ std::string\&\ target)}
+\DoxyCodeLine{00112\ \ \ \{}
+\DoxyCodeLine{00113\ \ \ \ \ capabilities2\_msgs::msg::CapabilityEventStamped\ event\_msg;}
+\DoxyCodeLine{00114\ \ \ \ \ event\_msg.header.stamp\ =\ rclcpp::Clock().now();}
+\DoxyCodeLine{00115\ \ \ \ \ event\_msg.event.connection.source.capability\ =\ \textcolor{stringliteral}{"{}capabilities2\_server"{}};}
+\DoxyCodeLine{00116\ \ \ \ \ event\_msg.event.connection.source.provider\ =\ \textcolor{stringliteral}{"{}capabilities2\_server"{}};}
+\DoxyCodeLine{00117\ \ \ \ \ event\_msg.event.code.code\ =\ capabilities2\_msgs::msg::CapabilityEventCode::CONNECTED;}
+\DoxyCodeLine{00118\ \ \ \ \ event\_msg.event.description\ =\ \textcolor{stringliteral}{"{}Connected\ event\ from\ "{}}\ +\ source\ +\ \textcolor{stringliteral}{"{}\ to\ "{}}\ +\ target;}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a9512517a8907ce9986c103dd45b4f453}{event\_pub\_}}-\/>publish(event\_msg);}
+\DoxyCodeLine{00121\ \ \ \}}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a32cfbac8d0facda1f52cebba043d46de}{on\_disconnected}}(\textcolor{keyword}{const}\ std::string\&\ source,\ \textcolor{keyword}{const}\ std::string\&\ target)}
+\DoxyCodeLine{00124\ \ \ \{}
+\DoxyCodeLine{00125\ \ \ \ \ capabilities2\_msgs::msg::CapabilityEventStamped\ event\_msg;}
+\DoxyCodeLine{00126\ \ \ \ \ event\_msg.header.stamp\ =\ rclcpp::Clock().now();}
+\DoxyCodeLine{00127\ \ \ \ \ event\_msg.event.connection.source.capability\ =\ \textcolor{stringliteral}{"{}capabilities2\_server"{}};}
+\DoxyCodeLine{00128\ \ \ \ \ event\_msg.event.connection.source.provider\ =\ \textcolor{stringliteral}{"{}capabilities2\_server"{}};}
+\DoxyCodeLine{00129\ \ \ \ \ event\_msg.event.code.code\ =\ capabilities2\_msgs::msg::CapabilityEventCode::DISCONNECTED;}
+\DoxyCodeLine{00130\ \ \ \ \ event\_msg.event.description\ =\ \textcolor{stringliteral}{"{}Disconnected\ event\ from\ "{}}\ +\ source\ +\ \textcolor{stringliteral}{"{}\ to\ "{}}\ +\ target;}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a9512517a8907ce9986c103dd45b4f453}{event\_pub\_}}-\/>publish(event\_msg);}
+\DoxyCodeLine{00133\ \ \ \}}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00136\ \ \ \textcolor{comment}{//\ event\ publisher}}
+\DoxyCodeLine{00137\ \ \ rclcpp::Publisher<capabilities2\_msgs::msg::CapabilityEventStamped>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__events_1_1PublishedEvent_a9512517a8907ce9986c103dd45b4f453}{event\_pub\_}};}
+\DoxyCodeLine{00138\ \};}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_events}}
+
+\end{DoxyCode}

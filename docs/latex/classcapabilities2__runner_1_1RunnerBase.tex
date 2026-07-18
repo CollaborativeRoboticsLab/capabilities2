@@ -1,0 +1,670 @@
+\doxysection{capabilities2\+\_\+runner\+::Runner\+Base Class Reference}
+\hypertarget{classcapabilities2__runner_1_1RunnerBase}{}\label{classcapabilities2__runner_1_1RunnerBase}\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+
+
+base class for all runners  
+
+
+
+
+{\ttfamily \#include "{}runner\+\_\+base.\+hpp"{}}
+
+
+
+Inheritance diagram for capabilities2\+\_\+runner\+::Runner\+Base\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classcapabilities2__runner_1_1RunnerBase__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for capabilities2\+\_\+runner\+::Runner\+Base\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=332pt]{classcapabilities2__runner_1_1RunnerBase__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_ad677f8a60b0e32510794315243a946d6}{Runner\+Base}} ()
+\item 
+\mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_afaf475264dc30c93758087ffca3754e6}{\texorpdfstring{$\sim$}{\string~}\+Runner\+Base}} ()=default
+\item 
+virtual void \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_af253678258e86285dc2a12ecb5c1db84}{start}} (rclcpp\+::\+Node\+::\+Shared\+Ptr node, const \mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts}{runner\+\_\+opts}} \&run\+\_\+config, const std\+::string \&bond\+\_\+id)=0
+\begin{DoxyCompactList}\small\item\em start the runner \end{DoxyCompactList}\item 
+virtual void \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a590b4f109de1d343ad88db826d72d6f2}{stop}} (const std\+::string \&bond\+\_\+id, const std\+::string \&instance\+\_\+id="{}"{})=0
+\begin{DoxyCompactList}\small\item\em stop the runner \end{DoxyCompactList}\item 
+virtual void \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_ad85529d5a99b6e1373d89beadcb71a47}{trigger}} (\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} \&parameters, const std\+::string \&bond\+\_\+id, const std\+::string \&instance\+\_\+id)=0
+\begin{DoxyCompactList}\small\item\em Trigger the runner. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a737681af5f4227037a06390bf0bca3e0}{init\+\_\+base}} (rclcpp\+::\+Node\+::\+Shared\+Ptr node, const \mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts}{runner\+\_\+opts}} \&run\+\_\+config)
+\begin{DoxyCompactList}\small\item\em Initializer function for initializing the base runner in place of constructor due to plugin semantics. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_aaa8cf2feec5aa8c1b10dcd49f0cc114a}{enable\+\_\+events}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase}{capabilities2\+\_\+events\+::\+Event\+Base}} $>$ events)
+\begin{DoxyCompactList}\small\item\em enable events system for this runner \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a7a66fa34cdf7a2868dfb9f1d8f8d65ca}{add\+\_\+connection}} (const std\+::string \&connection\+\_\+id, const capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Event\+Code \&type, const capabilities2\+\_\+msgs\+::msg\+::\+Capability \&target, std\+::function$<$ void(const std\+::string \&, const std\+::string \&, const std\+::string \&, \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}})$>$ callback)
+\begin{DoxyCompactList}\small\item\em make Event\+Node\+::add\+\_\+connection public method on runner api. \end{DoxyCompactList}\item 
+const std\+::string \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_aa43dcda95ec5bbfae42229acb621527a}{get\+\_\+package\+\_\+name}} ()
+\begin{DoxyCompactList}\small\item\em get the package name to which the runner belong to. \end{DoxyCompactList}\item 
+const std\+::string \& \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a9f51d46e66d0e3e33677fc6b41a7ab2b}{get\+\_\+interface}} () const
+\begin{DoxyCompactList}\small\item\em get the interface of the runner. \end{DoxyCompactList}\item 
+const std\+::string \& \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_ae6b41bc7b4e1ed845c8ef865ea76feaf}{get\+\_\+provider}} () const
+\begin{DoxyCompactList}\small\item\em get the provider of the runner. \end{DoxyCompactList}\item 
+const std\+::string \& \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_abdb647861aa50def64cb7005e1234d5c}{get\+\_\+started\+\_\+by}} () const
+\begin{DoxyCompactList}\small\item\em get the starter of the runner. \end{DoxyCompactList}\item 
+const std\+::string \& \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a5ec5051ab90eb6d67890b9a56ac78c66}{get\+\_\+pid}} () const
+\begin{DoxyCompactList}\small\item\em get the pid of the runner. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{classcapabilities2__events_1_1EventNode}{capabilities2\+\_\+events\+::\+Event\+Node}}}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a3cd9380c3e2739278c1601d844aa5fc9}{Event\+Node}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase}{Event\+Base}} $>$ event\+\_\+emitter=nullptr)
+\item 
+virtual \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0e58130ead683f82e421ea373f670fd0}{\texorpdfstring{$\sim$}{\string~}\+Event\+Node}} ()=default
+\item 
+void \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ad1b79fbe33fd75339bcaa77417240e57}{emit\+\_\+event}} (const std\+::string \&bond\+\_\+id, const std\+::string \&instance\+\_\+id, const uint8\+\_\+t \&event\+\_\+type, \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} parameters=\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}())
+\begin{DoxyCompactList}\small\item\em emit an event from this event node to all matching connections \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a68a4f300a106474d09ccda51efc57a5a}{param\+\_\+on\+\_\+started}} ()
+\begin{DoxyCompactList}\small\item\em Update on\+\_\+started event parameters with new data if available. \end{DoxyCompactList}\item 
+virtual \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a93d5da8c0c64d0154911a9b3ff143fff}{param\+\_\+on\+\_\+stopped}} ()
+\begin{DoxyCompactList}\small\item\em Update on\+\_\+stopped event parameters with new data if available. \end{DoxyCompactList}\item 
+virtual \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a9a5419cab317ef239d2f197714136660}{param\+\_\+on\+\_\+failure}} ()
+\begin{DoxyCompactList}\small\item\em Update on\+\_\+failure event parameters with new data if available. \end{DoxyCompactList}\item 
+virtual \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a561039712ffa38c2617baf266fc22896}{param\+\_\+on\+\_\+success}} ()
+\begin{DoxyCompactList}\small\item\em Update on\+\_\+success event parameters with new data if available. \end{DoxyCompactList}\item 
+const std\+::string \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a819adec0f6c9d29e70fe1c39c578e96b}{get\+\_\+resource\+\_\+name\+\_\+by\+\_\+type}} (const std\+::string \&resource\+\_\+type, const std\+::string \&msg\+\_\+type) const
+\begin{DoxyCompactList}\small\item\em Get a resource name by data type from the config. \end{DoxyCompactList}\item 
+const std\+::string \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a7ca628af3cfb83cb2e17f2348c66f5a9}{get\+\_\+parameter\+\_\+name\+\_\+by\+\_\+type}} (const std\+::string \&param\+\_\+type) const
+\begin{DoxyCompactList}\small\item\em Get a parameter name by type. \end{DoxyCompactList}\item 
+const std\+::string \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a921754cdc1cbf69547f67860d5fd2f92}{get\+\_\+topic\+\_\+name\+\_\+by\+\_\+type}} (const std\+::string \&topic\+\_\+type) const
+\begin{DoxyCompactList}\small\item\em Get a topic name by type. \end{DoxyCompactList}\item 
+const std\+::string \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_af3397f1baa438b11e40a2a9c8e771f75}{get\+\_\+service\+\_\+name\+\_\+by\+\_\+type}} (const std\+::string \&srv\+\_\+type) const
+\begin{DoxyCompactList}\small\item\em Get a service name by type. \end{DoxyCompactList}\item 
+const std\+::string \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_ad20c4a0a0d7ad6d42ef7ccf24f6a1c65}{get\+\_\+action\+\_\+name\+\_\+by\+\_\+type}} (const std\+::string \&action\+\_\+type) const
+\begin{DoxyCompactList}\small\item\em Get the action name by type object. \end{DoxyCompactList}\item 
+const std\+::string \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a6667a04bdf0d6a83a7663b4f8b10c0cf}{get\+\_\+first\+\_\+resource\+\_\+name}} (const std\+::string \&resource\+\_\+type) const
+\begin{DoxyCompactList}\small\item\em get first name of a given resource \end{DoxyCompactList}\item 
+const std\+::string \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a9414f4fca9459b457f306bbf8b4c1cdf}{get\+\_\+first\+\_\+parameter\+\_\+name}} () const
+\begin{DoxyCompactList}\small\item\em Get the first parameter name. \end{DoxyCompactList}\item 
+const std\+::string \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_abe103d834226cfae197630ef45387e95}{get\+\_\+first\+\_\+topic\+\_\+name}} () const
+\begin{DoxyCompactList}\small\item\em Get the first topic name. \end{DoxyCompactList}\item 
+const std\+::string \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a144e9cc074f34a69677fa9c2b461160e}{get\+\_\+first\+\_\+service\+\_\+name}} () const
+\begin{DoxyCompactList}\small\item\em Get the first service name. \end{DoxyCompactList}\item 
+const std\+::string \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a6c40b1ee8b85cd357ebc9102ee1b5d12}{get\+\_\+first\+\_\+action\+\_\+name}} () const
+\begin{DoxyCompactList}\small\item\em Get the first action name. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_ac92696dfbfe4b50331ca156c4449954c}{emit\+\_\+started}} (const std\+::string \&bond\+\_\+id, const std\+::string \&instance\+\_\+id, \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} parameters=\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}())
+\begin{DoxyCompactList}\small\item\em emit STARTED event \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_af6414218a6741b276f305e4b266878fb}{emit\+\_\+stopped}} (const std\+::string \&bond\+\_\+id, const std\+::string \&instance\+\_\+id, \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} parameters=\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}())
+\begin{DoxyCompactList}\small\item\em emit STOPPED event \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a5865a398c1ad27e89d4d6947ef9404c2}{emit\+\_\+succeeded}} (const std\+::string \&bond\+\_\+id, const std\+::string \&instance\+\_\+id, \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} parameters=\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}())
+\begin{DoxyCompactList}\small\item\em emit SUCCEEDED event \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a5dcd2ac4205bb7f3cf069e0273ec46b7}{emit\+\_\+failed}} (const std\+::string \&bond\+\_\+id, const std\+::string \&instance\+\_\+id, \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} parameters=\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}())
+\begin{DoxyCompactList}\small\item\em emit FAILED event \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Protected Member Functions inherited from \mbox{\hyperlink{classcapabilities2__events_1_1EventNode}{capabilities2\+\_\+events\+::\+Event\+Node}}}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a10f7d884696c76f58fa43a03d69369f4}{set\+\_\+source}} (const capabilities2\+\_\+msgs\+::msg\+::\+Capability \&src)
+\begin{DoxyCompactList}\small\item\em Set the source object. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a41dc0f4b8ad35d358181f25d646f396e}{set\+\_\+event\+\_\+emitter}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase}{Event\+Base}} $>$ event\+\_\+emitter)
+\begin{DoxyCompactList}\small\item\em event emitter for this event node \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a54192391a09d30e778b5ef73a07e5476}{add\+\_\+connection}} (const std\+::string \&connection\+\_\+id, const capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Event\+Code \&type, const capabilities2\+\_\+msgs\+::msg\+::\+Capability \&target, \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a01f110c6b7c9517f8f8ae134b8b22c8e}{Event\+Base\+::event\+\_\+callback\+\_\+t}} event\+\_\+cb)
+\begin{DoxyCompactList}\small\item\em make \doxylink{classcapabilities2__events_1_1EventNode_a54192391a09d30e778b5ef73a07e5476}{Event\+Node\+::add\+\_\+connection} public method on runner api. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a1aefc3465612e5a4662190ae251f9ded}{remove\+\_\+connection}} (const std\+::string \&connection\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Remove a connection by its id. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a1ee75f7c81c01519c250045ade85eaf7}{clear\+\_\+connections}} ()
+\begin{DoxyCompactList}\small\item\em clear all connections from this event node \end{DoxyCompactList}\item 
+std\+::vector$<$ capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Connection $>$ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a1ae8d0a9622e781f9d8891018c5239a8}{list\+\_\+connections}} () const
+\begin{DoxyCompactList}\small\item\em List all connections from this event node. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a53f3a0dad63b42456ad2a6dd4bddc7ab}{has\+\_\+connection}} (const std\+::string \&connection\+\_\+id) const
+\begin{DoxyCompactList}\small\item\em Check if a connection exists. \end{DoxyCompactList}\item 
+size\+\_\+t \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a40118ab94ad06cf3759f4833c53ee575}{connection\+\_\+count}} () const
+\begin{DoxyCompactList}\small\item\em current connection count \end{DoxyCompactList}\item 
+const std\+::string \& \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a17cab4cfcc38f312fb7f37698c43d6b1}{get\+\_\+id}} () const
+\begin{DoxyCompactList}\small\item\em unique id of this event node \end{DoxyCompactList}\item 
+const capabilities2\+\_\+msgs\+::msg\+::\+Capability \& \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0af021d2aadac8d3b930fcdfc7b69da8}{get\+\_\+source}} () const
+\begin{DoxyCompactList}\small\item\em source capability of this event node \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_aa66f138bc8fa897c84d8ffd529396002}{is\+\_\+event\+\_\+emitter\+\_\+set}} () const
+\begin{DoxyCompactList}\small\item\em event emitter is set on this node \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+rclcpp\+::\+Node\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_ab92e5d0bb295489656b6ac35b23eef8e}{node\+\_\+}}
+\begin{DoxyCompactList}\small\item\em shared pointer to the capabilities node Allows to use ros node related functionalities \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts}{runner\+\_\+opts}} \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a94f0b66e78d66b770ba91d9f55b202ce}{run\+\_\+config\+\_\+}}
+\begin{DoxyCompactList}\small\item\em run\+\_\+config\+\_\+ runner configuration \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+base class for all runners 
+
+Defines the runner plugin api. Inherits from Event\+Node to provide event emission 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_ad677f8a60b0e32510794315243a946d6}\label{classcapabilities2__runner_1_1RunnerBase_ad677f8a60b0e32510794315243a946d6} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!RunnerBase@{RunnerBase}}
+\index{RunnerBase@{RunnerBase}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{RunnerBase()}{RunnerBase()}}
+{\footnotesize\ttfamily capabilities2\+\_\+runner\+::\+Runner\+Base\+::\+Runner\+Base (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_afaf475264dc30c93758087ffca3754e6}\label{classcapabilities2__runner_1_1RunnerBase_afaf475264dc30c93758087ffca3754e6} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!````~RunnerBase@{\texorpdfstring{$\sim$}{\string~}RunnerBase}}
+\index{````~RunnerBase@{\texorpdfstring{$\sim$}{\string~}RunnerBase}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}RunnerBase()}{\string~RunnerBase()}}
+{\footnotesize\ttfamily capabilities2\+\_\+runner\+::\+Runner\+Base\+::\texorpdfstring{$\sim$}{\string~}\+Runner\+Base (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a7a66fa34cdf7a2868dfb9f1d8f8d65ca}\label{classcapabilities2__runner_1_1RunnerBase_a7a66fa34cdf7a2868dfb9f1d8f8d65ca} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!add\_connection@{add\_connection}}
+\index{add\_connection@{add\_connection}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{add\_connection()}{add\_connection()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+runner\+::\+Runner\+Base\+::add\+\_\+connection (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{connection\+\_\+id,  }\item[{const capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Event\+Code \&}]{type,  }\item[{const capabilities2\+\_\+msgs\+::msg\+::\+Capability \&}]{target,  }\item[{std\+::function$<$ void(const std\+::string \&, const std\+::string \&, const std\+::string \&, \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}})$>$}]{callback }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+make Event\+Node\+::add\+\_\+connection public method on runner api. 
+
+add connection to this runner to target capability this allows the runner to emit events on state changes to the target capability the connection ID format is\+: "{}bond\+\_\+id/trigger\+\_\+id"{} which allows event emission to extract bond\+\_\+id for access control
+
+
+\begin{DoxyParams}{Parameters}
+{\em connection\+\_\+id} & unique identifier for the connection (format\+: "{}bond\+\_\+id/trigger\+\_\+id"{}) \\
+\hline
+{\em type} & type of event to connect to \\
+\hline
+{\em target} & target capability to connect to \\
+\hline
+{\em callback} & callback to trigger target capability with (capability, parameters, bond\+\_\+id) \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a5dcd2ac4205bb7f3cf069e0273ec46b7}\label{classcapabilities2__runner_1_1RunnerBase_a5dcd2ac4205bb7f3cf069e0273ec46b7} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!emit\_failed@{emit\_failed}}
+\index{emit\_failed@{emit\_failed}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{emit\_failed()}{emit\_failed()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+runner\+::\+Runner\+Base\+::emit\+\_\+failed (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{bond\+\_\+id,  }\item[{const std\+::string \&}]{instance\+\_\+id,  }\item[{\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}}]{parameters = {\ttfamily \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}()} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+emit FAILED event 
+
+
+\begin{DoxyParams}{Parameters}
+{\em bond\+\_\+id} & \\
+\hline
+{\em parameters} & \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_ac92696dfbfe4b50331ca156c4449954c}\label{classcapabilities2__runner_1_1RunnerBase_ac92696dfbfe4b50331ca156c4449954c} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!emit\_started@{emit\_started}}
+\index{emit\_started@{emit\_started}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{emit\_started()}{emit\_started()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+runner\+::\+Runner\+Base\+::emit\+\_\+started (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{bond\+\_\+id,  }\item[{const std\+::string \&}]{instance\+\_\+id,  }\item[{\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}}]{parameters = {\ttfamily \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}()} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+emit STARTED event 
+
+
+\begin{DoxyParams}{Parameters}
+{\em bond\+\_\+id} & \\
+\hline
+{\em parameters} & \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_af6414218a6741b276f305e4b266878fb}\label{classcapabilities2__runner_1_1RunnerBase_af6414218a6741b276f305e4b266878fb} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!emit\_stopped@{emit\_stopped}}
+\index{emit\_stopped@{emit\_stopped}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{emit\_stopped()}{emit\_stopped()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+runner\+::\+Runner\+Base\+::emit\+\_\+stopped (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{bond\+\_\+id,  }\item[{const std\+::string \&}]{instance\+\_\+id,  }\item[{\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}}]{parameters = {\ttfamily \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}()} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+emit STOPPED event 
+
+
+\begin{DoxyParams}{Parameters}
+{\em bond\+\_\+id} & \\
+\hline
+{\em parameters} & \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a5865a398c1ad27e89d4d6947ef9404c2}\label{classcapabilities2__runner_1_1RunnerBase_a5865a398c1ad27e89d4d6947ef9404c2} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!emit\_succeeded@{emit\_succeeded}}
+\index{emit\_succeeded@{emit\_succeeded}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{emit\_succeeded()}{emit\_succeeded()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+runner\+::\+Runner\+Base\+::emit\+\_\+succeeded (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{bond\+\_\+id,  }\item[{const std\+::string \&}]{instance\+\_\+id,  }\item[{\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}}]{parameters = {\ttfamily \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}()} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+emit SUCCEEDED event 
+
+
+\begin{DoxyParams}{Parameters}
+{\em bond\+\_\+id} & \\
+\hline
+{\em parameters} & \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_aaa8cf2feec5aa8c1b10dcd49f0cc114a}\label{classcapabilities2__runner_1_1RunnerBase_aaa8cf2feec5aa8c1b10dcd49f0cc114a} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!enable\_events@{enable\_events}}
+\index{enable\_events@{enable\_events}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{enable\_events()}{enable\_events()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+runner\+::\+Runner\+Base\+::enable\+\_\+events (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase}{capabilities2\+\_\+events\+::\+Event\+Base}} $>$}]{events }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+enable events system for this runner 
+
+
+\begin{DoxyParams}{Parameters}
+{\em events} & event emitter to be used by this runner \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_ad20c4a0a0d7ad6d42ef7ccf24f6a1c65}\label{classcapabilities2__runner_1_1RunnerBase_ad20c4a0a0d7ad6d42ef7ccf24f6a1c65} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_action\_name\_by\_type@{get\_action\_name\_by\_type}}
+\index{get\_action\_name\_by\_type@{get\_action\_name\_by\_type}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_action\_name\_by\_type()}{get\_action\_name\_by\_type()}}
+{\footnotesize\ttfamily const std\+::string capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+action\+\_\+name\+\_\+by\+\_\+type (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{action\+\_\+type }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+Get the action name by type object. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em action\+\_\+type} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+const std\+::string 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a6c40b1ee8b85cd357ebc9102ee1b5d12}\label{classcapabilities2__runner_1_1RunnerBase_a6c40b1ee8b85cd357ebc9102ee1b5d12} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_first\_action\_name@{get\_first\_action\_name}}
+\index{get\_first\_action\_name@{get\_first\_action\_name}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_first\_action\_name()}{get\_first\_action\_name()}}
+{\footnotesize\ttfamily const std\+::string capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+first\+\_\+action\+\_\+name (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+Get the first action name. 
+
+\begin{DoxyReturn}{Returns}
+const std\+::string 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a9414f4fca9459b457f306bbf8b4c1cdf}\label{classcapabilities2__runner_1_1RunnerBase_a9414f4fca9459b457f306bbf8b4c1cdf} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_first\_parameter\_name@{get\_first\_parameter\_name}}
+\index{get\_first\_parameter\_name@{get\_first\_parameter\_name}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_first\_parameter\_name()}{get\_first\_parameter\_name()}}
+{\footnotesize\ttfamily const std\+::string capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+first\+\_\+parameter\+\_\+name (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+Get the first parameter name. 
+
+\begin{DoxyReturn}{Returns}
+const std\+::string 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a6667a04bdf0d6a83a7663b4f8b10c0cf}\label{classcapabilities2__runner_1_1RunnerBase_a6667a04bdf0d6a83a7663b4f8b10c0cf} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_first\_resource\_name@{get\_first\_resource\_name}}
+\index{get\_first\_resource\_name@{get\_first\_resource\_name}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_first\_resource\_name()}{get\_first\_resource\_name()}}
+{\footnotesize\ttfamily const std\+::string capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+first\+\_\+resource\+\_\+name (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{resource\+\_\+type }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+get first name of a given resource 
+
+This can be used to get the name of the first action resource in the runner config
+
+\begin{DoxyReturn}{Returns}
+std\+::string 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a144e9cc074f34a69677fa9c2b461160e}\label{classcapabilities2__runner_1_1RunnerBase_a144e9cc074f34a69677fa9c2b461160e} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_first\_service\_name@{get\_first\_service\_name}}
+\index{get\_first\_service\_name@{get\_first\_service\_name}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_first\_service\_name()}{get\_first\_service\_name()}}
+{\footnotesize\ttfamily const std\+::string capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+first\+\_\+service\+\_\+name (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+Get the first service name. 
+
+\begin{DoxyReturn}{Returns}
+const std\+::string 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_abe103d834226cfae197630ef45387e95}\label{classcapabilities2__runner_1_1RunnerBase_abe103d834226cfae197630ef45387e95} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_first\_topic\_name@{get\_first\_topic\_name}}
+\index{get\_first\_topic\_name@{get\_first\_topic\_name}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_first\_topic\_name()}{get\_first\_topic\_name()}}
+{\footnotesize\ttfamily const std\+::string capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+first\+\_\+topic\+\_\+name (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+Get the first topic name. 
+
+\begin{DoxyReturn}{Returns}
+const std\+::string 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a9f51d46e66d0e3e33677fc6b41a7ab2b}\label{classcapabilities2__runner_1_1RunnerBase_a9f51d46e66d0e3e33677fc6b41a7ab2b} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_interface@{get\_interface}}
+\index{get\_interface@{get\_interface}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_interface()}{get\_interface()}}
+{\footnotesize\ttfamily const std\+::string \& capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+interface (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+get the interface of the runner. 
+
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_aa43dcda95ec5bbfae42229acb621527a}\label{classcapabilities2__runner_1_1RunnerBase_aa43dcda95ec5bbfae42229acb621527a} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_package\_name@{get\_package\_name}}
+\index{get\_package\_name@{get\_package\_name}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_package\_name()}{get\_package\_name()}}
+{\footnotesize\ttfamily const std\+::string capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+package\+\_\+name (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+get the package name to which the runner belong to. 
+
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a7ca628af3cfb83cb2e17f2348c66f5a9}\label{classcapabilities2__runner_1_1RunnerBase_a7ca628af3cfb83cb2e17f2348c66f5a9} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_parameter\_name\_by\_type@{get\_parameter\_name\_by\_type}}
+\index{get\_parameter\_name\_by\_type@{get\_parameter\_name\_by\_type}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_parameter\_name\_by\_type()}{get\_parameter\_name\_by\_type()}}
+{\footnotesize\ttfamily const std\+::string capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+parameter\+\_\+name\+\_\+by\+\_\+type (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{param\+\_\+type }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+Get a parameter name by type. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em param\+\_\+type} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+const std\+::string 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a5ec5051ab90eb6d67890b9a56ac78c66}\label{classcapabilities2__runner_1_1RunnerBase_a5ec5051ab90eb6d67890b9a56ac78c66} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_pid@{get\_pid}}
+\index{get\_pid@{get\_pid}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_pid()}{get\_pid()}}
+{\footnotesize\ttfamily const std\+::string \& capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+pid (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+get the pid of the runner. 
+
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_ae6b41bc7b4e1ed845c8ef865ea76feaf}\label{classcapabilities2__runner_1_1RunnerBase_ae6b41bc7b4e1ed845c8ef865ea76feaf} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_provider@{get\_provider}}
+\index{get\_provider@{get\_provider}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_provider()}{get\_provider()}}
+{\footnotesize\ttfamily const std\+::string \& capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+provider (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+get the provider of the runner. 
+
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a819adec0f6c9d29e70fe1c39c578e96b}\label{classcapabilities2__runner_1_1RunnerBase_a819adec0f6c9d29e70fe1c39c578e96b} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_resource\_name\_by\_type@{get\_resource\_name\_by\_type}}
+\index{get\_resource\_name\_by\_type@{get\_resource\_name\_by\_type}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_resource\_name\_by\_type()}{get\_resource\_name\_by\_type()}}
+{\footnotesize\ttfamily const std\+::string capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+resource\+\_\+name\+\_\+by\+\_\+type (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{resource\+\_\+type,  }\item[{const std\+::string \&}]{msg\+\_\+type }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+Get a resource name by data type from the config. 
+
+This helps to navigate remappings from the runner config
+
+WARNING\+: this only gets the first resource found of the given type
+
+
+\begin{DoxyParams}{Parameters}
+{\em resource\+\_\+type} & \\
+\hline
+{\em msg\+\_\+type} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+const std\+::string 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_af3397f1baa438b11e40a2a9c8e771f75}\label{classcapabilities2__runner_1_1RunnerBase_af3397f1baa438b11e40a2a9c8e771f75} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_service\_name\_by\_type@{get\_service\_name\_by\_type}}
+\index{get\_service\_name\_by\_type@{get\_service\_name\_by\_type}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_service\_name\_by\_type()}{get\_service\_name\_by\_type()}}
+{\footnotesize\ttfamily const std\+::string capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+service\+\_\+name\+\_\+by\+\_\+type (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{srv\+\_\+type }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+Get a service name by type. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em srv\+\_\+type} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+const std\+::string 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_abdb647861aa50def64cb7005e1234d5c}\label{classcapabilities2__runner_1_1RunnerBase_abdb647861aa50def64cb7005e1234d5c} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_started\_by@{get\_started\_by}}
+\index{get\_started\_by@{get\_started\_by}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_started\_by()}{get\_started\_by()}}
+{\footnotesize\ttfamily const std\+::string \& capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+started\+\_\+by (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+get the starter of the runner. 
+
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a921754cdc1cbf69547f67860d5fd2f92}\label{classcapabilities2__runner_1_1RunnerBase_a921754cdc1cbf69547f67860d5fd2f92} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!get\_topic\_name\_by\_type@{get\_topic\_name\_by\_type}}
+\index{get\_topic\_name\_by\_type@{get\_topic\_name\_by\_type}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{get\_topic\_name\_by\_type()}{get\_topic\_name\_by\_type()}}
+{\footnotesize\ttfamily const std\+::string capabilities2\+\_\+runner\+::\+Runner\+Base\+::get\+\_\+topic\+\_\+name\+\_\+by\+\_\+type (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{topic\+\_\+type }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+Get a topic name by type. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em topic\+\_\+type} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+const std\+::string 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a737681af5f4227037a06390bf0bca3e0}\label{classcapabilities2__runner_1_1RunnerBase_a737681af5f4227037a06390bf0bca3e0} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!init\_base@{init\_base}}
+\index{init\_base@{init\_base}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{init\_base()}{init\_base()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+runner\+::\+Runner\+Base\+::init\+\_\+base (\begin{DoxyParamCaption}\item[{rclcpp\+::\+Node\+::\+Shared\+Ptr}]{node,  }\item[{const \mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts}{runner\+\_\+opts}} \&}]{run\+\_\+config }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Initializer function for initializing the base runner in place of constructor due to plugin semantics. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em node} & shared pointer to the capabilities node. Allows to use ros node related functionalities \\
+\hline
+{\em run\+\_\+config} & runner configuration loaded from the yaml file \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a9a5419cab317ef239d2f197714136660}\label{classcapabilities2__runner_1_1RunnerBase_a9a5419cab317ef239d2f197714136660} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!param\_on\_failure@{param\_on\_failure}}
+\index{param\_on\_failure@{param\_on\_failure}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{param\_on\_failure()}{param\_on\_failure()}}
+{\footnotesize\ttfamily virtual \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} capabilities2\+\_\+runner\+::\+Runner\+Base\+::param\+\_\+on\+\_\+failure (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Update on\+\_\+failure event parameters with new data if available. 
+
+This function is used to inject new data into the Capability\+Options containing parameters related to the on\+\_\+failure trigger event
+
+A pattern needs to be implemented in the derived class
+
+\begin{DoxyReturn}{Returns}
+Capability\+Options containing new parameters 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a68a4f300a106474d09ccda51efc57a5a}\label{classcapabilities2__runner_1_1RunnerBase_a68a4f300a106474d09ccda51efc57a5a} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!param\_on\_started@{param\_on\_started}}
+\index{param\_on\_started@{param\_on\_started}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{param\_on\_started()}{param\_on\_started()}}
+{\footnotesize\ttfamily virtual \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} capabilities2\+\_\+runner\+::\+Runner\+Base\+::param\+\_\+on\+\_\+started (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Update on\+\_\+started event parameters with new data if available. 
+
+This function is used to inject new data into the Capability\+Options containing parameters related to the on\+\_\+started trigger event
+
+A pattern needs to be implemented in the derived class
+
+\begin{DoxyReturn}{Returns}
+Capability\+Options containing new parameters 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a93d5da8c0c64d0154911a9b3ff143fff}\label{classcapabilities2__runner_1_1RunnerBase_a93d5da8c0c64d0154911a9b3ff143fff} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!param\_on\_stopped@{param\_on\_stopped}}
+\index{param\_on\_stopped@{param\_on\_stopped}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{param\_on\_stopped()}{param\_on\_stopped()}}
+{\footnotesize\ttfamily virtual \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} capabilities2\+\_\+runner\+::\+Runner\+Base\+::param\+\_\+on\+\_\+stopped (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Update on\+\_\+stopped event parameters with new data if available. 
+
+This function is used to inject new data into the Capability\+Options containing parameters related to the on\+\_\+stopped trigger event
+
+A pattern needs to be implemented in the derived class
+
+\begin{DoxyReturn}{Returns}
+Capability\+Options containing new parameters 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a561039712ffa38c2617baf266fc22896}\label{classcapabilities2__runner_1_1RunnerBase_a561039712ffa38c2617baf266fc22896} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!param\_on\_success@{param\_on\_success}}
+\index{param\_on\_success@{param\_on\_success}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{param\_on\_success()}{param\_on\_success()}}
+{\footnotesize\ttfamily virtual \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} capabilities2\+\_\+runner\+::\+Runner\+Base\+::param\+\_\+on\+\_\+success (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Update on\+\_\+success event parameters with new data if available. 
+
+This function is used to inject new data into the Capability\+Options containing parameters related to the on\+\_\+success trigger event
+
+A pattern needs to be implemented in the derived class
+
+\begin{DoxyReturn}{Returns}
+Capability\+Options containing new parameters 
+\end{DoxyReturn}
+
+
+Reimplemented in \mbox{\hyperlink{classcapabilities2__runner_1_1GetCapabilitySpecsRunner_a1e2ce72b2f85ecbc96408093eeaba065}{capabilities2\+\_\+runner\+::\+Get\+Capability\+Specs\+Runner}}.
+
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_af253678258e86285dc2a12ecb5c1db84}\label{classcapabilities2__runner_1_1RunnerBase_af253678258e86285dc2a12ecb5c1db84} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!start@{start}}
+\index{start@{start}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{start()}{start()}}
+{\footnotesize\ttfamily virtual void capabilities2\+\_\+runner\+::\+Runner\+Base\+::start (\begin{DoxyParamCaption}\item[{rclcpp\+::\+Node\+::\+Shared\+Ptr}]{node,  }\item[{const \mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts}{runner\+\_\+opts}} \&}]{run\+\_\+config,  }\item[{const std\+::string \&}]{bond\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+
+
+start the runner 
+
+runner plugin api 
+
+
+\begin{DoxyParams}{Parameters}
+{\em node} & shared pointer to the capabilities node. Allows to use ros node related functionalities \\
+\hline
+{\em run\+\_\+config} & runner configuration loaded from the yaml file\\
+\hline
+\end{DoxyParams}
+\begin{DoxyAttention}{Attention}
+Must call init\+\_\+base in derived class implementation and should call start event 
+\end{DoxyAttention}
+
+
+Implemented in \mbox{\hyperlink{classcapabilities2__runner_1_1LaunchRunner_a9a684058017ed934d6d7e921d7f75eb9}{capabilities2\+\_\+runner\+::\+Launch\+Runner}}, \mbox{\hyperlink{classcapabilities2__runner_1_1GetCapabilitySpecsRunner_ac6e0cc26c38f4ae100f6e2b8a70e4e36}{capabilities2\+\_\+runner\+::\+Get\+Capability\+Specs\+Runner}}, \mbox{\hyperlink{classcapabilities2__runner_1_1InputMultiplexRunner_afae7ca7e39e5b66f8fbbbb82b118923e}{capabilities2\+\_\+runner\+::\+Input\+Multiplex\+Runner}}, and \mbox{\hyperlink{classcapabilities2__runner_1_1DummyRunner_a871306308d5dc43facc2c490410c38cd}{capabilities2\+\_\+runner\+::\+Dummy\+Runner}}.
+
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a590b4f109de1d343ad88db826d72d6f2}\label{classcapabilities2__runner_1_1RunnerBase_a590b4f109de1d343ad88db826d72d6f2} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!stop@{stop}}
+\index{stop@{stop}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{stop()}{stop()}}
+{\footnotesize\ttfamily virtual void capabilities2\+\_\+runner\+::\+Runner\+Base\+::stop (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{bond\+\_\+id,  }\item[{const std\+::string \&}]{instance\+\_\+id = {\ttfamily "{}"{}} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+
+
+stop the runner 
+
+\begin{DoxyAttention}{Attention}
+should clean up threads and should call stop event 
+\end{DoxyAttention}
+
+
+Implemented in \mbox{\hyperlink{classcapabilities2__runner_1_1ActionRunner_a0417718f4ad7a9318169a14abb182fa5}{capabilities2\+\_\+runner\+::\+Action\+Runner$<$ Action\+T $>$}}, \mbox{\hyperlink{classcapabilities2__runner_1_1LaunchRunner_a5373c2eb3f97948d213aab4f95bc19c9}{capabilities2\+\_\+runner\+::\+Launch\+Runner}}, \mbox{\hyperlink{classcapabilities2__runner_1_1ServiceRunner_a32ecc311b5288486dc0c3625a8cb2633}{capabilities2\+\_\+runner\+::\+Service\+Runner$<$ Service\+T $>$}}, \mbox{\hyperlink{classcapabilities2__runner_1_1ServiceRunner_a32ecc311b5288486dc0c3625a8cb2633}{capabilities2\+\_\+runner\+::\+Service\+Runner$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Capability\+Specs $>$}}, \mbox{\hyperlink{classcapabilities2__runner_1_1InputMultiplexRunner_a42a4f1fd6f054925c72a322aed0dd94a}{capabilities2\+\_\+runner\+::\+Input\+Multiplex\+Runner}}, \mbox{\hyperlink{classcapabilities2__runner_1_1TopicRunner_a1d9dc95f217c829002f3b84660590659}{capabilities2\+\_\+runner\+::\+Topic\+Runner$<$ Topic\+T $>$}}, and \mbox{\hyperlink{classcapabilities2__runner_1_1DummyRunner_ae7c05952eaa590755e7ec4a722321513}{capabilities2\+\_\+runner\+::\+Dummy\+Runner}}.
+
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_ad85529d5a99b6e1373d89beadcb71a47}\label{classcapabilities2__runner_1_1RunnerBase_ad85529d5a99b6e1373d89beadcb71a47} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!trigger@{trigger}}
+\index{trigger@{trigger}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{trigger()}{trigger()}}
+{\footnotesize\ttfamily virtual void capabilities2\+\_\+runner\+::\+Runner\+Base\+::trigger (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} \&}]{parameters,  }\item[{const std\+::string \&}]{bond\+\_\+id,  }\item[{const std\+::string \&}]{instance\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+
+
+Trigger the runner. 
+
+FIXME\+: implement new event subsystem 
+
+This method allows insertion of parameters in a runner after it has been initialized. it is an approach to parameterise capabilities. Internally starts up Runner\+Base\+::trigger\+Execution in a thread
+
+
+\begin{DoxyParams}{Parameters}
+{\em parameters} & capability options that contain parameters for the trigger \\
+\hline
+{\em bond\+\_\+id} & unique identifier for the group of connections associated with this runner trigger event \\
+\hline
+{\em instance\+\_\+id} & unique identifier for the instance of the capability \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAttention}{Attention}
+should call success and failure events with parameters and bond\+\_\+id when the trigger process completes. 
+\end{DoxyAttention}
+
+
+Implemented in \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_aae61a479d081029f9203e842dfa9884d}{capabilities2\+\_\+runner\+::\+Thread\+Trigger\+Runner}}, \mbox{\hyperlink{classcapabilities2__runner_1_1NoTriggerRunner_a436e2217ca2c4fd44ac79271200c64d4}{capabilities2\+\_\+runner\+::\+No\+Trigger\+Runner}}, and \mbox{\hyperlink{classcapabilities2__runner_1_1DummyRunner_a0b767e28a66171727b2f9609375963f2}{capabilities2\+\_\+runner\+::\+Dummy\+Runner}}.
+
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_ab92e5d0bb295489656b6ac35b23eef8e}\label{classcapabilities2__runner_1_1RunnerBase_ab92e5d0bb295489656b6ac35b23eef8e} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!node\_@{node\_}}
+\index{node\_@{node\_}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{node\_}{node\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Node\+::\+Shared\+Ptr capabilities2\+\_\+runner\+::\+Runner\+Base\+::node\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+shared pointer to the capabilities node Allows to use ros node related functionalities 
+
+\Hypertarget{classcapabilities2__runner_1_1RunnerBase_a94f0b66e78d66b770ba91d9f55b202ce}\label{classcapabilities2__runner_1_1RunnerBase_a94f0b66e78d66b770ba91d9f55b202ce} 
+\index{capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}!run\_config\_@{run\_config\_}}
+\index{run\_config\_@{run\_config\_}!capabilities2\_runner::RunnerBase@{capabilities2\_runner::RunnerBase}}
+\doxysubsubsection{\texorpdfstring{run\_config\_}{run\_config\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts}{runner\+\_\+opts}} capabilities2\+\_\+runner\+::\+Runner\+Base\+::run\+\_\+config\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+run\+\_\+config\+\_\+ runner configuration 
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+capabilities2\+\_\+runner/include/capabilities2\+\_\+runner/\mbox{\hyperlink{runner__base_8hpp}{runner\+\_\+base.\+hpp}}\end{DoxyCompactItemize}

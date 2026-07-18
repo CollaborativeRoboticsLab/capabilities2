@@ -1,0 +1,183 @@
+\doxysection{runner\+\_\+cache.\+hpp}
+\hypertarget{runner__cache_8hpp_source}{}\label{runner__cache_8hpp_source}\index{capabilities2\_server/include/capabilities2\_server/runner\_cache.hpp@{capabilities2\_server/include/capabilities2\_server/runner\_cache.hpp}}
+\mbox{\hyperlink{runner__cache_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <map>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <functional>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <yaml-\/cpp/yaml.h>}}
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ \#include\ <tinyxml2.h>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <rclcpp/rclcpp.hpp>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <pluginlib/class\_loader.hpp>}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{run__config_8hpp}{capabilities2\_server/models/run\_config.hpp}}>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{runner__base_8hpp}{capabilities2\_runner/runner\_base.hpp}}>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{event__base_8hpp}{capabilities2\_events/event\_base.hpp}}>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/msg/capability\_connection.hpp>}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__server}{capabilities2\_server}}}
+\DoxyCodeLine{00018\ \{}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00031\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache}{RunnerCache}}}
+\DoxyCodeLine{00032\ \{}
+\DoxyCodeLine{00033\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00034\ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a54ca36d2ea36c95783ed042c1ab31b7f}{RunnerCache}}()\ :\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a4a485c20947d8e4808556630b593d6b4}{runner\_loader\_}}(\textcolor{stringliteral}{"{}capabilities2\_runner"{}},\ \textcolor{stringliteral}{"{}capabilities2\_runner::RunnerBase"{}})}
+\DoxyCodeLine{00035\ \ \ \{}
+\DoxyCodeLine{00036\ \ \ \}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00045\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_aefd112af41b8ef36ccdce3cfebb5dd25}{add\_runner}}(rclcpp::Node::SharedPtr\ node,\ \textcolor{keyword}{const}\ std::string\&\ capability,}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t}{models::run\_config\_model\_t}}\&\ run\_config)}
+\DoxyCodeLine{00047\ \ \ \{}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{comment}{//\ if\ the\ runner\ exists\ then\ throw\ an\ error\ preserving\ uniqueness}}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a278cd90fadd01341151fb48b8c93745e}{running}}(capability))}
+\DoxyCodeLine{00050\ \ \ \ \ \{}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{capabilities2\_runner::runner\_exception}}(\textcolor{stringliteral}{"{}capability\ is\ running\ already:\ "{}}\ +\ capability);}
+\DoxyCodeLine{00052\ \ \ \ \ \}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{//\ check\ if\ run\ config\ is\ valid}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keywordflow}{if}\ (!run\_config.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t_a7ce34838226d280eba1e9498acf20475}{is\_valid}}())}
+\DoxyCodeLine{00056\ \ \ \ \ \{}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{capabilities2\_runner::runner\_exception}}(\textcolor{stringliteral}{"{}run\ config\ is\ not\ valid:\ "{}}\ +\ YAML::Dump(run\_config.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t_ab602bc027d2c75ddc51fdf190cd42442}{to\_yaml}}()));}
+\DoxyCodeLine{00058\ \ \ \ \ \}}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{//\ create\ the\ runner,\ add\ the\ runner\ to\ map,\ and\ if\ the\ spec\ runner\ contains\ a\ path\ to\ a\ launch\ file\ then\ use\ the}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{//\ launch\ file\ runner}}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordflow}{if}\ (run\_config.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t_a49ff00fef777b60efedd894d773d9153}{runner}}.find(\textcolor{stringliteral}{"{}.launch"{}})\ !=\ std::string::npos\ ||\ run\_config.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t_a49ff00fef777b60efedd894d773d9153}{runner}}.find(\textcolor{stringliteral}{"{}/"{}})\ !=\ std::string::npos\ ||}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ run\_config.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t_a49ff00fef777b60efedd894d773d9153}{runner}}.find(\textcolor{stringliteral}{"{}.py"{}})\ !=\ std::string::npos)}
+\DoxyCodeLine{00064\ \ \ \ \ \{}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}}[capability]\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a4a485c20947d8e4808556630b593d6b4}{runner\_loader\_}}.createSharedInstance(\textcolor{stringliteral}{"{}capabilities2\_runner::LaunchRunner"{}});}
+\DoxyCodeLine{00066\ \ \ \ \ \}}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00068\ \ \ \ \ \{}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}}[capability]\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a4a485c20947d8e4808556630b593d6b4}{runner\_loader\_}}.createSharedInstance(run\_config.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t_a49ff00fef777b60efedd894d773d9153}{runner}});}
+\DoxyCodeLine{00070\ \ \ \ \ \}}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{comment}{//\ start\ the\ runner}}
+\DoxyCodeLine{00073\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}}[capability]-\/>start(node,\ run\_config.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t_ad04c7331d5e39eecfff7cd104c0ad923}{to\_runner\_opts}}(),\ \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00074\ \ \ \}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00086\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_aa3c38f7a92d055d73e3acb2422094f9a}{trigger\_runner}}(\textcolor{keyword}{const}\ std::string\&\ bond\_id,\ \textcolor{keyword}{const}\ std::string\&\ capability,\ \textcolor{keyword}{const}\ std::string\&\ instance\_id,}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\_events::EventParameters}}\ parameters)}
+\DoxyCodeLine{00088\ \ \ \{}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{comment}{//\ TODO:\ validate\ trigger\ id\ (DEPRECATED?)}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{comment}{//\ is\ the\ runner\ in\ the\ cache}}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a278cd90fadd01341151fb48b8c93745e}{running}}(capability))}
+\DoxyCodeLine{00093\ \ \ \ \ \{}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}}[capability]-\/>trigger(parameters,\ bond\_id,\ instance\_id);}
+\DoxyCodeLine{00095\ \ \ \ \ \}}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00097\ \ \ \ \ \{}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{capabilities2\_runner::runner\_exception}}(\textcolor{stringliteral}{"{}capability\ runner\ not\ found:\ "{}}\ +\ capability);}
+\DoxyCodeLine{00099\ \ \ \ \ \}}
+\DoxyCodeLine{00100\ \ \ \}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00111\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_aba905c19f2ffec5e72028d8a246a3edf}{add\_connection}}(\textcolor{keyword}{const}\ std::string\&\ capability,\ \textcolor{keyword}{const}\ std::string\&\ connection\_id,}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ capabilities2\_msgs::msg::CapabilityConnection\&\ connection,}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_events::EventBase>\ event\_emitter\ =\ \textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00114\ \ \ \{}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{comment}{//\ find\ the\ runner\ in\ the\ cache\ and\ if\ not\ found\ then\ throw\ an\ error}}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a278cd90fadd01341151fb48b8c93745e}{running}}(capability))}
+\DoxyCodeLine{00117\ \ \ \ \ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{capabilities2\_runner::runner\_exception}}(\textcolor{stringliteral}{"{}capability\ runner\ not\ found:\ "{}}\ +\ capability);}
+\DoxyCodeLine{00119\ \ \ \ \ \}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{comment}{//\ pass\ the\ event\ api\ to\ the\ runner}}
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{comment}{//\ for\ emitting\ events\ on\ state\ changes}}
+\DoxyCodeLine{00123\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}}[capability]-\/>enable\_events(event\_emitter);}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00126\ \ \ \ \ \{}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \textcolor{comment}{//\ add\ connection\ to\ the\ runner}}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \textcolor{comment}{//\ callback\ signature:\ (capability,\ parameters,\ bond\_id,\ instance\_id)}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}}[capability]-\/>add\_connection(connection\_id,\ connection.type,\ connection.target,}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_aa3c38f7a92d055d73e3acb2422094f9a}{capabilities2\_server::RunnerCache::trigger\_runner}},\ \textcolor{keyword}{this},}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::placeholders::\_1,\ std::placeholders::\_2,}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::placeholders::\_3,\ std::placeholders::\_4));}
+\DoxyCodeLine{00133\ \ \ \ \ \}}
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keywordflow}{catch}\ (\textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__events_1_1event__exception}{capabilities2\_events::event\_exception}}\&\ e)}
+\DoxyCodeLine{00135\ \ \ \ \ \{}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{capabilities2\_runner::runner\_exception}}(e.\mbox{\hyperlink{structcapabilities2__events_1_1event__exception_a44b87bc6a5964f8f3eeadf062df8fbe3}{what}}());}
+\DoxyCodeLine{00137\ \ \ \ \ \}}
+\DoxyCodeLine{00138\ \ \ \}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00148\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a38cd41426d0a9dbe36d3842e5ef0310c}{remove\_runner}}(\textcolor{keyword}{const}\ std::string\&\ capability)}
+\DoxyCodeLine{00149\ \ \ \{}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{comment}{//\ find\ the\ runner\ in\ the\ cache\ and\ if\ not\ found\ then\ throw\ an\ error}}
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a278cd90fadd01341151fb48b8c93745e}{running}}(capability))}
+\DoxyCodeLine{00152\ \ \ \ \ \{}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{capabilities2\_runner::runner\_exception}}(\textcolor{stringliteral}{"{}capability\ runner\ not\ found:\ "{}}\ +\ capability);}
+\DoxyCodeLine{00154\ \ \ \ \ \}}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{comment}{//\ safely\ stop\ the\ runner}}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00158\ \ \ \ \ \{}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}}[capability]-\/>stop(\textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00160\ \ \ \ \ \}}
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{keywordflow}{catch}\ (\textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{capabilities2\_runner::runner\_exception}}\&\ e)}
+\DoxyCodeLine{00162\ \ \ \ \ \{}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \textcolor{comment}{//\ pass}}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \textcolor{comment}{//\ RCLCPP\_ERROR(node\_logging\_interface\_ptr\_-\/>get\_logger(),\ "{}\%s"{},\ e.what());}}
+\DoxyCodeLine{00165\ \ \ \ \ \}}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{comment}{//\ reset\ the\ runner\ pointer}}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{comment}{//\ runner\_cache\_[capability].reset();}}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{comment}{//\ remove\ the\ runner\ from\ map}}
+\DoxyCodeLine{00171\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}}.erase(capability);}
+\DoxyCodeLine{00172\ \ \ \}}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00179\ \ \ \textcolor{keyword}{const}\ std::vector<std::string>\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a245acdb1f0c4b4b81f1ed46906b446cb}{get\_running\_capabilities}}()}
+\DoxyCodeLine{00180\ \ \ \{}
+\DoxyCodeLine{00181\ \ \ \ \ std::vector<std::string>\ runners;}
+\DoxyCodeLine{00182\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ runner\ :\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}})}
+\DoxyCodeLine{00183\ \ \ \ \ \{}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ runners.push\_back(runner.first);}
+\DoxyCodeLine{00185\ \ \ \ \ \}}
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{keywordflow}{return}\ runners;}
+\DoxyCodeLine{00187\ \ \ \}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00195\ \ \ \textcolor{keyword}{const}\ std::string\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a20513c9b45a313ab7bdc6f2d15f490c8}{provider}}(\textcolor{keyword}{const}\ std::string\&\ capability)}
+\DoxyCodeLine{00196\ \ \ \{}
+\DoxyCodeLine{00197\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a278cd90fadd01341151fb48b8c93745e}{running}}(capability))}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{capabilities2\_runner::runner\_exception}}(\textcolor{stringliteral}{"{}capability\ runner\ not\ found:\ "{}}\ +\ capability);}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}}[capability]-\/>get\_provider();}
+\DoxyCodeLine{00201\ \ \ \}}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00209\ \ \ \textcolor{keyword}{const}\ std::string\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ad07093aa785e7f24ef4e1648e46c7c0f}{started\_by}}(\textcolor{keyword}{const}\ std::string\&\ capability)}
+\DoxyCodeLine{00210\ \ \ \{}
+\DoxyCodeLine{00211\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a278cd90fadd01341151fb48b8c93745e}{running}}(capability))}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{capabilities2\_runner::runner\_exception}}(\textcolor{stringliteral}{"{}capability\ runner\ not\ found:\ "{}}\ +\ capability);}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}}[capability]-\/>get\_started\_by();}
+\DoxyCodeLine{00215\ \ \ \}}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00223\ \ \ \textcolor{keyword}{const}\ std::string\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a64a32e4605c82f06baf0902bd0bab746}{pid}}(\textcolor{keyword}{const}\ std::string\&\ capability)}
+\DoxyCodeLine{00224\ \ \ \{}
+\DoxyCodeLine{00225\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a278cd90fadd01341151fb48b8c93745e}{running}}(capability))}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{capabilities2\_runner::runner\_exception}}(\textcolor{stringliteral}{"{}capability\ runner\ not\ found:\ "{}}\ +\ capability);}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}}[capability]-\/>get\_pid();}
+\DoxyCodeLine{00229\ \ \ \}}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00238\ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a278cd90fadd01341151fb48b8c93745e}{running}}(\textcolor{keyword}{const}\ std::string\&\ capability)}
+\DoxyCodeLine{00239\ \ \ \{}
+\DoxyCodeLine{00240\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}}.find(capability)\ !=\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}}.end();}
+\DoxyCodeLine{00241\ \ \ \}}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00244\ \ \ \textcolor{comment}{//\ map\ capability\ to\ running\ model}}
+\DoxyCodeLine{00245\ \ \ \textcolor{comment}{//\ capability\ /\ provider\ specs\ -\/>\ runner}}
+\DoxyCodeLine{00246\ \ \ std::map<std::string,\ std::shared\_ptr<capabilities2\_runner::RunnerBase>>\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_ae72647019b3b65e02ee663652b208b32}{runner\_cache\_}};}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \ \ \textcolor{comment}{//\ runner\ plugin\ loader}}
+\DoxyCodeLine{00249\ \ \ pluginlib::ClassLoader<capabilities2\_runner::RunnerBase>\ \mbox{\hyperlink{classcapabilities2__server_1_1RunnerCache_a4a485c20947d8e4808556630b593d6b4}{runner\_loader\_}};}
+\DoxyCodeLine{00250\ \};}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_server}}
+
+\end{DoxyCode}

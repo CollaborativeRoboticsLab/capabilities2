@@ -1,0 +1,313 @@
+\doxysection{capabilities2\+\_\+events\+::Event\+Node Class Reference}
+\hypertarget{classcapabilities2__events_1_1EventNode}{}\label{classcapabilities2__events_1_1EventNode}\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+
+
+an event node is a source of an event  
+
+
+
+
+{\ttfamily \#include "{}event\+\_\+node.\+hpp"{}}
+
+
+
+Inheritance diagram for capabilities2\+\_\+events\+::Event\+Node\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classcapabilities2__events_1_1EventNode__inherit__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structcapabilities2__events_1_1EventNode_1_1EventPipe}{Event\+Pipe}}
+\begin{DoxyCompactList}\small\item\em event pipe structure \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a3cd9380c3e2739278c1601d844aa5fc9}{Event\+Node}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase}{Event\+Base}} $>$ event\+\_\+emitter=nullptr)
+\item 
+virtual \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0e58130ead683f82e421ea373f670fd0}{\texorpdfstring{$\sim$}{\string~}\+Event\+Node}} ()=default
+\item 
+void \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ad1b79fbe33fd75339bcaa77417240e57}{emit\+\_\+event}} (const std\+::string \&bond\+\_\+id, const std\+::string \&instance\+\_\+id, const uint8\+\_\+t \&event\+\_\+type, \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} parameters=\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}())
+\begin{DoxyCompactList}\small\item\em emit an event from this event node to all matching connections \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a10f7d884696c76f58fa43a03d69369f4}{set\+\_\+source}} (const capabilities2\+\_\+msgs\+::msg\+::\+Capability \&src)
+\begin{DoxyCompactList}\small\item\em Set the source object. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a41dc0f4b8ad35d358181f25d646f396e}{set\+\_\+event\+\_\+emitter}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase}{Event\+Base}} $>$ event\+\_\+emitter)
+\begin{DoxyCompactList}\small\item\em event emitter for this event node \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a54192391a09d30e778b5ef73a07e5476}{add\+\_\+connection}} (const std\+::string \&connection\+\_\+id, const capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Event\+Code \&type, const capabilities2\+\_\+msgs\+::msg\+::\+Capability \&target, \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a01f110c6b7c9517f8f8ae134b8b22c8e}{Event\+Base\+::event\+\_\+callback\+\_\+t}} event\+\_\+cb)
+\begin{DoxyCompactList}\small\item\em make \doxylink{classcapabilities2__events_1_1EventNode_a54192391a09d30e778b5ef73a07e5476}{Event\+Node\+::add\+\_\+connection} public method on runner api. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a1aefc3465612e5a4662190ae251f9ded}{remove\+\_\+connection}} (const std\+::string \&connection\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Remove a connection by its id. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a1ee75f7c81c01519c250045ade85eaf7}{clear\+\_\+connections}} ()
+\begin{DoxyCompactList}\small\item\em clear all connections from this event node \end{DoxyCompactList}\item 
+std\+::vector$<$ capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Connection $>$ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a1ae8d0a9622e781f9d8891018c5239a8}{list\+\_\+connections}} () const
+\begin{DoxyCompactList}\small\item\em List all connections from this event node. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a53f3a0dad63b42456ad2a6dd4bddc7ab}{has\+\_\+connection}} (const std\+::string \&connection\+\_\+id) const
+\begin{DoxyCompactList}\small\item\em Check if a connection exists. \end{DoxyCompactList}\item 
+size\+\_\+t \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a40118ab94ad06cf3759f4833c53ee575}{connection\+\_\+count}} () const
+\begin{DoxyCompactList}\small\item\em current connection count \end{DoxyCompactList}\item 
+const std\+::string \& \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a17cab4cfcc38f312fb7f37698c43d6b1}{get\+\_\+id}} () const
+\begin{DoxyCompactList}\small\item\em unique id of this event node \end{DoxyCompactList}\item 
+const capabilities2\+\_\+msgs\+::msg\+::\+Capability \& \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0af021d2aadac8d3b930fcdfc7b69da8}{get\+\_\+source}} () const
+\begin{DoxyCompactList}\small\item\em source capability of this event node \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_aa66f138bc8fa897c84d8ffd529396002}{is\+\_\+event\+\_\+emitter\+\_\+set}} () const
+\begin{DoxyCompactList}\small\item\em event emitter is set on this node \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::string \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a39d451da5c7fac76f125307884baf4b4}{id\+\_\+}}
+\item 
+capabilities2\+\_\+msgs\+::msg\+::\+Capability \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a749cc5b8b86f3ac4d82ecc2b124d46ce}{source\+\_\+}}
+\item 
+std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase}{Event\+Base}} $>$ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0aff474ac782cae10ca79d37c1f17a44}{event\+\_\+emitter\+\_\+}}
+\item 
+std\+::map$<$ std\+::string, \mbox{\hyperlink{structcapabilities2__events_1_1EventNode_1_1EventPipe}{Event\+Pipe}} $>$ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+an event node is a source of an event 
+
+events when emitted will trigger interactions with connected nodes 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classcapabilities2__events_1_1EventNode_a3cd9380c3e2739278c1601d844aa5fc9}\label{classcapabilities2__events_1_1EventNode_a3cd9380c3e2739278c1601d844aa5fc9} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!EventNode@{EventNode}}
+\index{EventNode@{EventNode}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{EventNode()}{EventNode()}}
+{\footnotesize\ttfamily capabilities2\+\_\+events\+::\+Event\+Node\+::\+Event\+Node (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase}{Event\+Base}} $>$}]{event\+\_\+emitter = {\ttfamily nullptr} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__events_1_1EventNode_a0e58130ead683f82e421ea373f670fd0}\label{classcapabilities2__events_1_1EventNode_a0e58130ead683f82e421ea373f670fd0} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!````~EventNode@{\texorpdfstring{$\sim$}{\string~}EventNode}}
+\index{````~EventNode@{\texorpdfstring{$\sim$}{\string~}EventNode}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}EventNode()}{\string~EventNode()}}
+{\footnotesize\ttfamily virtual capabilities2\+\_\+events\+::\+Event\+Node\+::\texorpdfstring{$\sim$}{\string~}\+Event\+Node (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}, {\ttfamily [default]}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classcapabilities2__events_1_1EventNode_a54192391a09d30e778b5ef73a07e5476}\label{classcapabilities2__events_1_1EventNode_a54192391a09d30e778b5ef73a07e5476} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!add\_connection@{add\_connection}}
+\index{add\_connection@{add\_connection}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{add\_connection()}{add\_connection()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+events\+::\+Event\+Node\+::add\+\_\+connection (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{connection\+\_\+id,  }\item[{const capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Event\+Code \&}]{type,  }\item[{const capabilities2\+\_\+msgs\+::msg\+::\+Capability \&}]{target,  }\item[{\mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a01f110c6b7c9517f8f8ae134b8b22c8e}{Event\+Base\+::event\+\_\+callback\+\_\+t}}}]{event\+\_\+cb }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+make \doxylink{classcapabilities2__events_1_1EventNode_a54192391a09d30e778b5ef73a07e5476}{Event\+Node\+::add\+\_\+connection} public method on runner api. 
+
+add connection to this runner to target capability this allows the runner to emit events on state changes to the target capability the connection ID format is\+: "{}bond\+\_\+id/trigger\+\_\+id"{} which allows event emission to extract bond\+\_\+id for access control
+
+
+\begin{DoxyParams}{Parameters}
+{\em connection\+\_\+id} & unique identifier for the connection (format\+: "{}bond\+\_\+id/trigger\+\_\+id"{}) \\
+\hline
+{\em type} & type of event to connect to \\
+\hline
+{\em target} & target capability to connect to \\
+\hline
+{\em event\+\_\+cb} & callback to trigger target capability with (capability, parameters, bond\+\_\+id, target\+\_\+instance\+\_\+id)\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \doxylink{structcapabilities2__events_1_1event__exception}{event\+\_\+exception}} & if connection with given id already exists \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{classcapabilities2__events_1_1EventNode_a1ee75f7c81c01519c250045ade85eaf7}\label{classcapabilities2__events_1_1EventNode_a1ee75f7c81c01519c250045ade85eaf7} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!clear\_connections@{clear\_connections}}
+\index{clear\_connections@{clear\_connections}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{clear\_connections()}{clear\_connections()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+events\+::\+Event\+Node\+::clear\+\_\+connections (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+clear all connections from this event node 
+
+\Hypertarget{classcapabilities2__events_1_1EventNode_a40118ab94ad06cf3759f4833c53ee575}\label{classcapabilities2__events_1_1EventNode_a40118ab94ad06cf3759f4833c53ee575} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!connection\_count@{connection\_count}}
+\index{connection\_count@{connection\_count}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{connection\_count()}{connection\_count()}}
+{\footnotesize\ttfamily size\+\_\+t capabilities2\+\_\+events\+::\+Event\+Node\+::connection\+\_\+count (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+current connection count 
+
+\begin{DoxyReturn}{Returns}
+size\+\_\+t 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__events_1_1EventNode_ad1b79fbe33fd75339bcaa77417240e57}\label{classcapabilities2__events_1_1EventNode_ad1b79fbe33fd75339bcaa77417240e57} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!emit\_event@{emit\_event}}
+\index{emit\_event@{emit\_event}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{emit\_event()}{emit\_event()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+events\+::\+Event\+Node\+::emit\+\_\+event (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{bond\+\_\+id,  }\item[{const std\+::string \&}]{instance\+\_\+id,  }\item[{const uint8\+\_\+t \&}]{event\+\_\+type,  }\item[{\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}}]{parameters = {\ttfamily \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}}()} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+emit an event from this event node to all matching connections 
+
+event handling 
+
+
+\begin{DoxyParams}{Parameters}
+{\em bond\+\_\+id} & the bond\+\_\+id to match connections with (extracted from connection\+\_\+id) for access control \\
+\hline
+{\em event\+\_\+type} & the type of event being emitted \\
+\hline
+{\em msg\+\_\+parameters} & the new parameters to emit with the event \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__events_1_1EventNode_a17cab4cfcc38f312fb7f37698c43d6b1}\label{classcapabilities2__events_1_1EventNode_a17cab4cfcc38f312fb7f37698c43d6b1} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!get\_id@{get\_id}}
+\index{get\_id@{get\_id}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{get\_id()}{get\_id()}}
+{\footnotesize\ttfamily const std\+::string \& capabilities2\+\_\+events\+::\+Event\+Node\+::get\+\_\+id (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+unique id of this event node 
+
+\begin{DoxyReturn}{Returns}
+const std\+::string\& 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__events_1_1EventNode_a0af021d2aadac8d3b930fcdfc7b69da8}\label{classcapabilities2__events_1_1EventNode_a0af021d2aadac8d3b930fcdfc7b69da8} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!get\_source@{get\_source}}
+\index{get\_source@{get\_source}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{get\_source()}{get\_source()}}
+{\footnotesize\ttfamily const capabilities2\+\_\+msgs\+::msg\+::\+Capability \& capabilities2\+\_\+events\+::\+Event\+Node\+::get\+\_\+source (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+source capability of this event node 
+
+\begin{DoxyReturn}{Returns}
+const capabilities2\+\_\+msgs\+::msg\+::\+Capability\& 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__events_1_1EventNode_a53f3a0dad63b42456ad2a6dd4bddc7ab}\label{classcapabilities2__events_1_1EventNode_a53f3a0dad63b42456ad2a6dd4bddc7ab} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!has\_connection@{has\_connection}}
+\index{has\_connection@{has\_connection}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{has\_connection()}{has\_connection()}}
+{\footnotesize\ttfamily bool capabilities2\+\_\+events\+::\+Event\+Node\+::has\+\_\+connection (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{connection\+\_\+id }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+Check if a connection exists. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em connection\+\_\+id} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true 
+
+false 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__events_1_1EventNode_aa66f138bc8fa897c84d8ffd529396002}\label{classcapabilities2__events_1_1EventNode_aa66f138bc8fa897c84d8ffd529396002} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!is\_event\_emitter\_set@{is\_event\_emitter\_set}}
+\index{is\_event\_emitter\_set@{is\_event\_emitter\_set}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{is\_event\_emitter\_set()}{is\_event\_emitter\_set()}}
+{\footnotesize\ttfamily bool capabilities2\+\_\+events\+::\+Event\+Node\+::is\+\_\+event\+\_\+emitter\+\_\+set (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+event emitter is set on this node 
+
+\Hypertarget{classcapabilities2__events_1_1EventNode_a1ae8d0a9622e781f9d8891018c5239a8}\label{classcapabilities2__events_1_1EventNode_a1ae8d0a9622e781f9d8891018c5239a8} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!list\_connections@{list\_connections}}
+\index{list\_connections@{list\_connections}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{list\_connections()}{list\_connections()}}
+{\footnotesize\ttfamily std\+::vector$<$ capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Connection $>$ capabilities2\+\_\+events\+::\+Event\+Node\+::list\+\_\+connections (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+List all connections from this event node. 
+
+\begin{DoxyReturn}{Returns}
+std\+::vector$<$capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Connection$>$ 
+\end{DoxyReturn}
+\Hypertarget{classcapabilities2__events_1_1EventNode_a1aefc3465612e5a4662190ae251f9ded}\label{classcapabilities2__events_1_1EventNode_a1aefc3465612e5a4662190ae251f9ded} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!remove\_connection@{remove\_connection}}
+\index{remove\_connection@{remove\_connection}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{remove\_connection()}{remove\_connection()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+events\+::\+Event\+Node\+::remove\+\_\+connection (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{connection\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+Remove a connection by its id. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em connection\+\_\+id} & \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__events_1_1EventNode_a41dc0f4b8ad35d358181f25d646f396e}\label{classcapabilities2__events_1_1EventNode_a41dc0f4b8ad35d358181f25d646f396e} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!set\_event\_emitter@{set\_event\_emitter}}
+\index{set\_event\_emitter@{set\_event\_emitter}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{set\_event\_emitter()}{set\_event\_emitter()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+events\+::\+Event\+Node\+::set\+\_\+event\+\_\+emitter (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase}{Event\+Base}} $>$}]{event\+\_\+emitter }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+event emitter for this event node 
+
+allows late binding of event emitter (when a node is initialized)
+
+
+\begin{DoxyParams}{Parameters}
+{\em event\+\_\+emitter} & \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__events_1_1EventNode_a10f7d884696c76f58fa43a03d69369f4}\label{classcapabilities2__events_1_1EventNode_a10f7d884696c76f58fa43a03d69369f4} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!set\_source@{set\_source}}
+\index{set\_source@{set\_source}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{set\_source()}{set\_source()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+events\+::\+Event\+Node\+::set\+\_\+source (\begin{DoxyParamCaption}\item[{const capabilities2\+\_\+msgs\+::msg\+::\+Capability \&}]{src }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+
+
+Set the source object. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em src} & \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}\label{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!connections\_@{connections\_}}
+\index{connections\_@{connections\_}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{connections\_}{connections\_}}
+{\footnotesize\ttfamily std\+::map$<$std\+::string, \mbox{\hyperlink{structcapabilities2__events_1_1EventNode_1_1EventPipe}{Event\+Pipe}}$>$ capabilities2\+\_\+events\+::\+Event\+Node\+::connections\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__events_1_1EventNode_a0aff474ac782cae10ca79d37c1f17a44}\label{classcapabilities2__events_1_1EventNode_a0aff474ac782cae10ca79d37c1f17a44} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!event\_emitter\_@{event\_emitter\_}}
+\index{event\_emitter\_@{event\_emitter\_}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{event\_emitter\_}{event\_emitter\_}}
+{\footnotesize\ttfamily std\+::shared\+\_\+ptr$<$\mbox{\hyperlink{classcapabilities2__events_1_1EventBase}{Event\+Base}}$>$ capabilities2\+\_\+events\+::\+Event\+Node\+::event\+\_\+emitter\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__events_1_1EventNode_a39d451da5c7fac76f125307884baf4b4}\label{classcapabilities2__events_1_1EventNode_a39d451da5c7fac76f125307884baf4b4} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!id\_@{id\_}}
+\index{id\_@{id\_}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{id\_}{id\_}}
+{\footnotesize\ttfamily std\+::string capabilities2\+\_\+events\+::\+Event\+Node\+::id\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__events_1_1EventNode_a749cc5b8b86f3ac4d82ecc2b124d46ce}\label{classcapabilities2__events_1_1EventNode_a749cc5b8b86f3ac4d82ecc2b124d46ce} 
+\index{capabilities2\_events::EventNode@{capabilities2\_events::EventNode}!source\_@{source\_}}
+\index{source\_@{source\_}!capabilities2\_events::EventNode@{capabilities2\_events::EventNode}}
+\doxysubsubsection{\texorpdfstring{source\_}{source\_}}
+{\footnotesize\ttfamily capabilities2\+\_\+msgs\+::msg\+::\+Capability capabilities2\+\_\+events\+::\+Event\+Node\+::source\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+capabilities2\+\_\+events/include/capabilities2\+\_\+events/\mbox{\hyperlink{event__node_8hpp}{event\+\_\+node.\+hpp}}\end{DoxyCompactItemize}

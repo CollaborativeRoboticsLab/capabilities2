@@ -1,0 +1,96 @@
+\chapter{Capabilities2 Models}
+\hypertarget{md_capabilities2__server_2include_2capabilities2__server_2models_2readme}{}\label{md_capabilities2__server_2include_2capabilities2__server_2models_2readme}\index{Capabilities2 Models@{Capabilities2 Models}}
+\label{md_capabilities2__server_2include_2capabilities2__server_2models_2readme_autotoc_md41}%
+\Hypertarget{md_capabilities2__server_2include_2capabilities2__server_2models_2readme_autotoc_md41}%
+ This directory contains the data models used by the Capabilities2 server.\hypertarget{md_capabilities2__server_2include_2capabilities2__server_2models_2readme_autotoc_md42}{}\doxysection{\texorpdfstring{Models}{Models}}\label{md_capabilities2__server_2include_2capabilities2__server_2models_2readme_autotoc_md42}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Model   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Model   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endhead
+{\ttfamily provider}   &Represents a provider of an interface    \\\cline{1-2}
+{\ttfamily interface}   &Represents a capability interface    \\\cline{1-2}
+{\ttfamily semantic\+\_\+interface}   &Represents a semantic capability interface   \\\cline{1-2}
+\end{longtabu}
+\hypertarget{md_capabilities2__server_2include_2capabilities2__server_2models_2readme_autotoc_md43}{}\doxysubsection{\texorpdfstring{V2 new models (\+TODO)}{V2 new models (TODO)}}\label{md_capabilities2__server_2include_2capabilities2__server_2models_2readme_autotoc_md43}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Model   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Model   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endhead
+{\ttfamily predicates}   &Represents predicates between capabilities   \\\cline{1-2}
+\end{longtabu}
+\hypertarget{md_capabilities2__server_2include_2capabilities2__server_2models_2readme_autotoc_md44}{}\doxysubsection{\texorpdfstring{V3 new models (\+TODO)(\+Proposal)}{V3 new models (TODO)(Proposal)}}\label{md_capabilities2__server_2include_2capabilities2__server_2models_2readme_autotoc_md44}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Model   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Model   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endhead
+{\ttfamily running}   &Represents active runners that are executing capabilities    \\\cline{1-2}
+{\ttfamily connections}   &Represents connections between active runners   \\\cline{1-2}
+\end{longtabu}
+\hypertarget{md_capabilities2__server_2include_2capabilities2__server_2models_2readme_autotoc_md45}{}\doxysection{\texorpdfstring{Traits}{Traits}}\label{md_capabilities2__server_2include_2capabilities2__server_2models_2readme_autotoc_md45}
+The models can implement various traits to provide additional functionality. The available traits are\+:
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Trait   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Trait   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endhead
+{\ttfamily identifiable}   &Allows the model to have a unique identifier    \\\cline{1-2}
+{\ttfamily modifiable}   &Adds created and modified timestamps    \\\cline{1-2}
+{\ttfamily soft\+\_\+deleteable}   &Allows the model to be soft deleted    \\\cline{1-2}
+{\ttfamily header}   &Adds a header to the model including name, description, and version etc. The header uses id, created, and deleted timestamps    \\\cline{1-2}
+{\ttfamily remappable}   &Allows the model to have remappings   \\\cline{1-2}
+\end{longtabu}
+\hypertarget{md_capabilities2__server_2include_2capabilities2__server_2models_2readme_autotoc_md46}{}\doxysubsection{\texorpdfstring{V2 new traits (\+TODO)}{V2 new traits (TODO)}}\label{md_capabilities2__server_2include_2capabilities2__server_2models_2readme_autotoc_md46}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Trait   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Trait   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endhead
+{\ttfamily predicateable}   &Allows the model to use subject-\/predicate relationships    \\\cline{1-2}
+{\ttfamily assurable}   &Adds tracking metrics for capability performance   \\\cline{1-2}
+\end{longtabu}
+\hypertarget{md_capabilities2__server_2include_2capabilities2__server_2models_2readme_autotoc_md47}{}\doxysection{\texorpdfstring{Relationships}{Relationships}}\label{md_capabilities2__server_2include_2capabilities2__server_2models_2readme_autotoc_md47}
+The models can have relationships with each other. The available relationships are\+:
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Relationship   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Relationship   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endhead
+{\ttfamily implements}   &A provider implements an interface    \\\cline{1-2}
+{\ttfamily depends\+\_\+on}   &A provider depends on another provider    \\\cline{1-2}
+{\ttfamily redefines}   &A semantic interface redefines an interface   \\\cline{1-2}
+\end{longtabu}

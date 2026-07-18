@@ -1,0 +1,428 @@
+\doxysection{capabilities2\+\_\+server\+::Capabilities\+Server Class Reference}
+\hypertarget{classcapabilities2__server_1_1CapabilitiesServer}{}\label{classcapabilities2__server_1_1CapabilitiesServer}\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+
+
+capabilities server  
+
+
+
+
+{\ttfamily \#include "{}capabilities\+\_\+server.\+hpp"{}}
+
+
+
+Inheritance diagram for capabilities2\+\_\+server\+::Capabilities\+Server\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=290pt]{classcapabilities2__server_1_1CapabilitiesServer__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for capabilities2\+\_\+server\+::Capabilities\+Server\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classcapabilities2__server_1_1CapabilitiesServer__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aacf69c819dfe2d31895bd6a4b7831aea}{Capabilities\+Server}} (const rclcpp\+::\+Node\+Options \&options=rclcpp\+::\+Node\+Options())
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ae560f31a113bbf9b1be05ec49c04e04e}{initialize}} ()
+\begin{DoxyCompactList}\small\item\em Initializes the capabilities server node. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aa55cf315d13a4bbbff41439a4acb6eb7}{establish\+\_\+bond\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Establish\+Bond\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Establish\+Bond\+::\+Response $>$ res)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a60a3176ebff35a89d8066a80e533637e}{start\+\_\+capability\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Start\+Capability\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Start\+Capability\+::\+Response $>$ res)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aa23ec591bffe34a5b29a317de882c61d}{stop\+\_\+capability\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Stop\+Capability\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Stop\+Capability\+::\+Response $>$ res)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a88e047d3b8f4947f2f89160eac2b34e3}{trigger\+\_\+capability\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Trigger\+Capability\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Trigger\+Capability\+::\+Response $>$ res)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ae855a537f8007233ab225e22fb5eca04}{free\+\_\+capability\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Free\+Capability\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Free\+Capability\+::\+Response $>$ res)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ab351057325bd9c62bbd25657061505d6}{use\+\_\+capability\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Use\+Capability\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Use\+Capability\+::\+Response $>$ res)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a03500d304d5fef27e356b30b5d23dece}{connect\+\_\+capability\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Connect\+Capability\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Connect\+Capability\+::\+Response $>$ res)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a71a42e1eaa2a7b030b8e0b1c90609315}{register\+\_\+capability\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Register\+Capability\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Register\+Capability\+::\+Response $>$ res)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a1eee46a1f8874823530823183406e082}{get\+\_\+interfaces\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Interfaces\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Interfaces\+::\+Response $>$ res)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ae3299cfc91495fdff2fc8eb1513e7804}{get\+\_\+semantic\+\_\+interfaces\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Semantic\+Interfaces\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Semantic\+Interfaces\+::\+Response $>$ res)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_afd5d1ff380148dbc66a57e04e92109e0}{get\+\_\+providers\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Providers\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Providers\+::\+Response $>$ res)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aed01fea6038bf10c20f4e23325e7b411}{get\+\_\+capability\+\_\+spec\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Capability\+Spec\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Capability\+Spec\+::\+Response $>$ res)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a8bc0d2808af84412e1696f768366c114}{get\+\_\+capability\+\_\+specs\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Capability\+Specs\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Capability\+Specs\+::\+Response $>$ res)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a71728f43b140a67280d2eec2a18f00e4}{get\+\_\+remappings\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Remappings\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Remappings\+::\+Response $>$ res)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ad25368b49818a71d8bb5aefb64975fb5}{get\+\_\+running\+\_\+capabilities\+\_\+cb}} (const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Running\+Capabilities\+::\+Request $>$ req, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Running\+Capabilities\+::\+Response $>$ res)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI}{capabilities2\+\_\+server\+::\+Capabilities\+API}}}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a7e33013361270175186e7e23fe7342ce}{Capabilities\+API}} ()
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a84971555f626b74b3236c61bd2bf0ef2}{connect}} (const std\+::string \&db\+\_\+file, rclcpp\+::node\+\_\+interfaces\+::\+Node\+Logging\+Interface\+::\+Shared\+Ptr logging)
+\begin{DoxyCompactList}\small\item\em connect with the database file \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_aaf69b498cc0fcc66267032c8a0a1504c}{start\+\_\+capability}} (rclcpp\+::\+Node\+::\+Shared\+Ptr node, const std\+::string \&capability, const std\+::string \&provider)
+\begin{DoxyCompactList}\small\item\em Start a capability. Internal function only. Do not used this function externally. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a1e106040d8bec5321e809c3666601600}{stop\+\_\+capability}} (const std\+::string \&capability)
+\begin{DoxyCompactList}\small\item\em Stop a capability. Internal function only. Do not used this function externally. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a02d27d28503b5b56cf5aa3556e1a2118}{free\+\_\+capability}} (const std\+::string \&capability, const std\+::string \&bond\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Free a capability after usage. This will remove the bond and callstop\+\_\+capability This function can be used externally. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_ae6de8e860c63da9acde97c4b5cd7a5a5}{trigger\+\_\+capability}} (const std\+::string \&bond\+\_\+id, const std\+::string \&capability, const std\+::string \&instance\+\_\+id, \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\+\_\+events\+::\+Event\+Parameters}} parameters)
+\begin{DoxyCompactList}\small\item\em trigger a capability \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a419ed80ae9a32f0d89518b0750ade73c}{use\+\_\+capability}} (rclcpp\+::\+Node\+::\+Shared\+Ptr node, const std\+::string \&capability, const std\+::string \&provider, const std\+::string \&bond\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Use a capability. This will create a bond id for the requested instance and call start\+\_\+capability function can be used externally. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_ae6e049a500dc2554322475a1b4e89c21}{connect\+\_\+capability}} (const std\+::string \&bond\+\_\+id, const capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Connection \&connection)
+\begin{DoxyCompactList}\small\item\em connect RUNNING capabilities together via event type \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a226adbcdbb5b497953a2dd61d418a7de}{add\+\_\+capability}} (const capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Spec \&spec)
+\item 
+std\+::vector$<$ std\+::string $>$ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_acd27a3b8a5655712120d8f60e6e21a03}{get\+\_\+interfaces}} ()
+\item 
+std\+::vector$<$ std\+::string $>$ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_ad0323e4febb7e96405a0473e39e58d52}{get\+\_\+semantic\+\_\+interfaces}} (const std\+::string \&interface)
+\item 
+std\+::vector$<$ std\+::string $>$ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_ad6f151b6a272325d92aeb7704ded093a}{get\+\_\+providers}} (const std\+::string \&interface, const bool \&include\+\_\+semantic)
+\item 
+const capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Spec \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_af2ad7408ac8e69d5cf4d8bb503fd37e8}{get\+\_\+capability\+\_\+spec}} (const std\+::string \&resource)
+\begin{DoxyCompactList}\small\item\em Get the capability spec object for a given resource return the spec in yaml string format. \end{DoxyCompactList}\item 
+std\+::vector$<$ capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Spec $>$ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a89ca5565eac4c99553fb79e7e8c332c8}{get\+\_\+capability\+\_\+specs}} ()
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a0c1bbfe23a34eb6adef90747bba2b34f}{get\+\_\+remappings}} (const std\+::string \&capability\+\_\+spec, std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Remappings\+::\+Response $>$ res)
+\item 
+std\+::vector$<$ capabilities2\+\_\+msgs\+::msg\+::\+Running\+Capability $>$ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a35a9b49bc2b1fdcf0311264905f59514}{get\+\_\+running\+\_\+capabilities}} ()
+\item 
+int \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a25529ea4994cd0e839500fff111b620c}{get\+\_\+pid}} (const std\+::string \&capability)
+\begin{DoxyCompactList}\small\item\em get pid of capability \end{DoxyCompactList}\item 
+const std\+::string \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a9d25868abf2647c2e77aad620b270c3b}{establish\+\_\+bond}} (rclcpp\+::\+Node\+::\+Shared\+Ptr node)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_acfc34192e7ebdf7bd32bb720eba44953}{on\+\_\+bond\+\_\+established}} (const std\+::string \&bond\+\_\+id)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a8af0a6969caee569e51664a7258927ba}{on\+\_\+bond\+\_\+broken}} (const std\+::string \&bond\+\_\+id)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a58c477d3ba7423b273778842fe156dcc}{load\+\_\+capabilities}} (const std\+::string \&package\+\_\+path)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a5e0231cf2f4d4c16ec057e5603b0efd1}{parse\+\_\+package\+\_\+xml}} (const std\+::string \&package\+\_\+xml, tinyxml2\+::\+XMLDocument \&doc)
+\begin{DoxyCompactList}\small\item\em parse package.\+xml file \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a38bec3f55aab20fb4ef4be05ff20ee20}{load\+\_\+spec\+\_\+content}} (const std\+::string \&spec\+\_\+file, capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Spec \&capability\+\_\+spec)
+\begin{DoxyCompactList}\small\item\em load capability spec content from a file \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+double \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a6e8b97337893a97daa58e3f0c11bb565}{loop\+\_\+hz\+\_\+}}
+\item 
+rclcpp\+::\+Publisher$<$ capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Event\+Stamped $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aa850ac5910b408d86b73b7bc04d82134}{event\+\_\+pub\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Establish\+Bond $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a4d626b97ce07ce813f045f334e0672bf}{establish\+\_\+bond\+\_\+srv\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Start\+Capability $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a1a04b3d8e38c3e738d6dad3e9f90ed32}{start\+\_\+capability\+\_\+srv\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Stop\+Capability $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aee406dd808d0277a3d1babfbaf5d0dee}{stop\+\_\+capability\+\_\+srv\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Free\+Capability $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a0e28a32f07cadfecd641727cf7d6df9a}{free\+\_\+capability\+\_\+srv\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Connect\+Capability $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a234c5773e90eebb05bd36fe2025f5503}{connect\+\_\+capability\+\_\+srv\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Trigger\+Capability $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ab479dbd4ed2028355725f553dca81d4e}{trigger\+\_\+capability\+\_\+srv\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Use\+Capability $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a152c07656d903772602e01a23b717c94}{use\+\_\+capability\+\_\+srv\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Register\+Capability $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a12ab12a8447c6333dd2383534e2268bb}{register\+\_\+capability\+\_\+srv\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Interfaces $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aa7b2bb889301337796e782ea00d788a9}{get\+\_\+interfaces\+\_\+srv\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Semantic\+Interfaces $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ae9b834509054095c04cc7f9d1557ec96}{get\+\_\+semantic\+\_\+interfaces\+\_\+srv\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Providers $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a755cc7001a6739ae422492a9b6d4f4e3}{get\+\_\+providers\+\_\+srv\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Capability\+Spec $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a8286d3d3b6ad3eefef8bb91abcf349a2}{get\+\_\+capability\+\_\+spec\+\_\+srv\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Capability\+Specs $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aad26d9c4b7948bff89e9dfc54dae3b33}{get\+\_\+capability\+\_\+specs\+\_\+srv\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Remappings $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a493ae61330a2da82fd4991055fdc2a2c}{get\+\_\+remappings\+\_\+srv\+\_\+}}
+\item 
+rclcpp\+::\+Service$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Running\+Capabilities $>$\+::\+Shared\+Ptr \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ac358c10e20544260cb65ad6fd3a31c8d}{get\+\_\+running\+\_\+capabilities\+\_\+srv\+\_\+}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Additional Inherited Members}
+\doxysubsection*{Protected Attributes inherited from \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI}{capabilities2\+\_\+server\+::\+Capabilities\+API}}}
+\begin{DoxyCompactItemize}
+\item 
+std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase}{capabilities2\+\_\+events\+::\+Event\+Base}} $>$ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a1e3645b59e7641e486143354562ccfc3}{event\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+capabilities server 
+
+Capabilities server node that provides a ROS service capabilities API for managing capabilities. implements the \doxylink{classcapabilities2__server_1_1CapabilitiesAPI}{Capabilities\+API} interface for core capabilities functionality. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_aacf69c819dfe2d31895bd6a4b7831aea}\label{classcapabilities2__server_1_1CapabilitiesServer_aacf69c819dfe2d31895bd6a4b7831aea} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!CapabilitiesServer@{CapabilitiesServer}}
+\index{CapabilitiesServer@{CapabilitiesServer}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{CapabilitiesServer()}{CapabilitiesServer()}}
+{\footnotesize\ttfamily capabilities2\+\_\+server\+::\+Capabilities\+Server\+::\+Capabilities\+Server (\begin{DoxyParamCaption}\item[{const rclcpp\+::\+Node\+Options \&}]{options = {\ttfamily rclcpp\+:\+:NodeOptions()} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a03500d304d5fef27e356b30b5d23dece}\label{classcapabilities2__server_1_1CapabilitiesServer_a03500d304d5fef27e356b30b5d23dece} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!connect\_capability\_cb@{connect\_capability\_cb}}
+\index{connect\_capability\_cb@{connect\_capability\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{connect\_capability\_cb()}{connect\_capability\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::connect\+\_\+capability\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Connect\+Capability\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Connect\+Capability\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_aa55cf315d13a4bbbff41439a4acb6eb7}\label{classcapabilities2__server_1_1CapabilitiesServer_aa55cf315d13a4bbbff41439a4acb6eb7} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!establish\_bond\_cb@{establish\_bond\_cb}}
+\index{establish\_bond\_cb@{establish\_bond\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{establish\_bond\_cb()}{establish\_bond\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::establish\+\_\+bond\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Establish\+Bond\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Establish\+Bond\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_ae855a537f8007233ab225e22fb5eca04}\label{classcapabilities2__server_1_1CapabilitiesServer_ae855a537f8007233ab225e22fb5eca04} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!free\_capability\_cb@{free\_capability\_cb}}
+\index{free\_capability\_cb@{free\_capability\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{free\_capability\_cb()}{free\_capability\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::free\+\_\+capability\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Free\+Capability\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Free\+Capability\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_aed01fea6038bf10c20f4e23325e7b411}\label{classcapabilities2__server_1_1CapabilitiesServer_aed01fea6038bf10c20f4e23325e7b411} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!get\_capability\_spec\_cb@{get\_capability\_spec\_cb}}
+\index{get\_capability\_spec\_cb@{get\_capability\_spec\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{get\_capability\_spec\_cb()}{get\_capability\_spec\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::get\+\_\+capability\+\_\+spec\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Capability\+Spec\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Capability\+Spec\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a8bc0d2808af84412e1696f768366c114}\label{classcapabilities2__server_1_1CapabilitiesServer_a8bc0d2808af84412e1696f768366c114} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!get\_capability\_specs\_cb@{get\_capability\_specs\_cb}}
+\index{get\_capability\_specs\_cb@{get\_capability\_specs\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{get\_capability\_specs\_cb()}{get\_capability\_specs\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::get\+\_\+capability\+\_\+specs\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Capability\+Specs\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Capability\+Specs\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a1eee46a1f8874823530823183406e082}\label{classcapabilities2__server_1_1CapabilitiesServer_a1eee46a1f8874823530823183406e082} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!get\_interfaces\_cb@{get\_interfaces\_cb}}
+\index{get\_interfaces\_cb@{get\_interfaces\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{get\_interfaces\_cb()}{get\_interfaces\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::get\+\_\+interfaces\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Interfaces\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Interfaces\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_afd5d1ff380148dbc66a57e04e92109e0}\label{classcapabilities2__server_1_1CapabilitiesServer_afd5d1ff380148dbc66a57e04e92109e0} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!get\_providers\_cb@{get\_providers\_cb}}
+\index{get\_providers\_cb@{get\_providers\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{get\_providers\_cb()}{get\_providers\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::get\+\_\+providers\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Providers\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Providers\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a71728f43b140a67280d2eec2a18f00e4}\label{classcapabilities2__server_1_1CapabilitiesServer_a71728f43b140a67280d2eec2a18f00e4} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!get\_remappings\_cb@{get\_remappings\_cb}}
+\index{get\_remappings\_cb@{get\_remappings\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{get\_remappings\_cb()}{get\_remappings\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::get\+\_\+remappings\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Remappings\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Remappings\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_ad25368b49818a71d8bb5aefb64975fb5}\label{classcapabilities2__server_1_1CapabilitiesServer_ad25368b49818a71d8bb5aefb64975fb5} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!get\_running\_capabilities\_cb@{get\_running\_capabilities\_cb}}
+\index{get\_running\_capabilities\_cb@{get\_running\_capabilities\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{get\_running\_capabilities\_cb()}{get\_running\_capabilities\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::get\+\_\+running\+\_\+capabilities\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Running\+Capabilities\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Running\+Capabilities\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_ae3299cfc91495fdff2fc8eb1513e7804}\label{classcapabilities2__server_1_1CapabilitiesServer_ae3299cfc91495fdff2fc8eb1513e7804} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!get\_semantic\_interfaces\_cb@{get\_semantic\_interfaces\_cb}}
+\index{get\_semantic\_interfaces\_cb@{get\_semantic\_interfaces\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{get\_semantic\_interfaces\_cb()}{get\_semantic\_interfaces\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::get\+\_\+semantic\+\_\+interfaces\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Semantic\+Interfaces\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Get\+Semantic\+Interfaces\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_ae560f31a113bbf9b1be05ec49c04e04e}\label{classcapabilities2__server_1_1CapabilitiesServer_ae560f31a113bbf9b1be05ec49c04e04e} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!initialize@{initialize}}
+\index{initialize@{initialize}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{initialize()}{initialize()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::initialize (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Initializes the capabilities server node. 
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a58c477d3ba7423b273778842fe156dcc}\label{classcapabilities2__server_1_1CapabilitiesServer_a58c477d3ba7423b273778842fe156dcc} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!load\_capabilities@{load\_capabilities}}
+\index{load\_capabilities@{load\_capabilities}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{load\_capabilities()}{load\_capabilities()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::load\+\_\+capabilities (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{package\+\_\+path }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a38bec3f55aab20fb4ef4be05ff20ee20}\label{classcapabilities2__server_1_1CapabilitiesServer_a38bec3f55aab20fb4ef4be05ff20ee20} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!load\_spec\_content@{load\_spec\_content}}
+\index{load\_spec\_content@{load\_spec\_content}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{load\_spec\_content()}{load\_spec\_content()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::load\+\_\+spec\+\_\+content (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{spec\+\_\+file,  }\item[{capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Spec \&}]{capability\+\_\+spec }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+
+
+load capability spec content from a file 
+
+
+\begin{DoxyParams}{Parameters}
+{\em spec\+\_\+file} & \\
+\hline
+{\em capability\+\_\+spec} & \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a5e0231cf2f4d4c16ec057e5603b0efd1}\label{classcapabilities2__server_1_1CapabilitiesServer_a5e0231cf2f4d4c16ec057e5603b0efd1} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!parse\_package\_xml@{parse\_package\_xml}}
+\index{parse\_package\_xml@{parse\_package\_xml}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{parse\_package\_xml()}{parse\_package\_xml()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::parse\+\_\+package\+\_\+xml (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{package\+\_\+xml,  }\item[{tinyxml2\+::\+XMLDocument \&}]{doc }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+
+
+parse package.\+xml file 
+
+
+\begin{DoxyParams}{Parameters}
+{\em package\+\_\+xml} & \\
+\hline
+{\em doc} & \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a71a42e1eaa2a7b030b8e0b1c90609315}\label{classcapabilities2__server_1_1CapabilitiesServer_a71a42e1eaa2a7b030b8e0b1c90609315} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!register\_capability\_cb@{register\_capability\_cb}}
+\index{register\_capability\_cb@{register\_capability\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{register\_capability\_cb()}{register\_capability\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::register\+\_\+capability\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Register\+Capability\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Register\+Capability\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a60a3176ebff35a89d8066a80e533637e}\label{classcapabilities2__server_1_1CapabilitiesServer_a60a3176ebff35a89d8066a80e533637e} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!start\_capability\_cb@{start\_capability\_cb}}
+\index{start\_capability\_cb@{start\_capability\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{start\_capability\_cb()}{start\_capability\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::start\+\_\+capability\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Start\+Capability\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Start\+Capability\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_aa23ec591bffe34a5b29a317de882c61d}\label{classcapabilities2__server_1_1CapabilitiesServer_aa23ec591bffe34a5b29a317de882c61d} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!stop\_capability\_cb@{stop\_capability\_cb}}
+\index{stop\_capability\_cb@{stop\_capability\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{stop\_capability\_cb()}{stop\_capability\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::stop\+\_\+capability\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Stop\+Capability\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Stop\+Capability\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a88e047d3b8f4947f2f89160eac2b34e3}\label{classcapabilities2__server_1_1CapabilitiesServer_a88e047d3b8f4947f2f89160eac2b34e3} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!trigger\_capability\_cb@{trigger\_capability\_cb}}
+\index{trigger\_capability\_cb@{trigger\_capability\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{trigger\_capability\_cb()}{trigger\_capability\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::trigger\+\_\+capability\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Trigger\+Capability\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Trigger\+Capability\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_ab351057325bd9c62bbd25657061505d6}\label{classcapabilities2__server_1_1CapabilitiesServer_ab351057325bd9c62bbd25657061505d6} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!use\_capability\_cb@{use\_capability\_cb}}
+\index{use\_capability\_cb@{use\_capability\_cb}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{use\_capability\_cb()}{use\_capability\_cb()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+Server\+::use\+\_\+capability\+\_\+cb (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Use\+Capability\+::\+Request $>$}]{req,  }\item[{std\+::shared\+\_\+ptr$<$ capabilities2\+\_\+msgs\+::srv\+::\+Use\+Capability\+::\+Response $>$}]{res }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a234c5773e90eebb05bd36fe2025f5503}\label{classcapabilities2__server_1_1CapabilitiesServer_a234c5773e90eebb05bd36fe2025f5503} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!connect\_capability\_srv\_@{connect\_capability\_srv\_}}
+\index{connect\_capability\_srv\_@{connect\_capability\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{connect\_capability\_srv\_}{connect\_capability\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Connect\+Capability$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::connect\+\_\+capability\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a4d626b97ce07ce813f045f334e0672bf}\label{classcapabilities2__server_1_1CapabilitiesServer_a4d626b97ce07ce813f045f334e0672bf} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!establish\_bond\_srv\_@{establish\_bond\_srv\_}}
+\index{establish\_bond\_srv\_@{establish\_bond\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{establish\_bond\_srv\_}{establish\_bond\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Establish\+Bond$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::establish\+\_\+bond\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_aa850ac5910b408d86b73b7bc04d82134}\label{classcapabilities2__server_1_1CapabilitiesServer_aa850ac5910b408d86b73b7bc04d82134} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!event\_pub\_@{event\_pub\_}}
+\index{event\_pub\_@{event\_pub\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{event\_pub\_}{event\_pub\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Publisher$<$capabilities2\+\_\+msgs\+::msg\+::\+Capability\+Event\+Stamped$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::event\+\_\+pub\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a0e28a32f07cadfecd641727cf7d6df9a}\label{classcapabilities2__server_1_1CapabilitiesServer_a0e28a32f07cadfecd641727cf7d6df9a} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!free\_capability\_srv\_@{free\_capability\_srv\_}}
+\index{free\_capability\_srv\_@{free\_capability\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{free\_capability\_srv\_}{free\_capability\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Free\+Capability$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::free\+\_\+capability\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a8286d3d3b6ad3eefef8bb91abcf349a2}\label{classcapabilities2__server_1_1CapabilitiesServer_a8286d3d3b6ad3eefef8bb91abcf349a2} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!get\_capability\_spec\_srv\_@{get\_capability\_spec\_srv\_}}
+\index{get\_capability\_spec\_srv\_@{get\_capability\_spec\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{get\_capability\_spec\_srv\_}{get\_capability\_spec\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Get\+Capability\+Spec$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::get\+\_\+capability\+\_\+spec\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_aad26d9c4b7948bff89e9dfc54dae3b33}\label{classcapabilities2__server_1_1CapabilitiesServer_aad26d9c4b7948bff89e9dfc54dae3b33} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!get\_capability\_specs\_srv\_@{get\_capability\_specs\_srv\_}}
+\index{get\_capability\_specs\_srv\_@{get\_capability\_specs\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{get\_capability\_specs\_srv\_}{get\_capability\_specs\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Get\+Capability\+Specs$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::get\+\_\+capability\+\_\+specs\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_aa7b2bb889301337796e782ea00d788a9}\label{classcapabilities2__server_1_1CapabilitiesServer_aa7b2bb889301337796e782ea00d788a9} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!get\_interfaces\_srv\_@{get\_interfaces\_srv\_}}
+\index{get\_interfaces\_srv\_@{get\_interfaces\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{get\_interfaces\_srv\_}{get\_interfaces\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Get\+Interfaces$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::get\+\_\+interfaces\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a755cc7001a6739ae422492a9b6d4f4e3}\label{classcapabilities2__server_1_1CapabilitiesServer_a755cc7001a6739ae422492a9b6d4f4e3} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!get\_providers\_srv\_@{get\_providers\_srv\_}}
+\index{get\_providers\_srv\_@{get\_providers\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{get\_providers\_srv\_}{get\_providers\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Get\+Providers$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::get\+\_\+providers\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a493ae61330a2da82fd4991055fdc2a2c}\label{classcapabilities2__server_1_1CapabilitiesServer_a493ae61330a2da82fd4991055fdc2a2c} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!get\_remappings\_srv\_@{get\_remappings\_srv\_}}
+\index{get\_remappings\_srv\_@{get\_remappings\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{get\_remappings\_srv\_}{get\_remappings\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Get\+Remappings$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::get\+\_\+remappings\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_ac358c10e20544260cb65ad6fd3a31c8d}\label{classcapabilities2__server_1_1CapabilitiesServer_ac358c10e20544260cb65ad6fd3a31c8d} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!get\_running\_capabilities\_srv\_@{get\_running\_capabilities\_srv\_}}
+\index{get\_running\_capabilities\_srv\_@{get\_running\_capabilities\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{get\_running\_capabilities\_srv\_}{get\_running\_capabilities\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Get\+Running\+Capabilities$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::get\+\_\+running\+\_\+capabilities\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_ae9b834509054095c04cc7f9d1557ec96}\label{classcapabilities2__server_1_1CapabilitiesServer_ae9b834509054095c04cc7f9d1557ec96} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!get\_semantic\_interfaces\_srv\_@{get\_semantic\_interfaces\_srv\_}}
+\index{get\_semantic\_interfaces\_srv\_@{get\_semantic\_interfaces\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{get\_semantic\_interfaces\_srv\_}{get\_semantic\_interfaces\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Get\+Semantic\+Interfaces$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::get\+\_\+semantic\+\_\+interfaces\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a6e8b97337893a97daa58e3f0c11bb565}\label{classcapabilities2__server_1_1CapabilitiesServer_a6e8b97337893a97daa58e3f0c11bb565} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!loop\_hz\_@{loop\_hz\_}}
+\index{loop\_hz\_@{loop\_hz\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{loop\_hz\_}{loop\_hz\_}}
+{\footnotesize\ttfamily double capabilities2\+\_\+server\+::\+Capabilities\+Server\+::loop\+\_\+hz\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a12ab12a8447c6333dd2383534e2268bb}\label{classcapabilities2__server_1_1CapabilitiesServer_a12ab12a8447c6333dd2383534e2268bb} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!register\_capability\_srv\_@{register\_capability\_srv\_}}
+\index{register\_capability\_srv\_@{register\_capability\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{register\_capability\_srv\_}{register\_capability\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Register\+Capability$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::register\+\_\+capability\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a1a04b3d8e38c3e738d6dad3e9f90ed32}\label{classcapabilities2__server_1_1CapabilitiesServer_a1a04b3d8e38c3e738d6dad3e9f90ed32} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!start\_capability\_srv\_@{start\_capability\_srv\_}}
+\index{start\_capability\_srv\_@{start\_capability\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{start\_capability\_srv\_}{start\_capability\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Start\+Capability$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::start\+\_\+capability\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_aee406dd808d0277a3d1babfbaf5d0dee}\label{classcapabilities2__server_1_1CapabilitiesServer_aee406dd808d0277a3d1babfbaf5d0dee} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!stop\_capability\_srv\_@{stop\_capability\_srv\_}}
+\index{stop\_capability\_srv\_@{stop\_capability\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{stop\_capability\_srv\_}{stop\_capability\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Stop\+Capability$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::stop\+\_\+capability\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_ab479dbd4ed2028355725f553dca81d4e}\label{classcapabilities2__server_1_1CapabilitiesServer_ab479dbd4ed2028355725f553dca81d4e} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!trigger\_capability\_srv\_@{trigger\_capability\_srv\_}}
+\index{trigger\_capability\_srv\_@{trigger\_capability\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{trigger\_capability\_srv\_}{trigger\_capability\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Trigger\+Capability$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::trigger\+\_\+capability\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesServer_a152c07656d903772602e01a23b717c94}\label{classcapabilities2__server_1_1CapabilitiesServer_a152c07656d903772602e01a23b717c94} 
+\index{capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}!use\_capability\_srv\_@{use\_capability\_srv\_}}
+\index{use\_capability\_srv\_@{use\_capability\_srv\_}!capabilities2\_server::CapabilitiesServer@{capabilities2\_server::CapabilitiesServer}}
+\doxysubsubsection{\texorpdfstring{use\_capability\_srv\_}{use\_capability\_srv\_}}
+{\footnotesize\ttfamily rclcpp\+::\+Service$<$capabilities2\+\_\+msgs\+::srv\+::\+Use\+Capability$>$\+::\+Shared\+Ptr capabilities2\+\_\+server\+::\+Capabilities\+Server\+::use\+\_\+capability\+\_\+srv\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+capabilities2\+\_\+server/include/capabilities2\+\_\+server/\mbox{\hyperlink{capabilities__server_8hpp}{capabilities\+\_\+server.\+hpp}}\end{DoxyCompactItemize}

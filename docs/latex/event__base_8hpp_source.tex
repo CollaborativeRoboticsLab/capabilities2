@@ -1,0 +1,80 @@
+\doxysection{event\+\_\+base.\+hpp}
+\hypertarget{event__base_8hpp_source}{}\label{event__base_8hpp_source}\index{capabilities2\_events/include/capabilities2\_events/event\_base.hpp@{capabilities2\_events/include/capabilities2\_events/event\_base.hpp}}
+\mbox{\hyperlink{event__base_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <functional>}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <rclcpp/rclcpp.hpp>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{event__parameters_8hpp}{capabilities2\_events/event\_parameters.hpp}}>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/msg/capability.hpp>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/msg/capability\_event.hpp>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/msg/capability\_event\_code.hpp>}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__events}{capabilities2\_events}}}
+\DoxyCodeLine{00014\ \{}
+\DoxyCodeLine{00021\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structcapabilities2__events_1_1event__exception}{event\_exception}}\ :\ \textcolor{keyword}{public}\ std::runtime\_error}
+\DoxyCodeLine{00022\ \{}
+\DoxyCodeLine{00023\ \ \ \textcolor{keyword}{using\ }std::runtime\_error::runtime\_error;}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \ \ \mbox{\hyperlink{structcapabilities2__events_1_1event__exception_ad7d805afcac28ab78f9323bd6a740962}{event\_exception}}(\textcolor{keyword}{const}\ std::string\&\ \mbox{\hyperlink{structcapabilities2__events_1_1event__exception_a44b87bc6a5964f8f3eeadf062df8fbe3}{what}})\ :\ std::runtime\_error(\mbox{\hyperlink{structcapabilities2__events_1_1event__exception_a44b87bc6a5964f8f3eeadf062df8fbe3}{what}})}
+\DoxyCodeLine{00026\ \ \ \{}
+\DoxyCodeLine{00027\ \ \ \}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \mbox{\hyperlink{structcapabilities2__events_1_1event__exception_a44b87bc6a5964f8f3eeadf062df8fbe3}{what}}()\ const\ noexcept\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00030\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keywordflow}{return}\ std::runtime\_error::what();}
+\DoxyCodeLine{00032\ \ \ \}}
+\DoxyCodeLine{00033\ \};}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00042\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcapabilities2__events_1_1EventBase}{EventBase}}}
+\DoxyCodeLine{00043\ \{}
+\DoxyCodeLine{00044\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00045\ \ \ \textcolor{keyword}{typedef}\ std::string\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a62651f0f057c4b561ae19578ba5c5822}{capability\_str\_t}};}
+\DoxyCodeLine{00046\ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\_events::EventParameters}}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a76b5029a3a39b00c5a322b60c0562c97}{parameter\_t}};}
+\DoxyCodeLine{00047\ \ \ \textcolor{keyword}{typedef}\ std::string\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a0d2aa907ed227b7b6042b698ed0bf77b}{access\_id\_t}};}
+\DoxyCodeLine{00048\ \ \ \textcolor{keyword}{typedef}\ std::string\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_ada022c0828aaa8cd023f4cebda9b8209}{target\_instance\_id\_t}};}
+\DoxyCodeLine{00049\ \ \ \textcolor{keyword}{typedef}\ std::function<void(\textcolor{keyword}{const}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a0d2aa907ed227b7b6042b698ed0bf77b}{access\_id\_t}}\&,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a62651f0f057c4b561ae19578ba5c5822}{capability\_str\_t}}\&,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_ada022c0828aaa8cd023f4cebda9b8209}{target\_instance\_id\_t}}\&,\ \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{parameter\_t}})>\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a01f110c6b7c9517f8f8ae134b8b22c8e}{event\_callback\_t}};}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00052\ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a19f418e37fa9e7c9fe06680b265ceeef}{EventBase}}()}
+\DoxyCodeLine{00053\ \ \ \{}
+\DoxyCodeLine{00054\ \ \ \}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a01410f9659983468b791d4aaf0c563f7}{\string~EventBase}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00071\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a0fadc2464ce9a54a913aa55e806b7d8c}{emit}}(\textcolor{keyword}{const}\ std::string\&\ connection\_id,\ \textcolor{keyword}{const}\ uint8\_t\&\ event\_code,}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ capabilities2\_msgs::msg::Capability\&\ source,}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ capabilities2\_msgs::msg::Capability\&\ target,\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a01f110c6b7c9517f8f8ae134b8b22c8e}{event\_callback\_t}}\ callback)}
+\DoxyCodeLine{00074\ \ \ \{}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{comment}{//\ extract\ bond\_id\ from\ connection\_id\ (format:\ "{}bond\_id/instance\_id/target\_instance\_id"{})}}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ first\_pos\ =\ connection\_id.find(\textcolor{charliteral}{'/'});}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \ \ std::string\ bond\_id\ =\ (first\_pos\ !=\ std::string::npos)\ ?\ connection\_id.substr(0,\ first\_pos)\ :\ connection\_id;}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{//\ do\ callback\ with\ bond\_id\ for\ access\ control}}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordflow}{if}\ (callback)}
+\DoxyCodeLine{00082\ \ \ \ \ \{}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ callback(bond\_id,\ target.capability,\ target.instance\_id,\ \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\_events::EventParameters}}(target));}
+\DoxyCodeLine{00084\ \ \ \ \ \}}
+\DoxyCodeLine{00085\ \ \ \}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00092\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_af933897ae9b7098b051cc1fcdb74968f}{on\_server\_ready}}(\textcolor{keyword}{const}\ std::string\&\ msg)\ =\ 0;}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00099\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a9a583f7cfb886ba392d2c76e83e30bfb}{on\_process\_launched}}(\textcolor{keyword}{const}\ std::string\&\ pid)\ =\ 0;}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00106\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a021776e08657b8cf8f1b1f9926201f97}{on\_process\_terminated}}(\textcolor{keyword}{const}\ std::string\&\ pid)\ =\ 0;}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00113\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_afad67998148a34956d1e68aa93c57ce0}{on\_triggered}}(\textcolor{keyword}{const}\ std::string\&\ trigger\_id)\ =\ 0;}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00121\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a6deb16537eaa81d11acf71bc47c1a900}{on\_connected}}(\textcolor{keyword}{const}\ std::string\&\ source,\ \textcolor{keyword}{const}\ std::string\&\ target)\ =\ 0;}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00129\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_ab49fc1628a210ce16cb2c9e79e27f528}{on\_disconnected}}(\textcolor{keyword}{const}\ std::string\&\ source,\ \textcolor{keyword}{const}\ std::string\&\ target)\ =\ 0;}
+\DoxyCodeLine{00130\ \};}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_events}}
+
+\end{DoxyCode}

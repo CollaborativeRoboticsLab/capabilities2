@@ -1,0 +1,522 @@
+\doxysection{capabilities\+\_\+db.\+hpp}
+\hypertarget{capabilities__db_8hpp_source}{}\label{capabilities__db_8hpp_source}\index{capabilities2\_server/include/capabilities2\_server/capabilities\_db.hpp@{capabilities2\_server/include/capabilities2\_server/capabilities\_db.hpp}}
+\mbox{\hyperlink{capabilities__db_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <sqlite3.h>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <yaml-\/cpp/yaml.h>}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{db__base_8hpp}{capabilities2\_server/db\_base.hpp}}>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{interface_8hpp}{capabilities2\_server/models/interface.hpp}}>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{semantic__interface_8hpp}{capabilities2\_server/models/semantic\_interface.hpp}}>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{provider_8hpp}{capabilities2\_server/models/provider.hpp}}>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{running_8hpp}{capabilities2\_server/models/running.hpp}}>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{run__config_8hpp}{capabilities2\_server/models/run\_config.hpp}}>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{sql__safe_8hpp}{capabilities2\_server/utils/sql\_safe.hpp}}>}}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__server}{capabilities2\_server}}}
+\DoxyCodeLine{00019\ \{}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB}{CapabilitiesDB}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{classcapabilities2__server_1_1DBBase}{DBBase}}}
+\DoxyCodeLine{00022\ \{}
+\DoxyCodeLine{00023\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00024\ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a6a06e320c5c1ac224f7879bbe05e6a8e}{CapabilitiesDB}}(\textcolor{keyword}{const}\ std::string\ db\_file\ =\ \textcolor{stringliteral}{"{}cache/capabilities.sqlite3"{}})\ :\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a67c5398900d16d720335f8eb4294316d}{db\_file\_}}(db\_file),\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}}(nullptr)}
+\DoxyCodeLine{00025\ \ \ \{}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{comment}{//\ open\ db}}
+\DoxyCodeLine{00027\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_aba9186d82c6c65188a80f9ac146df1df}{open}}();}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{comment}{//\ create\ tables\ if\ they\ do\ not\ exists}}
+\DoxyCodeLine{00030\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_adc7238b52504f21326ff65d8d68c08f0}{create\_tables}}();}
+\DoxyCodeLine{00031\ \ \ \}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a40951e3346502f6e147865e1ab025e39}{\string~CapabilitiesDB}}()}
+\DoxyCodeLine{00034\ \ \ \{}
+\DoxyCodeLine{00035\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a969c480de1f0f537f67f4f0db0d1eb67}{close}}();}
+\DoxyCodeLine{00036\ \ \ \}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ \textcolor{comment}{/*\ inserters\ */}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \textcolor{comment}{//\ insert\ interface}}
+\DoxyCodeLine{00041\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a2b35eba2ee6659c550ed36dd74f39f73}{insert\_interface}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models::interface\_model\_t}}\&\ interface)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00042\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ query\ =\ \textcolor{stringliteral}{"{}INSERT\ INTO\ interfaces\ VALUES\ ("{}}\ +\ interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t_a7909ec1d2a43ec77d95e22465ae586e5}{to\_sql\_values}}()\ +\ \textcolor{stringliteral}{"{})"{}};}
+\DoxyCodeLine{00044\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3b40692ba92825e177d8e211369cfb97}{exec}}(query);}
+\DoxyCodeLine{00045\ \ \ \}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \textcolor{comment}{//\ insert\ semantic\ interface}}
+\DoxyCodeLine{00048\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a4703582a0735e3a22ed0019164c02ed1}{insert\_semantic\_interface}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models::semantic\_interface\_model\_t}}\&\ semantic\_interface)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00049\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ query\ =\ \textcolor{stringliteral}{"{}INSERT\ INTO\ semantic\_interfaces\ VALUES\ ("{}}\ +\ semantic\_interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_ac26f0357597dbe2946d9278e5433c8ee}{to\_sql\_values}}()\ +\ \textcolor{stringliteral}{"{})"{}};}
+\DoxyCodeLine{00051\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3b40692ba92825e177d8e211369cfb97}{exec}}(query);}
+\DoxyCodeLine{00052\ \ \ \}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \textcolor{comment}{//\ insert\ provider}}
+\DoxyCodeLine{00055\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a6e9c623ecba7812750ee32864e1ed448}{insert\_provider}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models::provider\_model\_t}}\&\ provider)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00056\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ query\ =\ \textcolor{stringliteral}{"{}INSERT\ INTO\ providers\ VALUES\ ("{}}\ +\ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a04a6e71a9466c7db0c908b1279e7ef0f}{to\_sql\_values}}()\ +\ \textcolor{stringliteral}{"{})"{}};}
+\DoxyCodeLine{00058\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3b40692ba92825e177d8e211369cfb97}{exec}}(query);}
+\DoxyCodeLine{00059\ \ \ \}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \textcolor{comment}{/*\ getters\ */}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \textcolor{comment}{//\ get\ interface}}
+\DoxyCodeLine{00064\ \ \ \textcolor{keyword}{virtual}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models::interface\_model\_t}}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a5f8e47a5091b45fe625723b13528b5ac}{get\_interface}}(\textcolor{keyword}{const}\ std::string\&\ name)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00065\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00066\ \ \ \ \ sqlite3\_stmt*\ stmt;}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ query\ =\ \textcolor{stringliteral}{"{}SELECT\ *\ FROM\ interfaces\ WHERE\ name\ =\ '"{}}\ +\ name\ +\ \textcolor{stringliteral}{"{}'"{}};}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ exit\ =\ sqlite3\_prepare\_v2(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}},\ query.c\_str(),\ -\/1,\ \&stmt,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordflow}{if}\ (exit\ !=\ SQLITE\_OK)}
+\DoxyCodeLine{00070\ \ \ \ \ \{}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ sqlite3\_finalize(stmt);}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Error\ preparing\ query:\ "{}}\ +\ std::string(sqlite3\_errmsg(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}})));}
+\DoxyCodeLine{00073\ \ \ \ \ \}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models::interface\_model\_t}}\ interface;}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordflow}{if}\ (sqlite3\_step(stmt)\ ==\ SQLITE\_ROW)}
+\DoxyCodeLine{00077\ \ \ \ \ \{}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \textcolor{keyword}{interface\ }=\ to\_interface(stmt);}
+\DoxyCodeLine{00079\ \ \ \ \ \}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \ \ sqlite3\_finalize(stmt);}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordflow}{return}\ interface;}
+\DoxyCodeLine{00083\ \ \ \}}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \textcolor{comment}{//\ get\ interfaces}}
+\DoxyCodeLine{00086\ \ \ \textcolor{keyword}{virtual}\ std::vector<models::interface\_model\_t>\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_ae263c0a66dccf6f7cee043f8da2050a9}{get\_interfaces}}()\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00087\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00088\ \ \ \ \ sqlite3\_stmt*\ stmt;}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ query\ =\ \textcolor{stringliteral}{"{}SELECT\ *\ FROM\ interfaces"{}};}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ exit\ =\ sqlite3\_prepare\_v2(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}},\ query.c\_str(),\ -\/1,\ \&stmt,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keywordflow}{if}\ (exit\ !=\ SQLITE\_OK)}
+\DoxyCodeLine{00092\ \ \ \ \ \{}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ sqlite3\_finalize(stmt);}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Error\ preparing\ query:\ "{}}\ +\ std::string(sqlite3\_errmsg(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}})));}
+\DoxyCodeLine{00095\ \ \ \ \ \}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ std::vector<models::interface\_model\_t>\ interfaces;}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keywordflow}{while}\ (sqlite3\_step(stmt)\ ==\ SQLITE\_ROW)}
+\DoxyCodeLine{00099\ \ \ \ \ \{}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models::interface\_model\_t}}\ \textcolor{keyword}{interface\ }=\ to\_interface(stmt);}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ interfaces.push\_back(interface);}
+\DoxyCodeLine{00102\ \ \ \ \ \}}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ \ \ sqlite3\_finalize(stmt);}
+\DoxyCodeLine{00105\ \ \ \ \ \textcolor{keywordflow}{return}\ interfaces;}
+\DoxyCodeLine{00106\ \ \ \}}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{//\ get\ semantic\ interface}}
+\DoxyCodeLine{00109\ \ \ \textcolor{keyword}{virtual}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models::semantic\_interface\_model\_t}}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a115b3d1151e5866ff968e96691b541a3}{get\_semantic\_interface}}(\textcolor{keyword}{const}\ std::string\&\ name)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00110\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00111\ \ \ \ \ sqlite3\_stmt*\ stmt;}
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ query\ =\ \textcolor{stringliteral}{"{}SELECT\ *\ FROM\ semantic\_interfaces\ WHERE\ name\ =\ '"{}}\ +\ name\ +\ \textcolor{stringliteral}{"{}'"{}};}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ exit\ =\ sqlite3\_prepare\_v2(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}},\ query.c\_str(),\ -\/1,\ \&stmt,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{keywordflow}{if}\ (exit\ !=\ SQLITE\_OK)}
+\DoxyCodeLine{00115\ \ \ \ \ \{}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ sqlite3\_finalize(stmt);}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Error\ preparing\ query:\ "{}}\ +\ std::string(sqlite3\_errmsg(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}})));}
+\DoxyCodeLine{00118\ \ \ \ \ \}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models::semantic\_interface\_model\_t}}\ semantic\_interface;}
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{keywordflow}{if}\ (sqlite3\_step(stmt)\ ==\ SQLITE\_ROW)}
+\DoxyCodeLine{00122\ \ \ \ \ \{}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ semantic\_interface\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3eb0881736fa825daef5ec83e1d919be}{to\_semantic\_interface}}(stmt);}
+\DoxyCodeLine{00124\ \ \ \ \ \}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ \ \ sqlite3\_finalize(stmt);}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{keywordflow}{return}\ semantic\_interface;}
+\DoxyCodeLine{00128\ \ \ \}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \textcolor{comment}{//\ get\ semantic\ interfaces}}
+\DoxyCodeLine{00131\ \ \ \textcolor{keyword}{virtual}\ std::vector<models::semantic\_interface\_model\_t>\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_ae5f180b570d6c8d57d3b7ed570fa2bc4}{get\_semantic\_interfaces}}()\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00132\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00133\ \ \ \ \ sqlite3\_stmt*\ stmt;}
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ query\ =\ \textcolor{stringliteral}{"{}SELECT\ *\ FROM\ semantic\_interfaces"{}};}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ exit\ =\ sqlite3\_prepare\_v2(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}},\ query.c\_str(),\ -\/1,\ \&stmt,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordflow}{if}\ (exit\ !=\ SQLITE\_OK)}
+\DoxyCodeLine{00137\ \ \ \ \ \{}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ sqlite3\_finalize(stmt);}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Error\ preparing\ query:\ "{}}\ +\ std::string(sqlite3\_errmsg(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}})));}
+\DoxyCodeLine{00140\ \ \ \ \ \}}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \ \ std::vector<models::semantic\_interface\_model\_t>\ semantic\_interfaces;}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordflow}{while}\ (sqlite3\_step(stmt)\ ==\ SQLITE\_ROW)}
+\DoxyCodeLine{00144\ \ \ \ \ \{}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models::semantic\_interface\_model\_t}}\ semantic\_interface\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3eb0881736fa825daef5ec83e1d919be}{to\_semantic\_interface}}(stmt);}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ semantic\_interfaces.push\_back(semantic\_interface);}
+\DoxyCodeLine{00147\ \ \ \ \ \}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \ \ sqlite3\_finalize(stmt);}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keywordflow}{return}\ semantic\_interfaces;}
+\DoxyCodeLine{00151\ \ \ \}}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \textcolor{comment}{//\ get\ provider}}
+\DoxyCodeLine{00154\ \ \ \textcolor{keyword}{virtual}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models::provider\_model\_t}}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a0109b906d50a62d7408271780e9a8707}{get\_provider}}(\textcolor{keyword}{const}\ std::string\&\ name)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00155\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00156\ \ \ \ \ sqlite3\_stmt*\ stmt;}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ query\ =\ \textcolor{stringliteral}{"{}SELECT\ *\ FROM\ providers\ WHERE\ name\ =\ '"{}}\ +\ name\ +\ \textcolor{stringliteral}{"{}'"{}};}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ exit\ =\ sqlite3\_prepare\_v2(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}},\ query.c\_str(),\ -\/1,\ \&stmt,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{keywordflow}{if}\ (exit\ !=\ SQLITE\_OK)}
+\DoxyCodeLine{00160\ \ \ \ \ \{}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ sqlite3\_finalize(stmt);}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Error\ preparing\ query:\ "{}}\ +\ std::string(sqlite3\_errmsg(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}})));}
+\DoxyCodeLine{00163\ \ \ \ \ \}}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models::provider\_model\_t}}\ provider;}
+\DoxyCodeLine{00166\ \ \ \ \ \textcolor{keywordflow}{if}\ (sqlite3\_step(stmt)\ ==\ SQLITE\_ROW)}
+\DoxyCodeLine{00167\ \ \ \ \ \{}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ provider\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_ac6c2407ebde5f7debcf32bc064f8c0bc}{to\_provider}}(stmt);}
+\DoxyCodeLine{00169\ \ \ \ \ \}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \ \ sqlite3\_finalize(stmt);}
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{keywordflow}{return}\ provider;}
+\DoxyCodeLine{00173\ \ \ \}}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \ \ \textcolor{comment}{//\ get\ providers}}
+\DoxyCodeLine{00176\ \ \ \textcolor{keyword}{virtual}\ std::vector<models::provider\_model\_t>\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_abcb12877bac9acaa5b55f0517cd83c71}{get\_providers}}()\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00177\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00178\ \ \ \ \ sqlite3\_stmt*\ stmt;}
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ query\ =\ \textcolor{stringliteral}{"{}SELECT\ *\ FROM\ providers"{}};}
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ exit\ =\ sqlite3\_prepare\_v2(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}},\ query.c\_str(),\ -\/1,\ \&stmt,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00181\ \ \ \ \ \textcolor{keywordflow}{if}\ (exit\ !=\ SQLITE\_OK)}
+\DoxyCodeLine{00182\ \ \ \ \ \{}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ sqlite3\_finalize(stmt);}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Error\ preparing\ query:\ "{}}\ +\ std::string(sqlite3\_errmsg(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}})));}
+\DoxyCodeLine{00185\ \ \ \ \ \}}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \ \ \ \ std::vector<models::provider\_model\_t>\ providers;}
+\DoxyCodeLine{00188\ \ \ \ \ \textcolor{keywordflow}{while}\ (sqlite3\_step(stmt)\ ==\ SQLITE\_ROW)}
+\DoxyCodeLine{00189\ \ \ \ \ \{}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models::provider\_model\_t}}\ provider\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_ac6c2407ebde5f7debcf32bc064f8c0bc}{to\_provider}}(stmt);}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ providers.push\_back(provider);}
+\DoxyCodeLine{00192\ \ \ \ \ \}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \ \ \ \ sqlite3\_finalize(stmt);}
+\DoxyCodeLine{00195\ \ \ \ \ \textcolor{keywordflow}{return}\ providers;}
+\DoxyCodeLine{00196\ \ \ \}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00206\ \ \ \textcolor{keyword}{virtual}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappable__base__t}{models::remappable\_base\_t}}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a7147928b1a095676069664c31f91deae}{get\_remappable}}(\textcolor{keyword}{const}\ std::string\&\ name)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00207\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00208\ \ \ \ \ \textcolor{comment}{//\ check\ if\ it\ is\ a\ semantic\ interface}}
+\DoxyCodeLine{00209\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models::semantic\_interface\_model\_t}}\ semantic\_interface\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a115b3d1151e5866ff968e96691b541a3}{get\_semantic\_interface}}(name);}
+\DoxyCodeLine{00210\ \ \ \ \ \textcolor{keywordflow}{if}\ (!semantic\_interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8650d24298ea55e6f6f810e507618fec}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a3a9a79ce313a985930e2cd97d27ebd5f}{name}}.empty())}
+\DoxyCodeLine{00211\ \ \ \ \ \{}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ semantic\_interface;}
+\DoxyCodeLine{00213\ \ \ \ \ \}}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \ \ \textcolor{comment}{//\ check\ if\ it\ is\ a\ provider}}
+\DoxyCodeLine{00216\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models::provider\_model\_t}}\ provider\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a0109b906d50a62d7408271780e9a8707}{get\_provider}}(name);}
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{keywordflow}{if}\ (!provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a0ad3fa187ea591bbcf1f4ab6d312dac0}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a3a9a79ce313a985930e2cd97d27ebd5f}{name}}.empty())}
+\DoxyCodeLine{00218\ \ \ \ \ \{}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ provider;}
+\DoxyCodeLine{00220\ \ \ \ \ \}}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \ \ \ \ \textcolor{comment}{//\ return\ empty\ remappable\ model}}
+\DoxyCodeLine{00223\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappable__base__t}{models::remappable\_base\_t}}();}
+\DoxyCodeLine{00224\ \ \ \}}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00226\ \ \ \textcolor{comment}{/*\ updaters\ */}}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \ \ \textcolor{comment}{//\ update\ interface}}
+\DoxyCodeLine{00229\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_aa10f6716c7eb019bad310fa8e580880b}{update\_interface}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models::interface\_model\_t}}\&\ interface)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00230\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00231\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ query\ =}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}UPDATE\ interfaces\ SET\ "{}}\ +\ interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t_a7909ec1d2a43ec77d95e22465ae586e5}{to\_sql\_values}}()\ +\ \textcolor{stringliteral}{"{}\ WHERE\ name\ =\ '"{}}\ +\ interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t_ad4dfd8817581f04f0def9017ca898c64}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a3a9a79ce313a985930e2cd97d27ebd5f}{name}}\ +\ \textcolor{stringliteral}{"{}'"{}};}
+\DoxyCodeLine{00233\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3b40692ba92825e177d8e211369cfb97}{exec}}(query);}
+\DoxyCodeLine{00234\ \ \ \}}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \ \ \textcolor{comment}{//\ update\ semantic\ interface}}
+\DoxyCodeLine{00237\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a45dde34e7373e6aec64c1f78d673e0cb}{update\_semantic\_interface}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models::semantic\_interface\_model\_t}}\&\ semantic\_interface)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00238\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ query\ =\ \textcolor{stringliteral}{"{}UPDATE\ semantic\_interfaces\ SET\ "{}}\ +\ semantic\_interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_ac26f0357597dbe2946d9278e5433c8ee}{to\_sql\_values}}()\ +}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\ WHERE\ name\ =\ '"{}}\ +\ semantic\_interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8650d24298ea55e6f6f810e507618fec}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a3a9a79ce313a985930e2cd97d27ebd5f}{name}}\ +\ \textcolor{stringliteral}{"{}'"{}};}
+\DoxyCodeLine{00241\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3b40692ba92825e177d8e211369cfb97}{exec}}(query);}
+\DoxyCodeLine{00242\ \ \ \}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \textcolor{comment}{//\ update\ provider}}
+\DoxyCodeLine{00245\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a74033ce662666907c361fa22fa9e80c2}{update\_provider}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models::provider\_model\_t}}\&\ provider)}
+\DoxyCodeLine{00246\ \ \ \{}
+\DoxyCodeLine{00247\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ query\ =}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}UPDATE\ providers\ SET\ "{}}\ +\ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a04a6e71a9466c7db0c908b1279e7ef0f}{to\_sql\_values}}()\ +\ \textcolor{stringliteral}{"{}\ WHERE\ name\ =\ '"{}}\ +\ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a0ad3fa187ea591bbcf1f4ab6d312dac0}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a3a9a79ce313a985930e2cd97d27ebd5f}{name}}\ +\ \textcolor{stringliteral}{"{}'"{}};}
+\DoxyCodeLine{00249\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3b40692ba92825e177d8e211369cfb97}{exec}}(query);}
+\DoxyCodeLine{00250\ \ \ \}}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \ \ \textcolor{comment}{/*\ foreign\ keys\ */}}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \ \ \textcolor{comment}{//\ get\ providers\ by\ interface}}
+\DoxyCodeLine{00255\ \ \ \textcolor{keyword}{virtual}\ std::vector<models::provider\_model\_t>\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a999ce91780aeeb0cd2f449eeb96a749d}{get\_providers\_by\_interface}}(\textcolor{keyword}{const}\ std::string\&\ interface\_name)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00256\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00257\ \ \ \ \ \textcolor{comment}{//\ could\ be\ a\ semantic\ interface\ or\ an\ interface}}
+\DoxyCodeLine{00258\ \ \ \ \ sqlite3\_stmt*\ stmt;}
+\DoxyCodeLine{00259\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ query\ =\ \textcolor{stringliteral}{"{}SELECT\ *\ FROM\ providers\ WHERE\ implements\ =\ '"{}}\ +\ interface\_name\ +\ \textcolor{stringliteral}{"{}'"{}};}
+\DoxyCodeLine{00260\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ exit\ =\ sqlite3\_prepare\_v2(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}},\ query.c\_str(),\ -\/1,\ \&stmt,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00261\ \ \ \ \ \textcolor{keywordflow}{if}\ (exit\ !=\ SQLITE\_OK)}
+\DoxyCodeLine{00262\ \ \ \ \ \{}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ sqlite3\_finalize(stmt);}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Error\ preparing\ query:\ "{}}\ +\ std::string(sqlite3\_errmsg(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}})));}
+\DoxyCodeLine{00265\ \ \ \ \ \}}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \ \ \ \ std::vector<models::provider\_model\_t>\ providers;}
+\DoxyCodeLine{00268\ \ \ \ \ \textcolor{keywordflow}{while}\ (sqlite3\_step(stmt)\ ==\ SQLITE\_ROW)}
+\DoxyCodeLine{00269\ \ \ \ \ \{}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models::provider\_model\_t}}\ provider\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_ac6c2407ebde5f7debcf32bc064f8c0bc}{to\_provider}}(stmt);}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ providers.push\_back(provider);}
+\DoxyCodeLine{00272\ \ \ \ \ \}}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \ \ \ \ \textcolor{keywordflow}{return}\ providers;}
+\DoxyCodeLine{00275\ \ \ \}}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \ \ \textcolor{comment}{//\ get\ semantic\ interfaces\ by\ interface}}
+\DoxyCodeLine{00278\ \ \ \textcolor{keyword}{virtual}\ std::vector<models::semantic\_interface\_model\_t>}
+\DoxyCodeLine{00279\ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a4f577301e5acdf73d56bbdc53ba21e5a}{get\_semantic\_interfaces\_by\_interface}}(\textcolor{keyword}{const}\ std::string\&\ interface\_name)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00280\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00281\ \ \ \ \ sqlite3\_stmt*\ stmt;}
+\DoxyCodeLine{00282\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ query\ =\ \textcolor{stringliteral}{"{}SELECT\ *\ FROM\ semantic\_interfaces\ WHERE\ redefines\ =\ '"{}}\ +\ interface\_name\ +\ \textcolor{stringliteral}{"{}'"{}};}
+\DoxyCodeLine{00283\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ exit\ =\ sqlite3\_prepare\_v2(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}},\ query.c\_str(),\ -\/1,\ \&stmt,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00284\ \ \ \ \ \textcolor{keywordflow}{if}\ (exit\ !=\ SQLITE\_OK)}
+\DoxyCodeLine{00285\ \ \ \ \ \{}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ sqlite3\_finalize(stmt);}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Error\ preparing\ query:\ "{}}\ +\ std::string(sqlite3\_errmsg(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}})));}
+\DoxyCodeLine{00288\ \ \ \ \ \}}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \ \ \ \ std::vector<models::semantic\_interface\_model\_t>\ semantic\_interfaces;}
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{keywordflow}{while}\ (sqlite3\_step(stmt)\ ==\ SQLITE\_ROW)}
+\DoxyCodeLine{00292\ \ \ \ \ \{}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models::semantic\_interface\_model\_t}}\ semantic\_interface\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3eb0881736fa825daef5ec83e1d919be}{to\_semantic\_interface}}(stmt);}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ semantic\_interfaces.push\_back(semantic\_interface);}
+\DoxyCodeLine{00295\ \ \ \ \ \}}
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00297\ \ \ \ \ \textcolor{keywordflow}{return}\ semantic\_interfaces;}
+\DoxyCodeLine{00298\ \ \ \}}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \ \ \textcolor{comment}{//\ get\ running\ model\ from\ provider}}
+\DoxyCodeLine{00301\ \ \ \textcolor{keyword}{virtual}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1running__model__t}{models::running\_model\_t}}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a64d22db986833f277560784f956e328b}{get\_running}}(\textcolor{keyword}{const}\ std::string\&\ provider\_name)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00302\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00303\ \ \ \ \ \textcolor{comment}{//\ start\ with\ provider\ and\ work\ up\ the\ chain}}
+\DoxyCodeLine{00304\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models::provider\_model\_t}}\ provider\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a0109b906d50a62d7408271780e9a8707}{get\_provider}}(provider\_name);}
+\DoxyCodeLine{00305\ \ \ \ \ \textcolor{keywordflow}{if}\ (provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a0ad3fa187ea591bbcf1f4ab6d312dac0}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a3a9a79ce313a985930e2cd97d27ebd5f}{name}}.empty())}
+\DoxyCodeLine{00306\ \ \ \ \ \{}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \textcolor{comment}{//\ return\ empty\ running\ model}}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1running__model__t}{models::running\_model\_t}}();}
+\DoxyCodeLine{00309\ \ \ \ \ \}}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1running__model__t}{models::running\_model\_t}}\ running;}
+\DoxyCodeLine{00312\ \ \ \ \ running.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1capability__model__t_a73be59339462fe3f6699bd127e99a918}{interface}}\ =\ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a635ca15a93793a2dfb210d8392a07e0d}{implements}};}
+\DoxyCodeLine{00313\ \ \ \ \ running.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1capability__model__t_a23939963edc32d7a2da5f1552973fecb}{provider}}\ =\ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a0ad3fa187ea591bbcf1f4ab6d312dac0}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a3a9a79ce313a985930e2cd97d27ebd5f}{name}};}
+\DoxyCodeLine{00314\ \ \ \ \ \textcolor{comment}{//\ TODO:\ implement\ this\ variable\ somehow}}
+\DoxyCodeLine{00315\ \ \ \ \ running.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1running__model__t_a0037a0006d89c68a56be1ed1337f7c37}{started\_by}}\ =\ provider\_name;}
+\DoxyCodeLine{00316\ \ \ \ \ running.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1running__model__t_a1c0cff01cc7973eb2f1ffa49ae2ad5b9}{pid}}\ =\ \textcolor{stringliteral}{"{}0"{}};}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \ \ \ \ \textcolor{comment}{//\ get\ dependencies\ from\ provider\ depends\_on}}
+\DoxyCodeLine{00319\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ \textcolor{keyword}{const}\&\ [key,\ value]\ :\ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_ab621238ee4492bc03265cdf0bfb84001}{depends\_on}})}
+\DoxyCodeLine{00320\ \ \ \ \ \{}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1capability__model__t}{models::capability\_model\_t}}\ dependency;}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ dependency.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1capability__model__t_a73be59339462fe3f6699bd127e99a918}{interface}}\ =\ key;}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ dependency.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1capability__model__t_a23939963edc32d7a2da5f1552973fecb}{provider}}\ =\ value;}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ running.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1running__model__t_af93e104248e91870612dcf3a82e29029}{dependencies}}.push\_back(dependency);}
+\DoxyCodeLine{00325\ \ \ \ \ \}}
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00327\ \ \ \ \ \textcolor{comment}{//\ return\ running\ model}}
+\DoxyCodeLine{00328\ \ \ \ \ \textcolor{keywordflow}{return}\ running;}
+\DoxyCodeLine{00329\ \ \ \}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \ \ \textcolor{comment}{//\ apply\ a\ remapping\ to\ a\ specification\ model}}
+\DoxyCodeLine{00332\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a5f02b94abb740a6ef0fd43daf4c1e0a0}{apply\_remappings}}(\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1specification__model__t}{models::specification\_model\_t}}\&\ spec,}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappable__base__t}{models::remappable\_base\_t}}\&\ remappable)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00334\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00335\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ \textcolor{keyword}{const}\&\ param\ :\ remappable.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappable__base__t_a4a19d77530cc86fc3cd798eaaea9a8dd}{remappings}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_a1570369d1b89a3ba0a9cbff9419422cc}{parameters}})}
+\DoxyCodeLine{00336\ \ \ \ \ \{}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ spec.parameters[param.from].name\ =\ param.to;}
+\DoxyCodeLine{00338\ \ \ \ \ \}}
+\DoxyCodeLine{00339\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ \textcolor{keyword}{const}\&\ topic\ :\ remappable.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappable__base__t_a4a19d77530cc86fc3cd798eaaea9a8dd}{remappings}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_a9b83cf9b0b6306e5580f9babb42b8a11}{topics}})}
+\DoxyCodeLine{00340\ \ \ \ \ \{}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ spec.topics[topic.from].name\ =\ topic.to;}
+\DoxyCodeLine{00342\ \ \ \ \ \}}
+\DoxyCodeLine{00343\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ \textcolor{keyword}{const}\&\ service\ :\ remappable.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappable__base__t_a4a19d77530cc86fc3cd798eaaea9a8dd}{remappings}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_aba5002e746519b1ca48238e6d26c2054}{services}})}
+\DoxyCodeLine{00344\ \ \ \ \ \{}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ spec.services[service.from].name\ =\ service.to;}
+\DoxyCodeLine{00346\ \ \ \ \ \}}
+\DoxyCodeLine{00347\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ \textcolor{keyword}{const}\&\ action\ :\ remappable.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappable__base__t_a4a19d77530cc86fc3cd798eaaea9a8dd}{remappings}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_a62e2be32cc2b051f7bdfba15ab17a95d}{actions}})}
+\DoxyCodeLine{00348\ \ \ \ \ \{}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ spec.actions[action.from].name\ =\ action.to;}
+\DoxyCodeLine{00350\ \ \ \ \ \}}
+\DoxyCodeLine{00351\ \ \ \}}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \ \ \textcolor{comment}{//\ apply\ semantics\ to\ interface}}
+\DoxyCodeLine{00354\ \ \ \textcolor{keyword}{virtual}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models::interface\_model\_t}}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a9ce49d71065acc667a5ce863a9e1f2a2}{apply\_semantic\_remappings}}(\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models::semantic\_interface\_model\_t}}\ semantic)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00355\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00356\ \ \ \ \ \textcolor{comment}{//\ get\ the\ parent\ interface\ model}}
+\DoxyCodeLine{00357\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models::interface\_model\_t}}\ \textcolor{keyword}{interface\ }=\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a5f8e47a5091b45fe625723b13528b5ac}{get\_interface}}(semantic.redefines);}
+\DoxyCodeLine{00358\ }
+\DoxyCodeLine{00359\ \ \ \ \ interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t_ad4dfd8817581f04f0def9017ca898c64}{header}}\ =\ semantic.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8650d24298ea55e6f6f810e507618fec}{header}};}
+\DoxyCodeLine{00360\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a5f02b94abb740a6ef0fd43daf4c1e0a0}{apply\_remappings}}(interface.interface,\ semantic);}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \ \ \ \ \textcolor{keywordflow}{return}\ interface;}
+\DoxyCodeLine{00363\ \ \ \}}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \ \ \textcolor{comment}{//\ apply\ provider\ remappings}}
+\DoxyCodeLine{00366\ \ \ \textcolor{keyword}{virtual}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models::interface\_model\_t}}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3c6ed044e3cd0e60b5fcfac889ab0eea}{apply\_provider\_remappings}}(\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models::provider\_model\_t}}\ provider)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00367\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00368\ \ \ \ \ \textcolor{comment}{//\ get\ the\ parent\ interface\ model}}
+\DoxyCodeLine{00369\ \ \ \ \ \textcolor{comment}{//\ is\ it\ semantic}}
+\DoxyCodeLine{00370\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models::semantic\_interface\_model\_t}}\ semantic\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a115b3d1151e5866ff968e96691b541a3}{get\_semantic\_interface}}(provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a635ca15a93793a2dfb210d8392a07e0d}{implements}});}
+\DoxyCodeLine{00371\ \ \ \ \ \textcolor{keywordflow}{if}\ (!semantic.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8650d24298ea55e6f6f810e507618fec}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a3a9a79ce313a985930e2cd97d27ebd5f}{name}}.empty())}
+\DoxyCodeLine{00372\ \ \ \ \ \{}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \textcolor{comment}{//\ apply\ semantic\ remappings}}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models::interface\_model\_t}}\ \textcolor{keyword}{interface\ }=\ apply\_semantic\_remappings(semantic);}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \textcolor{comment}{//\ apply\ provider\ remappings}}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ apply\_remappings(interface.interface,\ provider);}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ interface;}
+\DoxyCodeLine{00380\ \ \ \ \ \}}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \ \ \ \ \textcolor{comment}{//\ if\ not\ semantic,\ then\ it's\ an\ interface}}
+\DoxyCodeLine{00383\ \ \ \ \ \textcolor{comment}{//\ get\ interface}}
+\DoxyCodeLine{00384\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models::interface\_model\_t}}\ \textcolor{keyword}{interface\ }=\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a5f8e47a5091b45fe625723b13528b5ac}{get\_interface}}(provider.\textcolor{keyword}{implements});}
+\DoxyCodeLine{00385\ }
+\DoxyCodeLine{00386\ \ \ \ \ \textcolor{comment}{//\ apply\ provider\ remappings}}
+\DoxyCodeLine{00387\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a5f02b94abb740a6ef0fd43daf4c1e0a0}{apply\_remappings}}(interface.interface,\ provider);}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \ \ \ \ return\ interface;}
+\DoxyCodeLine{00390\ \ \ \}}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00392\ \ \ \textcolor{comment}{//\ get\ run\ config\ model}}
+\DoxyCodeLine{00393\ \ \ \textcolor{keyword}{virtual}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t}{models::run\_config\_model\_t}}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a6b3f7671a717e9fcc3eada08a914dd76}{get\_run\_config}}(const\ std::string\&\ provider\_name)\ override}
+\DoxyCodeLine{00394\ \ \ \{}
+\DoxyCodeLine{00395\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models::provider\_model\_t}}\ provider\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a0109b906d50a62d7408271780e9a8707}{get\_provider}}(provider\_name);}
+\DoxyCodeLine{00396\ \ \ \ \ \textcolor{keywordflow}{if}\ (provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a0ad3fa187ea591bbcf1f4ab6d312dac0}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a3a9a79ce313a985930e2cd97d27ebd5f}{name}}.empty())}
+\DoxyCodeLine{00397\ \ \ \ \ \{}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \textcolor{comment}{//\ return\ empty\ run\ config}}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t}{models::run\_config\_model\_t}}();}
+\DoxyCodeLine{00400\ \ \ \ \ \}}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00402\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t}{models::run\_config\_model\_t}}\ run\_config;}
+\DoxyCodeLine{00403\ \ \ \ \ run\_config.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t_a8edab59f62bc89e5a7dc4a7c1508f79c}{provider}}\ =\ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a0ad3fa187ea591bbcf1f4ab6d312dac0}{header}};}
+\DoxyCodeLine{00404\ \ \ \ \ run\_config.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t_a49ff00fef777b60efedd894d773d9153}{runner}}\ =\ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a257a04fc106cbb8b5175768d4e68ce26}{runner}};}
+\DoxyCodeLine{00405\ \ \ \ \ run\_config.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t_a2b11f1cbc79ce42856b706df73bb87e3}{started\_by}}\ =\ provider\_name;}
+\DoxyCodeLine{00406\ \ \ \ \ run\_config.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t_a9b14481ebe1d875a691437a77a1ce992}{pid}}\ =\ \textcolor{stringliteral}{"{}0"{}};}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00408\ \ \ \ \ \textcolor{comment}{//\ remap\ resources}}
+\DoxyCodeLine{00409\ \ \ \ \ run\_config.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t_affb0c8921530314028f04b4d1fa19306}{interface}}\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3c6ed044e3cd0e60b5fcfac889ab0eea}{apply\_provider\_remappings}}(provider);}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00411\ \ \ \ \ \textcolor{keywordflow}{return}\ run\_config;}
+\DoxyCodeLine{00412\ \ \ \}}
+\DoxyCodeLine{00413\ }
+\DoxyCodeLine{00414\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00415\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_aba9186d82c6c65188a80f9ac146df1df}{open}}()\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00416\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00417\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ exit\ =\ sqlite3\_open(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a67c5398900d16d720335f8eb4294316d}{db\_file\_}}.c\_str(),\ \&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}});}
+\DoxyCodeLine{00418\ \ \ \ \ \textcolor{keywordflow}{if}\ (exit\ !=\ SQLITE\_OK)}
+\DoxyCodeLine{00419\ \ \ \ \ \{}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ sqlite3\_close(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}});}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Error\ opening\ database:\ "{}}\ +\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a67c5398900d16d720335f8eb4294316d}{db\_file\_}}\ +\ \textcolor{stringliteral}{"{}\ "{}}\ +\ std::string(sqlite3\_errmsg(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}})));}
+\DoxyCodeLine{00422\ \ \ \ \ \}}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00424\ \ \ \ \ \textcolor{comment}{//\ enable\ foreign\ keys}}
+\DoxyCodeLine{00425\ \ \ \ \ sqlite3\_exec(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}},\ \textcolor{stringliteral}{"{}PRAGMA\ foreign\_keys\ =\ ON;"{}},\ \textcolor{keyword}{nullptr},\ \textcolor{keyword}{nullptr},\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00426\ \ \ \}}
+\DoxyCodeLine{00427\ }
+\DoxyCodeLine{00428\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a969c480de1f0f537f67f4f0db0d1eb67}{close}}()\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00429\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00430\ \ \ \ \ \textcolor{comment}{//\ close\ if\ the\ database\ is\ open}}
+\DoxyCodeLine{00431\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}}\ !=\ \textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00432\ \ \ \ \ \{}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ sqlite3\_close(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}});}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}}\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00435\ \ \ \ \ \}}
+\DoxyCodeLine{00436\ \ \ \}}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00438\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3b40692ba92825e177d8e211369cfb97}{exec}}(\textcolor{keyword}{const}\ std::string\&\ query)}
+\DoxyCodeLine{00439\ \ \ \{}
+\DoxyCodeLine{00440\ \ \ \ \ \textcolor{keywordtype}{char}*\ error\_message;}
+\DoxyCodeLine{00441\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ exit\ =\ sqlite3\_exec(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}},\ query.c\_str(),\ \textcolor{keyword}{nullptr},\ \textcolor{keyword}{nullptr},\ \&error\_message);}
+\DoxyCodeLine{00442\ \ \ \ \ \textcolor{keywordflow}{if}\ (exit\ !=\ SQLITE\_OK)}
+\DoxyCodeLine{00443\ \ \ \ \ \{}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ sqlite3\_free(error\_message);}
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Error\ executing\ query:\ "{}}\ +\ std::string(sqlite3\_errmsg(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}})));}
+\DoxyCodeLine{00446\ \ \ \ \ \}}
+\DoxyCodeLine{00447\ \ \ \}}
+\DoxyCodeLine{00448\ }
+\DoxyCodeLine{00449\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_adc7238b52504f21326ff65d8d68c08f0}{create\_tables}}()\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00450\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00451\ \ \ \ \ \textcolor{comment}{//\ create\ tables\ if\ they\ do\ not\ exists}}
+\DoxyCodeLine{00452\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ create\_interface\_table\ =}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}CREATE\ TABLE\ IF\ NOT\ EXISTS\ interfaces\ ("{}}\ +\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t_a3e1b6a0fbb148703a6a2bfab6a4f2003}{models::interface\_model\_t::to\_sql\_table}}()\ +\ \textcolor{stringliteral}{"{})"{}};}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00455\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ create\_semantic\_interface\_table\ =}
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}CREATE\ TABLE\ IF\ NOT\ EXISTS\ semantic\_interfaces\ ("{}}\ +\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a189e051f8785603c611c13a71f202fdd}{models::semantic\_interface\_model\_t::to\_sql\_table}}()\ +\ \textcolor{stringliteral}{"{})"{}};}
+\DoxyCodeLine{00457\ }
+\DoxyCodeLine{00458\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ create\_provider\_table\ =}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}CREATE\ TABLE\ IF\ NOT\ EXISTS\ providers\ ("{}}\ +\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a1c7dc74c7eaa402394f4d9e8e917d337}{models::provider\_model\_t::to\_sql\_table}}()\ +\ \textcolor{stringliteral}{"{})"{}};}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00461\ \ \ \ \ \textcolor{comment}{//\ TODO:\ create\ meta\ table}}
+\DoxyCodeLine{00462\ \ \ \ \ \textcolor{comment}{//\ meta\ table}}
+\DoxyCodeLine{00463\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ create\_meta\_table\ =\ \textcolor{stringliteral}{"{}CREATE\ TABLE\ IF\ NOT\ EXISTS\ meta\ (key\ TEXT\ NOT\ NULL,\ value\ TEXT\ NOT\ NULL)"{}};}
+\DoxyCodeLine{00464\ }
+\DoxyCodeLine{00465\ \ \ \ \ \textcolor{comment}{//\ execute\ create\ queries}}
+\DoxyCodeLine{00466\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3b40692ba92825e177d8e211369cfb97}{exec}}(create\_interface\_table);}
+\DoxyCodeLine{00467\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3b40692ba92825e177d8e211369cfb97}{exec}}(create\_semantic\_interface\_table);}
+\DoxyCodeLine{00468\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3b40692ba92825e177d8e211369cfb97}{exec}}(create\_provider\_table);}
+\DoxyCodeLine{00469\ \ \ \}}
+\DoxyCodeLine{00470\ }
+\DoxyCodeLine{00471\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00472\ \ \ \textcolor{comment}{//\ model\ conversion\ helpers}}
+\DoxyCodeLine{00473\ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models::interface\_model\_t}}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a665a94af8591b998356567340f9155b9}{to\_interface}}(sqlite3\_stmt*\ stmt)}
+\DoxyCodeLine{00474\ \ \ \{}
+\DoxyCodeLine{00475\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models::interface\_model\_t}}\ interface;}
+\DoxyCodeLine{00476\ \ \ \ \ interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t_ad4dfd8817581f04f0def9017ca898c64}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a3a9a79ce313a985930e2cd97d27ebd5f}{name}}\ =\ std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 0)));}
+\DoxyCodeLine{00477\ \ \ \ \ interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t_ad4dfd8817581f04f0def9017ca898c64}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_ac6bf4416ee1f6a0e1781c366eab26acf}{version}}\ =\ sqlite3\_column\_int(stmt,\ 1);}
+\DoxyCodeLine{00478\ \ \ \ \ interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t_ad4dfd8817581f04f0def9017ca898c64}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_ac0e94588685ed968c2466ad9860c1284}{type}}\ =\ std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 2)));}
+\DoxyCodeLine{00479\ \ \ \ \ interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t_ad4dfd8817581f04f0def9017ca898c64}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a4dc71e2c184d9c1c87de51f21983df4a}{description}}\ =\ \mbox{\hyperlink{namespacecapabilities2__server_a2fefe1de489dfc709310ae4fa1afaa13}{from\_sql\_safe}}(std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 3))));}
+\DoxyCodeLine{00480\ }
+\DoxyCodeLine{00481\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1specification__model__t}{models::specification\_model\_t}}\ spec;}
+\DoxyCodeLine{00482\ \ \ \ \ spec.from\_yaml(YAML::Load(\mbox{\hyperlink{namespacecapabilities2__server_a2fefe1de489dfc709310ae4fa1afaa13}{from\_sql\_safe}}(std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 4))))));}
+\DoxyCodeLine{00483\ \ \ \ \ interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t_a9e396d80ed9427c8020057757a605c07}{interface}}\ =\ spec;}
+\DoxyCodeLine{00484\ }
+\DoxyCodeLine{00485\ \ \ \ \ \textcolor{keywordflow}{return}\ interface;}
+\DoxyCodeLine{00486\ \ \ \}}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models::semantic\_interface\_model\_t}}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3eb0881736fa825daef5ec83e1d919be}{to\_semantic\_interface}}(sqlite3\_stmt*\ stmt)}
+\DoxyCodeLine{00489\ \ \ \{}
+\DoxyCodeLine{00490\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models::semantic\_interface\_model\_t}}\ semantic\_interface;}
+\DoxyCodeLine{00491\ \ \ \ \ semantic\_interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8650d24298ea55e6f6f810e507618fec}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a3a9a79ce313a985930e2cd97d27ebd5f}{name}}\ =\ std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 0)));}
+\DoxyCodeLine{00492\ \ \ \ \ semantic\_interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8650d24298ea55e6f6f810e507618fec}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_ac6bf4416ee1f6a0e1781c366eab26acf}{version}}\ =\ sqlite3\_column\_int(stmt,\ 1);}
+\DoxyCodeLine{00493\ \ \ \ \ semantic\_interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8650d24298ea55e6f6f810e507618fec}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_ac0e94588685ed968c2466ad9860c1284}{type}}\ =\ std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 2)));}
+\DoxyCodeLine{00494\ \ \ \ \ semantic\_interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8650d24298ea55e6f6f810e507618fec}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a4dc71e2c184d9c1c87de51f21983df4a}{description}}\ =\ \mbox{\hyperlink{namespacecapabilities2__server_a2fefe1de489dfc709310ae4fa1afaa13}{from\_sql\_safe}}(std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 3))));}
+\DoxyCodeLine{00495\ \ \ \ \ semantic\_interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8af68a40a89859515ca22b006099a8c7}{redefines}}\ =\ std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 4)));}
+\DoxyCodeLine{00496\ \ \ \ \ semantic\_interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a9a47cbad7f378a30f467cb0520213e3b}{global\_namespace}}\ =\ std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 5)));}
+\DoxyCodeLine{00497\ \ \ \ \ semantic\_interface.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a78bbcbe2e8e34c29600a02d20a064366}{remappings}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_afc4a97cb962d255f268dbe6970ac59a8}{from\_yaml}}(}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ YAML::Load(\mbox{\hyperlink{namespacecapabilities2__server_a2fefe1de489dfc709310ae4fa1afaa13}{from\_sql\_safe}}(std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 6))))));}
+\DoxyCodeLine{00499\ }
+\DoxyCodeLine{00500\ \ \ \ \ \textcolor{keywordflow}{return}\ semantic\_interface;}
+\DoxyCodeLine{00501\ \ \ \}}
+\DoxyCodeLine{00502\ }
+\DoxyCodeLine{00503\ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models::provider\_model\_t}}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_ac6c2407ebde5f7debcf32bc064f8c0bc}{to\_provider}}(sqlite3\_stmt*\ stmt)}
+\DoxyCodeLine{00504\ \ \ \{}
+\DoxyCodeLine{00505\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models::provider\_model\_t}}\ provider;}
+\DoxyCodeLine{00506\ \ \ \ \ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a0ad3fa187ea591bbcf1f4ab6d312dac0}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a3a9a79ce313a985930e2cd97d27ebd5f}{name}}\ =\ std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 0)));}
+\DoxyCodeLine{00507\ \ \ \ \ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a0ad3fa187ea591bbcf1f4ab6d312dac0}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_ac6bf4416ee1f6a0e1781c366eab26acf}{version}}\ =\ sqlite3\_column\_int(stmt,\ 1);}
+\DoxyCodeLine{00508\ \ \ \ \ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a0ad3fa187ea591bbcf1f4ab6d312dac0}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_ac0e94588685ed968c2466ad9860c1284}{type}}\ =\ std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 2)));}
+\DoxyCodeLine{00509\ \ \ \ \ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a0ad3fa187ea591bbcf1f4ab6d312dac0}{header}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t_a4dc71e2c184d9c1c87de51f21983df4a}{description}}\ =\ \mbox{\hyperlink{namespacecapabilities2__server_a2fefe1de489dfc709310ae4fa1afaa13}{from\_sql\_safe}}(std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 3))));}
+\DoxyCodeLine{00510\ \ \ \ \ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a635ca15a93793a2dfb210d8392a07e0d}{implements}}\ =\ std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 4)));}
+\DoxyCodeLine{00511\ \ \ \ \ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_ab621238ee4492bc03265cdf0bfb84001}{depends\_on}}\ =\ YAML::Load(\mbox{\hyperlink{namespacecapabilities2__server_a2fefe1de489dfc709310ae4fa1afaa13}{from\_sql\_safe}}(std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 5)))))}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ .as<std::map<std::string,\ std::string>>();}
+\DoxyCodeLine{00513\ \ \ \ \ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a73b1ea916d98d18ee300968381d6824b}{remappings}}.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_afc4a97cb962d255f268dbe6970ac59a8}{from\_yaml}}(YAML::Load(\mbox{\hyperlink{namespacecapabilities2__server_a2fefe1de489dfc709310ae4fa1afaa13}{from\_sql\_safe}}(std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 6))))));}
+\DoxyCodeLine{00514\ \ \ \ \ provider.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t_a257a04fc106cbb8b5175768d4e68ce26}{runner}}\ =\ std::string(\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(sqlite3\_column\_text(stmt,\ 7)));}
+\DoxyCodeLine{00515\ }
+\DoxyCodeLine{00516\ \ \ \ \ \textcolor{keywordflow}{return}\ provider;}
+\DoxyCodeLine{00517\ \ \ \}}
+\DoxyCodeLine{00518\ }
+\DoxyCodeLine{00519\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00520\ \ \ \textcolor{keyword}{const}\ std::string\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a67c5398900d16d720335f8eb4294316d}{db\_file\_}};}
+\DoxyCodeLine{00521\ \ \ sqlite3*\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\_}};}
+\DoxyCodeLine{00522\ \};}
+\DoxyCodeLine{00523\ }
+\DoxyCodeLine{00524\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_server}}
+
+\end{DoxyCode}

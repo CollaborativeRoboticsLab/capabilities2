@@ -1,0 +1,20 @@
+<map id="capabilities2_server::models::run_config_model_t" name="capabilities2_server::models::run_config_model_t">
+<area shape="rect" id="Node000001" title="run configuration type" alt="" coords="857,100,1011,155"/>
+<area shape="rect" id="Node000002" href="$structcapabilities2__server_1_1models_1_1defineable__base__t.html" title="defineable base" alt="" coords="567,28,722,83"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="736,75,858,106,857,111,734,80"/>
+<area shape="rect" id="Node000003" href="$structcapabilities2__server_1_1models_1_1header__model__t.html" title="the header model is a simple model for the header of a capability type it includes the name,..." alt="" coords="241,171,432,211"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="446,190,589,186,746,171,856,147,857,153,747,177,589,191,446,195"/>
+<area shape="rect" id="Node000007" href="$structcapabilities2__server_1_1models_1_1interface__model__t.html" title="interface model" alt="" coords="543,107,747,147"/>
+<area shape="poly" id="edge8_Node000007_Node000003" title=" " alt="" coords="445,166,547,145,548,150,446,171"/>
+<area shape="rect" id="Node000004" href="$structcapabilities2__server_1_1models_1_1identifiable__base__t.html" title="unique key for a row" alt="" coords="19,85,178,140"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="192,141,276,169,274,174,190,146"/>
+<area shape="rect" id="Node000005" href="$structcapabilities2__server_1_1models_1_1soft__deleteable__base__t.html" title="base model for all models that can be soft deleted" alt="" coords="5,164,192,219"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="206,189,241,189,241,194,206,194"/>
+<area shape="rect" id="Node000006" href="$structcapabilities2__server_1_1models_1_1modifiable__base__t.html" title="base model for all models that can be modified" alt="" coords="21,243,176,297"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="189,238,274,209,276,214,190,243"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="761,125,857,125,857,130,761,130"/>
+<area shape="rect" id="Node000008" href="$structcapabilities2__server_1_1models_1_1predicateable__base__t.html" title="predicateable model base type" alt="" coords="249,5,424,60"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="438,61,579,105,578,110,436,66"/>
+<area shape="rect" id="Node000009" href="$structcapabilities2__server_1_1models_1_1specification__model__t.html" title="interface specification type the specification model is the computation graph blueprint of a capabili..." alt="" coords="253,84,421,139"/>
+<area shape="poly" id="edge9_Node000007_Node000009" title=" " alt="" coords="435,114,543,119,542,125,434,119"/>
+</map>

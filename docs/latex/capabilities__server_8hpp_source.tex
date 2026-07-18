@@ -1,0 +1,750 @@
+\doxysection{capabilities\+\_\+server.\+hpp}
+\hypertarget{capabilities__server_8hpp_source}{}\label{capabilities__server_8hpp_source}\index{capabilities2\_server/include/capabilities2\_server/capabilities\_server.hpp@{capabilities2\_server/include/capabilities2\_server/capabilities\_server.hpp}}
+\mbox{\hyperlink{capabilities__server_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <map>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <fstream>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <filesystem>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <functional>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <stdlib.h>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <tinyxml2.h>}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <rclcpp/rclcpp.hpp>}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{capabilities__api_8hpp}{capabilities2\_server/capabilities\_api.hpp}}>}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{published__event_8hpp}{capabilities2\_events/published\_event.hpp}}>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{event__parameters_8hpp}{capabilities2\_events/event\_parameters.hpp}}>}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/msg/capability\_spec.hpp>}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/msg/capability\_event\_stamped.hpp>}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/establish\_bond.hpp>}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/start\_capability.hpp>}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/stop\_capability.hpp>}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/free\_capability.hpp>}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/trigger\_capability.hpp>}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/use\_capability.hpp>}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/register\_capability.hpp>}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/connect\_capability.hpp>}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/get\_interfaces.hpp>}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/get\_semantic\_interfaces.hpp>}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/get\_providers.hpp>}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/get\_capability\_spec.hpp>}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/get\_capability\_specs.hpp>}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/get\_remappings.hpp>}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/srv/get\_running\_capabilities.hpp>}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__server}{capabilities2\_server}}}
+\DoxyCodeLine{00039\ \{}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00042\ std::string\ \mbox{\hyperlink{namespacecapabilities2__server_a17a8e514c6257c5fddf35be0d6194425}{expand\_tilde}}(std::string\&\ path)}
+\DoxyCodeLine{00043\ \{}
+\DoxyCodeLine{00044\ \ \ \textcolor{keywordflow}{if}\ (path[0]\ ==\ \textcolor{charliteral}{'\string~'})}
+\DoxyCodeLine{00045\ \ \ \{}
+\DoxyCodeLine{00046\ \ \ \ \ path\ =\ std::string(std::getenv(\textcolor{stringliteral}{"{}HOME"{}}))\ +\ path.substr(1);}
+\DoxyCodeLine{00047\ \ \ \}}
+\DoxyCodeLine{00048\ \ \ \textcolor{keywordflow}{return}\ path;}
+\DoxyCodeLine{00049\ \}}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00058\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer}{CapabilitiesServer}}\ :\ \textcolor{keyword}{public}\ rclcpp::Node,\ \textcolor{keyword}{public}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI}{CapabilitiesAPI}}}
+\DoxyCodeLine{00059\ \{}
+\DoxyCodeLine{00060\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00061\ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aacf69c819dfe2d31895bd6a4b7831aea}{CapabilitiesServer}}(\textcolor{keyword}{const}\ rclcpp::NodeOptions\&\ options\ =\ rclcpp::NodeOptions())}
+\DoxyCodeLine{00062\ \ \ \ \ :\ Node(\textcolor{stringliteral}{"{}capabilities2"{}},\ options),\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI}{CapabilitiesAPI}}()}
+\DoxyCodeLine{00063\ \ \ \{}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00065\ \ \ \ \ \{}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \textcolor{comment}{//\ Only\ call\ setup\ if\ this\ object\ is\ already\ owned\ by\ a\ shared\_ptr}}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (shared\_from\_this())}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ae560f31a113bbf9b1be05ec49c04e04e}{initialize}}();}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00071\ \ \ \ \ \}}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordflow}{catch}\ (\textcolor{keyword}{const}\ std::bad\_weak\_ptr\&)}
+\DoxyCodeLine{00073\ \ \ \ \ \{}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \textcolor{comment}{//\ Not\ yet\ safe\ —\ probably\ standalone\ without\ make\_shared}}
+\DoxyCodeLine{00075\ \ \ \ \ \}}
+\DoxyCodeLine{00076\ \ \ \}}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00082\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ae560f31a113bbf9b1be05ec49c04e04e}{initialize}}()}
+\DoxyCodeLine{00083\ \ \ \{}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{comment}{//\ params\ interface}}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{comment}{//\ loop\ rate}}
+\DoxyCodeLine{00086\ \ \ \ \ declare\_parameter(\textcolor{stringliteral}{"{}loop\_rate"{}},\ 5.0);}
+\DoxyCodeLine{00087\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a6e8b97337893a97daa58e3f0c11bb565}{loop\_hz\_}}\ =\ get\_parameter(\textcolor{stringliteral}{"{}loop\_rate"{}}).as\_double();}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{comment}{//\ db\ file}}
+\DoxyCodeLine{00090\ \ \ \ \ declare\_parameter(\textcolor{stringliteral}{"{}db\_file"{}},\ \textcolor{stringliteral}{"{}\string~/.ros/capabilities/capabilities.sqlite3"{}});}
+\DoxyCodeLine{00091\ \ \ \ \ std::string\ db\_file\ =\ get\_parameter(\textcolor{stringliteral}{"{}db\_file"{}}).as\_string();}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{comment}{//\ rebuild\ db}}
+\DoxyCodeLine{00094\ \ \ \ \ declare\_parameter(\textcolor{stringliteral}{"{}rebuild"{}},\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{keywordtype}{bool}\ rebuild\ =\ get\_parameter(\textcolor{stringliteral}{"{}rebuild"{}}).as\_bool();}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{comment}{//\ package\ path}}
+\DoxyCodeLine{00098\ \ \ \ \ declare\_parameter(\textcolor{stringliteral}{"{}package\_paths"{}},\ std::vector<std::string>());}
+\DoxyCodeLine{00099\ \ \ \ \ std::vector<std::string>\ package\_paths\ =\ get\_parameter(\textcolor{stringliteral}{"{}package\_paths"{}}).as\_string\_array();}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{comment}{//\ get\ full\ path\ of\ db\ file}}
+\DoxyCodeLine{00102\ \ \ \ \ std::filesystem::path\ db\_path\ =\ std::filesystem::absolute(\mbox{\hyperlink{namespacecapabilities2__server_a17a8e514c6257c5fddf35be0d6194425}{expand\_tilde}}(db\_file));}
+\DoxyCodeLine{00103\ \ \ \ \ db\_file\ =\ db\_path.string();}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \ \ \textcolor{keywordflow}{if}\ (rebuild)}
+\DoxyCodeLine{00106\ \ \ \ \ \{}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \textcolor{comment}{//\ remove\ db\ file\ if\ it\ exists}}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ RCLCPP\_INFO(get\_logger(),\ \textcolor{stringliteral}{"{}Rebuilding\ capabilities\ database"{}});}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (std::remove(db\_file.c\_str())\ !=\ 0)}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}Error\ deleting\ file\ \%s"{}},\ db\_file.c\_str());}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00113\ \ \ \ \ \}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{comment}{//\ if\ db\ file\ does\ not\ exist}}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keywordflow}{if}\ (!std::filesystem::exists(db\_path))}
+\DoxyCodeLine{00117\ \ \ \ \ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \textcolor{comment}{//\ create\ db\ file\ path}}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ std::filesystem::create\_directories(db\_path.parent\_path());}
+\DoxyCodeLine{00120\ \ \ \ \ \}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{comment}{//\ init\ capabilities\ api}}
+\DoxyCodeLine{00123\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a84971555f626b74b3236c61bd2bf0ef2}{connect}}(db\_file,\ get\_node\_logging\_interface());}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{comment}{//\ load\ capabilities\ from\ package\ paths}}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ package\_path\ :\ package\_paths)}
+\DoxyCodeLine{00127\ \ \ \ \ \{}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a58c477d3ba7423b273778842fe156dcc}{load\_capabilities}}(package\_path);}
+\DoxyCodeLine{00129\ \ \ \ \ \}}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{comment}{//\ pubs}}
+\DoxyCodeLine{00132\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aa850ac5910b408d86b73b7bc04d82134}{event\_pub\_}}\ =\ create\_publisher<capabilities2\_msgs::msg::CapabilityEventStamped>(\textcolor{stringliteral}{"{}\string~/events"{}},\ 10);}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{comment}{//\ event\ publisher\ uses\ event\ subsystem}}
+\DoxyCodeLine{00135\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a1e3645b59e7641e486143354562ccfc3}{event\_}}\ =\ std::make\_shared<capabilities2\_events::PublishedEvent>(\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aa850ac5910b408d86b73b7bc04d82134}{event\_pub\_}});}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{comment}{//\ subs}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{comment}{//\ services}}
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{comment}{//\ establish\ bond}}
+\DoxyCodeLine{00141\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a4d626b97ce07ce813f045f334e0672bf}{establish\_bond\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::EstablishBond>(}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/establish\_bond"{}},}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aa55cf315d13a4bbbff41439a4acb6eb7}{CapabilitiesServer::establish\_bond\_cb}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{comment}{//\ start\ capability}}
+\DoxyCodeLine{00146\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a1a04b3d8e38c3e738d6dad3e9f90ed32}{start\_capability\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::StartCapability>(}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/start\_capability"{}},}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a60a3176ebff35a89d8066a80e533637e}{CapabilitiesServer::start\_capability\_cb}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{comment}{//\ stop\ capability}}
+\DoxyCodeLine{00151\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aee406dd808d0277a3d1babfbaf5d0dee}{stop\_capability\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::StopCapability>(}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/stop\_capability"{}},}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aa23ec591bffe34a5b29a317de882c61d}{CapabilitiesServer::stop\_capability\_cb}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{comment}{//\ free\ capability}}
+\DoxyCodeLine{00156\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a0e28a32f07cadfecd641727cf7d6df9a}{free\_capability\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::FreeCapability>(}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/free\_capability"{}},}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ae855a537f8007233ab225e22fb5eca04}{CapabilitiesServer::free\_capability\_cb}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{comment}{//\ trigger\ capability}}
+\DoxyCodeLine{00161\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ab479dbd4ed2028355725f553dca81d4e}{trigger\_capability\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::TriggerCapability>(}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/trigger\_capability"{}},}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a88e047d3b8f4947f2f89160eac2b34e3}{CapabilitiesServer::trigger\_capability\_cb}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{comment}{//\ use\ capability}}
+\DoxyCodeLine{00166\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a152c07656d903772602e01a23b717c94}{use\_capability\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::UseCapability>(}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/use\_capability"{}},}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ab351057325bd9c62bbd25657061505d6}{CapabilitiesServer::use\_capability\_cb}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{comment}{//\ connect\ capabilities\ to\ each\ other}}
+\DoxyCodeLine{00171\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a234c5773e90eebb05bd36fe2025f5503}{connect\_capability\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::ConnectCapability>(}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/connect\_capability"{}},}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a03500d304d5fef27e356b30b5d23dece}{CapabilitiesServer::connect\_capability\_cb}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \ \ \ \ \textcolor{comment}{//\ register\ capability}}
+\DoxyCodeLine{00176\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a12ab12a8447c6333dd2383534e2268bb}{register\_capability\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::RegisterCapability>(}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/register\_capability"{}},}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a71a42e1eaa2a7b030b8e0b1c90609315}{CapabilitiesServer::register\_capability\_cb}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{comment}{//\ query\ capabilities}}
+\DoxyCodeLine{00181\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aa7b2bb889301337796e782ea00d788a9}{get\_interfaces\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::GetInterfaces>(}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/get\_interfaces"{}},}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a1eee46a1f8874823530823183406e082}{CapabilitiesServer::get\_interfaces\_cb}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ae9b834509054095c04cc7f9d1557ec96}{get\_semantic\_interfaces\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::GetSemanticInterfaces>(}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/get\_semantic\_interfaces"{}},}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ae3299cfc91495fdff2fc8eb1513e7804}{CapabilitiesServer::get\_semantic\_interfaces\_cb}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a755cc7001a6739ae422492a9b6d4f4e3}{get\_providers\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::GetProviders>(}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/get\_providers"{}},}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_afd5d1ff380148dbc66a57e04e92109e0}{CapabilitiesServer::get\_providers\_cb}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a8286d3d3b6ad3eefef8bb91abcf349a2}{get\_capability\_spec\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::GetCapabilitySpec>(}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/get\_capability\_spec"{}},}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aed01fea6038bf10c20f4e23325e7b411}{CapabilitiesServer::get\_capability\_spec\_cb}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aad26d9c4b7948bff89e9dfc54dae3b33}{get\_capability\_specs\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::GetCapabilitySpecs>(}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/get\_capability\_specs"{}},}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a8bc0d2808af84412e1696f768366c114}{CapabilitiesServer::get\_capability\_specs\_cb}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a493ae61330a2da82fd4991055fdc2a2c}{get\_remappings\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::GetRemappings>(}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/get\_remappings"{}},}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a71728f43b140a67280d2eec2a18f00e4}{CapabilitiesServer::get\_remappings\_cb}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ac358c10e20544260cb65ad6fd3a31c8d}{get\_running\_capabilities\_srv\_}}\ =\ create\_service<capabilities2\_msgs::srv::GetRunningCapabilities>(}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\string~/get\_running\_capabilities"{}},\ std::bind(\&\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ad25368b49818a71d8bb5aefb64975fb5}{CapabilitiesServer::get\_running\_capabilities\_cb}},\ \textcolor{keyword}{this},}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::placeholders::\_1,\ std::placeholders::\_2));}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \ \ \ \ \textcolor{comment}{//\ log\ ready}}
+\DoxyCodeLine{00210\ \ \ \ \ RCLCPP\_INFO(get\_logger(),\ \textcolor{stringliteral}{"{}capabilities\ server\ started"{}});}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \ \ \textcolor{comment}{//\ fire/publish\ ready\ event}}
+\DoxyCodeLine{00213\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a1e3645b59e7641e486143354562ccfc3}{event\_}}-\/>on\_server\_ready(\textcolor{stringliteral}{"{}capabilities\ server\ start\ up\ complete"{}});}
+\DoxyCodeLine{00214\ \ \ \}}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00216\ \ \ \textcolor{comment}{//\ service\ callbacks}}
+\DoxyCodeLine{00217\ \ \ \textcolor{comment}{//\ establish\ bond}}
+\DoxyCodeLine{00218\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aa55cf315d13a4bbbff41439a4acb6eb7}{establish\_bond\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::EstablishBond::Request>\ req,}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::EstablishBond::Response>\ res)}
+\DoxyCodeLine{00220\ \ \ \{}
+\DoxyCodeLine{00221\ \ \ \ \ \textcolor{comment}{//\ req\ is\ empty}}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \ \ \ \ \textcolor{comment}{//\ set\ bond\ id\ to\ response}}
+\DoxyCodeLine{00224\ \ \ \ \ res-\/>bond\_id\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a9d25868abf2647c2e77aad620b270c3b}{establish\_bond}}(shared\_from\_this());}
+\DoxyCodeLine{00225\ \ \ \}}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \textcolor{comment}{//\ start\ capability}}
+\DoxyCodeLine{00228\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a60a3176ebff35a89d8066a80e533637e}{start\_capability\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::StartCapability::Request>\ req,}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::StartCapability::Response>\ res)}
+\DoxyCodeLine{00230\ \ \ \{}
+\DoxyCodeLine{00231\ \ \ \ \ \textcolor{comment}{//\ log\ warning\ about\ using\ unsafe\ start\ service}}
+\DoxyCodeLine{00232\ \ \ \ \ RCLCPP\_WARN(get\_logger(),\ \textcolor{stringliteral}{"{}start\_capability\ service\ is\ unsafe\ and\ intended\ for\ internal\ use\ only.\ "{}}}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Use\ use\_capability\ service\ with\ established\ bond\ instead."{}});}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{comment}{//\ try\ starting\ capability}}
+\DoxyCodeLine{00236\ \ \ \ \ \textcolor{comment}{//\ TODO:\ handle\ errors}}
+\DoxyCodeLine{00237\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_aaf69b498cc0fcc66267032c8a0a1504c}{start\_capability}}(shared\_from\_this(),\ req-\/>capability,\ req-\/>preferred\_provider);}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{comment}{//\ set\ response}}
+\DoxyCodeLine{00240\ \ \ \ \ res-\/>result\ =\ capabilities2\_msgs::srv::StartCapability::Response::RESULT\_SUCCESS;}
+\DoxyCodeLine{00241\ \ \ \}}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \ \ \textcolor{comment}{//\ stop\ capability}}
+\DoxyCodeLine{00244\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aa23ec591bffe34a5b29a317de882c61d}{stop\_capability\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::StopCapability::Request>\ req,}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::StopCapability::Response>\ res)}
+\DoxyCodeLine{00246\ \ \ \{}
+\DoxyCodeLine{00247\ \ \ \ \ \textcolor{comment}{//\ log\ warning\ about\ using\ unsafe\ stop\ service}}
+\DoxyCodeLine{00248\ \ \ \ \ RCLCPP\_WARN(get\_logger(),\ \textcolor{stringliteral}{"{}stop\_capability\ service\ is\ unsafe\ and\ intended\ for\ internal\ use\ only.\ "{}}}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Use\ free\_capability\ service\ with\ established\ bond\ instead."{}});}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{comment}{//\ try\ stopping\ capability}}
+\DoxyCodeLine{00252\ \ \ \ \ \textcolor{comment}{//\ TODO:\ handle\ errors}}
+\DoxyCodeLine{00253\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a1e106040d8bec5321e809c3666601600}{stop\_capability}}(req-\/>capability);}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \ \ \textcolor{comment}{//\ set\ response}}
+\DoxyCodeLine{00256\ \ \ \ \ res-\/>successful\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00257\ \ \ \}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \ \ \textcolor{comment}{//\ trigger\ capability}}
+\DoxyCodeLine{00260\ \ \ \textcolor{comment}{//\ requires\ a\ bond\ to\ be\ established}}
+\DoxyCodeLine{00261\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a88e047d3b8f4947f2f89160eac2b34e3}{trigger\_capability\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::TriggerCapability::Request>\ req,}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::TriggerCapability::Response>\ res)}
+\DoxyCodeLine{00263\ \ \ \{}
+\DoxyCodeLine{00264\ \ \ \ \ \textcolor{comment}{//\ make\ sure\ capability\ is\ not\ empty}}
+\DoxyCodeLine{00265\ \ \ \ \ \textcolor{keywordflow}{if}\ (req-\/>capability.capability.empty())}
+\DoxyCodeLine{00266\ \ \ \ \ \{}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}trigger\_capability:\ capability\ is\ empty"{}});}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00269\ \ \ \ \ \}}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \ \ \ \ \textcolor{comment}{//\ make\ sure\ bond\ id\ is\ provided}}
+\DoxyCodeLine{00272\ \ \ \ \ \textcolor{keywordflow}{if}\ (req-\/>bond\_id.empty())}
+\DoxyCodeLine{00273\ \ \ \ \ \{}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}trigger\_capability:\ bond\_id\ is\ empty"{}});}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00276\ \ \ \ \ \}}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \ \ \ \ \textcolor{comment}{//\ make\ sure\ instance\ id\ is\ provided}}
+\DoxyCodeLine{00279\ \ \ \ \ \textcolor{keywordflow}{if}\ (req-\/>capability.instance\_id.empty())}
+\DoxyCodeLine{00280\ \ \ \ \ \{}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}trigger\_capability:\ instance\_id\ is\ empty"{}});}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00283\ \ \ \ \ \}}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \ \ \ \ \textcolor{comment}{//\ try\ triggering\ capability}}
+\DoxyCodeLine{00286\ \ \ \ \ \textcolor{comment}{//\ TODO:\ handle\ errors}}
+\DoxyCodeLine{00287\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_ae6de8e860c63da9acde97c4b5cd7a5a5}{trigger\_capability}}(req-\/>bond\_id,\ req-\/>capability.capability,\ req-\/>capability.instance\_id,}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\_events::EventParameters}}(req-\/>capability));}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \ \ \ \ \textcolor{comment}{//\ response\ is\ empty}}
+\DoxyCodeLine{00291\ \ \ \}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ \ \ \textcolor{comment}{//\ free\ capability}}
+\DoxyCodeLine{00294\ \ \ \textcolor{comment}{//\ requires\ bond\ to\ be\ established}}
+\DoxyCodeLine{00295\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ae855a537f8007233ab225e22fb5eca04}{free\_capability\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::FreeCapability::Request>\ req,}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::FreeCapability::Response>\ res)}
+\DoxyCodeLine{00297\ \ \ \{}
+\DoxyCodeLine{00298\ \ \ \ \ \textcolor{comment}{//\ guard\ empty\ values}}
+\DoxyCodeLine{00299\ \ \ \ \ \textcolor{keywordflow}{if}\ (req-\/>capability.empty())}
+\DoxyCodeLine{00300\ \ \ \ \ \{}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}free\_capability:\ capability\ is\ empty"{}});}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00303\ \ \ \ \ \}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \ \ \ \ \textcolor{keywordflow}{if}\ (req-\/>bond\_id.empty())}
+\DoxyCodeLine{00306\ \ \ \ \ \{}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}free\_capability:\ bond\_id\ is\ empty"{}});}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00309\ \ \ \ \ \}}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \ \ \ \ \textcolor{comment}{//\ free\ capability\ of\ this\ bond}}
+\DoxyCodeLine{00312\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a02d27d28503b5b56cf5aa3556e1a2118}{free\_capability}}(req-\/>capability,\ req-\/>bond\_id);}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \ \ \ \ \textcolor{comment}{//\ response\ is\ empty}}
+\DoxyCodeLine{00315\ \ \ \}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \ \ \textcolor{comment}{//\ use\ capability}}
+\DoxyCodeLine{00318\ \ \ \textcolor{comment}{//\ requires\ bond\ to\ be\ established}}
+\DoxyCodeLine{00319\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ab351057325bd9c62bbd25657061505d6}{use\_capability\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::UseCapability::Request>\ req,}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::UseCapability::Response>\ res)}
+\DoxyCodeLine{00321\ \ \ \{}
+\DoxyCodeLine{00322\ \ \ \ \ \textcolor{comment}{//\ guard\ empty\ values}}
+\DoxyCodeLine{00323\ \ \ \ \ \textcolor{keywordflow}{if}\ (req-\/>capability.empty())}
+\DoxyCodeLine{00324\ \ \ \ \ \{}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}use\_capability:\ capability\ is\ empty"{}});}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00327\ \ \ \ \ \}}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \ \ \ \ \textcolor{keywordflow}{if}\ (req-\/>preferred\_provider.empty())}
+\DoxyCodeLine{00330\ \ \ \ \ \{}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}use\_capability:\ preferred\_provider\ is\ empty"{}});}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00333\ \ \ \ \ \}}
+\DoxyCodeLine{00334\ }
+\DoxyCodeLine{00335\ \ \ \ \ \textcolor{keywordflow}{if}\ (req-\/>bond\_id.empty())}
+\DoxyCodeLine{00336\ \ \ \ \ \{}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}use\_capability:\ bond\_id\ is\ empty"{}});}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00339\ \ \ \ \ \}}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \ \ \ \ \textcolor{comment}{//\ use\ capability\ with\ this\ bond}}
+\DoxyCodeLine{00342\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a419ed80ae9a32f0d89518b0750ade73c}{use\_capability}}(shared\_from\_this(),\ req-\/>capability,\ req-\/>preferred\_provider,\ req-\/>bond\_id);}
+\DoxyCodeLine{00343\ }
+\DoxyCodeLine{00344\ \ \ \ \ \textcolor{comment}{//\ response\ is\ empty}}
+\DoxyCodeLine{00345\ \ \ \}}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ \ \ \textcolor{comment}{//\ FIXME:\ repair\ this\ to\ use\ new\ event\ subsystem}}
+\DoxyCodeLine{00348\ \ \ \textcolor{comment}{//\ connect\ capability}}
+\DoxyCodeLine{00349\ \ \ \textcolor{comment}{//\ requires\ bond\ to\ be\ established}}
+\DoxyCodeLine{00350\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a03500d304d5fef27e356b30b5d23dece}{connect\_capability\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::ConnectCapability::Request>\ req,}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::ConnectCapability::Response>\ res)}
+\DoxyCodeLine{00352\ \ \ \{}
+\DoxyCodeLine{00353\ \ \ \ \ \textcolor{comment}{//\ need\ to\ have\ a\ bond\ established}}
+\DoxyCodeLine{00354\ \ \ \ \ \textcolor{keywordflow}{if}\ (req-\/>bond\_id.empty())}
+\DoxyCodeLine{00355\ \ \ \ \ \{}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}connect\_capability:\ bond\_id\ is\ empty"{}});}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00358\ \ \ \ \ \}}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \ \ \ \ \textcolor{comment}{//\ need\ to\ have\ a\ instance\ id}}
+\DoxyCodeLine{00361\ \ \ \ \ \textcolor{keywordflow}{if}\ (req-\/>connection.source.instance\_id.empty())}
+\DoxyCodeLine{00362\ \ \ \ \ \{}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}connect\_capability:\ instance\_id\ is\ empty"{}});}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00365\ \ \ \ \ \}}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \ \ \ \ \textcolor{comment}{//\ need\ to\ have\ a\ target\ instance\ id}}
+\DoxyCodeLine{00368\ \ \ \ \ \textcolor{keywordflow}{if}\ (req-\/>connection.target.instance\_id.empty())}
+\DoxyCodeLine{00369\ \ \ \ \ \{}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}connect\_capability:\ target\_instance\_id\ is\ empty"{}});}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00372\ \ \ \ \ \}}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00374\ \ \ \ \ \textcolor{comment}{//\ api\ connect\ capability}}
+\DoxyCodeLine{00375\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_ae6e049a500dc2554322475a1b4e89c21}{connect\_capability}}(req-\/>bond\_id,\ req-\/>connection);}
+\DoxyCodeLine{00376\ }
+\DoxyCodeLine{00377\ \ \ \ \ \textcolor{comment}{//\ response\ is\ empty}}
+\DoxyCodeLine{00378\ \ \ \}}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \ \ \textcolor{comment}{//\ register\ capability}}
+\DoxyCodeLine{00381\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a71a42e1eaa2a7b030b8e0b1c90609315}{register\_capability\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::RegisterCapability::Request>\ req,}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::RegisterCapability::Response>\ res)}
+\DoxyCodeLine{00383\ \ \ \{}
+\DoxyCodeLine{00384\ \ \ \ \ \textcolor{comment}{//\ guard\ empty\ values}}
+\DoxyCodeLine{00385\ \ \ \ \ \textcolor{keywordflow}{if}\ (req-\/>capability\_spec.package.empty()\ ||\ req-\/>capability\_spec.content.empty())}
+\DoxyCodeLine{00386\ \ \ \ \ \{}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}register\_capability:\ package\ or\ content\ is\ empty"{}});}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00389\ \ \ \ \ \}}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \ \ \ \ \textcolor{comment}{//\ register\ capability}}
+\DoxyCodeLine{00392\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a226adbcdbb5b497953a2dd61d418a7de}{add\_capability}}(req-\/>capability\_spec);}
+\DoxyCodeLine{00393\ }
+\DoxyCodeLine{00394\ \ \ \ \ \textcolor{comment}{//\ response\ is\ empty}}
+\DoxyCodeLine{00395\ \ \ \}}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00397\ \ \ \textcolor{comment}{//\ query\ capabilities}}
+\DoxyCodeLine{00398\ \ \ \textcolor{comment}{//\ get\ interfaces}}
+\DoxyCodeLine{00399\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a1eee46a1f8874823530823183406e082}{get\_interfaces\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::GetInterfaces::Request>\ req,}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::GetInterfaces::Response>\ res)}
+\DoxyCodeLine{00401\ \ \ \{}
+\DoxyCodeLine{00402\ \ \ \ \ \textcolor{comment}{//\ req\ is\ empty}}
+\DoxyCodeLine{00403\ }
+\DoxyCodeLine{00404\ \ \ \ \ \textcolor{comment}{//\ set\ response}}
+\DoxyCodeLine{00405\ \ \ \ \ \textcolor{comment}{//\ get\ all\ interfaces}}
+\DoxyCodeLine{00406\ \ \ \ \ res-\/>interfaces\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_acd27a3b8a5655712120d8f60e6e21a03}{get\_interfaces}}();}
+\DoxyCodeLine{00407\ \ \ \}}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00409\ \ \ \textcolor{comment}{//\ get\ semantic\ interfaces}}
+\DoxyCodeLine{00410\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ae3299cfc91495fdff2fc8eb1513e7804}{get\_semantic\_interfaces\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::GetSemanticInterfaces::Request>\ req,}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::GetSemanticInterfaces::Response>\ res)}
+\DoxyCodeLine{00412\ \ \ \{}
+\DoxyCodeLine{00413\ \ \ \ \ \textcolor{comment}{//\ set\ response}}
+\DoxyCodeLine{00414\ \ \ \ \ \textcolor{comment}{//\ get\ semantic\ interfaces\ for\ given\ interface}}
+\DoxyCodeLine{00415\ \ \ \ \ res-\/>semantic\_interfaces\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_ad0323e4febb7e96405a0473e39e58d52}{get\_semantic\_interfaces}}(req-\/>interface);}
+\DoxyCodeLine{00416\ \ \ \}}
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00418\ \ \ \textcolor{comment}{//\ get\ providers}}
+\DoxyCodeLine{00419\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_afd5d1ff380148dbc66a57e04e92109e0}{get\_providers\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::GetProviders::Request>\ req,}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::GetProviders::Response>\ res)}
+\DoxyCodeLine{00421\ \ \ \{}
+\DoxyCodeLine{00422\ \ \ \ \ \textcolor{comment}{//\ set\ response}}
+\DoxyCodeLine{00423\ \ \ \ \ \textcolor{comment}{//\ get\ providers\ for\ given\ interface}}
+\DoxyCodeLine{00424\ \ \ \ \ res-\/>providers\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_ad6f151b6a272325d92aeb7704ded093a}{get\_providers}}(req-\/>interface,\ req-\/>include\_semantic);}
+\DoxyCodeLine{00425\ \ \ \}}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \ \ \textcolor{comment}{//\ get\ capability\ spec}}
+\DoxyCodeLine{00428\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aed01fea6038bf10c20f4e23325e7b411}{get\_capability\_spec\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::GetCapabilitySpec::Request>\ req,}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::GetCapabilitySpec::Response>\ res)}
+\DoxyCodeLine{00430\ \ \ \{}
+\DoxyCodeLine{00431\ \ \ \ \ \textcolor{comment}{//\ get\ capability\ spec\ for\ given\ capability\ resource}}
+\DoxyCodeLine{00432\ \ \ \ \ capabilities2\_msgs::msg::CapabilitySpec\ capability\_spec\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_af2ad7408ac8e69d5cf4d8bb503fd37e8}{get\_capability\_spec}}(req-\/>capability\_spec);}
+\DoxyCodeLine{00433\ }
+\DoxyCodeLine{00434\ \ \ \ \ \textcolor{comment}{//\ if\ the\ spec\ is\ not\ empty\ set\ response}}
+\DoxyCodeLine{00435\ \ \ \ \ \textcolor{keywordflow}{if}\ (capability\_spec.content.empty())}
+\DoxyCodeLine{00436\ \ \ \ \ \{}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}capability\ spec\ not\ found\ for\ resource:\ \%s"{}},\ req-\/>capability\_spec.c\_str());}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00439\ \ \ \ \ \ \ \textcolor{comment}{//\ BUG:\ throw\ error\ causes\ service\ to\ crash,\ this\ is\ a\ ROS2\ bug}}
+\DoxyCodeLine{00440\ \ \ \ \ \ \ \textcolor{comment}{//\ std::runtime\_error("{}capability\ spec\ not\ found\ for\ resource:\ "{}\ +\ req-\/>capability\_spec);}}
+\DoxyCodeLine{00441\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00442\ \ \ \ \ \}}
+\DoxyCodeLine{00443\ }
+\DoxyCodeLine{00444\ \ \ \ \ \textcolor{comment}{//\ set\ response}}
+\DoxyCodeLine{00445\ \ \ \ \ res-\/>capability\_spec\ =\ capability\_spec;}
+\DoxyCodeLine{00446\ \ \ \}}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \ \ \textcolor{comment}{//\ get\ capability\ specs}}
+\DoxyCodeLine{00449\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a8bc0d2808af84412e1696f768366c114}{get\_capability\_specs\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::GetCapabilitySpecs::Request>\ req,}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::GetCapabilitySpecs::Response>\ res)}
+\DoxyCodeLine{00451\ \ \ \{}
+\DoxyCodeLine{00452\ \ \ \ \ \textcolor{comment}{//\ req\ is\ empty}}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \ \ \ \ \textcolor{comment}{//\ set\ response}}
+\DoxyCodeLine{00455\ \ \ \ \ \textcolor{comment}{//\ get\ capability\ specs\ for\ given\ capability\ resources}}
+\DoxyCodeLine{00456\ \ \ \ \ res-\/>capability\_specs\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a89ca5565eac4c99553fb79e7e8c332c8}{get\_capability\_specs}}();}
+\DoxyCodeLine{00457\ \ \ \}}
+\DoxyCodeLine{00458\ }
+\DoxyCodeLine{00459\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a71728f43b140a67280d2eec2a18f00e4}{get\_remappings\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::GetRemappings::Request>\ req,}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::GetRemappings::Response>\ res)}
+\DoxyCodeLine{00461\ \ \ \{}
+\DoxyCodeLine{00462\ \ \ \ \ \textcolor{comment}{//\ set\ response}}
+\DoxyCodeLine{00463\ \ \ \ \ \textcolor{comment}{//\ get\ remappings\ for\ given\ capability}}
+\DoxyCodeLine{00464\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a0c1bbfe23a34eb6adef90747bba2b34f}{get\_remappings}}(req-\/>spec,\ res);}
+\DoxyCodeLine{00465\ \ \ \}}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00467\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ad25368b49818a71d8bb5aefb64975fb5}{get\_running\_capabilities\_cb}}(\textcolor{keyword}{const}\ std::shared\_ptr<capabilities2\_msgs::srv::GetRunningCapabilities::Request>\ req,}
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<capabilities2\_msgs::srv::GetRunningCapabilities::Response>\ res)}
+\DoxyCodeLine{00469\ \ \ \{}
+\DoxyCodeLine{00470\ \ \ \ \ \textcolor{comment}{//\ req\ is\ empty}}
+\DoxyCodeLine{00471\ }
+\DoxyCodeLine{00472\ \ \ \ \ \textcolor{comment}{//\ set\ response}}
+\DoxyCodeLine{00473\ \ \ \ \ \textcolor{comment}{//\ get\ running\ capabilities}}
+\DoxyCodeLine{00474\ \ \ \ \ res-\/>running\_capabilities\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesAPI_a35a9b49bc2b1fdcf0311264905f59514}{get\_running\_capabilities}}();}
+\DoxyCodeLine{00475\ \ \ \}}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00477\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00478\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a58c477d3ba7423b273778842fe156dcc}{load\_capabilities}}(\textcolor{keyword}{const}\ std::string\&\ package\_path)}
+\DoxyCodeLine{00479\ \ \ \{}
+\DoxyCodeLine{00480\ \ \ \ \ RCLCPP\_DEBUG(get\_logger(),\ \textcolor{stringliteral}{"{}Loading\ capabilities\ from\ package\ path:\ \%s"{}},\ package\_path.c\_str());}
+\DoxyCodeLine{00481\ }
+\DoxyCodeLine{00482\ \ \ \ \ \textcolor{comment}{//\ check\ if\ path\ exists}}
+\DoxyCodeLine{00483\ \ \ \ \ \textcolor{keywordflow}{if}\ (!std::filesystem::exists(package\_path))}
+\DoxyCodeLine{00484\ \ \ \ \ \{}
+\DoxyCodeLine{00485\ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}package\ path\ does\ not\ exist:\ \%s"{}},\ package\_path.c\_str());}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00487\ \ \ \ \ \}}
+\DoxyCodeLine{00488\ }
+\DoxyCodeLine{00489\ \ \ \ \ \textcolor{comment}{//\ find\ packages\ in\ path}}
+\DoxyCodeLine{00490\ \ \ \ \ std::vector<std::string>\ packages\_root,\ packages\_install;}
+\DoxyCodeLine{00491\ }
+\DoxyCodeLine{00492\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ entry\ :\ std::filesystem::directory\_iterator(package\_path))}
+\DoxyCodeLine{00493\ \ \ \ \ \{}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (entry.is\_directory())}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \ \ std::string\ name(entry.path().filename());}
+\DoxyCodeLine{00497\ }
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (std::filesystem::exists(package\_path\ +\ \textcolor{stringliteral}{"{}/"{}}\ +\ name\ +\ \textcolor{stringliteral}{"{}/package.xml"{}}))}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \ \ packages\_root.push\_back(name);}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (std::filesystem::exists(package\_path\ +\ \textcolor{stringliteral}{"{}/"{}}\ +\ name\ +\ \textcolor{stringliteral}{"{}/share/"{}}\ +\ name\ +\ \textcolor{stringliteral}{"{}/package.xml"{}}))}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00504\ \ \ \ \ \ \ \ \ \ \ packages\_install.push\_back(name);}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00506\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00507\ \ \ \ \ \}}
+\DoxyCodeLine{00508\ }
+\DoxyCodeLine{00509\ \ \ \ \ \textcolor{comment}{//\ load\ capabilities\ from\ packages\ in\ /opt/ros/*/share}}
+\DoxyCodeLine{00510\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ package\ :\ packages\_root)}
+\DoxyCodeLine{00511\ \ \ \ \ \{}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ RCLCPP\_DEBUG(get\_logger(),\ \textcolor{stringliteral}{"{}Loading\ capabilities\ from\ package:\ \%s"{}},\ package.c\_str());}
+\DoxyCodeLine{00513\ }
+\DoxyCodeLine{00514\ \ \ \ \ \ \ \textcolor{comment}{//\ package.xml\ exports}}
+\DoxyCodeLine{00515\ \ \ \ \ \ \ std::string\ package\_xml\ =\ package\_path\ +\ \textcolor{stringliteral}{"{}/"{}}\ +\ \textcolor{keyword}{package\ }+\ "{}/package.xml"{};}
+\DoxyCodeLine{00516\ }
+\DoxyCodeLine{00517\ \ \ \ \ \ \ \textcolor{comment}{//\ check\ if\ package.xml\ exists}}
+\DoxyCodeLine{00518\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!std::filesystem::exists(package\_xml))}
+\DoxyCodeLine{00519\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00520\ \ \ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}package.xml\ does\ not\ exist:\ \%s"{}},\ package\_xml.c\_str());}
+\DoxyCodeLine{00521\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00522\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00523\ }
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \textcolor{comment}{//\ parse\ package.xml}}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ tinyxml2::XMLDocument\ doc;}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ \ \ parse\_package\_xml(package\_xml,\ doc);}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00531\ \ \ \ \ \ \ \textcolor{keywordflow}{catch}\ (\textcolor{keyword}{const}\ std::runtime\_error\&\ e)}
+\DoxyCodeLine{00532\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00533\ \ \ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}failed\ to\ parse\ package.xml\ file:\ \%s"{}},\ e.what());}
+\DoxyCodeLine{00534\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00535\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ \ \ \ \ \ \ \textcolor{comment}{//\ get\ exports}}
+\DoxyCodeLine{00538\ \ \ \ \ \ \ tinyxml2::XMLElement*\ exports\ =\ doc.FirstChildElement(\textcolor{stringliteral}{"{}package"{}})-\/>FirstChildElement(\textcolor{stringliteral}{"{}export"{}});}
+\DoxyCodeLine{00539\ }
+\DoxyCodeLine{00540\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (exports\ ==\ \textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00541\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00542\ \ \ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}No\ exports\ found\ in\ package.xml\ file:\ \%s"{}},\ package\_xml.c\_str());}
+\DoxyCodeLine{00543\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00544\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00545\ }
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \textcolor{comment}{//\ get\ capability\ specs\ of\ each\ type\ using\ a\ lambda}}
+\DoxyCodeLine{00547\ \ \ \ \ \ \ \textcolor{keyword}{auto}\ get\_capability\_specs\ =\ [\&](\textcolor{keyword}{const}\ std::string\&\ spec\_type)\ \{}
+\DoxyCodeLine{00548\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ get\ capability\ spec}}
+\DoxyCodeLine{00549\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (tinyxml2::XMLElement*\ spec\ =\ exports-\/>FirstChildElement(spec\_type.c\_str());\ spec\ !=\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00550\ \ \ \ \ \ \ \ \ \ \ \ \ \ spec\ =\ spec-\/>NextSiblingElement(spec\_type.c\_str()))}
+\DoxyCodeLine{00551\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00552\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ read\ spec\ relative\ path\ for\ spec\ file\ from\ element\ contents}}
+\DoxyCodeLine{00553\ \ \ \ \ \ \ \ \ \ \ std::string\ spec\_path\ =\ spec-\/>GetText();}
+\DoxyCodeLine{00554\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ clear\ white\ spaces}}
+\DoxyCodeLine{00555\ \ \ \ \ \ \ \ \ \ \ spec\_path.erase(std::remove\_if(spec\_path.begin(),\ spec\_path.end(),\ isspace),\ spec\_path.end());}
+\DoxyCodeLine{00556\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ remove\ leading\ slash}}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (spec\_path[0]\ ==\ \textcolor{charliteral}{'/'})}
+\DoxyCodeLine{00558\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \ \ \ \ \ \ spec\_path\ =\ spec\_path.substr(1);}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00561\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ create\ a\ spec\ message}}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \ \ capabilities2\_msgs::msg::CapabilitySpec\ capability\_spec;}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ add\ package\ details}}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ \ \ \ \ capability\_spec.package\ =\ package;}
+\DoxyCodeLine{00565\ \ \ \ \ \ \ \ \ \ \ capability\_spec.type\ =\ spec\_type;}
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ try\ load\ spec\ file}}
+\DoxyCodeLine{00567\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00568\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00569\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ read\ spec\ file}}
+\DoxyCodeLine{00570\ \ \ \ \ \ \ \ \ \ \ \ \ load\_spec\_content(package\_path\ +\ \textcolor{stringliteral}{"{}/"{}}\ +\ package\ +\ \textcolor{stringliteral}{"{}/"{}}\ +\ spec\_path,\ capability\_spec);}
+\DoxyCodeLine{00571\ }
+\DoxyCodeLine{00572\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ add\ capability\ to\ db}}
+\DoxyCodeLine{00573\ \ \ \ \ \ \ \ \ \ \ \ \ RCLCPP\_INFO(get\_logger(),\ \textcolor{stringliteral}{"{}adding\ capability:\ \%s/\%s"{}},\ package.c\_str(),\ spec\_path.c\_str());}
+\DoxyCodeLine{00574\ \ \ \ \ \ \ \ \ \ \ \ \ add\_capability(capability\_spec);}
+\DoxyCodeLine{00575\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00576\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{catch}\ (\textcolor{keyword}{const}\ std::runtime\_error\&\ e)}
+\DoxyCodeLine{00577\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00578\ \ \ \ \ \ \ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}failed\ to\ load\ spec\ file:\ \%s"{}},\ e.what());}
+\DoxyCodeLine{00579\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00580\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00581\ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00582\ }
+\DoxyCodeLine{00583\ \ \ \ \ \ \ \textcolor{comment}{//\ get\ interface\ specs}}
+\DoxyCodeLine{00584\ \ \ \ \ \ \ get\_capability\_specs(capabilities2\_msgs::msg::CapabilitySpec::CAPABILITY\_INTERFACE);}
+\DoxyCodeLine{00585\ \ \ \ \ \ \ \textcolor{comment}{//\ get\ semantic\ interface\ specs}}
+\DoxyCodeLine{00586\ \ \ \ \ \ \ get\_capability\_specs(capabilities2\_msgs::msg::CapabilitySpec::SEMANTIC\_CAPABILITY\_INTERFACE);}
+\DoxyCodeLine{00587\ \ \ \ \ \ \ \textcolor{comment}{//\ get\ provider\ specs}}
+\DoxyCodeLine{00588\ \ \ \ \ \ \ get\_capability\_specs(capabilities2\_msgs::msg::CapabilitySpec::CAPABILITY\_PROVIDER);}
+\DoxyCodeLine{00589\ \ \ \ \ \}}
+\DoxyCodeLine{00590\ }
+\DoxyCodeLine{00591\ \ \ \ \ \textcolor{comment}{//\ load\ capabilities\ from\ packages\ in\ workspace\ install\ folder}}
+\DoxyCodeLine{00592\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ package\ :\ packages\_install)}
+\DoxyCodeLine{00593\ \ \ \ \ \{}
+\DoxyCodeLine{00594\ \ \ \ \ \ \ RCLCPP\_DEBUG(get\_logger(),\ \textcolor{stringliteral}{"{}Loading\ capabilities\ from\ package:\ \%s"{}},\ package.c\_str());}
+\DoxyCodeLine{00595\ }
+\DoxyCodeLine{00596\ \ \ \ \ \ \ \textcolor{comment}{//\ package.xml\ exports}}
+\DoxyCodeLine{00597\ \ \ \ \ \ \ std::string\ package\_xml\ =\ package\_path\ +\ \textcolor{stringliteral}{"{}/"{}}\ +\ \textcolor{keyword}{package\ }+\ "{}/share/"{}\ +\ package\ +\ "{}/package.xml"{};}
+\DoxyCodeLine{00598\ }
+\DoxyCodeLine{00599\ \ \ \ \ \ \ \textcolor{comment}{//\ check\ if\ package.xml\ exists}}
+\DoxyCodeLine{00600\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!std::filesystem::exists(package\_xml))}
+\DoxyCodeLine{00601\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00602\ \ \ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}package.xml\ does\ not\ exist:\ \%s"{}},\ package\_xml.c\_str());}
+\DoxyCodeLine{00603\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00605\ }
+\DoxyCodeLine{00606\ \ \ \ \ \ \ \textcolor{comment}{//\ parse\ package.xml}}
+\DoxyCodeLine{00607\ \ \ \ \ \ \ tinyxml2::XMLDocument\ doc;}
+\DoxyCodeLine{00608\ }
+\DoxyCodeLine{00609\ \ \ \ \ \ \ \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00610\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00611\ \ \ \ \ \ \ \ \ parse\_package\_xml(package\_xml,\ doc);}
+\DoxyCodeLine{00612\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00613\ \ \ \ \ \ \ \textcolor{keywordflow}{catch}\ (\textcolor{keyword}{const}\ std::runtime\_error\&\ e)}
+\DoxyCodeLine{00614\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00615\ \ \ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}failed\ to\ parse\ package.xml\ file:\ \%s"{}},\ e.what());}
+\DoxyCodeLine{00616\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00617\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00618\ }
+\DoxyCodeLine{00619\ \ \ \ \ \ \ \textcolor{comment}{//\ get\ exports}}
+\DoxyCodeLine{00620\ \ \ \ \ \ \ tinyxml2::XMLElement*\ exports\ =\ doc.FirstChildElement(\textcolor{stringliteral}{"{}package"{}})-\/>FirstChildElement(\textcolor{stringliteral}{"{}export"{}});}
+\DoxyCodeLine{00621\ }
+\DoxyCodeLine{00622\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (exports\ ==\ \textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00623\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00624\ \ \ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}No\ exports\ found\ in\ package.xml\ file:\ \%s"{}},\ package\_xml.c\_str());}
+\DoxyCodeLine{00625\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00626\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00627\ }
+\DoxyCodeLine{00628\ \ \ \ \ \ \ \textcolor{comment}{//\ get\ capability\ specs\ of\ each\ type\ using\ a\ lambda}}
+\DoxyCodeLine{00629\ \ \ \ \ \ \ \textcolor{keyword}{auto}\ get\_capability\_specs\ =\ [\&](\textcolor{keyword}{const}\ std::string\&\ spec\_type)\ \{}
+\DoxyCodeLine{00630\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ get\ capability\ spec}}
+\DoxyCodeLine{00631\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (tinyxml2::XMLElement*\ spec\ =\ exports-\/>FirstChildElement(spec\_type.c\_str());\ spec\ !=\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00632\ \ \ \ \ \ \ \ \ \ \ \ \ \ spec\ =\ spec-\/>NextSiblingElement(spec\_type.c\_str()))}
+\DoxyCodeLine{00633\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00634\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ read\ spec\ relative\ path\ for\ spec\ file\ from\ element\ contents}}
+\DoxyCodeLine{00635\ \ \ \ \ \ \ \ \ \ \ std::string\ spec\_path\ =\ spec-\/>GetText();}
+\DoxyCodeLine{00636\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ clear\ white\ spaces}}
+\DoxyCodeLine{00637\ \ \ \ \ \ \ \ \ \ \ spec\_path.erase(std::remove\_if(spec\_path.begin(),\ spec\_path.end(),\ isspace),\ spec\_path.end());}
+\DoxyCodeLine{00638\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ remove\ leading\ slash}}
+\DoxyCodeLine{00639\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (spec\_path[0]\ ==\ \textcolor{charliteral}{'/'})}
+\DoxyCodeLine{00640\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00641\ \ \ \ \ \ \ \ \ \ \ \ \ spec\_path\ =\ spec\_path.substr(1);}
+\DoxyCodeLine{00642\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00643\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ create\ a\ spec\ message}}
+\DoxyCodeLine{00644\ \ \ \ \ \ \ \ \ \ \ capabilities2\_msgs::msg::CapabilitySpec\ capability\_spec;}
+\DoxyCodeLine{00645\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ add\ package\ details}}
+\DoxyCodeLine{00646\ \ \ \ \ \ \ \ \ \ \ capability\_spec.package\ =\ package;}
+\DoxyCodeLine{00647\ \ \ \ \ \ \ \ \ \ \ capability\_spec.type\ =\ spec\_type;}
+\DoxyCodeLine{00648\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ try\ load\ spec\ file}}
+\DoxyCodeLine{00649\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00650\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00651\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ read\ spec\ file}}
+\DoxyCodeLine{00652\ \ \ \ \ \ \ \ \ \ \ \ \ load\_spec\_content(package\_path\ +\ \textcolor{stringliteral}{"{}/"{}}\ +\ package\ +\ \textcolor{stringliteral}{"{}/share/"{}}\ +\ package\ +\ \textcolor{stringliteral}{"{}/"{}}\ +\ spec\_path,\ capability\_spec);}
+\DoxyCodeLine{00653\ }
+\DoxyCodeLine{00654\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ add\ capability\ to\ db}}
+\DoxyCodeLine{00655\ \ \ \ \ \ \ \ \ \ \ \ \ RCLCPP\_INFO(get\_logger(),\ \textcolor{stringliteral}{"{}adding\ capability:\ \%s/\%s"{}},\ package.c\_str(),\ spec\_path.c\_str());}
+\DoxyCodeLine{00656\ }
+\DoxyCodeLine{00657\ \ \ \ \ \ \ \ \ \ \ \ \ add\_capability(capability\_spec);}
+\DoxyCodeLine{00658\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00659\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{catch}\ (\textcolor{keyword}{const}\ std::runtime\_error\&\ e)}
+\DoxyCodeLine{00660\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00661\ \ \ \ \ \ \ \ \ \ \ \ \ RCLCPP\_ERROR(get\_logger(),\ \textcolor{stringliteral}{"{}failed\ to\ load\ spec\ file:\ \%s"{}},\ e.what());}
+\DoxyCodeLine{00662\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00663\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00664\ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00665\ }
+\DoxyCodeLine{00666\ \ \ \ \ \ \ \textcolor{comment}{//\ get\ interface\ specs}}
+\DoxyCodeLine{00667\ \ \ \ \ \ \ get\_capability\_specs(capabilities2\_msgs::msg::CapabilitySpec::CAPABILITY\_INTERFACE);}
+\DoxyCodeLine{00668\ \ \ \ \ \ \ \textcolor{comment}{//\ get\ semantic\ interface\ specs}}
+\DoxyCodeLine{00669\ \ \ \ \ \ \ get\_capability\_specs(capabilities2\_msgs::msg::CapabilitySpec::SEMANTIC\_CAPABILITY\_INTERFACE);}
+\DoxyCodeLine{00670\ \ \ \ \ \ \ \textcolor{comment}{//\ get\ provider\ specs}}
+\DoxyCodeLine{00671\ \ \ \ \ \ \ get\_capability\_specs(capabilities2\_msgs::msg::CapabilitySpec::CAPABILITY\_PROVIDER);}
+\DoxyCodeLine{00672\ \ \ \ \ \}}
+\DoxyCodeLine{00673\ \ \ \}}
+\DoxyCodeLine{00674\ }
+\DoxyCodeLine{00681\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a5e0231cf2f4d4c16ec057e5603b0efd1}{parse\_package\_xml}}(\textcolor{keyword}{const}\ std::string\&\ package\_xml,\ tinyxml2::XMLDocument\&\ doc)}
+\DoxyCodeLine{00682\ \ \ \{}
+\DoxyCodeLine{00683\ \ \ \ \ \textcolor{comment}{//\ read\ package.xml}}
+\DoxyCodeLine{00684\ \ \ \ \ std::ifstream\ package\_xml\_file(package\_xml,\ std::ifstream::in);}
+\DoxyCodeLine{00685\ }
+\DoxyCodeLine{00686\ \ \ \ \ \textcolor{keywordflow}{if}\ (!package\_xml\_file.is\_open())}
+\DoxyCodeLine{00687\ \ \ \ \ \{}
+\DoxyCodeLine{00688\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}unable\ to\ open\ package.xml\ file:\ "{}}\ +\ package\_xml);}
+\DoxyCodeLine{00689\ \ \ \ \ \}}
+\DoxyCodeLine{00690\ }
+\DoxyCodeLine{00691\ \ \ \ \ \textcolor{comment}{//\ read\ package.xml\ file\ into\ string}}
+\DoxyCodeLine{00692\ \ \ \ \ std::string\ package\_xml\_string\{\ std::istreambuf\_iterator<char>(package\_xml\_file),}
+\DoxyCodeLine{00693\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::istreambuf\_iterator<char>()\ \};}
+\DoxyCodeLine{00694\ \ \ \ \ package\_xml\_file.close();}
+\DoxyCodeLine{00695\ }
+\DoxyCodeLine{00696\ \ \ \ \ \textcolor{comment}{//\ parse\ package.xml\ to\ xml\ doc}}
+\DoxyCodeLine{00697\ \ \ \ \ \textcolor{keywordflow}{if}\ (doc.Parse(package\_xml\_string.c\_str())\ !=\ tinyxml2::XML\_SUCCESS)}
+\DoxyCodeLine{00698\ \ \ \ \ \{}
+\DoxyCodeLine{00699\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}failed\ to\ parse\ package.xml\ file:\ "{}}\ +\ package\_xml);}
+\DoxyCodeLine{00700\ \ \ \ \ \}}
+\DoxyCodeLine{00701\ \ \ \}}
+\DoxyCodeLine{00702\ }
+\DoxyCodeLine{00709\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a38bec3f55aab20fb4ef4be05ff20ee20}{load\_spec\_content}}(\textcolor{keyword}{const}\ std::string\&\ spec\_file,\ capabilities2\_msgs::msg::CapabilitySpec\&\ capability\_spec)}
+\DoxyCodeLine{00710\ \ \ \{}
+\DoxyCodeLine{00711\ \ \ \ \ \textcolor{comment}{//\ read\ spec\ file}}
+\DoxyCodeLine{00712\ \ \ \ \ std::ifstream\ spec\_file\_file(spec\_file,\ std::ifstream::in);}
+\DoxyCodeLine{00713\ }
+\DoxyCodeLine{00714\ \ \ \ \ \textcolor{comment}{//\ file\ failed\ guard}}
+\DoxyCodeLine{00715\ \ \ \ \ \textcolor{keywordflow}{if}\ (!spec\_file\_file.is\_open())}
+\DoxyCodeLine{00716\ \ \ \ \ \{}
+\DoxyCodeLine{00717\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}unable\ to\ open\ capability\ spec\ file:\ "{}}\ +\ spec\_file);}
+\DoxyCodeLine{00718\ \ \ \ \ \}}
+\DoxyCodeLine{00719\ }
+\DoxyCodeLine{00720\ \ \ \ \ \textcolor{comment}{//\ load\ content\ into\ msg}}
+\DoxyCodeLine{00721\ \ \ \ \ std::string\ content\{\ std::istreambuf\_iterator<char>(spec\_file\_file),\ std::istreambuf\_iterator<char>()\ \};}
+\DoxyCodeLine{00722\ \ \ \ \ capability\_spec.content\ =\ content;}
+\DoxyCodeLine{00723\ }
+\DoxyCodeLine{00724\ \ \ \ \ spec\_file\_file.close();}
+\DoxyCodeLine{00725\ \ \ \}}
+\DoxyCodeLine{00726\ }
+\DoxyCodeLine{00727\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00728\ \ \ \textcolor{comment}{//\ loop\ hz}}
+\DoxyCodeLine{00729\ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a6e8b97337893a97daa58e3f0c11bb565}{loop\_hz\_}};}
+\DoxyCodeLine{00730\ }
+\DoxyCodeLine{00731\ \ \ \textcolor{comment}{//\ publishers}}
+\DoxyCodeLine{00732\ \ \ \textcolor{comment}{//\ event\ publisher}}
+\DoxyCodeLine{00733\ \ \ rclcpp::Publisher<capabilities2\_msgs::msg::CapabilityEventStamped>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aa850ac5910b408d86b73b7bc04d82134}{event\_pub\_}};}
+\DoxyCodeLine{00734\ }
+\DoxyCodeLine{00735\ \ \ \textcolor{comment}{//\ services}}
+\DoxyCodeLine{00736\ \ \ \textcolor{comment}{//\ establish\ bond}}
+\DoxyCodeLine{00737\ \ \ rclcpp::Service<capabilities2\_msgs::srv::EstablishBond>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a4d626b97ce07ce813f045f334e0672bf}{establish\_bond\_srv\_}};}
+\DoxyCodeLine{00738\ \ \ \textcolor{comment}{//\ start\ capability}}
+\DoxyCodeLine{00739\ \ \ rclcpp::Service<capabilities2\_msgs::srv::StartCapability>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a1a04b3d8e38c3e738d6dad3e9f90ed32}{start\_capability\_srv\_}};}
+\DoxyCodeLine{00740\ \ \ \textcolor{comment}{//\ stop\ capability}}
+\DoxyCodeLine{00741\ \ \ rclcpp::Service<capabilities2\_msgs::srv::StopCapability>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aee406dd808d0277a3d1babfbaf5d0dee}{stop\_capability\_srv\_}};}
+\DoxyCodeLine{00742\ \ \ \textcolor{comment}{//\ free\ capability}}
+\DoxyCodeLine{00743\ \ \ rclcpp::Service<capabilities2\_msgs::srv::FreeCapability>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a0e28a32f07cadfecd641727cf7d6df9a}{free\_capability\_srv\_}};}
+\DoxyCodeLine{00744\ \ \ \textcolor{comment}{//\ connect\ capability}}
+\DoxyCodeLine{00745\ \ \ rclcpp::Service<capabilities2\_msgs::srv::ConnectCapability>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a234c5773e90eebb05bd36fe2025f5503}{connect\_capability\_srv\_}};}
+\DoxyCodeLine{00746\ \ \ \textcolor{comment}{//\ trigger\ capability}}
+\DoxyCodeLine{00747\ \ \ rclcpp::Service<capabilities2\_msgs::srv::TriggerCapability>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ab479dbd4ed2028355725f553dca81d4e}{trigger\_capability\_srv\_}};}
+\DoxyCodeLine{00748\ \ \ \textcolor{comment}{//\ use\ capability}}
+\DoxyCodeLine{00749\ \ \ rclcpp::Service<capabilities2\_msgs::srv::UseCapability>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a152c07656d903772602e01a23b717c94}{use\_capability\_srv\_}};}
+\DoxyCodeLine{00750\ \ \ \textcolor{comment}{//\ register\ capability}}
+\DoxyCodeLine{00751\ \ \ rclcpp::Service<capabilities2\_msgs::srv::RegisterCapability>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a12ab12a8447c6333dd2383534e2268bb}{register\_capability\_srv\_}};}
+\DoxyCodeLine{00752\ \ \ \textcolor{comment}{//\ query\ capabilities}}
+\DoxyCodeLine{00753\ \ \ rclcpp::Service<capabilities2\_msgs::srv::GetInterfaces>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aa7b2bb889301337796e782ea00d788a9}{get\_interfaces\_srv\_}};}
+\DoxyCodeLine{00754\ \ \ \textcolor{comment}{//\ get\ semantic\ interfaces}}
+\DoxyCodeLine{00755\ \ \ rclcpp::Service<capabilities2\_msgs::srv::GetSemanticInterfaces>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ae9b834509054095c04cc7f9d1557ec96}{get\_semantic\_interfaces\_srv\_}};}
+\DoxyCodeLine{00756\ \ \ \textcolor{comment}{//\ get\ providers}}
+\DoxyCodeLine{00757\ \ \ rclcpp::Service<capabilities2\_msgs::srv::GetProviders>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a755cc7001a6739ae422492a9b6d4f4e3}{get\_providers\_srv\_}};}
+\DoxyCodeLine{00758\ \ \ \textcolor{comment}{//\ get\ capability\ spec}}
+\DoxyCodeLine{00759\ \ \ rclcpp::Service<capabilities2\_msgs::srv::GetCapabilitySpec>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a8286d3d3b6ad3eefef8bb91abcf349a2}{get\_capability\_spec\_srv\_}};}
+\DoxyCodeLine{00760\ \ \ \textcolor{comment}{//\ get\ capability\ specs}}
+\DoxyCodeLine{00761\ \ \ rclcpp::Service<capabilities2\_msgs::srv::GetCapabilitySpecs>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_aad26d9c4b7948bff89e9dfc54dae3b33}{get\_capability\_specs\_srv\_}};}
+\DoxyCodeLine{00762\ \ \ \textcolor{comment}{//\ get\ remappings}}
+\DoxyCodeLine{00763\ \ \ rclcpp::Service<capabilities2\_msgs::srv::GetRemappings>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_a493ae61330a2da82fd4991055fdc2a2c}{get\_remappings\_srv\_}};}
+\DoxyCodeLine{00764\ \ \ \textcolor{comment}{//\ get\ running\ capabilities}}
+\DoxyCodeLine{00765\ \ \ rclcpp::Service<capabilities2\_msgs::srv::GetRunningCapabilities>::SharedPtr\ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesServer_ac358c10e20544260cb65ad6fd3a31c8d}{get\_running\_capabilities\_srv\_}};}
+\DoxyCodeLine{00766\ \};}
+\DoxyCodeLine{00767\ }
+\DoxyCodeLine{00768\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_server}}
+
+\end{DoxyCode}

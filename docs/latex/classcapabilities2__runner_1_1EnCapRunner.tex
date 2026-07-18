@@ -1,0 +1,169 @@
+\doxysection{capabilities2\+\_\+runner\+::En\+Cap\+Runner\texorpdfstring{$<$}{<} ActionT \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{classcapabilities2__runner_1_1EnCapRunner}{}\label{classcapabilities2__runner_1_1EnCapRunner}\index{capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}}
+
+
+encapsulated capability runner  
+
+
+
+
+{\ttfamily \#include "{}encap\+\_\+runner.\+hpp"{}}
+
+
+
+Inheritance diagram for capabilities2\+\_\+runner\+::En\+Cap\+Runner\texorpdfstring{$<$}{<} ActionT \texorpdfstring{$>$}{>}\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=227pt]{classcapabilities2__runner_1_1EnCapRunner__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for capabilities2\+\_\+runner\+::En\+Cap\+Runner\texorpdfstring{$<$}{<} ActionT \texorpdfstring{$>$}{>}\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=227pt]{classcapabilities2__runner_1_1EnCapRunner__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_a0bbf60f7f885bc1dddffe90635854bad}{En\+Cap\+Runner}} ()
+\item 
+virtual void \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_a7782f8488a37196d1246fef965c75443}{init\+\_\+encapsulated\+\_\+action}} (rclcpp\+::\+Node\+::\+Shared\+Ptr node, const \mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts}{runner\+\_\+opts}} \&run\+\_\+config, const std\+::string \&action\+\_\+name, std\+::function$<$ void(Event \&)$>$ print)
+\begin{DoxyCompactList}\small\item\em init encapsulated action \end{DoxyCompactList}\item 
+virtual void \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_a68e87f8c49301e1e001c232a80fa2f16}{stop}} (const std\+::string \&bond\+\_\+id, const std\+::string \&instance\+\_\+id="{}"{}) override
+\begin{DoxyCompactList}\small\item\em stop the encapsulated action server \end{DoxyCompactList}\item 
+virtual void \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_abdb6db0942e157b1776dff2cea32de55}{handle\+\_\+goal}} (const rclcpp\+\_\+action\+::\+Goal\+UUID \&uuid, std\+::shared\+\_\+ptr$<$ const capabilities2\+\_\+msgs\+::action\+::\+Capability\+::\+Goal $>$ goal)
+\begin{DoxyCompactList}\small\item\em handle encap action goal \end{DoxyCompactList}\item 
+virtual void \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_a25706ef80e4653174c2160d92c6b2d43}{handle\+\_\+cancel}} (const std\+::shared\+\_\+ptr$<$ rclcpp\+\_\+action\+::\+Server\+Goal\+Handle$<$ capabilities2\+\_\+msgs\+::action\+::\+Capability $>$ $>$ goal\+\_\+handle)
+\begin{DoxyCompactList}\small\item\em handle encap action cancel goal \end{DoxyCompactList}\item 
+virtual void \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_ab198a797528098b90802453b8878dc58}{handle\+\_\+accepted}} (const std\+::shared\+\_\+ptr$<$ rclcpp\+\_\+action\+::\+Server\+Goal\+Handle$<$ capabilities2\+\_\+msgs\+::action\+::\+Capability $>$ $>$ goal\+\_\+handle)
+\begin{DoxyCompactList}\small\item\em handle encap action accepted \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::shared\+\_\+ptr$<$ rclcpp\+\_\+action\+::\+Server$<$ capabilities2\+\_\+msgs\+::action\+::\+Capability $>$ $>$ \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_a7b6879449e5623ebc4cf78a5e8c9dd02}{encap\+\_\+action\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename ActionT$>$\newline
+class capabilities2\+\_\+runner\+::\+En\+Cap\+Runner$<$ Action\+T $>$}
+encapsulated capability runner 
+
+Create an action client to run an action based capability using an encapsulated capability action this allows a system to run an action that is not a managed action
+
+Use the generate action, and generate result functions from the action runner to implement an encapsulation strategy for child classes 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classcapabilities2__runner_1_1EnCapRunner_a0bbf60f7f885bc1dddffe90635854bad}\label{classcapabilities2__runner_1_1EnCapRunner_a0bbf60f7f885bc1dddffe90635854bad} 
+\index{capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}!EnCapRunner@{EnCapRunner}}
+\index{EnCapRunner@{EnCapRunner}!capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}}
+\doxysubsubsection{\texorpdfstring{EnCapRunner()}{EnCapRunner()}}
+{\footnotesize\ttfamily template$<$typename ActionT $>$ \\
+\mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner}{capabilities2\+\_\+runner\+::\+En\+Cap\+Runner}}$<$ ActionT $>$\+::\+En\+Cap\+Runner (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classcapabilities2__runner_1_1EnCapRunner_ab198a797528098b90802453b8878dc58}\label{classcapabilities2__runner_1_1EnCapRunner_ab198a797528098b90802453b8878dc58} 
+\index{capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}!handle\_accepted@{handle\_accepted}}
+\index{handle\_accepted@{handle\_accepted}!capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}}
+\doxysubsubsection{\texorpdfstring{handle\_accepted()}{handle\_accepted()}}
+{\footnotesize\ttfamily template$<$typename ActionT $>$ \\
+virtual void \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner}{capabilities2\+\_\+runner\+::\+En\+Cap\+Runner}}$<$ ActionT $>$\+::handle\+\_\+accepted (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ rclcpp\+\_\+action\+::\+Server\+Goal\+Handle$<$ capabilities2\+\_\+msgs\+::action\+::\+Capability $>$ $>$}]{goal\+\_\+handle }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+handle encap action accepted 
+
+
+\begin{DoxyParams}{Parameters}
+{\em goal\+\_\+handle} & \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__runner_1_1EnCapRunner_a25706ef80e4653174c2160d92c6b2d43}\label{classcapabilities2__runner_1_1EnCapRunner_a25706ef80e4653174c2160d92c6b2d43} 
+\index{capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}!handle\_cancel@{handle\_cancel}}
+\index{handle\_cancel@{handle\_cancel}!capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}}
+\doxysubsubsection{\texorpdfstring{handle\_cancel()}{handle\_cancel()}}
+{\footnotesize\ttfamily template$<$typename ActionT $>$ \\
+virtual void \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner}{capabilities2\+\_\+runner\+::\+En\+Cap\+Runner}}$<$ ActionT $>$\+::handle\+\_\+cancel (\begin{DoxyParamCaption}\item[{const std\+::shared\+\_\+ptr$<$ rclcpp\+\_\+action\+::\+Server\+Goal\+Handle$<$ capabilities2\+\_\+msgs\+::action\+::\+Capability $>$ $>$}]{goal\+\_\+handle }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+handle encap action cancel goal 
+
+
+\begin{DoxyParams}{Parameters}
+{\em goal\+\_\+handle} & \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__runner_1_1EnCapRunner_abdb6db0942e157b1776dff2cea32de55}\label{classcapabilities2__runner_1_1EnCapRunner_abdb6db0942e157b1776dff2cea32de55} 
+\index{capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}!handle\_goal@{handle\_goal}}
+\index{handle\_goal@{handle\_goal}!capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}}
+\doxysubsubsection{\texorpdfstring{handle\_goal()}{handle\_goal()}}
+{\footnotesize\ttfamily template$<$typename ActionT $>$ \\
+virtual void \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner}{capabilities2\+\_\+runner\+::\+En\+Cap\+Runner}}$<$ ActionT $>$\+::handle\+\_\+goal (\begin{DoxyParamCaption}\item[{const rclcpp\+\_\+action\+::\+Goal\+UUID \&}]{uuid,  }\item[{std\+::shared\+\_\+ptr$<$ const capabilities2\+\_\+msgs\+::action\+::\+Capability\+::\+Goal $>$}]{goal }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+handle encap action goal 
+
+
+\begin{DoxyParams}{Parameters}
+{\em uuid} & \\
+\hline
+{\em goal} & \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__runner_1_1EnCapRunner_a7782f8488a37196d1246fef965c75443}\label{classcapabilities2__runner_1_1EnCapRunner_a7782f8488a37196d1246fef965c75443} 
+\index{capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}!init\_encapsulated\_action@{init\_encapsulated\_action}}
+\index{init\_encapsulated\_action@{init\_encapsulated\_action}!capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}}
+\doxysubsubsection{\texorpdfstring{init\_encapsulated\_action()}{init\_encapsulated\_action()}}
+{\footnotesize\ttfamily template$<$typename ActionT $>$ \\
+virtual void \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner}{capabilities2\+\_\+runner\+::\+En\+Cap\+Runner}}$<$ ActionT $>$\+::init\+\_\+encapsulated\+\_\+action (\begin{DoxyParamCaption}\item[{rclcpp\+::\+Node\+::\+Shared\+Ptr}]{node,  }\item[{const \mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts}{runner\+\_\+opts}} \&}]{run\+\_\+config,  }\item[{const std\+::string \&}]{action\+\_\+name,  }\item[{std\+::function$<$ void(Event \&)$>$}]{print }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+
+
+init encapsulated action 
+
+call in start when inheriting from Encap\+Runner to initialize the encapsulated action server and the base action runner this is deferred since the action client topic name is not known at this level of abstraction
+
+
+\begin{DoxyParams}{Parameters}
+{\em node} & shared pointer to the capabilities node. Allows to use ros node related functionalities \\
+\hline
+{\em run\+\_\+config} & runner configuration loaded from the yaml file \\
+\hline
+{\em action\+\_\+name} & action name used in the yaml file, used to load specific configuration from the run\+\_\+config \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__runner_1_1EnCapRunner_a68e87f8c49301e1e001c232a80fa2f16}\label{classcapabilities2__runner_1_1EnCapRunner_a68e87f8c49301e1e001c232a80fa2f16} 
+\index{capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}!stop@{stop}}
+\index{stop@{stop}!capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}}
+\doxysubsubsection{\texorpdfstring{stop()}{stop()}}
+{\footnotesize\ttfamily template$<$typename ActionT $>$ \\
+virtual void \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner}{capabilities2\+\_\+runner\+::\+En\+Cap\+Runner}}$<$ ActionT $>$\+::stop (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{bond\+\_\+id,  }\item[{const std\+::string \&}]{instance\+\_\+id = {\ttfamily "{}"{}} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+stop the encapsulated action server 
+
+call the parent stop and stop the encapsulated action 
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{classcapabilities2__runner_1_1EnCapRunner_a7b6879449e5623ebc4cf78a5e8c9dd02}\label{classcapabilities2__runner_1_1EnCapRunner_a7b6879449e5623ebc4cf78a5e8c9dd02} 
+\index{capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}!encap\_action\_@{encap\_action\_}}
+\index{encap\_action\_@{encap\_action\_}!capabilities2\_runner::EnCapRunner$<$ ActionT $>$@{capabilities2\_runner::EnCapRunner$<$ ActionT $>$}}
+\doxysubsubsection{\texorpdfstring{encap\_action\_}{encap\_action\_}}
+{\footnotesize\ttfamily template$<$typename ActionT $>$ \\
+std\+::shared\+\_\+ptr$<$rclcpp\+\_\+action\+::\+Server$<$capabilities2\+\_\+msgs\+::action\+::\+Capability$>$ $>$ \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner}{capabilities2\+\_\+runner\+::\+En\+Cap\+Runner}}$<$ ActionT $>$\+::encap\+\_\+action\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+encap action server 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+capabilities2\+\_\+runner/include/capabilities2\+\_\+runner/\mbox{\hyperlink{encap__runner_8hpp}{encap\+\_\+runner.\+hpp}}\end{DoxyCompactItemize}

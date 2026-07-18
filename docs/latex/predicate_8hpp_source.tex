@@ -1,0 +1,42 @@
+\doxysection{predicate.\+hpp}
+\hypertarget{predicate_8hpp_source}{}\label{predicate_8hpp_source}\index{capabilities2\_server/include/capabilities2\_server/models/predicate.hpp@{capabilities2\_server/include/capabilities2\_server/models/predicate.hpp}}
+\mbox{\hyperlink{predicate_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <yaml-\/cpp/yaml.h>}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__server}{capabilities2\_server}}}
+\DoxyCodeLine{00007\ \{}
+\DoxyCodeLine{00008\ \textcolor{keyword}{namespace\ }models}
+\DoxyCodeLine{00009\ \{}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00018\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1predicate__model__t}{predicate\_model\_t}}}
+\DoxyCodeLine{00019\ \{}
+\DoxyCodeLine{00020\ \ \ std::string\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1predicate__model__t_a0e770a26565f064e86ff4251cde950b0}{subject}};}
+\DoxyCodeLine{00021\ \ \ std::string\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1predicate__model__t_a0ccafaa770f2722fa3c32e9e4924eef9}{predicate}};}
+\DoxyCodeLine{00022\ \ \ std::string\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1predicate__model__t_a170de1f39f437dfad9254bc117431828}{object}};}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1predicate__model__t_a913e6b62b99887f12ba12debea26d5ac}{from\_yaml}}(\textcolor{keyword}{const}\ YAML::Node\&\ node)}
+\DoxyCodeLine{00025\ \ \ \{}
+\DoxyCodeLine{00026\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1predicate__model__t_a0e770a26565f064e86ff4251cde950b0}{subject}}\ =\ node[\textcolor{stringliteral}{"{}subject"{}}].as<std::string>();}
+\DoxyCodeLine{00027\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1predicate__model__t_a0ccafaa770f2722fa3c32e9e4924eef9}{predicate}}\ =\ node[\textcolor{stringliteral}{"{}predicate"{}}].as<std::string>();}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keywordtype}{object}\ =\ node[\textcolor{stringliteral}{"{}object"{}}].as<std::string>();}
+\DoxyCodeLine{00029\ \ \ \}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ YAML::Node\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1predicate__model__t_aac7a5018cdb4ffac44a5031358c7b392}{to\_yaml}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00032\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00033\ \ \ \ \ YAML::Node\ node;}
+\DoxyCodeLine{00034\ \ \ \ \ node[\textcolor{stringliteral}{"{}subject"{}}]\ =\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1predicate__model__t_a0e770a26565f064e86ff4251cde950b0}{subject}};}
+\DoxyCodeLine{00035\ \ \ \ \ node[\textcolor{stringliteral}{"{}predicate"{}}]\ =\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1predicate__model__t_a0ccafaa770f2722fa3c32e9e4924eef9}{predicate}};}
+\DoxyCodeLine{00036\ \ \ \ \ node[\textcolor{stringliteral}{"{}object"{}}]\ =\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1predicate__model__t_a170de1f39f437dfad9254bc117431828}{object}};}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordflow}{return}\ node;}
+\DoxyCodeLine{00038\ \ \ \}}
+\DoxyCodeLine{00039\ \};}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \}\ \ \textcolor{comment}{//\ namespace\ models}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_server}}
+
+\end{DoxyCode}

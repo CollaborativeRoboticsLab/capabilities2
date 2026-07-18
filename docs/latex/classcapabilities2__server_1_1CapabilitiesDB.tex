@@ -1,0 +1,415 @@
+\doxysection{capabilities2\+\_\+server\+::Capabilities\+DB Class Reference}
+\hypertarget{classcapabilities2__server_1_1CapabilitiesDB}{}\label{classcapabilities2__server_1_1CapabilitiesDB}\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+
+
+{\ttfamily \#include "{}capabilities\+\_\+db.\+hpp"{}}
+
+
+
+Inheritance diagram for capabilities2\+\_\+server\+::Capabilities\+DB\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=195pt]{classcapabilities2__server_1_1CapabilitiesDB__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for capabilities2\+\_\+server\+::Capabilities\+DB\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=195pt]{classcapabilities2__server_1_1CapabilitiesDB__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a6a06e320c5c1ac224f7879bbe05e6a8e}{Capabilities\+DB}} (const std\+::string db\+\_\+file="{}cache/capabilities.\+sqlite3"{})
+\item 
+\mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a40951e3346502f6e147865e1ab025e39}{\texorpdfstring{$\sim$}{\string~}\+Capabilities\+DB}} ()
+\item 
+virtual void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a2b35eba2ee6659c550ed36dd74f39f73}{insert\+\_\+interface}} (const \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models\+::interface\+\_\+model\+\_\+t}} \&interface) override
+\item 
+virtual void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a4703582a0735e3a22ed0019164c02ed1}{insert\+\_\+semantic\+\_\+interface}} (const \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models\+::semantic\+\_\+interface\+\_\+model\+\_\+t}} \&semantic\+\_\+interface) override
+\item 
+virtual void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a6e9c623ecba7812750ee32864e1ed448}{insert\+\_\+provider}} (const \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models\+::provider\+\_\+model\+\_\+t}} \&provider) override
+\item 
+virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models\+::interface\+\_\+model\+\_\+t}} \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a5f8e47a5091b45fe625723b13528b5ac}{get\+\_\+interface}} (const std\+::string \&name) override
+\item 
+virtual std\+::vector$<$ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models\+::interface\+\_\+model\+\_\+t}} $>$ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_ae263c0a66dccf6f7cee043f8da2050a9}{get\+\_\+interfaces}} () override
+\item 
+virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models\+::semantic\+\_\+interface\+\_\+model\+\_\+t}} \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a115b3d1151e5866ff968e96691b541a3}{get\+\_\+semantic\+\_\+interface}} (const std\+::string \&name) override
+\item 
+virtual std\+::vector$<$ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models\+::semantic\+\_\+interface\+\_\+model\+\_\+t}} $>$ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_ae5f180b570d6c8d57d3b7ed570fa2bc4}{get\+\_\+semantic\+\_\+interfaces}} () override
+\item 
+virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models\+::provider\+\_\+model\+\_\+t}} \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a0109b906d50a62d7408271780e9a8707}{get\+\_\+provider}} (const std\+::string \&name) override
+\item 
+virtual std\+::vector$<$ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models\+::provider\+\_\+model\+\_\+t}} $>$ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_abcb12877bac9acaa5b55f0517cd83c71}{get\+\_\+providers}} () override
+\item 
+virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappable__base__t}{models\+::remappable\+\_\+base\+\_\+t}} \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a7147928b1a095676069664c31f91deae}{get\+\_\+remappable}} (const std\+::string \&name) override
+\begin{DoxyCompactList}\small\item\em Get remappable model by name. \end{DoxyCompactList}\item 
+virtual void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_aa10f6716c7eb019bad310fa8e580880b}{update\+\_\+interface}} (const \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models\+::interface\+\_\+model\+\_\+t}} \&interface) override
+\item 
+virtual void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a45dde34e7373e6aec64c1f78d673e0cb}{update\+\_\+semantic\+\_\+interface}} (const \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models\+::semantic\+\_\+interface\+\_\+model\+\_\+t}} \&semantic\+\_\+interface) override
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a74033ce662666907c361fa22fa9e80c2}{update\+\_\+provider}} (const \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models\+::provider\+\_\+model\+\_\+t}} \&provider)
+\item 
+virtual std\+::vector$<$ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models\+::provider\+\_\+model\+\_\+t}} $>$ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a999ce91780aeeb0cd2f449eeb96a749d}{get\+\_\+providers\+\_\+by\+\_\+interface}} (const std\+::string \&interface\+\_\+name) override
+\item 
+virtual std\+::vector$<$ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models\+::semantic\+\_\+interface\+\_\+model\+\_\+t}} $>$ \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a4f577301e5acdf73d56bbdc53ba21e5a}{get\+\_\+semantic\+\_\+interfaces\+\_\+by\+\_\+interface}} (const std\+::string \&interface\+\_\+name) override
+\item 
+virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1running__model__t}{models\+::running\+\_\+model\+\_\+t}} \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a64d22db986833f277560784f956e328b}{get\+\_\+running}} (const std\+::string \&provider\+\_\+name) override
+\item 
+virtual void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a5f02b94abb740a6ef0fd43daf4c1e0a0}{apply\+\_\+remappings}} (\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1specification__model__t}{models\+::specification\+\_\+model\+\_\+t}} \&spec, const \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappable__base__t}{models\+::remappable\+\_\+base\+\_\+t}} \&remappable) override
+\item 
+virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models\+::interface\+\_\+model\+\_\+t}} \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a9ce49d71065acc667a5ce863a9e1f2a2}{apply\+\_\+semantic\+\_\+remappings}} (\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models\+::semantic\+\_\+interface\+\_\+model\+\_\+t}} semantic) override
+\item 
+virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models\+::interface\+\_\+model\+\_\+t}} \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3c6ed044e3cd0e60b5fcfac889ab0eea}{apply\+\_\+provider\+\_\+remappings}} (\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models\+::provider\+\_\+model\+\_\+t}} provider) override
+\item 
+virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t}{models\+::run\+\_\+config\+\_\+model\+\_\+t}} \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a6b3f7671a717e9fcc3eada08a914dd76}{get\+\_\+run\+\_\+config}} (const std\+::string \&provider\+\_\+name) override
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{classcapabilities2__server_1_1DBBase}{capabilities2\+\_\+server\+::\+DBBase}}}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classcapabilities2__server_1_1DBBase_acaffd52c473cbfe7d744ba9bd8a289b2}{DBBase}} ()=default
+\item 
+virtual \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a3243648e7ac9ee0a7cd3e4fb35c920cb}{\texorpdfstring{$\sim$}{\string~}\+DBBase}} ()=default
+\item 
+{\footnotesize template$<$typename T $>$ }\\bool \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a8039f4e932039c398c1f46cc3e018a70}{exists}} (const std\+::string \&resource\+\_\+name)
+\item 
+virtual bool \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a357eee3862ce2b244753561bf43247af}{exists\+\_\+any}} (const std\+::string \&resource\+\_\+name)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_aba9186d82c6c65188a80f9ac146df1df}{open}} () override
+\item 
+virtual void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a969c480de1f0f537f67f4f0db0d1eb67}{close}} () override
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3b40692ba92825e177d8e211369cfb97}{exec}} (const std\+::string \&query)
+\item 
+virtual void \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_adc7238b52504f21326ff65d8d68c08f0}{create\+\_\+tables}} () override
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models\+::interface\+\_\+model\+\_\+t}} \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a665a94af8591b998356567340f9155b9}{to\+\_\+interface}} (sqlite3\+\_\+stmt \texorpdfstring{$\ast$}{*}stmt)
+\item 
+\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models\+::semantic\+\_\+interface\+\_\+model\+\_\+t}} \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a3eb0881736fa825daef5ec83e1d919be}{to\+\_\+semantic\+\_\+interface}} (sqlite3\+\_\+stmt \texorpdfstring{$\ast$}{*}stmt)
+\item 
+\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models\+::provider\+\_\+model\+\_\+t}} \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_ac6c2407ebde5f7debcf32bc064f8c0bc}{to\+\_\+provider}} (sqlite3\+\_\+stmt \texorpdfstring{$\ast$}{*}stmt)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+const std\+::string \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a67c5398900d16d720335f8eb4294316d}{db\+\_\+file\+\_\+}}
+\item 
+sqlite3 \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}{db\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a6a06e320c5c1ac224f7879bbe05e6a8e}\label{classcapabilities2__server_1_1CapabilitiesDB_a6a06e320c5c1ac224f7879bbe05e6a8e} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!CapabilitiesDB@{CapabilitiesDB}}
+\index{CapabilitiesDB@{CapabilitiesDB}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{CapabilitiesDB()}{CapabilitiesDB()}}
+{\footnotesize\ttfamily capabilities2\+\_\+server\+::\+Capabilities\+DB\+::\+Capabilities\+DB (\begin{DoxyParamCaption}\item[{const std\+::string}]{db\+\_\+file = {\ttfamily "{}cache/capabilities.sqlite3"{}} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a40951e3346502f6e147865e1ab025e39}\label{classcapabilities2__server_1_1CapabilitiesDB_a40951e3346502f6e147865e1ab025e39} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!````~CapabilitiesDB@{\texorpdfstring{$\sim$}{\string~}CapabilitiesDB}}
+\index{````~CapabilitiesDB@{\texorpdfstring{$\sim$}{\string~}CapabilitiesDB}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}CapabilitiesDB()}{\string~CapabilitiesDB()}}
+{\footnotesize\ttfamily capabilities2\+\_\+server\+::\+Capabilities\+DB\+::\texorpdfstring{$\sim$}{\string~}\+Capabilities\+DB (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a3c6ed044e3cd0e60b5fcfac889ab0eea}\label{classcapabilities2__server_1_1CapabilitiesDB_a3c6ed044e3cd0e60b5fcfac889ab0eea} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!apply\_provider\_remappings@{apply\_provider\_remappings}}
+\index{apply\_provider\_remappings@{apply\_provider\_remappings}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{apply\_provider\_remappings()}{apply\_provider\_remappings()}}
+{\footnotesize\ttfamily virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models\+::interface\+\_\+model\+\_\+t}} capabilities2\+\_\+server\+::\+Capabilities\+DB\+::apply\+\_\+provider\+\_\+remappings (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models\+::provider\+\_\+model\+\_\+t}}}]{provider }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a33858ef496c7de81c1b6a4f5fe047dcc}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a5f02b94abb740a6ef0fd43daf4c1e0a0}\label{classcapabilities2__server_1_1CapabilitiesDB_a5f02b94abb740a6ef0fd43daf4c1e0a0} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!apply\_remappings@{apply\_remappings}}
+\index{apply\_remappings@{apply\_remappings}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{apply\_remappings()}{apply\_remappings()}}
+{\footnotesize\ttfamily virtual void capabilities2\+\_\+server\+::\+Capabilities\+DB\+::apply\+\_\+remappings (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1specification__model__t}{models\+::specification\+\_\+model\+\_\+t}} \&}]{spec,  }\item[{const \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappable__base__t}{models\+::remappable\+\_\+base\+\_\+t}} \&}]{remappable }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a3ce61c146ff1a5bbea444efc503fcac8}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a9ce49d71065acc667a5ce863a9e1f2a2}\label{classcapabilities2__server_1_1CapabilitiesDB_a9ce49d71065acc667a5ce863a9e1f2a2} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!apply\_semantic\_remappings@{apply\_semantic\_remappings}}
+\index{apply\_semantic\_remappings@{apply\_semantic\_remappings}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{apply\_semantic\_remappings()}{apply\_semantic\_remappings()}}
+{\footnotesize\ttfamily virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models\+::interface\+\_\+model\+\_\+t}} capabilities2\+\_\+server\+::\+Capabilities\+DB\+::apply\+\_\+semantic\+\_\+remappings (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models\+::semantic\+\_\+interface\+\_\+model\+\_\+t}}}]{semantic }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a8e6b541fd85a3a96fe9cf0f854786372}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a969c480de1f0f537f67f4f0db0d1eb67}\label{classcapabilities2__server_1_1CapabilitiesDB_a969c480de1f0f537f67f4f0db0d1eb67} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!close@{close}}
+\index{close@{close}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{close()}{close()}}
+{\footnotesize\ttfamily virtual void capabilities2\+\_\+server\+::\+Capabilities\+DB\+::close (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_ae00a3ede155478862be6f4ba8881ff9c}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_adc7238b52504f21326ff65d8d68c08f0}\label{classcapabilities2__server_1_1CapabilitiesDB_adc7238b52504f21326ff65d8d68c08f0} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!create\_tables@{create\_tables}}
+\index{create\_tables@{create\_tables}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{create\_tables()}{create\_tables()}}
+{\footnotesize\ttfamily virtual void capabilities2\+\_\+server\+::\+Capabilities\+DB\+::create\+\_\+tables (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_aee888f726ca6acde1dbd6d7bbb67cd4a}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a3b40692ba92825e177d8e211369cfb97}\label{classcapabilities2__server_1_1CapabilitiesDB_a3b40692ba92825e177d8e211369cfb97} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!exec@{exec}}
+\index{exec@{exec}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{exec()}{exec()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+DB\+::exec (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{query }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a5f8e47a5091b45fe625723b13528b5ac}\label{classcapabilities2__server_1_1CapabilitiesDB_a5f8e47a5091b45fe625723b13528b5ac} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!get\_interface@{get\_interface}}
+\index{get\_interface@{get\_interface}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{get\_interface()}{get\_interface()}}
+{\footnotesize\ttfamily virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models\+::interface\+\_\+model\+\_\+t}} capabilities2\+\_\+server\+::\+Capabilities\+DB\+::get\+\_\+interface (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_abf14e11a090bdbe9fd96bc04f498b703}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_ae263c0a66dccf6f7cee043f8da2050a9}\label{classcapabilities2__server_1_1CapabilitiesDB_ae263c0a66dccf6f7cee043f8da2050a9} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!get\_interfaces@{get\_interfaces}}
+\index{get\_interfaces@{get\_interfaces}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{get\_interfaces()}{get\_interfaces()}}
+{\footnotesize\ttfamily virtual std\+::vector$<$ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models\+::interface\+\_\+model\+\_\+t}} $>$ capabilities2\+\_\+server\+::\+Capabilities\+DB\+::get\+\_\+interfaces (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_ab62ed1810957d69e7c95198337e3a882}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a0109b906d50a62d7408271780e9a8707}\label{classcapabilities2__server_1_1CapabilitiesDB_a0109b906d50a62d7408271780e9a8707} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!get\_provider@{get\_provider}}
+\index{get\_provider@{get\_provider}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{get\_provider()}{get\_provider()}}
+{\footnotesize\ttfamily virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models\+::provider\+\_\+model\+\_\+t}} capabilities2\+\_\+server\+::\+Capabilities\+DB\+::get\+\_\+provider (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a87b94d8ecedda3792f2b69d669b82602}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_abcb12877bac9acaa5b55f0517cd83c71}\label{classcapabilities2__server_1_1CapabilitiesDB_abcb12877bac9acaa5b55f0517cd83c71} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!get\_providers@{get\_providers}}
+\index{get\_providers@{get\_providers}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{get\_providers()}{get\_providers()}}
+{\footnotesize\ttfamily virtual std\+::vector$<$ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models\+::provider\+\_\+model\+\_\+t}} $>$ capabilities2\+\_\+server\+::\+Capabilities\+DB\+::get\+\_\+providers (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a76d7ce342e2a4d5930717437a190ec5b}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a999ce91780aeeb0cd2f449eeb96a749d}\label{classcapabilities2__server_1_1CapabilitiesDB_a999ce91780aeeb0cd2f449eeb96a749d} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!get\_providers\_by\_interface@{get\_providers\_by\_interface}}
+\index{get\_providers\_by\_interface@{get\_providers\_by\_interface}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{get\_providers\_by\_interface()}{get\_providers\_by\_interface()}}
+{\footnotesize\ttfamily virtual std\+::vector$<$ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models\+::provider\+\_\+model\+\_\+t}} $>$ capabilities2\+\_\+server\+::\+Capabilities\+DB\+::get\+\_\+providers\+\_\+by\+\_\+interface (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{interface\+\_\+name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a7e3aaa33b84b31afd25d2e60ff2b2e92}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a7147928b1a095676069664c31f91deae}\label{classcapabilities2__server_1_1CapabilitiesDB_a7147928b1a095676069664c31f91deae} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!get\_remappable@{get\_remappable}}
+\index{get\_remappable@{get\_remappable}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{get\_remappable()}{get\_remappable()}}
+{\footnotesize\ttfamily virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappable__base__t}{models\+::remappable\+\_\+base\+\_\+t}} capabilities2\+\_\+server\+::\+Capabilities\+DB\+::get\+\_\+remappable (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Get remappable model by name. 
+
+remappable models are either semantic interfaces or providers
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\doxylink{structcapabilities2__server_1_1models_1_1remappable__base__t}{models\+::remappable\+\_\+base\+\_\+t} 
+\end{DoxyReturn}
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a1cdfd02055ff2da5da686e6f1a18d13f}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a6b3f7671a717e9fcc3eada08a914dd76}\label{classcapabilities2__server_1_1CapabilitiesDB_a6b3f7671a717e9fcc3eada08a914dd76} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!get\_run\_config@{get\_run\_config}}
+\index{get\_run\_config@{get\_run\_config}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{get\_run\_config()}{get\_run\_config()}}
+{\footnotesize\ttfamily virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1run__config__model__t}{models\+::run\+\_\+config\+\_\+model\+\_\+t}} capabilities2\+\_\+server\+::\+Capabilities\+DB\+::get\+\_\+run\+\_\+config (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{provider\+\_\+name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a1baa8d0c23479b279f326cd46066aefc}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a64d22db986833f277560784f956e328b}\label{classcapabilities2__server_1_1CapabilitiesDB_a64d22db986833f277560784f956e328b} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!get\_running@{get\_running}}
+\index{get\_running@{get\_running}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{get\_running()}{get\_running()}}
+{\footnotesize\ttfamily virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1running__model__t}{models\+::running\+\_\+model\+\_\+t}} capabilities2\+\_\+server\+::\+Capabilities\+DB\+::get\+\_\+running (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{provider\+\_\+name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a86052bfef2ad74e6d00ad4139509000d}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a115b3d1151e5866ff968e96691b541a3}\label{classcapabilities2__server_1_1CapabilitiesDB_a115b3d1151e5866ff968e96691b541a3} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!get\_semantic\_interface@{get\_semantic\_interface}}
+\index{get\_semantic\_interface@{get\_semantic\_interface}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{get\_semantic\_interface()}{get\_semantic\_interface()}}
+{\footnotesize\ttfamily virtual \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models\+::semantic\+\_\+interface\+\_\+model\+\_\+t}} capabilities2\+\_\+server\+::\+Capabilities\+DB\+::get\+\_\+semantic\+\_\+interface (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_af2568e0f4a1c256cb2e8388eb9e020ac}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_ae5f180b570d6c8d57d3b7ed570fa2bc4}\label{classcapabilities2__server_1_1CapabilitiesDB_ae5f180b570d6c8d57d3b7ed570fa2bc4} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!get\_semantic\_interfaces@{get\_semantic\_interfaces}}
+\index{get\_semantic\_interfaces@{get\_semantic\_interfaces}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{get\_semantic\_interfaces()}{get\_semantic\_interfaces()}}
+{\footnotesize\ttfamily virtual std\+::vector$<$ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models\+::semantic\+\_\+interface\+\_\+model\+\_\+t}} $>$ capabilities2\+\_\+server\+::\+Capabilities\+DB\+::get\+\_\+semantic\+\_\+interfaces (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_aa568f8af482c3c94933baf37e4e94413}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a4f577301e5acdf73d56bbdc53ba21e5a}\label{classcapabilities2__server_1_1CapabilitiesDB_a4f577301e5acdf73d56bbdc53ba21e5a} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!get\_semantic\_interfaces\_by\_interface@{get\_semantic\_interfaces\_by\_interface}}
+\index{get\_semantic\_interfaces\_by\_interface@{get\_semantic\_interfaces\_by\_interface}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{get\_semantic\_interfaces\_by\_interface()}{get\_semantic\_interfaces\_by\_interface()}}
+{\footnotesize\ttfamily virtual std\+::vector$<$ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models\+::semantic\+\_\+interface\+\_\+model\+\_\+t}} $>$ capabilities2\+\_\+server\+::\+Capabilities\+DB\+::get\+\_\+semantic\+\_\+interfaces\+\_\+by\+\_\+interface (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{interface\+\_\+name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a55534cfabcb9d0f6434c9384ba413c66}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a2b35eba2ee6659c550ed36dd74f39f73}\label{classcapabilities2__server_1_1CapabilitiesDB_a2b35eba2ee6659c550ed36dd74f39f73} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!insert\_interface@{insert\_interface}}
+\index{insert\_interface@{insert\_interface}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{insert\_interface()}{insert\_interface()}}
+{\footnotesize\ttfamily virtual void capabilities2\+\_\+server\+::\+Capabilities\+DB\+::insert\+\_\+interface (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models\+::interface\+\_\+model\+\_\+t}} \&}]{interface }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a2e631fa1b823bdeb503e5b4ebdf09b82}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a6e9c623ecba7812750ee32864e1ed448}\label{classcapabilities2__server_1_1CapabilitiesDB_a6e9c623ecba7812750ee32864e1ed448} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!insert\_provider@{insert\_provider}}
+\index{insert\_provider@{insert\_provider}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{insert\_provider()}{insert\_provider()}}
+{\footnotesize\ttfamily virtual void capabilities2\+\_\+server\+::\+Capabilities\+DB\+::insert\+\_\+provider (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models\+::provider\+\_\+model\+\_\+t}} \&}]{provider }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a9c164a0de5d6fe507d5c1a4a55544277}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a4703582a0735e3a22ed0019164c02ed1}\label{classcapabilities2__server_1_1CapabilitiesDB_a4703582a0735e3a22ed0019164c02ed1} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!insert\_semantic\_interface@{insert\_semantic\_interface}}
+\index{insert\_semantic\_interface@{insert\_semantic\_interface}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{insert\_semantic\_interface()}{insert\_semantic\_interface()}}
+{\footnotesize\ttfamily virtual void capabilities2\+\_\+server\+::\+Capabilities\+DB\+::insert\+\_\+semantic\+\_\+interface (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models\+::semantic\+\_\+interface\+\_\+model\+\_\+t}} \&}]{semantic\+\_\+interface }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a26f67efa62c5964604f26ce926793134}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_aba9186d82c6c65188a80f9ac146df1df}\label{classcapabilities2__server_1_1CapabilitiesDB_aba9186d82c6c65188a80f9ac146df1df} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!open@{open}}
+\index{open@{open}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{open()}{open()}}
+{\footnotesize\ttfamily virtual void capabilities2\+\_\+server\+::\+Capabilities\+DB\+::open (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a4f87c768118f852d3c0945d4d45d6c7b}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a665a94af8591b998356567340f9155b9}\label{classcapabilities2__server_1_1CapabilitiesDB_a665a94af8591b998356567340f9155b9} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!to\_interface@{to\_interface}}
+\index{to\_interface@{to\_interface}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{to\_interface()}{to\_interface()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models\+::interface\+\_\+model\+\_\+t}} capabilities2\+\_\+server\+::\+Capabilities\+DB\+::to\+\_\+interface (\begin{DoxyParamCaption}\item[{sqlite3\+\_\+stmt \texorpdfstring{$\ast$}{*}}]{stmt }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_ac6c2407ebde5f7debcf32bc064f8c0bc}\label{classcapabilities2__server_1_1CapabilitiesDB_ac6c2407ebde5f7debcf32bc064f8c0bc} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!to\_provider@{to\_provider}}
+\index{to\_provider@{to\_provider}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{to\_provider()}{to\_provider()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models\+::provider\+\_\+model\+\_\+t}} capabilities2\+\_\+server\+::\+Capabilities\+DB\+::to\+\_\+provider (\begin{DoxyParamCaption}\item[{sqlite3\+\_\+stmt \texorpdfstring{$\ast$}{*}}]{stmt }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a3eb0881736fa825daef5ec83e1d919be}\label{classcapabilities2__server_1_1CapabilitiesDB_a3eb0881736fa825daef5ec83e1d919be} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!to\_semantic\_interface@{to\_semantic\_interface}}
+\index{to\_semantic\_interface@{to\_semantic\_interface}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{to\_semantic\_interface()}{to\_semantic\_interface()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models\+::semantic\+\_\+interface\+\_\+model\+\_\+t}} capabilities2\+\_\+server\+::\+Capabilities\+DB\+::to\+\_\+semantic\+\_\+interface (\begin{DoxyParamCaption}\item[{sqlite3\+\_\+stmt \texorpdfstring{$\ast$}{*}}]{stmt }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_aa10f6716c7eb019bad310fa8e580880b}\label{classcapabilities2__server_1_1CapabilitiesDB_aa10f6716c7eb019bad310fa8e580880b} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!update\_interface@{update\_interface}}
+\index{update\_interface@{update\_interface}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{update\_interface()}{update\_interface()}}
+{\footnotesize\ttfamily virtual void capabilities2\+\_\+server\+::\+Capabilities\+DB\+::update\+\_\+interface (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1interface__model__t}{models\+::interface\+\_\+model\+\_\+t}} \&}]{interface }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a8ef578c5c658448b2898eb8148c1c399}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a74033ce662666907c361fa22fa9e80c2}\label{classcapabilities2__server_1_1CapabilitiesDB_a74033ce662666907c361fa22fa9e80c2} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!update\_provider@{update\_provider}}
+\index{update\_provider@{update\_provider}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{update\_provider()}{update\_provider()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Capabilities\+DB\+::update\+\_\+provider (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1provider__model__t}{models\+::provider\+\_\+model\+\_\+t}} \&}]{provider }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a422b18b726f0afedba3532d416ba77f9}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a45dde34e7373e6aec64c1f78d673e0cb}\label{classcapabilities2__server_1_1CapabilitiesDB_a45dde34e7373e6aec64c1f78d673e0cb} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!update\_semantic\_interface@{update\_semantic\_interface}}
+\index{update\_semantic\_interface@{update\_semantic\_interface}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{update\_semantic\_interface()}{update\_semantic\_interface()}}
+{\footnotesize\ttfamily virtual void capabilities2\+\_\+server\+::\+Capabilities\+DB\+::update\+\_\+semantic\+\_\+interface (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{models\+::semantic\+\_\+interface\+\_\+model\+\_\+t}} \&}]{semantic\+\_\+interface }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classcapabilities2__server_1_1DBBase_a2f2ac558c6c1563e7f94c95594a04ef5}{capabilities2\+\_\+server\+::\+DBBase}}.
+
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1}\label{classcapabilities2__server_1_1CapabilitiesDB_a23dfb4f5d456df66de81b0dd2b9face1} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!db\_@{db\_}}
+\index{db\_@{db\_}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{db\_}{db\_}}
+{\footnotesize\ttfamily sqlite3\texorpdfstring{$\ast$}{*} capabilities2\+\_\+server\+::\+Capabilities\+DB\+::db\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1CapabilitiesDB_a67c5398900d16d720335f8eb4294316d}\label{classcapabilities2__server_1_1CapabilitiesDB_a67c5398900d16d720335f8eb4294316d} 
+\index{capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}!db\_file\_@{db\_file\_}}
+\index{db\_file\_@{db\_file\_}!capabilities2\_server::CapabilitiesDB@{capabilities2\_server::CapabilitiesDB}}
+\doxysubsubsection{\texorpdfstring{db\_file\_}{db\_file\_}}
+{\footnotesize\ttfamily const std\+::string capabilities2\+\_\+server\+::\+Capabilities\+DB\+::db\+\_\+file\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+capabilities2\+\_\+server/include/capabilities2\+\_\+server/\mbox{\hyperlink{capabilities__db_8hpp}{capabilities\+\_\+db.\+hpp}}\end{DoxyCompactItemize}

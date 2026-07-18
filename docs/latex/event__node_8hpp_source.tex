@@ -1,0 +1,220 @@
+\doxysection{event\+\_\+node.\+hpp}
+\hypertarget{event__node_8hpp_source}{}\label{event__node_8hpp_source}\index{capabilities2\_events/include/capabilities2\_events/event\_node.hpp@{capabilities2\_events/include/capabilities2\_events/event\_node.hpp}}
+\mbox{\hyperlink{event__node_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <map>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <rclcpp/rclcpp.hpp>}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{uuid__generator_8hpp}{capabilities2\_events/uuid\_generator.hpp}}>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{event__base_8hpp}{capabilities2\_events/event\_base.hpp}}>}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/msg/capability.hpp>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/msg/capability\_event\_code.hpp>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/msg/capability\_connection.hpp>}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__events}{capabilities2\_events}}}
+\DoxyCodeLine{00018\ \{}
+\DoxyCodeLine{00025\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcapabilities2__events_1_1EventNode}{EventNode}}}
+\DoxyCodeLine{00026\ \{}
+\DoxyCodeLine{00027\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00035\ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structcapabilities2__events_1_1EventNode_1_1EventPipe}{EventPipe}}}
+\DoxyCodeLine{00036\ \ \ \{}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{comment}{//\ connection\ type}}
+\DoxyCodeLine{00038\ \ \ \ \ capabilities2\_msgs::msg::CapabilityEventCode\ \mbox{\hyperlink{structcapabilities2__events_1_1EventNode_1_1EventPipe_a6ba64f70d3638982a9ed986a57b30e5b}{type}};}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{//\ connection\ target}}
+\DoxyCodeLine{00041\ \ \ \ \ capabilities2\_msgs::msg::Capability\ \mbox{\hyperlink{structcapabilities2__events_1_1EventNode_1_1EventPipe_a94675fdb0b3dd0e0f490b2878da45b33}{target}};}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{comment}{//\ event\ callback\ with\ signature:\ (capability,\ parameters,\ bond\_id)}}
+\DoxyCodeLine{00044\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a01f110c6b7c9517f8f8ae134b8b22c8e}{EventBase::event\_callback\_t}}\ \mbox{\hyperlink{structcapabilities2__events_1_1EventNode_1_1EventPipe_a16c36ae362fd1de3c6046acbe0307c40}{callback}};}
+\DoxyCodeLine{00045\ \ \ \};}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00048\ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a3cd9380c3e2739278c1601d844aa5fc9}{EventNode}}(std::shared\_ptr<EventBase>\ event\_emitter\ =\ \textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00049\ \ \ \ \ :\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a39d451da5c7fac76f125307884baf4b4}{id\_}}(\mbox{\hyperlink{classcapabilities2__events_1_1UUIDGenerator}{UUIDGenerator}}::gen\_uuid\_str()),\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a749cc5b8b86f3ac4d82ecc2b124d46ce}{source\_}}(),\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0aff474ac782cae10ca79d37c1f17a44}{event\_emitter\_}}(event\_emitter),\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\_}}()}
+\DoxyCodeLine{00050\ \ \ \{}
+\DoxyCodeLine{00051\ \ \ \}}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ \textcolor{keyword}{virtual}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0e58130ead683f82e421ea373f670fd0}{\string~EventNode}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00064\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ad1b79fbe33fd75339bcaa77417240e57}{emit\_event}}(\textcolor{keyword}{const}\ std::string\&\ bond\_id,\ \textcolor{keyword}{const}\ std::string\&\ instance\_id,\ \textcolor{keyword}{const}\ uint8\_t\&\ event\_type,}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\_events::EventParameters}}\ parameters\ =\ \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\_events::EventParameters}}())}
+\DoxyCodeLine{00066\ \ \ \{}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{comment}{//\ check\ if\ event\ emitter\ is\ set}}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0aff474ac782cae10ca79d37c1f17a44}{event\_emitter\_}})}
+\DoxyCodeLine{00069\ \ \ \ \ \{}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \textcolor{comment}{//\ No\ event\ emitter\ configured\ -\/\ silently\ skip}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \textcolor{comment}{//\ This\ allows\ runners\ to\ work\ without\ event\ system\ if\ needed}}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00073\ \ \ \ \ \}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{comment}{//\ check\ each\ connection}}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ [conn\_id,\ connection]\ :\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\_}})}
+\DoxyCodeLine{00077\ \ \ \ \ \{}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \textcolor{comment}{//\ extract\ bond\_id\ from\ connection\_id\ (format:\ "{}bond\_id/instance\_id/target\_instance\_id"{})}}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ first\_pos\ =\ conn\_id.find(\textcolor{charliteral}{'/'});}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ second\_pos\ =\ conn\_id.find(\textcolor{charliteral}{'/'},\ first\_pos\ +\ 1);}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \ \ std::string\ conn\_bond\_id\ =\ (first\_pos\ !=\ std::string::npos)\ ?\ conn\_id.substr(0,\ first\_pos)\ :\ conn\_id;}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ std::string\ conn\_instance\_id\ =}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ (second\_pos\ !=\ std::string::npos)\ ?\ conn\_id.substr(first\_pos\ +\ 1,\ second\_pos\ -\/\ first\_pos\ -\/\ 1)\ :\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \textcolor{comment}{//\ get\ targets\ for\ this\ event\ type\ and\ id\ namespace}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (connection.type.code\ ==\ event\_type\ \&\&\ bond\_id\ ==\ conn\_bond\_id\ \&\&\ instance\_id\ ==\ conn\_instance\_id)}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ parameterise\ target\ capability\ with\ parameters\ from\ the\ trigger}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ old\_parameters\ =\ \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\_events::EventParameters}}(connection.target);}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ extend\ or\ replace\ parameters\ of\ the\ target\ capability\ if\ any\ non\ empty\ parameters\ are\ provided}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!parameters.is\_empty())}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ option\ :\ parameters.options)}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ old\_parameters.set\_value(option.key,\ option.get\_value(),\ option.type);}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ create\ a\ new\ target\ capability\ message\ with\ updated\ parameters\ to\ emit\ with\ the\ event}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ target\_with\_params\ =\ old\_parameters.toMsg();}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ copy\ capability\ and\ provider\ from\ original\ target\ as\ parameters\ only\ contains\ the\ options}}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ target\_with\_params.capability\ =\ connection.target.capability;}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ target\_with\_params.provider\ =\ connection.target.provider;}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ target\_with\_params.instance\_id\ =\ connection.target.instance\_id;}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ emit\ event\ via\ event\ api}}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ NOTE:\ callback\ invocation\ is\ handled\ by\ event\ api}}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ this\ allows\ the\ nodes\ to\ be\ decoupled}}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ nodes\ just\ keep\ track\ of\ connections}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ modifying\ execution\ of\ other\ nodes\ is\ not\ owned\ by\ this\ class}}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ this\ lets\ the\ execution\ flow\ be\ made\ thread-\/safe}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ in\ the\ scope\ where\ the\ thread\ is\ owned}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0aff474ac782cae10ca79d37c1f17a44}{event\_emitter\_}}-\/>emit(conn\_id,\ event\_type,\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a749cc5b8b86f3ac4d82ecc2b124d46ce}{source\_}},\ target\_with\_params,\ connection.callback);}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00114\ \ \ \ \ \}}
+\DoxyCodeLine{00115\ \ \ \}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a10f7d884696c76f58fa43a03d69369f4}{set\_source}}(\textcolor{keyword}{const}\ capabilities2\_msgs::msg::Capability\&\ src)}
+\DoxyCodeLine{00124\ \ \ \{}
+\DoxyCodeLine{00125\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a749cc5b8b86f3ac4d82ecc2b124d46ce}{source\_}}\ =\ src;}
+\DoxyCodeLine{00126\ \ \ \}}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00135\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a41dc0f4b8ad35d358181f25d646f396e}{set\_event\_emitter}}(std::shared\_ptr<EventBase>\ event\_emitter)}
+\DoxyCodeLine{00136\ \ \ \{}
+\DoxyCodeLine{00137\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0aff474ac782cae10ca79d37c1f17a44}{event\_emitter\_}}\ =\ event\_emitter;}
+\DoxyCodeLine{00138\ \ \ \}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00154\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a54192391a09d30e778b5ef73a07e5476}{add\_connection}}(\textcolor{keyword}{const}\ std::string\&\ connection\_id,\ \textcolor{keyword}{const}\ capabilities2\_msgs::msg::CapabilityEventCode\&\ type,}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ capabilities2\_msgs::msg::Capability\&\ target,\ \mbox{\hyperlink{classcapabilities2__events_1_1EventBase_a01f110c6b7c9517f8f8ae134b8b22c8e}{EventBase::event\_callback\_t}}\ event\_cb)}
+\DoxyCodeLine{00156\ \ \ \{}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{comment}{//\ validate\ connection\ id}}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\_}}.find(connection\_id)\ !=\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\_}}.end())}
+\DoxyCodeLine{00159\ \ \ \ \ \{}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__events_1_1event__exception}{event\_exception}}(\textcolor{stringliteral}{"{}connection\ with\ id:\ "{}}\ +\ connection\_id\ +\ \textcolor{stringliteral}{"{}\ already\ exists"{}});}
+\DoxyCodeLine{00161\ \ \ \ \ \}}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{comment}{//\ set\ up\ an\ event\ pipe}}
+\DoxyCodeLine{00164\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__events_1_1EventNode_1_1EventPipe}{EventPipe}}\ conn;}
+\DoxyCodeLine{00165\ \ \ \ \ conn.\mbox{\hyperlink{structcapabilities2__events_1_1EventNode_1_1EventPipe_a6ba64f70d3638982a9ed986a57b30e5b}{type}}\ =\ type;}
+\DoxyCodeLine{00166\ \ \ \ \ conn.\mbox{\hyperlink{structcapabilities2__events_1_1EventNode_1_1EventPipe_a94675fdb0b3dd0e0f490b2878da45b33}{target}}\ =\ target;}
+\DoxyCodeLine{00167\ \ \ \ \ conn.\mbox{\hyperlink{structcapabilities2__events_1_1EventNode_1_1EventPipe_a16c36ae362fd1de3c6046acbe0307c40}{callback}}\ =\ event\_cb;}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{comment}{//\ add\ connection}}
+\DoxyCodeLine{00170\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\_}}[connection\_id]\ =\ conn;}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0aff474ac782cae10ca79d37c1f17a44}{event\_emitter\_}})}
+\DoxyCodeLine{00173\ \ \ \ \ \{}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \textcolor{comment}{//\ emit\ connected\ event}}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0aff474ac782cae10ca79d37c1f17a44}{event\_emitter\_}}-\/>on\_connected(\mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a749cc5b8b86f3ac4d82ecc2b124d46ce}{source\_}}.capability,\ target.capability);}
+\DoxyCodeLine{00176\ \ \ \ \ \}}
+\DoxyCodeLine{00177\ \ \ \}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00184\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a1aefc3465612e5a4662190ae251f9ded}{remove\_connection}}(\textcolor{keyword}{const}\ std::string\&\ connection\_id)}
+\DoxyCodeLine{00185\ \ \ \{}
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{comment}{//\ remove\ connection}}
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keyword}{auto}\ it\ =\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\_}}.find(connection\_id);}
+\DoxyCodeLine{00188\ \ \ \ \ \textcolor{keywordflow}{if}\ (it\ ==\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\_}}.end())}
+\DoxyCodeLine{00189\ \ \ \ \ \{}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__events_1_1event__exception}{event\_exception}}(\textcolor{stringliteral}{"{}connection\ with\ id:\ "{}}\ +\ connection\_id\ +\ \textcolor{stringliteral}{"{}\ does\ not\ exist"{}});}
+\DoxyCodeLine{00191\ \ \ \ \ \}}
+\DoxyCodeLine{00192\ \ \ \ \ \textcolor{keyword}{auto}\ target\ =\ it-\/>second.target;}
+\DoxyCodeLine{00193\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\_}}.erase(connection\_id);}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \ \ \textcolor{comment}{//\ emit\ disconnected\ event}}
+\DoxyCodeLine{00196\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0aff474ac782cae10ca79d37c1f17a44}{event\_emitter\_}})}
+\DoxyCodeLine{00197\ \ \ \ \ \{}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0aff474ac782cae10ca79d37c1f17a44}{event\_emitter\_}}-\/>on\_disconnected(\mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a749cc5b8b86f3ac4d82ecc2b124d46ce}{source\_}}.capability,\ target.capability);}
+\DoxyCodeLine{00199\ \ \ \ \ \}}
+\DoxyCodeLine{00200\ \ \ \}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ \textcolor{comment}{//\ helper\ members}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00207\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a1ee75f7c81c01519c250045ade85eaf7}{clear\_connections}}()}
+\DoxyCodeLine{00208\ \ \ \{}
+\DoxyCodeLine{00209\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\_}}.clear();}
+\DoxyCodeLine{00210\ \ \ \}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00217\ \ \ std::vector<capabilities2\_msgs::msg::CapabilityConnection>\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a1ae8d0a9622e781f9d8891018c5239a8}{list\_connections}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00218\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00219\ \ \ \ \ std::vector<capabilities2\_msgs::msg::CapabilityConnection>\ conns;}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ [conn\_id,\ connection]\ :\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\_}})}
+\DoxyCodeLine{00222\ \ \ \ \ \{}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ capabilities2\_msgs::msg::CapabilityConnection\ c;}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ c.type\ =\ connection.type;}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ c.source\ =\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a749cc5b8b86f3ac4d82ecc2b124d46ce}{source\_}};}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ c.target\ =\ connection.target;}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ conns.push\_back(c);}
+\DoxyCodeLine{00228\ \ \ \ \ \}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \ \ \ \ \textcolor{keywordflow}{return}\ conns;}
+\DoxyCodeLine{00231\ \ \ \}}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00240\ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a53f3a0dad63b42456ad2a6dd4bddc7ab}{has\_connection}}(\textcolor{keyword}{const}\ std::string\&\ connection\_id)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00241\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00242\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\_}}.find(connection\_id)\ !=\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\_}}.end();}
+\DoxyCodeLine{00243\ \ \ \}}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00250\ \ \ \textcolor{keywordtype}{size\_t}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a40118ab94ad06cf3759f4833c53ee575}{connection\_count}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00251\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00252\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\_}}.size();}
+\DoxyCodeLine{00253\ \ \ \}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00260\ \ \ \textcolor{keyword}{const}\ std::string\&\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a17cab4cfcc38f312fb7f37698c43d6b1}{get\_id}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00261\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a39d451da5c7fac76f125307884baf4b4}{id\_}};}
+\DoxyCodeLine{00263\ \ \ \}}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00270\ \ \ \textcolor{keyword}{const}\ capabilities2\_msgs::msg::Capability\&\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0af021d2aadac8d3b930fcdfc7b69da8}{get\_source}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00271\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00272\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a749cc5b8b86f3ac4d82ecc2b124d46ce}{source\_}};}
+\DoxyCodeLine{00273\ \ \ \}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00278\ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_aa66f138bc8fa897c84d8ffd529396002}{is\_event\_emitter\_set}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00279\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00280\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0aff474ac782cae10ca79d37c1f17a44}{event\_emitter\_}}\ !=\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00281\ \ \ \}}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00284\ \ \ \textcolor{comment}{//\ unique\ id\ of\ the\ event\ node}}
+\DoxyCodeLine{00285\ \ \ \textcolor{comment}{//\ using\ uuid\ string}}
+\DoxyCodeLine{00286\ \ \ std::string\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a39d451da5c7fac76f125307884baf4b4}{id\_}};}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00288\ \ \ \textcolor{comment}{//\ source\ capability\ of\ this\ event\ node}}
+\DoxyCodeLine{00289\ \ \ capabilities2\_msgs::msg::Capability\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a749cc5b8b86f3ac4d82ecc2b124d46ce}{source\_}};}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \ \ \textcolor{comment}{//\ event\ emitter\ used\ to\ emit\ events}}
+\DoxyCodeLine{00292\ \ \ \textcolor{comment}{//\ store\ as\ member\ to\ avoid\ passing\ around}}
+\DoxyCodeLine{00293\ \ \ std::shared\_ptr<EventBase>\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_a0aff474ac782cae10ca79d37c1f17a44}{event\_emitter\_}};}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \ \ \textcolor{comment}{//\ connections\ from\ this\ event\ node\ to\ target\ capabilities}}
+\DoxyCodeLine{00296\ \ \ \textcolor{comment}{//\ Key:\ connection\_id\ (format:\ "{}bond\_id/trigger\_id"{})}}
+\DoxyCodeLine{00297\ \ \ \textcolor{comment}{//\ Value:\ EventPipe\ with\ type,\ target,\ callback}}
+\DoxyCodeLine{00298\ \ \ std::map<std::string,\ EventPipe>\ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ac4adaeea856545dfc84174082f6ed856}{connections\_}};}
+\DoxyCodeLine{00299\ \};}
+\DoxyCodeLine{00300\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_events}}
+
+\end{DoxyCode}

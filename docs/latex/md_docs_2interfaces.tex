@@ -1,0 +1,44 @@
+\chapter{Interfaces}
+\hypertarget{md_docs_2interfaces}{}\label{md_docs_2interfaces}\index{Interfaces@{Interfaces}}
+\label{md_docs_2interfaces_autotoc_md75}%
+\Hypertarget{md_docs_2interfaces_autotoc_md75}%
+ \hypertarget{md_docs_2interfaces_autotoc_md76}{}\doxysection{\texorpdfstring{Description}{Description}}\label{md_docs_2interfaces_autotoc_md76}
+An capability interface describes the capability. It relates ROS primitives to the capability.\hypertarget{md_docs_2interfaces_autotoc_md77}{}\doxysection{\texorpdfstring{Interface}{Interface}}\label{md_docs_2interfaces_autotoc_md77}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\#\ the\ empty\ capability\ is\ an\ example\ of\ a\ capability\ interface}
+\DoxyCodeLine{\%YAML\ 1.1}
+\DoxyCodeLine{-\/-\/-\/}
+\DoxyCodeLine{name:\ empty}
+\DoxyCodeLine{spec\_type:\ interface}
+\DoxyCodeLine{spec\_version:\ 1.1}
+\DoxyCodeLine{description:\ the\ empty\ capability\ interface\ helps\ to\ test\ the\ capability\ server}
+\DoxyCodeLine{interface:}
+\DoxyCodeLine{\ \ parameters:}
+\DoxyCodeLine{\ \ \ \ "{}empty"{}:}
+\DoxyCodeLine{\ \ \ \ \ \ type:\ None}
+\DoxyCodeLine{\ \ \ \ \ \ description:\ empty}
+\DoxyCodeLine{\ \ topics:}
+\DoxyCodeLine{\ \ \ \ "{}empty"{}:}
+\DoxyCodeLine{\ \ \ \ \ \ type:\ std\_msgs/msg/Empty}
+\DoxyCodeLine{\ \ \ \ \ \ description:\ empty}
+\DoxyCodeLine{\ \ services:}
+\DoxyCodeLine{\ \ \ \ "{}empty"{}:}
+\DoxyCodeLine{\ \ \ \ \ \ type:\ std\_srvs/srv/Empty}
+\DoxyCodeLine{\ \ \ \ \ \ description:\ empty}
+\DoxyCodeLine{\ \ actions:}
+\DoxyCodeLine{\ \ \ \ "{}empty"{}:}
+\DoxyCodeLine{\ \ \ \ \ \ type:\ std\_srvs/action/Empty}
+\DoxyCodeLine{\ \ \ \ \ \ description:\ empty}
+\DoxyCodeLine{}
+\DoxyCodeLine{\#\ the\ below\ keys\ are\ optional}
+\DoxyCodeLine{}
+\DoxyCodeLine{\#\ relations\ are\ a\ list\ of\ relations\ to\ other\ capability\ entities}
+\DoxyCodeLine{relations:}
+\DoxyCodeLine{\ \ \ \ \#\ an\ example\ of\ a\ relation}
+\DoxyCodeLine{\ \ -\/\ subject:\ some\_package/some\_capability}
+\DoxyCodeLine{\ \ \ \ predicate:\ blocks}
+\DoxyCodeLine{\ \ \ \ object:\ some\_other\_package/some\_other\_capability}
+
+\end{DoxyCode}
+ 

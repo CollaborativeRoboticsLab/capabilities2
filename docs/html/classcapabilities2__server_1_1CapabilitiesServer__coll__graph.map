@@ -1,0 +1,11 @@
+<map id="capabilities2_server::CapabilitiesServer" name="capabilities2_server::CapabilitiesServer">
+<area shape="rect" id="Node000001" title="capabilities server" alt="" coords="25,197,179,237"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,115,108,141"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="71,152,95,196,90,198,67,154"/>
+<area shape="rect" id="Node000003" href="$classcapabilities2__server_1_1CapabilitiesAPI.html" title="capabilities api mapping message based logic of capabilities to database models handles message conve..." alt="" coords="132,108,285,148"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="177,159,127,199,123,195,173,155"/>
+<area shape="rect" id="Node000004" href="$classcapabilities2__server_1_1BondCache.html" title="bond cache class" alt="" coords="43,5,196,45"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="136,56,155,82,181,106,178,110,151,86,132,59"/>
+<area shape="rect" id="Node000005" href="$classcapabilities2__server_1_1RunnerCache.html" title="runner cache class responsible for caching the currently active runners of capabilities this cache de..." alt="" coords="220,5,373,45"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="273,58,227,110,223,106,269,54"/>
+</map>

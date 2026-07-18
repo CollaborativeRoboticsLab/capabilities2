@@ -1,0 +1,156 @@
+\doxysection{capabilities2\+\_\+events\+::Event\+Parameters Struct Reference}
+\hypertarget{structcapabilities2__events_1_1EventParameters}{}\label{structcapabilities2__events_1_1EventParameters}\index{capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}}
+
+
+capability options for a capability runner given by interface and provider  
+
+
+
+
+{\ttfamily \#include "{}event\+\_\+parameters.\+hpp"{}}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters_a57fdeb9d660eee744ef4bcd58e96339e}{Event\+Parameters}} ()=default
+\item 
+\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters_a124050d50c5d5870b1e85697c33ba759}{Event\+Parameters}} (const capabilities2\+\_\+msgs\+::msg\+::\+Capability \&msg)
+\item 
+bool \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters_ac26732100aab80ff256b54636c57b85c}{is\+\_\+empty}} () const
+\item 
+bool \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters_af3f6a280eb464e33f4f4ba7092a70cac}{has\+\_\+value}} (const std\+::string \&key) const
+\begin{DoxyCompactList}\small\item\em Check if an option with the given key exists. \end{DoxyCompactList}\item 
+std\+::any \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters_a06e1a6f60cb6c8830d6769532b1f3cdb}{get\+\_\+value}} (const std\+::string \&key, std\+::any default\+\_\+value)
+\begin{DoxyCompactList}\small\item\em Get the value of an option by key. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters_abc8bda9430434f26bb4db99e17455e5a}{set\+\_\+value}} (const std\+::string \&key, const std\+::any \&value, const \mbox{\hyperlink{namespacecapabilities2__events_a3106fe3e6bc3d9a5744cae761879b5af}{Option\+Type}} \&type)
+\begin{DoxyCompactList}\small\item\em Set the value of an option by key, if the option does not exist it will be created. \end{DoxyCompactList}\item 
+capabilities2\+\_\+msgs\+::msg\+::\+Capability \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters_af4cb9521061d29b8e77d19cd7b13cfdd}{to\+Msg}} () const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{structcapabilities2__events_1_1Parameter}{Parameter}} $>$ \mbox{\hyperlink{structcapabilities2__events_1_1EventParameters_ae339697fb5abfa540e2e4338f9266308}{options}} = \{\}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+capability options for a capability runner given by interface and provider 
+
+
+\begin{DoxyParams}{Parameters}
+{\em interface} & the interface of the capability \\
+\hline
+{\em provider} & the provider of the capability \\
+\hline
+{\em options} & the options for the capability \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{structcapabilities2__events_1_1EventParameters_a57fdeb9d660eee744ef4bcd58e96339e}\label{structcapabilities2__events_1_1EventParameters_a57fdeb9d660eee744ef4bcd58e96339e} 
+\index{capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}!EventParameters@{EventParameters}}
+\index{EventParameters@{EventParameters}!capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}}
+\doxysubsubsection{\texorpdfstring{EventParameters()}{EventParameters()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily capabilities2\+\_\+events\+::\+Event\+Parameters\+::\+Event\+Parameters (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+\Hypertarget{structcapabilities2__events_1_1EventParameters_a124050d50c5d5870b1e85697c33ba759}\label{structcapabilities2__events_1_1EventParameters_a124050d50c5d5870b1e85697c33ba759} 
+\index{capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}!EventParameters@{EventParameters}}
+\index{EventParameters@{EventParameters}!capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}}
+\doxysubsubsection{\texorpdfstring{EventParameters()}{EventParameters()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily capabilities2\+\_\+events\+::\+Event\+Parameters\+::\+Event\+Parameters (\begin{DoxyParamCaption}\item[{const capabilities2\+\_\+msgs\+::msg\+::\+Capability \&}]{msg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{structcapabilities2__events_1_1EventParameters_a06e1a6f60cb6c8830d6769532b1f3cdb}\label{structcapabilities2__events_1_1EventParameters_a06e1a6f60cb6c8830d6769532b1f3cdb} 
+\index{capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}!get\_value@{get\_value}}
+\index{get\_value@{get\_value}!capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}}
+\doxysubsubsection{\texorpdfstring{get\_value()}{get\_value()}}
+{\footnotesize\ttfamily std\+::any capabilities2\+\_\+events\+::\+Event\+Parameters\+::get\+\_\+value (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{key,  }\item[{std\+::any}]{default\+\_\+value }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get the value of an option by key. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em key} & the key of the option to get the value of \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+std\+::any the value of the option, can be cast to the appropriate type based on the Option\+Type 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \doxylink{structcapabilities2__events_1_1options__exception}{options\+\_\+exception}} & if the key is not found or if there is a type conversion error \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{structcapabilities2__events_1_1EventParameters_af3f6a280eb464e33f4f4ba7092a70cac}\label{structcapabilities2__events_1_1EventParameters_af3f6a280eb464e33f4f4ba7092a70cac} 
+\index{capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}!has\_value@{has\_value}}
+\index{has\_value@{has\_value}!capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}}
+\doxysubsubsection{\texorpdfstring{has\_value()}{has\_value()}}
+{\footnotesize\ttfamily bool capabilities2\+\_\+events\+::\+Event\+Parameters\+::has\+\_\+value (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{key }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Check if an option with the given key exists. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em key} & the key of the option to check \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the option exists, false otherwise 
+\end{DoxyReturn}
+\Hypertarget{structcapabilities2__events_1_1EventParameters_ac26732100aab80ff256b54636c57b85c}\label{structcapabilities2__events_1_1EventParameters_ac26732100aab80ff256b54636c57b85c} 
+\index{capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}!is\_empty@{is\_empty}}
+\index{is\_empty@{is\_empty}!capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}}
+\doxysubsubsection{\texorpdfstring{is\_empty()}{is\_empty()}}
+{\footnotesize\ttfamily bool capabilities2\+\_\+events\+::\+Event\+Parameters\+::is\+\_\+empty (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{structcapabilities2__events_1_1EventParameters_abc8bda9430434f26bb4db99e17455e5a}\label{structcapabilities2__events_1_1EventParameters_abc8bda9430434f26bb4db99e17455e5a} 
+\index{capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}!set\_value@{set\_value}}
+\index{set\_value@{set\_value}!capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}}
+\doxysubsubsection{\texorpdfstring{set\_value()}{set\_value()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+events\+::\+Event\+Parameters\+::set\+\_\+value (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{key,  }\item[{const std\+::any \&}]{value,  }\item[{const \mbox{\hyperlink{namespacecapabilities2__events_a3106fe3e6bc3d9a5744cae761879b5af}{Option\+Type}} \&}]{type }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Set the value of an option by key, if the option does not exist it will be created. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em key} & the key of the option to set the value of \\
+\hline
+{\em type} & the type of the option to set \\
+\hline
+{\em value} & the value to set, should be castable to the appropriate type based on the Option\+Type \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \doxylink{structcapabilities2__events_1_1options__exception}{options\+\_\+exception}} & if there is a type conversion error \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{structcapabilities2__events_1_1EventParameters_af4cb9521061d29b8e77d19cd7b13cfdd}\label{structcapabilities2__events_1_1EventParameters_af4cb9521061d29b8e77d19cd7b13cfdd} 
+\index{capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}!toMsg@{toMsg}}
+\index{toMsg@{toMsg}!capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}}
+\doxysubsubsection{\texorpdfstring{toMsg()}{toMsg()}}
+{\footnotesize\ttfamily capabilities2\+\_\+msgs\+::msg\+::\+Capability capabilities2\+\_\+events\+::\+Event\+Parameters\+::to\+Msg (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{structcapabilities2__events_1_1EventParameters_ae339697fb5abfa540e2e4338f9266308}\label{structcapabilities2__events_1_1EventParameters_ae339697fb5abfa540e2e4338f9266308} 
+\index{capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}!options@{options}}
+\index{options@{options}!capabilities2\_events::EventParameters@{capabilities2\_events::EventParameters}}
+\doxysubsubsection{\texorpdfstring{options}{options}}
+{\footnotesize\ttfamily std\+::vector$<$\mbox{\hyperlink{structcapabilities2__events_1_1Parameter}{Parameter}}$>$ capabilities2\+\_\+events\+::\+Event\+Parameters\+::options = \{\}}
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+capabilities2\+\_\+events/include/capabilities2\+\_\+events/\mbox{\hyperlink{event__parameters_8hpp}{event\+\_\+parameters.\+hpp}}\end{DoxyCompactItemize}

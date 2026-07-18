@@ -1,0 +1,41 @@
+\doxysection{resource.\+hpp}
+\hypertarget{resource_8hpp_source}{}\label{resource_8hpp_source}\index{capabilities2\_server/include/capabilities2\_server/models/resource.hpp@{capabilities2\_server/include/capabilities2\_server/models/resource.hpp}}
+\mbox{\hyperlink{resource_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <yaml-\/cpp/yaml.h>}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__server}{capabilities2\_server}}}
+\DoxyCodeLine{00007\ \{}
+\DoxyCodeLine{00008\ \textcolor{keyword}{namespace\ }models}
+\DoxyCodeLine{00009\ \{}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00020\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1resource__model__t}{resource\_model\_t}}}
+\DoxyCodeLine{00021\ \{}
+\DoxyCodeLine{00022\ \ \ std::string\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1resource__model__t_a9bbd5d0805bca1df20010321ac578674}{name}};}
+\DoxyCodeLine{00023\ \ \ std::string\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1resource__model__t_a610bb2907636c8ed8c841b76e3778208}{type}};}
+\DoxyCodeLine{00024\ \ \ std::string\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1resource__model__t_a9baef31aac5d2ebfa99cf4af10e3421f}{description}};}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1resource__model__t_a46df60e201ca7d0bc6ff3938811a87d7}{from\_yaml}}(\textcolor{keyword}{const}\ YAML::Node\&\ node)}
+\DoxyCodeLine{00027\ \ \ \{}
+\DoxyCodeLine{00028\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1resource__model__t_a9bbd5d0805bca1df20010321ac578674}{name}}\ =\ node[\textcolor{stringliteral}{"{}name"{}}].as<std::string>();}
+\DoxyCodeLine{00029\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1resource__model__t_a610bb2907636c8ed8c841b76e3778208}{type}}\ =\ node[\textcolor{stringliteral}{"{}type"{}}].as<std::string>();}
+\DoxyCodeLine{00030\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1resource__model__t_a9baef31aac5d2ebfa99cf4af10e3421f}{description}}\ =\ node[\textcolor{stringliteral}{"{}description"{}}].as<std::string>();}
+\DoxyCodeLine{00031\ \ \ \}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ YAML::Node\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1resource__model__t_afe7ee416240acbd2582ebc50f31359ef}{to\_yaml}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00034\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00035\ \ \ \ \ YAML::Node\ node;}
+\DoxyCodeLine{00036\ \ \ \ \ node[\textcolor{stringliteral}{"{}name"{}}]\ =\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1resource__model__t_a9bbd5d0805bca1df20010321ac578674}{name}};}
+\DoxyCodeLine{00037\ \ \ \ \ node[\textcolor{stringliteral}{"{}type"{}}]\ =\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1resource__model__t_a610bb2907636c8ed8c841b76e3778208}{type}};}
+\DoxyCodeLine{00038\ \ \ \ \ node[\textcolor{stringliteral}{"{}description"{}}]\ =\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1resource__model__t_a9baef31aac5d2ebfa99cf4af10e3421f}{description}};}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keywordflow}{return}\ node;}
+\DoxyCodeLine{00040\ \ \ \}}
+\DoxyCodeLine{00041\ \};}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \}\ \ \textcolor{comment}{//\ namespace\ models}}
+\DoxyCodeLine{00044\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_server}}
+
+\end{DoxyCode}

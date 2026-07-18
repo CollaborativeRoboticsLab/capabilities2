@@ -1,0 +1,55 @@
+\doxysection{launch\+\_\+runner.\+hpp}
+\hypertarget{launch__runner_8hpp_source}{}\label{launch__runner_8hpp_source}\index{capabilities2\_runner/include/capabilities2\_runner/launch\_runner.hpp@{capabilities2\_runner/include/capabilities2\_runner/launch\_runner.hpp}}
+\mbox{\hyperlink{launch__runner_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{notrigger__runner_8hpp}{capabilities2\_runner/notrigger\_runner.hpp}}>}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__runner}{capabilities2\_runner}}}
+\DoxyCodeLine{00006\ \{}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00014\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcapabilities2__runner_1_1LaunchRunner}{LaunchRunner}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{classcapabilities2__runner_1_1NoTriggerRunner}{NoTriggerRunner}}}
+\DoxyCodeLine{00015\ \{}
+\DoxyCodeLine{00016\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00020\ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1LaunchRunner_ace430452667a2365c3555755643c4c4c}{LaunchRunner}}()\ :\ \mbox{\hyperlink{classcapabilities2__runner_1_1NoTriggerRunner}{NoTriggerRunner}}()}
+\DoxyCodeLine{00021\ \ \ \{}
+\DoxyCodeLine{00022\ \ \ \}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00031\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1LaunchRunner_a9a684058017ed934d6d7e921d7f75eb9}{start}}(rclcpp::Node::SharedPtr\ node,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts}{runner\_opts}}\&\ run\_config,\ \textcolor{keyword}{const}\ std::string\&\ bond\_id)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00032\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00033\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a737681af5f4227037a06390bf0bca3e0}{init\_base}}(node,\ run\_config);}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1LaunchRunner_ad0774a843f92a69d7d660a216a6d265d}{package\_name}}\ =\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a94f0b66e78d66b770ba91d9f55b202ce}{run\_config\_}}.\mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts_ac592b9b0cde8eef4f39dfa9ed619252e}{runner}}.substr(0,\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a94f0b66e78d66b770ba91d9f55b202ce}{run\_config\_}}.\mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts_ac592b9b0cde8eef4f39dfa9ed619252e}{runner}}.find(\textcolor{stringliteral}{"{}/"{}}));}
+\DoxyCodeLine{00036\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1LaunchRunner_adb150055c0e372f46c961aae6a4e9dd4}{launch\_name}}\ =\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a94f0b66e78d66b770ba91d9f55b202ce}{run\_config\_}}.\mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts_ac592b9b0cde8eef4f39dfa9ed619252e}{runner}}.substr(\mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a94f0b66e78d66b770ba91d9f55b202ce}{run\_config\_}}.\mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts_ac592b9b0cde8eef4f39dfa9ed619252e}{runner}}.find(\textcolor{stringliteral}{"{}/"{}})\ +\ 1);}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{comment}{//\ start\ launch\ process}}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{runner\_exception}}(\textcolor{stringliteral}{"{}launch\ runner\ not\ implemented\ yet"{}});}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{//\ emit\ started\ event}}
+\DoxyCodeLine{00042\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_ac92696dfbfe4b50331ca156c4449954c}{emit\_started}}(bond\_id,\ \textcolor{stringliteral}{"{}"{}},\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a68a4f300a106474d09ccda51efc57a5a}{param\_on\_started}}());}
+\DoxyCodeLine{00043\ \ \ \}}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00049\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1LaunchRunner_a5373c2eb3f97948d213aab4f95bc19c9}{stop}}(\textcolor{keyword}{const}\ std::string\&\ bond\_id,\ \textcolor{keyword}{const}\ std::string\&\ instance\_id\ =\ \textcolor{stringliteral}{"{}"{}})\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00050\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{//\ if\ the\ node\ pointer\ is\ empty\ then\ throw\ an\ error}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{//\ this\ means\ that\ the\ runner\ was\ not\ started\ and\ is\ being\ used\ out\ of\ order}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_ab92e5d0bb295489656b6ac35b23eef8e}{node\_}})}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{runner\_exception}}(\textcolor{stringliteral}{"{}cannot\ stop\ runner\ that\ was\ not\ started"{}});}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{//\ stop\ the\ launch\ process}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{runner\_exception}}(\textcolor{stringliteral}{"{}launch\ runner\ not\ implemented\ yet"{}});}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{//\ emit\ stopped\ event}}
+\DoxyCodeLine{00061\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_af6414218a6741b276f305e4b266878fb}{emit\_stopped}}(bond\_id,\ instance\_id,\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a93d5da8c0c64d0154911a9b3ff143fff}{param\_on\_stopped}}());}
+\DoxyCodeLine{00062\ \ \ \}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00065\ \ \ std::string\ \mbox{\hyperlink{classcapabilities2__runner_1_1LaunchRunner_adb150055c0e372f46c961aae6a4e9dd4}{launch\_name}};}
+\DoxyCodeLine{00066\ \ \ std::string\ \mbox{\hyperlink{classcapabilities2__runner_1_1LaunchRunner_ad0774a843f92a69d7d660a216a6d265d}{package\_name}};}
+\DoxyCodeLine{00067\ \};}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_runner}}
+
+\end{DoxyCode}

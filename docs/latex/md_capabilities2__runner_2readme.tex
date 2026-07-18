@@ -1,0 +1,111 @@
+\chapter{capabilities2\+\_\+runner plugin API}
+\hypertarget{md_capabilities2__runner_2readme}{}\label{md_capabilities2__runner_2readme}\index{capabilities2\_runner plugin API@{capabilities2\_runner plugin API}}
+\label{md_capabilities2__runner_2readme_autotoc_md24}%
+\Hypertarget{md_capabilities2__runner_2readme_autotoc_md24}%
+ This package provides the {\ttfamily runner} API for abstract provision of capabilities. Runner plugins extend the execution functionality of the {\ttfamily capabilities} system. The ROS1 implementation used launch files to start capabilities. The ROS2 implementation uses runners. This allows for more flexibility in how capabilities are started and stopped, or how they are managed, and operate.\hypertarget{md_capabilities2__runner_2readme_autotoc_md25}{}\doxysection{\texorpdfstring{Runner archetypes}{Runner archetypes}}\label{md_capabilities2__runner_2readme_autotoc_md25}
+The {\ttfamily \doxylink{namespacecapabilities2__runner}{capabilities2\+\_\+runner}} package provides runner patterns that can be used to specialise runners for capabilities and hence create capabilities. These runners are tested\+:
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Runner Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Runner Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endhead
+{\ttfamily \doxylink{classcapabilities2__runner_1_1RunnerBase}{capabilities2\+\_\+runner\+::\+Runner\+Base}}   &The Base class for runners implementing the {\ttfamily Runner} interface which consists of {\ttfamily start}, {\ttfamily stop} and {\ttfamily trigger} functionality.    \\\cline{1-2}
+{\ttfamily \doxylink{classcapabilities2__runner_1_1ActionRunner}{capabilities2\+\_\+runner\+::\+Action\+Runner}}   &The Base runner class for capabilities that are implemented as ROS Actions. Overrides {\ttfamily stop} and {\ttfamily trigger} from Runner\+Base.    \\\cline{1-2}
+{\ttfamily \doxylink{classcapabilities2__runner_1_1ServiceRunner}{capabilities2\+\_\+runner\+::\+Service\+Runner}}   &The Base runner class for capabilities that are implemented as ROS Services.    \\\cline{1-2}
+{\ttfamily \doxylink{classcapabilities2__runner_1_1TopicRunner}{capabilities2\+\_\+runner\+::\+Topic\+Runner}}   &The Base runner class for capabilities that are implemented as ROS Topics.    \\\cline{1-2}
+{\ttfamily \doxylink{classcapabilities2__runner_1_1NoTriggerRunner}{capabilities2\+\_\+runner\+::\+No\+Trigger\+Runner}}   &A base runner class that disables trigger functionality. Useful for runners that begin work immediately from {\ttfamily start}.   \\\cline{1-2}
+\end{longtabu}
+\hypertarget{md_capabilities2__runner_2readme_autotoc_md26}{}\doxysection{\texorpdfstring{Standard Runners}{Standard Runners}}\label{md_capabilities2__runner_2readme_autotoc_md26}
+The {\ttfamily \doxylink{namespacecapabilities2__runner}{capabilities2\+\_\+runner}} package provides some standard runners.
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Runner Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Runner Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endhead
+{\ttfamily \doxylink{classcapabilities2__runner_1_1LaunchRunner}{capabilities2\+\_\+runner\+::\+Launch\+Runner}}   &Deferred launch-\/file runner kept for compatibility planning. The current implementation is intentionally disabled.    \\\cline{1-2}
+{\ttfamily \doxylink{classcapabilities2__runner_1_1DummyRunner}{capabilities2\+\_\+runner\+::\+Dummy\+Runner}}   &A sample runner that can be used to test the functionality of capabilities server.    \\\cline{1-2}
+{\ttfamily \doxylink{classcapabilities2__runner_1_1GetCapabilitySpecsRunner}{capabilities2\+\_\+runner\+::\+Get\+Capability\+Specs\+Runner}}   &A runner that requests capability specifications from the capabilities server.    \\\cline{1-2}
+{\ttfamily \doxylink{classcapabilities2__runner_1_1InputMultiplexRunner}{capabilities2\+\_\+runner\+::\+Input\+Multiplex\+Runner}}   &A runner that multiplexes multiple input capabilities through the events system.   \\\cline{1-2}
+\end{longtabu}
+\hypertarget{md_capabilities2__runner_2readme_autotoc_md27}{}\doxysection{\texorpdfstring{Experimental Runners}{Experimental Runners}}\label{md_capabilities2__runner_2readme_autotoc_md27}
+The {\ttfamily \doxylink{namespacecapabilities2__runner}{capabilities2\+\_\+runner}} package provides experimental runners that can be used to start capabilities. These runners are not fully tested and may not work as expected. The experimental runners are\+:
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Runner Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Runner Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endhead
+{\ttfamily \doxylink{classcapabilities2__runner_1_1EnCapRunner}{capabilities2\+\_\+runner\+::\+En\+Cap\+Runner}}   &Base runner class that provides a capability action interface that encapsulates another action.   \\\cline{1-2}
+\end{longtabu}
+\hypertarget{md_capabilities2__runner_2readme_autotoc_md28}{}\doxysection{\texorpdfstring{Runner Inheritance Diagram}{Runner Inheritance Diagram}}\label{md_capabilities2__runner_2readme_autotoc_md28}
+Following inheritance diagram depicts the inheritance between the above presented {\itshape Runners} and {\itshape Experimental Runners}.
+
+\hypertarget{md_capabilities2__runner_2readme_autotoc_md29}{}\doxysection{\texorpdfstring{About Runners}{About Runners}}\label{md_capabilities2__runner_2readme_autotoc_md29}
+\hypertarget{md_capabilities2__runner_2readme_autotoc_md30}{}\doxysubsection{\texorpdfstring{Base Runner}{Base Runner}}\label{md_capabilities2__runner_2readme_autotoc_md30}
+The {\ttfamily Runner\+Base} class is the base class for all runners. It provides the {\ttfamily start}, {\ttfamily stop}, and {\ttfamily trigger} methods. The {\ttfamily start} method is used to start the runner, the {\ttfamily stop} method is used to stop the runner, and the {\ttfamily trigger} method is used to trigger the runner. See the {\ttfamily \doxylink{classcapabilities2__runner_1_1RunnerBase}{capabilities2\+\_\+runner\+::\+Runner\+Base}} class definition function templates below\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__runner}{capabilities2\_runner}}}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \textcolor{keyword}{class\ }RunnerBase}
+\DoxyCodeLine{\ \ \{}
+\DoxyCodeLine{\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ start\ the\ runner}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_af253678258e86285dc2a12ecb5c1db84}{start}}(rclcpp::Node::SharedPtr\ node,\ \textcolor{keyword}{const}\ runner\_opts\&\ run\_config,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ bond\_id)\ =\ 0;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ stop\ the\ runner}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a590b4f109de1d343ad88db826d72d6f2}{stop}}(\textcolor{keyword}{const}\ std::string\&\ bond\_id,\ \textcolor{keyword}{const}\ std::string\&\ instance\_id\ =\ \textcolor{stringliteral}{"{}"{}})\ =\ 0;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ trigger\ the\ runner}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_ad85529d5a99b6e1373d89beadcb71a47}{trigger}}(\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\_events::EventParameters}}\&\ parameters,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ bond\_id,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ instance\_id)\ =\ 0;}
+\DoxyCodeLine{\ \ \};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\}\ \textcolor{comment}{//\ namespace\ capabilities2\_runner}}
+
+\end{DoxyCode}
+\hypertarget{md_capabilities2__runner_2readme_autotoc_md31}{}\doxysubsection{\texorpdfstring{Launch\+Runner}{LaunchRunner}}\label{md_capabilities2__runner_2readme_autotoc_md31}
+The {\ttfamily Launch\+Runner} inherits from {\ttfamily \doxylink{classcapabilities2__runner_1_1NoTriggerRunner}{capabilities2\+\_\+runner\+::\+No\+Trigger\+Runner}}, but it is intentionally deferred in the current codebase. The class and plugin entry are kept so that launch support can be restored once the replacement approach for the current ROS2 launch system is ready. For now, do not configure providers to depend on launch-\/file execution through this runner.\hypertarget{md_capabilities2__runner_2readme_autotoc_md32}{}\doxysubsection{\texorpdfstring{Creating a Custom runner}{Creating a Custom runner}}\label{md_capabilities2__runner_2readme_autotoc_md32}
+The main idea is to allow users to create custom runners for their specific capabilities. Runners can be created to perform capabilities. The runner can be specified in a capability provider as the {\ttfamily runner} tag\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\#\ provider\ ...}
+\DoxyCodeLine{name:\ my\_provider}
+\DoxyCodeLine{spec\_version:\ 1}
+\DoxyCodeLine{spec\_type:\ provider}
+\DoxyCodeLine{implements:\ my\_capability}
+\DoxyCodeLine{\#\ the\ runner\ to\ use\ is\ an\ exported\ plugin\ name\ based\ on\ RunnerBase}
+\DoxyCodeLine{runner:\ capabilities2\_runner::MyRunner}
+
+\end{DoxyCode}
+
+
+The runner {\ttfamily capabilities2\+\_\+runner\+::\+My\+Runner} should inherit from the {\ttfamily \doxylink{classcapabilities2__runner_1_1RunnerBase}{capabilities2\+\_\+runner\+::\+Runner\+Base}} or another like the {\ttfamily \doxylink{classcapabilities2__runner_1_1ActionRunner}{capabilities2\+\_\+runner\+::\+Action\+Runner}} class. The runner must implement the {\ttfamily start}, {\ttfamily stop}, and {\ttfamily trigger} methods, and then be registered as a plugin, using the {\ttfamily PLUGINLIB\+\_\+\+EXPORT\+\_\+\+CLASS} macro. See \doxysectlink{md_capabilities2__runner_2docs_2create__runners}{Creating Runners}{0} for more information.\hypertarget{md_capabilities2__runner_2readme_autotoc_md33}{}\doxysection{\texorpdfstring{Runner Execution Patterns}{Runner Execution Patterns}}\label{md_capabilities2__runner_2readme_autotoc_md33}
+\hypertarget{md_capabilities2__runner_2readme_autotoc_md34}{}\doxysubsection{\texorpdfstring{Start -\/$>$ Stop}{Start -> Stop}}\label{md_capabilities2__runner_2readme_autotoc_md34}
+The simplest runner execution pattern is to start the runner and then stop it. An example of this is the {\ttfamily Launch\+Runner}. This pattern represents a {\itshape {\bfseries{self-\/contained}}} capability. An example might be the action of a robot following another entity. This skill could be self-\/contained and runs continuously until stopped. This case assumes that the skill is continuously running and does not require any external triggers. ROS {\bfseries{Topic}} subscriptions and {\bfseries{Launch}} files are like this type.\hypertarget{md_capabilities2__runner_2readme_autotoc_md35}{}\doxysubsection{\texorpdfstring{Start -\/$>$ Trigger -\/$>$ Stop}{Start -> Trigger -> Stop}}\label{md_capabilities2__runner_2readme_autotoc_md35}
+A more complex runner execution pattern is to start the runner, trigger it, and then stop it. This pattern represents a {\itshape {\bfseries{one-\/shot}}} capability. An example might be the action of a robot moving to a waypoint. This skill is triggered once and then stops.\hypertarget{md_capabilities2__runner_2readme_autotoc_md36}{}\doxysubsection{\texorpdfstring{Start -\/$>$ Trigger -\/$>$ Trigger -\/$>$ ... -\/$>$ Stop}{Start -> Trigger -> Trigger -> ... -> Stop}}\label{md_capabilities2__runner_2readme_autotoc_md36}
+An even more complex runner execution pattern is to start the runner, trigger it multiple times, and then stop it. This pattern represents a {\itshape {\bfseries{repeating}}} capability. An example might be the action of a robot completing a state-\/machine or tree. This skill is triggered multiple times and then stops. This pattern (and the previous one) often implies that data is passed to and from the runner.\hypertarget{md_capabilities2__runner_2readme_autotoc_md37}{}\doxysubsection{\texorpdfstring{Start -\/$>$ End (no Stop)}{Start -> End (no Stop)}}\label{md_capabilities2__runner_2readme_autotoc_md37}
+The final runner execution pattern is to start the runner and then end it without stopping. This pattern represents a challenge for the runner API, as it is not clear when the runner should be stopped. ROS communications patterns including {\bfseries{Services}} and {\bfseries{Actions}} are like this type.\hypertarget{md_capabilities2__runner_2readme_autotoc_md38}{}\doxysection{\texorpdfstring{Trigger Parameter Format}{Trigger Parameter Format}}\label{md_capabilities2__runner_2readme_autotoc_md38}
+Runners can use parameters. These parameters are passed to the runner in the {\ttfamily trigger} function. For more information, see \doxysectlink{md_capabilities2__runner_2docs_2parameter__format}{Parameter Format}{0}. 

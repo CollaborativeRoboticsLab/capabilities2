@@ -1,0 +1,19 @@
+\chapter{Securing Capabilities}
+\hypertarget{md_docs_2securing__capabilities}{}\label{md_docs_2securing__capabilities}\index{Securing Capabilities@{Securing Capabilities}}
+\label{md_docs_2securing__capabilities_autotoc_md90}%
+\Hypertarget{md_docs_2securing__capabilities_autotoc_md90}%
+ A side effect of adding skill entities to a ROS network is that logic can be added to control access to these skills. Here is a proposal for how this could be implemented.\hypertarget{md_docs_2securing__capabilities_autotoc_md91}{}\doxysection{\texorpdfstring{Integrate with Rosbridge}{Integrate with Rosbridge}}\label{md_docs_2securing__capabilities_autotoc_md91}
+\href{https://github.com/RobotWebTools/rosbridge_suite}{\texttt{ Rosbridge}} from \href{https://robot}{\texttt{ Robot Web Tools}} provides an authentication mechanism that can be used to secure the ROS network. This can be used to authenticate a user.
+
+Rosbridge also provides an access control mechanism that can be used to control access to topics. Once a user is authenticated, they could initially access the capabilities services to learn what the robot can do. By doing this the user does not know the specific topics that the robot uses, but they can still interact with the robot.
+
+Further the capabilities could be restricted based on the user\textquotesingle{}s role. This could be done by creating a role-\/based access control (RBAC) system. This could be implemented by creating a capabilities service that is aware of the user\textquotesingle{}s role. The capabilities service could then provide a list of capabilities that the user is allowed to use. An implementation could follow a plugin architecture to ensure good separation of concerns.
+
+Once the user decides on a capability that they are authorised to use, the capabilities service could update the rosbridge access control to allow the user to access the topics that the capability uses for the duration of the capability. This adds a time-\/based access control mechanism to the system.\hypertarget{md_docs_2securing__capabilities_autotoc_md92}{}\doxysubsection{\texorpdfstring{Integrate with ROS2 Security}{Integrate with ROS2 Security}}\label{md_docs_2securing__capabilities_autotoc_md92}
+To prevent internal topics from leaking into the rosbridge access control, ROS2 security could be used to secure the internal topics. This would ensure that only internal connections can access internal topics, and capabilities can only add externally safe topics to the rosbridge access control.\hypertarget{md_docs_2securing__capabilities_autotoc_md93}{}\doxysubsection{\texorpdfstring{Basic diagram}{Basic diagram}}\label{md_docs_2securing__capabilities_autotoc_md93}
+ 
+\begin{DoxyImage}
+\includegraphics[width=\textwidth,height=\textheight/2,keepaspectratio=true]{securing-capability-based-robot.png}
+\doxyfigcaption{Basic diagram}
+\end{DoxyImage}
+    

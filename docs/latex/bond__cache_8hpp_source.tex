@@ -1,0 +1,163 @@
+\doxysection{bond\+\_\+cache.\+hpp}
+\hypertarget{bond__cache_8hpp_source}{}\label{bond__cache_8hpp_source}\index{capabilities2\_server/include/capabilities2\_server/bond\_cache.hpp@{capabilities2\_server/include/capabilities2\_server/bond\_cache.hpp}}
+\mbox{\hyperlink{bond__cache_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <map>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <functional>}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <rclcpp/rclcpp.hpp>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <bondcpp/bond.hpp>}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__server}{capabilities2\_server}}}
+\DoxyCodeLine{00012\ \{}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00022\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcapabilities2__server_1_1BondCache}{BondCache}}}
+\DoxyCodeLine{00023\ \{}
+\DoxyCodeLine{00024\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00030\ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a48efeffaf9fb7570b52c79487eed3f0f}{BondCache}}(\textcolor{keyword}{const}\ std::string\&\ bonds\_topic\ =\ \textcolor{stringliteral}{"{}/capabilities/bond"{}})\ :\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_af926c1948de00a8c475580903f542461}{bonds\_topic\_}}(bonds\_topic)}
+\DoxyCodeLine{00031\ \ \ \{}
+\DoxyCodeLine{00032\ \ \ \}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00040\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a95f5c2beb3e72240154de125ff0c3555}{add\_bond}}(\textcolor{keyword}{const}\ std::string\&\ capability,\ \textcolor{keyword}{const}\ std::string\&\ bond\_id)}
+\DoxyCodeLine{00041\ \ \ \{}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{comment}{//\ if\ capability\ is\ not\ in\ cache,\ add\ it}}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}.find(capability)\ ==\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}.end())}
+\DoxyCodeLine{00044\ \ \ \ \ \{}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}[capability]\ =\ \{\ bond\_id\ \};}
+\DoxyCodeLine{00046\ \ \ \ \ \}}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00048\ \ \ \ \ \{}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \textcolor{comment}{//\ if\ capability\ is\ in\ cache,\ append\ only\ new\ bond\ id}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (std::find(\mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}[capability].begin(),\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}[capability].end(),\ bond\_id)\ ==}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}[capability].end())}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}[capability].push\_back(bond\_id);}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00055\ \ \ \ \ \}}
+\DoxyCodeLine{00056\ \ \ \}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00065\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a59117ead721f4b608863ef3ce2228a46}{remove\_bond}}(\textcolor{keyword}{const}\ std::string\&\ bond\_id)}
+\DoxyCodeLine{00066\ \ \ \{}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{comment}{//\ remove\ bond\ id\ from\ all\ capability\ entries}}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ [capability,\ bonds]\ :\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}})}
+\DoxyCodeLine{00069\ \ \ \ \ \{}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \textcolor{keyword}{auto}\ it\ =\ std::find(bonds.begin(),\ bonds.end(),\ bond\_id);}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (it\ !=\ bonds.end())}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ bonds.erase(it);}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00075\ \ \ \ \ \}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{comment}{//\ remove\ empty\ capability\ entries}}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ it\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}.begin();\ it\ !=\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}.end();)}
+\DoxyCodeLine{00079\ \ \ \ \ \{}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (it-\/>second.empty())}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ it\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}.erase(it);}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ ++it;}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00088\ \ \ \ \ \}}
+\DoxyCodeLine{00089\ \ \ \}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00100\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_af3825f2898c0ed831a7f89b85d6742c5}{remove\_bond}}(\textcolor{keyword}{const}\ std::string\&\ capability,\ \textcolor{keyword}{const}\ std::string\&\ bond\_id)}
+\DoxyCodeLine{00101\ \ \ \{}
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{comment}{//\ remove\ bond\ id\ from\ capability\ entry}}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keyword}{auto}\ it\ =\ std::find(\mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}[capability].begin(),\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}[capability].end(),\ bond\_id);}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \ \ \textcolor{keywordflow}{if}\ (it\ !=\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}[capability].end())}
+\DoxyCodeLine{00106\ \ \ \ \ \{}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}[capability].erase(it);}
+\DoxyCodeLine{00108\ \ \ \ \ \}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{comment}{//\ remove\ capability\ entry\ if\ empty}}
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}[capability].empty())}
+\DoxyCodeLine{00112\ \ \ \ \ \{}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}.erase(capability);}
+\DoxyCodeLine{00114\ \ \ \ \ \}}
+\DoxyCodeLine{00115\ \ \ \}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \textcolor{comment}{//\ get\ all\ capabilities\ requested\ by\ a\ bond}}
+\DoxyCodeLine{00118\ \ \ \textcolor{keyword}{const}\ std::vector<std::string>\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_ada688394effbf87bed480782d64fe8e5}{get\_capabilities}}(\textcolor{keyword}{const}\ std::string\&\ bond\_id)}
+\DoxyCodeLine{00119\ \ \ \{}
+\DoxyCodeLine{00120\ \ \ \ \ std::vector<std::string>\ capabilities;}
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ [capability,\ bonds]\ :\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}})}
+\DoxyCodeLine{00122\ \ \ \ \ \{}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (std::find(bonds.begin(),\ bonds.end(),\ bond\_id)\ !=\ bonds.end())}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ capabilities.push\_back(capability);}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00127\ \ \ \ \ \}}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordflow}{return}\ capabilities;}
+\DoxyCodeLine{00130\ \ \ \}}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \ \ \textcolor{comment}{//\ get\ all\ current\ bonds\ for\ a\ capability}}
+\DoxyCodeLine{00133\ \ \ \textcolor{keyword}{const}\ std::vector<std::string>\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a19639716efa05b956bff7c9ca583b728}{get\_bonds}}(\textcolor{keyword}{const}\ std::string\&\ capability)}
+\DoxyCodeLine{00134\ \ \ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{comment}{//\ if\ doesn't\ exist\ then\ throw}}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a0cfb5d5535e4a3608593c3093364baaa}{exists}}(capability))}
+\DoxyCodeLine{00137\ \ \ \ \ \{}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}capability\ not\ found"{}});}
+\DoxyCodeLine{00139\ \ \ \ \ \}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}[capability];}
+\DoxyCodeLine{00142\ \ \ \}}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \textcolor{comment}{//\ capability\ exists\ in\ cache}}
+\DoxyCodeLine{00145\ \ \ \textcolor{comment}{//\ a\ capability\ has\ at\ least\ one\ bond}}
+\DoxyCodeLine{00146\ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a0cfb5d5535e4a3608593c3093364baaa}{exists}}(\textcolor{keyword}{const}\ std::string\&\ capability)}
+\DoxyCodeLine{00147\ \ \ \{}
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}.find(capability)\ !=\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}.end();}
+\DoxyCodeLine{00149\ \ \ \}}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \textcolor{comment}{//\ bond\ id\ exists\ for\ a\ capability}}
+\DoxyCodeLine{00152\ \ \ \textcolor{comment}{//\ this\ bond\ id\ is\ associated\ with\ this\ capability}}
+\DoxyCodeLine{00153\ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7db63a73651b43fa55eb444f49d62b26}{exists}}(\textcolor{keyword}{const}\ std::string\&\ capability,\ \textcolor{keyword}{const}\ std::string\&\ bond\_id)}
+\DoxyCodeLine{00154\ \ \ \{}
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{comment}{//\ capability\ exists\ guard}}
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a0cfb5d5535e4a3608593c3093364baaa}{exists}}(capability))}
+\DoxyCodeLine{00157\ \ \ \ \ \{}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00159\ \ \ \ \ \}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{comment}{//\ check\ if\ bond\ id\ exists\ for\ capability}}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{keyword}{auto}\&\ bonds\ =\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}}[capability];}
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{keywordflow}{return}\ std::find(bonds.begin(),\ bonds.end(),\ bond\_id)\ !=\ bonds.end();}
+\DoxyCodeLine{00164\ \ \ \}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{comment}{//\ start\ a\ live\ bond}}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_abb808c809ef2a79e4a8695f84bc47266}{start}}(\textcolor{keyword}{const}\ std::string\&\ bond\_id,\ rclcpp::Node::SharedPtr\ node,\ std::function<\textcolor{keywordtype}{void}(\textcolor{keywordtype}{void})>\ on\_broken,}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ std::function<\textcolor{keywordtype}{void}(\textcolor{keywordtype}{void})>\ on\_formed)}
+\DoxyCodeLine{00169\ \ \ \{}
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{comment}{//\ create\ a\ new\ bond\ with\ event\ callbacks}}
+\DoxyCodeLine{00171\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a329d242a8477e10bfa914107920ffbc6}{live\_bonds\_}}[bond\_id]\ =\ std::make\_unique<bond::Bond>(\mbox{\hyperlink{classcapabilities2__server_1_1BondCache_af926c1948de00a8c475580903f542461}{bonds\_topic\_}},\ bond\_id,\ node,\ on\_broken,\ on\_formed);}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{comment}{//\ start\ the\ bond}}
+\DoxyCodeLine{00174\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a329d242a8477e10bfa914107920ffbc6}{live\_bonds\_}}[bond\_id]-\/>setHeartbeatPeriod(0.10);}
+\DoxyCodeLine{00175\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a329d242a8477e10bfa914107920ffbc6}{live\_bonds\_}}[bond\_id]-\/>setHeartbeatTimeout(10.0);}
+\DoxyCodeLine{00176\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a329d242a8477e10bfa914107920ffbc6}{live\_bonds\_}}[bond\_id]-\/>start();}
+\DoxyCodeLine{00177\ \ \ \}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00180\ \ \ \textcolor{comment}{//\ bonds\ topic}}
+\DoxyCodeLine{00181\ \ \ std::string\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_af926c1948de00a8c475580903f542461}{bonds\_topic\_}};}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \textcolor{comment}{//\ bond\ cache}}
+\DoxyCodeLine{00184\ \ \ \textcolor{comment}{//\ capability\ -\/>\ bond\ ids}}
+\DoxyCodeLine{00185\ \ \ std::map<std::string,\ std::vector<std::string>>\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\_cache\_}};}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \ \ \textcolor{comment}{//\ live\ bonds}}
+\DoxyCodeLine{00188\ \ \ \textcolor{comment}{//\ bond\ id\ -\/>\ bond\ object}}
+\DoxyCodeLine{00189\ \ \ std::map<std::string,\ std::unique\_ptr<bond::Bond>>\ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a329d242a8477e10bfa914107920ffbc6}{live\_bonds\_}};}
+\DoxyCodeLine{00190\ \};}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_server}}
+
+\end{DoxyCode}

@@ -1,0 +1,9 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,77,144,102"/>
+<area shape="rect" id="Node000001" href="$structcapabilities2__events_1_1event__exception.html" title="event exception" alt="" coords="192,5,348,45"/>
+<area shape="poly" id="edge30_Node000000_Node000001" title=" " alt="" coords="127,70,207,43,209,48,128,75"/>
+<area shape="rect" id="Node000002" href="$structcapabilities2__events_1_1options__exception.html" title=" " alt="" coords="192,69,348,109"/>
+<area shape="poly" id="edge31_Node000000_Node000002" title=" " alt="" coords="158,87,192,87,192,92,158,92"/>
+<area shape="rect" id="Node000003" href="$structcapabilities2__runner_1_1runner__exception.html" title="runner exception" alt="" coords="193,133,347,173"/>
+<area shape="poly" id="edge32_Node000000_Node000003" title=" " alt="" coords="128,104,209,131,207,136,127,109"/>
+</map>

@@ -1,0 +1,135 @@
+\doxysection{remapping.\+hpp}
+\hypertarget{remapping_8hpp_source}{}\label{remapping_8hpp_source}\index{capabilities2\_server/include/capabilities2\_server/models/remapping.hpp@{capabilities2\_server/include/capabilities2\_server/models/remapping.hpp}}
+\mbox{\hyperlink{remapping_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <yaml-\/cpp/yaml.h>}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__server}{capabilities2\_server}}}
+\DoxyCodeLine{00008\ \{}
+\DoxyCodeLine{00009\ \textcolor{keyword}{namespace\ }models}
+\DoxyCodeLine{00010\ \{}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t}{remapping\_model\_t}}}
+\DoxyCodeLine{00013\ \{}
+\DoxyCodeLine{00014\ \ \ std::string\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_ad797637f1fb60e5cceb5c614695353a3}{from}};}
+\DoxyCodeLine{00015\ \ \ std::string\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_a121b210905dbc80d5ed8904e0009579c}{to}};}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_a169c348158aeb78da894c0c5dea81332}{from\_yaml\_detail\_iterator\_value}}(\textcolor{keyword}{const}\ YAML::detail::iterator\_value\&\ iter)}
+\DoxyCodeLine{00018\ \ \ \{}
+\DoxyCodeLine{00019\ \ \ \ \ \textcolor{comment}{//\ from\ is\ yaml\ key,\ to\ is\ yaml\ value}}
+\DoxyCodeLine{00020\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_ad797637f1fb60e5cceb5c614695353a3}{from}}\ =\ iter.first.as<std::string>();}
+\DoxyCodeLine{00021\ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_a121b210905dbc80d5ed8904e0009579c}{to}}\ =\ iter.second.as<std::string>();}
+\DoxyCodeLine{00022\ \ \ \}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \ \ YAML::Node\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_a399e580fe9ca87f3f79413693545452e}{to\_yaml}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00025\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00026\ \ \ \ \ YAML::Node\ node;}
+\DoxyCodeLine{00027\ \ \ \ \ node[\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_ad797637f1fb60e5cceb5c614695353a3}{from}}]\ =\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_a121b210905dbc80d5ed8904e0009579c}{to}};}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keywordflow}{return}\ node;}
+\DoxyCodeLine{00029\ \ \ \}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_a07a6910b05af84b8601fe8fd984b8932}{operator==}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t}{remapping\_model\_t}}\&\ other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00032\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_ad797637f1fb60e5cceb5c614695353a3}{from}}\ ==\ other.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_ad797637f1fb60e5cceb5c614695353a3}{from}}\ \&\&\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_a121b210905dbc80d5ed8904e0009579c}{to}}\ ==\ other.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_a121b210905dbc80d5ed8904e0009579c}{to}};}
+\DoxyCodeLine{00034\ \ \ \}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_a50910626d9a86e867108f51640c8d3b9}{operator!=}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t}{remapping\_model\_t}}\&\ other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00037\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ other);}
+\DoxyCodeLine{00039\ \ \ \}}
+\DoxyCodeLine{00040\ \};}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t}{remappings\_model\_t}}}
+\DoxyCodeLine{00043\ \{}
+\DoxyCodeLine{00044\ \ \ std::vector<remapping\_model\_t>\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_a1570369d1b89a3ba0a9cbff9419422cc}{parameters}};}
+\DoxyCodeLine{00045\ \ \ std::vector<remapping\_model\_t>\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_a9b83cf9b0b6306e5580f9babb42b8a11}{topics}};}
+\DoxyCodeLine{00046\ \ \ std::vector<remapping\_model\_t>\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_aba5002e746519b1ca48238e6d26c2054}{services}};}
+\DoxyCodeLine{00047\ \ \ std::vector<remapping\_model\_t>\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_a62e2be32cc2b051f7bdfba15ab17a95d}{actions}};}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_afc4a97cb962d255f268dbe6970ac59a8}{from\_yaml}}(\textcolor{keyword}{const}\ YAML::Node\&\ node)}
+\DoxyCodeLine{00050\ \ \ \{}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keywordflow}{if}\ (node[\textcolor{stringliteral}{"{}parameters"{}}])}
+\DoxyCodeLine{00052\ \ \ \ \ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ parameter\ :\ node[\textcolor{stringliteral}{"{}parameters"{}}])}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t}{remapping\_model\_t}}\ r;}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ r.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_a169c348158aeb78da894c0c5dea81332}{from\_yaml\_detail\_iterator\_value}}(parameter);}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_a1570369d1b89a3ba0a9cbff9419422cc}{parameters}}.push\_back(r);}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00059\ \ \ \ \ \}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordflow}{if}\ (node[\textcolor{stringliteral}{"{}topics"{}}])}
+\DoxyCodeLine{00062\ \ \ \ \ \{}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ topic\ :\ node[\textcolor{stringliteral}{"{}topics"{}}])}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t}{remapping\_model\_t}}\ r;}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ r.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_a169c348158aeb78da894c0c5dea81332}{from\_yaml\_detail\_iterator\_value}}(topic);}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_a9b83cf9b0b6306e5580f9babb42b8a11}{topics}}.push\_back(r);}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00069\ \ \ \ \ \}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{if}\ (node[\textcolor{stringliteral}{"{}services"{}}])}
+\DoxyCodeLine{00072\ \ \ \ \ \{}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ service\ :\ node[\textcolor{stringliteral}{"{}services"{}}])}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t}{remapping\_model\_t}}\ r;}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ r.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_a169c348158aeb78da894c0c5dea81332}{from\_yaml\_detail\_iterator\_value}}(service);}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_aba5002e746519b1ca48238e6d26c2054}{services}}.push\_back(r);}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00079\ \ \ \ \ \}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordflow}{if}\ (node[\textcolor{stringliteral}{"{}actions"{}}])}
+\DoxyCodeLine{00082\ \ \ \ \ \{}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ action\ :\ node[\textcolor{stringliteral}{"{}actions"{}}])}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t}{remapping\_model\_t}}\ r;}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ r.\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remapping__model__t_a169c348158aeb78da894c0c5dea81332}{from\_yaml\_detail\_iterator\_value}}(action);}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_a62e2be32cc2b051f7bdfba15ab17a95d}{actions}}.push\_back(r);}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00089\ \ \ \ \ \}}
+\DoxyCodeLine{00090\ \ \ \}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ YAML::Node\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_a528143f92b13f7633859774443ee7adc}{to\_yaml}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00093\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00094\ \ \ \ \ YAML::Node\ node;}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{comment}{//\ parameters}}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ parameter\ :\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_a1570369d1b89a3ba0a9cbff9419422cc}{parameters}})}
+\DoxyCodeLine{00098\ \ \ \ \ \{}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ node[\textcolor{stringliteral}{"{}parameters"{}}][parameter.from]\ =\ parameter.to;}
+\DoxyCodeLine{00100\ \ \ \ \ \}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{comment}{//\ topics}}
+\DoxyCodeLine{00103\ \ \ \ \ YAML::Node\ t;}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ topic\ :\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_a9b83cf9b0b6306e5580f9babb42b8a11}{topics}})}
+\DoxyCodeLine{00105\ \ \ \ \ \{}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ node[\textcolor{stringliteral}{"{}topics"{}}][topic.from]\ =\ topic.to;}
+\DoxyCodeLine{00107\ \ \ \ \ \}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{comment}{//\ services}}
+\DoxyCodeLine{00110\ \ \ \ \ YAML::Node\ s;}
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ service\ :\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_aba5002e746519b1ca48238e6d26c2054}{services}})}
+\DoxyCodeLine{00112\ \ \ \ \ \{}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ node[\textcolor{stringliteral}{"{}services"{}}][service.from]\ =\ service.to;}
+\DoxyCodeLine{00114\ \ \ \ \ \}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{comment}{//\ actions}}
+\DoxyCodeLine{00117\ \ \ \ \ YAML::Node\ a;}
+\DoxyCodeLine{00118\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ action\ :\ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t_a62e2be32cc2b051f7bdfba15ab17a95d}{actions}})}
+\DoxyCodeLine{00119\ \ \ \ \ \{}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ node[\textcolor{stringliteral}{"{}actions"{}}][action.from]\ =\ action.to;}
+\DoxyCodeLine{00121\ \ \ \ \ \}}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{comment}{//\ return\ node}}
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keywordflow}{return}\ node;}
+\DoxyCodeLine{00125\ \ \ \}}
+\DoxyCodeLine{00126\ \};}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \}\ \ \textcolor{comment}{//\ namespace\ models}}
+\DoxyCodeLine{00129\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_server}}
+
+\end{DoxyCode}

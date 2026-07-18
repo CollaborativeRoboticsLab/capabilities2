@@ -1,0 +1,64 @@
+\doxysection{encap\+\_\+runner.\+hpp}
+\hypertarget{encap__runner_8hpp_source}{}\label{encap__runner_8hpp_source}\index{capabilities2\_runner/include/capabilities2\_runner/encap\_runner.hpp@{capabilities2\_runner/include/capabilities2\_runner/encap\_runner.hpp}}
+\mbox{\hyperlink{encap__runner_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <capabilities2\_runner/notrigger\_action\_runner.hpp>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/action/capability.hpp>}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__runner}{capabilities2\_runner}}}
+\DoxyCodeLine{00007\ \{}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00020\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ActionT>}
+\DoxyCodeLine{00021\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner}{EnCapRunner}}\ :\ \textcolor{keyword}{public}\ NoTriggerActionRunner<ActionT>}
+\DoxyCodeLine{00022\ \{}
+\DoxyCodeLine{00023\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00024\ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_a0bbf60f7f885bc1dddffe90635854bad}{EnCapRunner}}()\ :\ NoTriggerActionRunner()}
+\DoxyCodeLine{00025\ \ \ \{}
+\DoxyCodeLine{00026\ \ \ \}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00040\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_a7782f8488a37196d1246fef965c75443}{init\_encapsulated\_action}}(rclcpp::Node::SharedPtr\ node,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts}{runner\_opts}}\&\ run\_config,}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ action\_name,\ std::function<\textcolor{keywordtype}{void}(Event\&)>\ print)}
+\DoxyCodeLine{00042\ \ \ \{}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{comment}{//\ init\ the\ base\ action\ runner}}
+\DoxyCodeLine{00044\ \ \ \ \ init\_action(node,\ run\_config,\ action\_name,\ print);}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{comment}{//\ create\ an\ encapsulating\ action\ server}}
+\DoxyCodeLine{00047\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_a7b6879449e5623ebc4cf78a5e8c9dd02}{encap\_action\_}}\ =\ rclcpp\_action::create\_server<capabilities2\_msgs::action::Capability>(}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ node\_,\ \textcolor{stringliteral}{"{}\string~/encap/"{}}\ +\ get\_provider(),}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_abdb6db0942e157b1776dff2cea32de55}{EnCapRunner::handle\_goal}},\ \textcolor{keyword}{this},\ std::placeholders::\_1,\ std::placeholders::\_2),}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_a25706ef80e4653174c2160d92c6b2d43}{EnCapRunner::handle\_cancel}},\ \textcolor{keyword}{this},\ std::placeholders::\_1),}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ std::bind(\&\mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_ab198a797528098b90802453b8878dc58}{EnCapRunner::handle\_accepted}},\ \textcolor{keyword}{this},\ std::placeholders::\_1));}
+\DoxyCodeLine{00052\ \ \ \}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00060\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_a68e87f8c49301e1e001c232a80fa2f16}{stop}}(\textcolor{keyword}{const}\ std::string\&\ bond\_id,\ \textcolor{keyword}{const}\ std::string\&\ instance\_id\ =\ \textcolor{stringliteral}{"{}"{}})\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00061\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{comment}{//\ stop\ the\ encapsulating\ action\ server}}
+\DoxyCodeLine{00063\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_a7b6879449e5623ebc4cf78a5e8c9dd02}{encap\_action\_}}-\/>cancel\_all\_goals();}
+\DoxyCodeLine{00064\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_a7b6879449e5623ebc4cf78a5e8c9dd02}{encap\_action\_}}.reset();}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{comment}{//\ stop\ the\ base\ class}}
+\DoxyCodeLine{00067\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1ActionRunner_a0417718f4ad7a9318169a14abb182fa5}{ActionRunner::stop}}(bond\_id,\ instance\_id);}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{comment}{//\ emit\ stopped\ event}}
+\DoxyCodeLine{00070\ \ \ \ \ emit\_stopped(bond\_id,\ instance\_id,\ param\_on\_stopped());}
+\DoxyCodeLine{00071\ \ \ \}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \textcolor{comment}{//\ encapsulated\ action\ server\ related\ functions}}
+\DoxyCodeLine{00080\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_abdb6db0942e157b1776dff2cea32de55}{handle\_goal}}(\textcolor{keyword}{const}\ rclcpp\_action::GoalUUID\&\ uuid,}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<const\ capabilities2\_msgs::action::Capability::Goal>\ goal);}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00088\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_a25706ef80e4653174c2160d92c6b2d43}{handle\_cancel}}(}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::shared\_ptr<rclcpp\_action::ServerGoalHandle<capabilities2\_msgs::action::Capability>>\ goal\_handle);}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00096\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_ab198a797528098b90802453b8878dc58}{handle\_accepted}}(}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::shared\_ptr<rclcpp\_action::ServerGoalHandle<capabilities2\_msgs::action::Capability>>\ goal\_handle);}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00101\ \ \ std::shared\_ptr<rclcpp\_action::Server<capabilities2\_msgs::action::Capability>>\ \mbox{\hyperlink{classcapabilities2__runner_1_1EnCapRunner_a7b6879449e5623ebc4cf78a5e8c9dd02}{encap\_action\_}};}
+\DoxyCodeLine{00102\ \};}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_runner}}
+
+\end{DoxyCode}

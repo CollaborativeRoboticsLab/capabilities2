@@ -1,0 +1,77 @@
+\chapter{Capabilities2 msgs}
+\hypertarget{md_capabilities2__msgs_2readme}{}\label{md_capabilities2__msgs_2readme}\index{Capabilities2 msgs@{Capabilities2 msgs}}
+\label{md_capabilities2__msgs_2readme_autotoc_md14}%
+\Hypertarget{md_capabilities2__msgs_2readme_autotoc_md14}%
+ 
+
+This package contains \href{https://index.ros.org/doc/ros2/}{\texttt{ ROS2}} {\ttfamily messages}, {\ttfamily services}, and {\ttfamily actions} for the capabilities2 framework.\hypertarget{md_capabilities2__msgs_2readme_autotoc_md15}{}\doxysection{\texorpdfstring{Message Types}{Message Types}}\label{md_capabilities2__msgs_2readme_autotoc_md15}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Message Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Message Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endhead
+{\ttfamily Capability.\+msg}   &A message type for a capability of a robot.    \\\cline{1-2}
+{\ttfamily Capability\+Command.\+msg}   &A message type for a command to a robot.    \\\cline{1-2}
+{\ttfamily Capability\+Connection.\+msg}   &A message type for connecting one capability to another through the event system.    \\\cline{1-2}
+{\ttfamily Capability\+Event.\+msg}   &A message type for an event related to a capability.    \\\cline{1-2}
+{\ttfamily Capability\+Event\+Code.\+msg}   &event types    \\\cline{1-2}
+{\ttfamily Capability\+Event\+Stamped.\+msg}   &A stamped version of event    \\\cline{1-2}
+{\ttfamily Capability\+Response.\+msg}   &A message type for a response from a robot related to a capability.    \\\cline{1-2}
+{\ttfamily Capability\+Spec.\+msg}   &A message type for the specification of a capability.    \\\cline{1-2}
+{\ttfamily Natural\+Capability.\+msg}   &A message type for a natural capability of a robot.    \\\cline{1-2}
+{\ttfamily Remapping.\+msg}   &A message type for a key/value remapping of a capability resource.    \\\cline{1-2}
+{\ttfamily Running\+Capability.\+msg}   &A message type for a running capability.   \\\cline{1-2}
+\end{longtabu}
+\hypertarget{md_capabilities2__msgs_2readme_autotoc_md16}{}\doxysection{\texorpdfstring{Service Types}{Service Types}}\label{md_capabilities2__msgs_2readme_autotoc_md16}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Service Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Service Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endhead
+{\ttfamily Establish\+Bond.\+srv}   &A service type for establishing a bond between a robot and a client.    \\\cline{1-2}
+{\ttfamily Free\+Capability.\+srv}   &A service type for freeing a capability of a robot.    \\\cline{1-2}
+{\ttfamily Get\+Capability\+Spec.\+srv}   &A service type for getting the specification of a capability of a robot.    \\\cline{1-2}
+{\ttfamily Get\+Capability\+Specs.\+srv}   &A service type for getting the specifications of all capabilities of a robot.    \\\cline{1-2}
+{\ttfamily Get\+Interfaces.\+srv}   &A service type for getting the interfaces of a robot.    \\\cline{1-2}
+{\ttfamily Get\+Providers.\+srv}   &A service type for getting the providers of a capability of a robot.    \\\cline{1-2}
+{\ttfamily Get\+Remappings.\+srv}   &A service type for getting the remappings of a capability of a robot.    \\\cline{1-2}
+{\ttfamily Get\+Running\+Capabilities.\+srv}   &A service type for getting the running capabilities of a robot.    \\\cline{1-2}
+{\ttfamily Get\+Semantic\+Interfaces.\+srv}   &A service type for getting the semantic interfaces.    \\\cline{1-2}
+{\ttfamily Register\+Capability.\+srv}   &A service type for registering a capability with the server.    \\\cline{1-2}
+{\ttfamily Start\+Capability.\+srv}   &A service type for starting a capability.    \\\cline{1-2}
+{\ttfamily Stop\+Capability.\+srv}   &A service type for stopping a capability.    \\\cline{1-2}
+{\ttfamily Use\+Capability.\+srv}   &A service type for using a capability.   \\\cline{1-2}
+\end{longtabu}
+
+
+New in 0.\+1.\+3\+:
+
+
+\begin{DoxyItemize}
+\item {\ttfamily Connect\+Capability.\+srv} -\/ A service type for connecting two running capabilities together through the event system.
+\item {\ttfamily Launch.\+srv} -\/ A service type for launching a launch file.
+\item {\ttfamily Trigger\+Capability.\+srv} -\/ A service type for triggering a capability.
+\end{DoxyItemize}\hypertarget{md_capabilities2__msgs_2readme_autotoc_md17}{}\doxysection{\texorpdfstring{Action Types}{Action Types}}\label{md_capabilities2__msgs_2readme_autotoc_md17}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Action Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Action Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-2}
+\endhead
+{\ttfamily Capability.\+action}   &An action type for an encapsulated capability action.    \\\cline{1-2}
+{\ttfamily Launch.\+action}   &An action type for launching a launch file.   \\\cline{1-2}
+\end{longtabu}

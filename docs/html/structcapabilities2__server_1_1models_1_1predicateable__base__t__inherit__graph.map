@@ -1,0 +1,9 @@
+<map id="capabilities2_server::models::predicateable_base_t" name="capabilities2_server::models::predicateable_base_t">
+<area shape="rect" id="Node000001" title="predicateable model base type" alt="" coords="5,62,180,117"/>
+<area shape="rect" id="Node000002" href="$structcapabilities2__server_1_1models_1_1interface__model__t.html" title="interface model" alt="" coords="231,5,435,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,60,257,43,258,48,194,65"/>
+<area shape="rect" id="Node000003" href="$structcapabilities2__server_1_1models_1_1provider__model__t.html" title="provider model" alt="" coords="233,69,433,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="194,87,233,87,233,92,194,92"/>
+<area shape="rect" id="Node000004" href="$structcapabilities2__server_1_1models_1_1semantic__interface__model__t.html" title="semantic interface model" alt="" coords="228,134,439,189"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="194,117,242,131,241,137,192,122"/>
+</map>

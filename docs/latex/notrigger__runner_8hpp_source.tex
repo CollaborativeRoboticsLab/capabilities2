@@ -1,0 +1,28 @@
+\doxysection{notrigger\+\_\+runner.\+hpp}
+\hypertarget{notrigger__runner_8hpp_source}{}\label{notrigger__runner_8hpp_source}\index{capabilities2\_runner/include/capabilities2\_runner/notrigger\_runner.hpp@{capabilities2\_runner/include/capabilities2\_runner/notrigger\_runner.hpp}}
+\mbox{\hyperlink{notrigger__runner_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{runner__base_8hpp}{capabilities2\_runner/runner\_base.hpp}}>}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__runner}{capabilities2\_runner}}}
+\DoxyCodeLine{00006\ \{}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00015\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcapabilities2__runner_1_1NoTriggerRunner}{NoTriggerRunner}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase}{RunnerBase}}}
+\DoxyCodeLine{00016\ \{}
+\DoxyCodeLine{00017\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00018\ \ \ \textcolor{comment}{//\ throw\ on\ trigger\ function}}
+\DoxyCodeLine{00019\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1NoTriggerRunner_a436e2217ca2c4fd44ac79271200c64d4}{trigger}}(\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\_events::EventParameters}}\&\ parameters,\ \textcolor{keyword}{const}\ std::string\&\ bond\_id,}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ instance\_id\ =\ \textcolor{stringliteral}{"{}"{}})\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00021\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{comment}{//\ emit\ failed\ event}}
+\DoxyCodeLine{00023\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a5dcd2ac4205bb7f3cf069e0273ec46b7}{emit\_failed}}(bond\_id,\ instance\_id,\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a9a5419cab317ef239d2f197714136660}{param\_on\_failure}}());}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{runner\_exception}}(\textcolor{stringliteral}{"{}cannot\ trigger\ this\ is\ a\ no-\/trigger\ runner"{}});}
+\DoxyCodeLine{00026\ \ \ \}}
+\DoxyCodeLine{00027\ \};}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_runner}}
+
+\end{DoxyCode}

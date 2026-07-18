@@ -1,0 +1,176 @@
+\doxysection{capabilities2\+\_\+server\+::Bond\+Cache Class Reference}
+\hypertarget{classcapabilities2__server_1_1BondCache}{}\label{classcapabilities2__server_1_1BondCache}\index{capabilities2\_server::BondCache@{capabilities2\_server::BondCache}}
+
+
+bond cache class  
+
+
+
+
+{\ttfamily \#include "{}bond\+\_\+cache.\+hpp"{}}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a48efeffaf9fb7570b52c79487eed3f0f}{Bond\+Cache}} (const std\+::string \&bonds\+\_\+topic="{}/capabilities/bond"{})
+\begin{DoxyCompactList}\small\item\em Construct a Bond Cache with a specific bond topic. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a95f5c2beb3e72240154de125ff0c3555}{add\+\_\+bond}} (const std\+::string \&capability, const std\+::string \&bond\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Add a bond to the cache. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a59117ead721f4b608863ef3ce2228a46}{remove\+\_\+bond}} (const std\+::string \&bond\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Remove a bond id from the cache for all capabilities. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_af3825f2898c0ed831a7f89b85d6742c5}{remove\+\_\+bond}} (const std\+::string \&capability, const std\+::string \&bond\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Remove a bond id from a specific capability. \end{DoxyCompactList}\item 
+const std\+::vector$<$ std\+::string $>$ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_ada688394effbf87bed480782d64fe8e5}{get\+\_\+capabilities}} (const std\+::string \&bond\+\_\+id)
+\item 
+const std\+::vector$<$ std\+::string $>$ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a19639716efa05b956bff7c9ca583b728}{get\+\_\+bonds}} (const std\+::string \&capability)
+\item 
+bool \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a0cfb5d5535e4a3608593c3093364baaa}{exists}} (const std\+::string \&capability)
+\item 
+bool \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7db63a73651b43fa55eb444f49d62b26}{exists}} (const std\+::string \&capability, const std\+::string \&bond\+\_\+id)
+\item 
+void \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_abb808c809ef2a79e4a8695f84bc47266}{start}} (const std\+::string \&bond\+\_\+id, rclcpp\+::\+Node\+::\+Shared\+Ptr node, std\+::function$<$ void(void)$>$ on\+\_\+broken, std\+::function$<$ void(void)$>$ on\+\_\+formed)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::string \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_af926c1948de00a8c475580903f542461}{bonds\+\_\+topic\+\_\+}}
+\item 
+std\+::map$<$ std\+::string, std\+::vector$<$ std\+::string $>$ $>$ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}{bond\+\_\+cache\+\_\+}}
+\item 
+std\+::map$<$ std\+::string, std\+::unique\+\_\+ptr$<$ bond\+::\+Bond $>$ $>$ \mbox{\hyperlink{classcapabilities2__server_1_1BondCache_a329d242a8477e10bfa914107920ffbc6}{live\+\_\+bonds\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+bond cache class 
+
+keep track of bonds established by clients and associated resources this is used to manage the lifecycle of capabilities based on client bonds a capability can have multiple bonds from different clients 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classcapabilities2__server_1_1BondCache_a48efeffaf9fb7570b52c79487eed3f0f}\label{classcapabilities2__server_1_1BondCache_a48efeffaf9fb7570b52c79487eed3f0f} 
+\index{capabilities2\_server::BondCache@{capabilities2\_server::BondCache}!BondCache@{BondCache}}
+\index{BondCache@{BondCache}!capabilities2\_server::BondCache@{capabilities2\_server::BondCache}}
+\doxysubsubsection{\texorpdfstring{BondCache()}{BondCache()}}
+{\footnotesize\ttfamily capabilities2\+\_\+server\+::\+Bond\+Cache\+::\+Bond\+Cache (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{bonds\+\_\+topic = {\ttfamily "{}/capabilities/bond"{}} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Construct a Bond Cache with a specific bond topic. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em bonds\+\_\+topic} & \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classcapabilities2__server_1_1BondCache_a95f5c2beb3e72240154de125ff0c3555}\label{classcapabilities2__server_1_1BondCache_a95f5c2beb3e72240154de125ff0c3555} 
+\index{capabilities2\_server::BondCache@{capabilities2\_server::BondCache}!add\_bond@{add\_bond}}
+\index{add\_bond@{add\_bond}!capabilities2\_server::BondCache@{capabilities2\_server::BondCache}}
+\doxysubsubsection{\texorpdfstring{add\_bond()}{add\_bond()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Bond\+Cache\+::add\+\_\+bond (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{capability,  }\item[{const std\+::string \&}]{bond\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Add a bond to the cache. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em capability} & \\
+\hline
+{\em bond\+\_\+id} & \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__server_1_1BondCache_a0cfb5d5535e4a3608593c3093364baaa}\label{classcapabilities2__server_1_1BondCache_a0cfb5d5535e4a3608593c3093364baaa} 
+\index{capabilities2\_server::BondCache@{capabilities2\_server::BondCache}!exists@{exists}}
+\index{exists@{exists}!capabilities2\_server::BondCache@{capabilities2\_server::BondCache}}
+\doxysubsubsection{\texorpdfstring{exists()}{exists()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily bool capabilities2\+\_\+server\+::\+Bond\+Cache\+::exists (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{capability }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1BondCache_a7db63a73651b43fa55eb444f49d62b26}\label{classcapabilities2__server_1_1BondCache_a7db63a73651b43fa55eb444f49d62b26} 
+\index{capabilities2\_server::BondCache@{capabilities2\_server::BondCache}!exists@{exists}}
+\index{exists@{exists}!capabilities2\_server::BondCache@{capabilities2\_server::BondCache}}
+\doxysubsubsection{\texorpdfstring{exists()}{exists()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily bool capabilities2\+\_\+server\+::\+Bond\+Cache\+::exists (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{capability,  }\item[{const std\+::string \&}]{bond\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1BondCache_a19639716efa05b956bff7c9ca583b728}\label{classcapabilities2__server_1_1BondCache_a19639716efa05b956bff7c9ca583b728} 
+\index{capabilities2\_server::BondCache@{capabilities2\_server::BondCache}!get\_bonds@{get\_bonds}}
+\index{get\_bonds@{get\_bonds}!capabilities2\_server::BondCache@{capabilities2\_server::BondCache}}
+\doxysubsubsection{\texorpdfstring{get\_bonds()}{get\_bonds()}}
+{\footnotesize\ttfamily const std\+::vector$<$ std\+::string $>$ capabilities2\+\_\+server\+::\+Bond\+Cache\+::get\+\_\+bonds (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{capability }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1BondCache_ada688394effbf87bed480782d64fe8e5}\label{classcapabilities2__server_1_1BondCache_ada688394effbf87bed480782d64fe8e5} 
+\index{capabilities2\_server::BondCache@{capabilities2\_server::BondCache}!get\_capabilities@{get\_capabilities}}
+\index{get\_capabilities@{get\_capabilities}!capabilities2\_server::BondCache@{capabilities2\_server::BondCache}}
+\doxysubsubsection{\texorpdfstring{get\_capabilities()}{get\_capabilities()}}
+{\footnotesize\ttfamily const std\+::vector$<$ std\+::string $>$ capabilities2\+\_\+server\+::\+Bond\+Cache\+::get\+\_\+capabilities (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{bond\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{classcapabilities2__server_1_1BondCache_a59117ead721f4b608863ef3ce2228a46}\label{classcapabilities2__server_1_1BondCache_a59117ead721f4b608863ef3ce2228a46} 
+\index{capabilities2\_server::BondCache@{capabilities2\_server::BondCache}!remove\_bond@{remove\_bond}}
+\index{remove\_bond@{remove\_bond}!capabilities2\_server::BondCache@{capabilities2\_server::BondCache}}
+\doxysubsubsection{\texorpdfstring{remove\_bond()}{remove\_bond()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Bond\+Cache\+::remove\+\_\+bond (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{bond\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Remove a bond id from the cache for all capabilities. 
+
+If a capability has no more bonds, it is removed from the cache
+
+
+\begin{DoxyParams}{Parameters}
+{\em bond\+\_\+id} & \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__server_1_1BondCache_af3825f2898c0ed831a7f89b85d6742c5}\label{classcapabilities2__server_1_1BondCache_af3825f2898c0ed831a7f89b85d6742c5} 
+\index{capabilities2\_server::BondCache@{capabilities2\_server::BondCache}!remove\_bond@{remove\_bond}}
+\index{remove\_bond@{remove\_bond}!capabilities2\_server::BondCache@{capabilities2\_server::BondCache}}
+\doxysubsubsection{\texorpdfstring{remove\_bond()}{remove\_bond()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Bond\+Cache\+::remove\+\_\+bond (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{capability,  }\item[{const std\+::string \&}]{bond\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Remove a bond id from a specific capability. 
+
+if the bond is used by another capability, it is not removed if the capability has no more bonds, it is removed from the cache
+
+
+\begin{DoxyParams}{Parameters}
+{\em capability} & \\
+\hline
+{\em bond\+\_\+id} & \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcapabilities2__server_1_1BondCache_abb808c809ef2a79e4a8695f84bc47266}\label{classcapabilities2__server_1_1BondCache_abb808c809ef2a79e4a8695f84bc47266} 
+\index{capabilities2\_server::BondCache@{capabilities2\_server::BondCache}!start@{start}}
+\index{start@{start}!capabilities2\_server::BondCache@{capabilities2\_server::BondCache}}
+\doxysubsubsection{\texorpdfstring{start()}{start()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::\+Bond\+Cache\+::start (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{bond\+\_\+id,  }\item[{rclcpp\+::\+Node\+::\+Shared\+Ptr}]{node,  }\item[{std\+::function$<$ void(void)$>$}]{on\+\_\+broken,  }\item[{std\+::function$<$ void(void)$>$}]{on\+\_\+formed }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e}\label{classcapabilities2__server_1_1BondCache_a7b2a6a067fe9dd8266d44e549f68849e} 
+\index{capabilities2\_server::BondCache@{capabilities2\_server::BondCache}!bond\_cache\_@{bond\_cache\_}}
+\index{bond\_cache\_@{bond\_cache\_}!capabilities2\_server::BondCache@{capabilities2\_server::BondCache}}
+\doxysubsubsection{\texorpdfstring{bond\_cache\_}{bond\_cache\_}}
+{\footnotesize\ttfamily std\+::map$<$std\+::string, std\+::vector$<$std\+::string$>$ $>$ capabilities2\+\_\+server\+::\+Bond\+Cache\+::bond\+\_\+cache\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1BondCache_af926c1948de00a8c475580903f542461}\label{classcapabilities2__server_1_1BondCache_af926c1948de00a8c475580903f542461} 
+\index{capabilities2\_server::BondCache@{capabilities2\_server::BondCache}!bonds\_topic\_@{bonds\_topic\_}}
+\index{bonds\_topic\_@{bonds\_topic\_}!capabilities2\_server::BondCache@{capabilities2\_server::BondCache}}
+\doxysubsubsection{\texorpdfstring{bonds\_topic\_}{bonds\_topic\_}}
+{\footnotesize\ttfamily std\+::string capabilities2\+\_\+server\+::\+Bond\+Cache\+::bonds\+\_\+topic\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classcapabilities2__server_1_1BondCache_a329d242a8477e10bfa914107920ffbc6}\label{classcapabilities2__server_1_1BondCache_a329d242a8477e10bfa914107920ffbc6} 
+\index{capabilities2\_server::BondCache@{capabilities2\_server::BondCache}!live\_bonds\_@{live\_bonds\_}}
+\index{live\_bonds\_@{live\_bonds\_}!capabilities2\_server::BondCache@{capabilities2\_server::BondCache}}
+\doxysubsubsection{\texorpdfstring{live\_bonds\_}{live\_bonds\_}}
+{\footnotesize\ttfamily std\+::map$<$std\+::string, std\+::unique\+\_\+ptr$<$bond\+::\+Bond$>$ $>$ capabilities2\+\_\+server\+::\+Bond\+Cache\+::live\+\_\+bonds\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+capabilities2\+\_\+server/include/capabilities2\+\_\+server/\mbox{\hyperlink{bond__cache_8hpp}{bond\+\_\+cache.\+hpp}}\end{DoxyCompactItemize}

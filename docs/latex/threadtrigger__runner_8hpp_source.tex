@@ -1,0 +1,112 @@
+\doxysection{threadtrigger\+\_\+runner.\+hpp}
+\hypertarget{threadtrigger__runner_8hpp_source}{}\label{threadtrigger__runner_8hpp_source}\index{capabilities2\_runner/include/capabilities2\_runner/threadtrigger\_runner.hpp@{capabilities2\_runner/include/capabilities2\_runner/threadtrigger\_runner.hpp}}
+\mbox{\hyperlink{threadtrigger__runner_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <map>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <atomic>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <mutex>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <thread>}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{runner__base_8hpp}{capabilities2\_runner/runner\_base.hpp}}>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{uuid__generator_8hpp}{capabilities2\_events/uuid\_generator.hpp}}>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <capabilities2\_msgs/msg/capability\_event\_code.hpp>}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__runner}{capabilities2\_runner}}}
+\DoxyCodeLine{00014\ \{}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00020\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner}{ThreadTriggerRunner}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase}{RunnerBase}}}
+\DoxyCodeLine{00021\ \{}
+\DoxyCodeLine{00022\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00030\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ std::string\ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_a10133774ae4ef6f39f9d94ebbed1b58c}{bond\_from\_thread\_id}}(\textcolor{keyword}{const}\ std::string\&\ thread\_id)}
+\DoxyCodeLine{00031\ \ \ \{}
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{comment}{//\ extract\ bond\_id\ from\ thread\_id\ (format:\ "{}bond\_id/trigger\_id"{})}}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ slash\_pos\ =\ thread\_id.find(\textcolor{charliteral}{'/'});}
+\DoxyCodeLine{00034\ \ \ \ \ std::string\ bond\_id\ =\ (slash\_pos\ !=\ std::string::npos)\ ?\ thread\_id.substr(0,\ slash\_pos)\ :\ thread\_id;}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordflow}{return}\ bond\_id;}
+\DoxyCodeLine{00036\ \ \ \}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00044\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ std::string\ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_af750ef563c71182944a9a0ec380f78de}{instance\_from\_thread\_id}}(\textcolor{keyword}{const}\ std::string\&\ thread\_id)}
+\DoxyCodeLine{00045\ \ \ \{}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{comment}{//\ extract\ instance\_id\ from\ thread\_id\ (format:\ "{}bond\_id/instance\_id"{})}}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ slash\_pos\ =\ thread\_id.find(\textcolor{charliteral}{'/'});}
+\DoxyCodeLine{00048\ \ \ \ \ std::string\ instance\_id\ =\ (slash\_pos\ !=\ std::string::npos)\ ?\ thread\_id.substr(slash\_pos\ +\ 1)\ :\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordflow}{return}\ instance\_id;}
+\DoxyCodeLine{00050\ \ \ \}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00053\ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_a88e489fd1a04dd9f308e2fd7f792035c}{ThreadTriggerRunner}}()\ :\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase}{RunnerBase}}(),\ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_ac20f6188631fe57af28627273fe86e64}{execution\_thread\_pool\_}}(),\ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_ae5b5363dde31c25ddc3c324ef6d3f08e}{mutex\_}}(),\ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_abb0aca7529033b5c7f5e36a72253e552}{execution\_should\_stop\_}}(false)}
+\DoxyCodeLine{00054\ \ \ \{}
+\DoxyCodeLine{00055\ \ \ \}}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_a990e91bdda8c272274eb4120bd62293f}{\string~ThreadTriggerRunner}}()}
+\DoxyCodeLine{00058\ \ \ \{}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{comment}{//\ stop\ any\ running\ threads\ on\ destruction}}
+\DoxyCodeLine{00060\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_a7f2f5b100251310d3b9ccb6cf093c6e7}{stop\_execution}}(std::chrono::milliseconds(500));}
+\DoxyCodeLine{00061\ \ \ \}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00073\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_aae61a479d081029f9203e842dfa9884d}{trigger}}(\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\_events::EventParameters}}\&\ parameters,\ \textcolor{keyword}{const}\ std::string\&\ bond\_id,}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ instance\_id)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00075\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{comment}{//\ namespace\ the\ thread\ id\ with\ bond\ id\ for\ later}}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{comment}{//\ could\ list\ all\ threads\ related\ to\ a\ bond\ if\ needed}}
+\DoxyCodeLine{00078\ \ \ \ \ std::string\ thread\_id\ =\ bond\_id\ +\ \textcolor{stringliteral}{"{}/"{}}\ +\ instance\_id;}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{//\ start\ execution\ thread}}
+\DoxyCodeLine{00081\ \ \ \ \ \{}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ std::scoped\_lock\ lock(\mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_ae5b5363dde31c25ddc3c324ef6d3f08e}{mutex\_}});}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \textcolor{comment}{//\ TODO:\ consider\ emitting\ on\ start\ event\ here}}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \textcolor{comment}{//\ emit\_event(bond\_id,\ capabilities2\_msgs::msg::CapabilityEventCode::ON\_STARTED,\ updated\_on\_started(parameters));}}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_ac20f6188631fe57af28627273fe86e64}{execution\_thread\_pool\_}}[thread\_id]\ =\ std::thread(\&\mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_a9e8c878821f673722b4d2da51df274e9}{ThreadTriggerRunner::execution}},\ \textcolor{keyword}{this},\ parameters,\ thread\_id);}
+\DoxyCodeLine{00086\ \ \ \ \ \}}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{comment}{//\ emit\ trigger\ event}}
+\DoxyCodeLine{00089\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__events_1_1EventNode_ad1b79fbe33fd75339bcaa77417240e57}{emit\_event}}(bond\_id,\ instance\_id,\ capabilities2\_msgs::msg::CapabilityEventCode::TRIGGERED);}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{comment}{//\ BUG:\ thread\ management?}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{comment}{//\ TODO:\ consider\ emitting\ on\ stop\ event\ here}}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{comment}{//\ emit\_event(bond\_id,\ capabilities2\_msgs::msg::CapabilityEventCode::ON\_STOPPED,\ updated\_on\_stopped(parameters));}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \ \ RCLCPP\_DEBUG(\mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_ab92e5d0bb295489656b6ac35b23eef8e}{node\_}}-\/>get\_logger(),\ \textcolor{stringliteral}{"{}started\ execution\ thread\ for\ thread\ id:\ \%s"{}},\ thread\_id.c\_str());}
+\DoxyCodeLine{00097\ \ \ \}}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00110\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_a9e8c878821f673722b4d2da51df274e9}{execution}}(\mbox{\hyperlink{structcapabilities2__events_1_1EventParameters}{capabilities2\_events::EventParameters}}\ parameters,\ \textcolor{keyword}{const}\ std::string\&\ thread\_id)\ =\ 0;}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00114\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_a7f2f5b100251310d3b9ccb6cf093c6e7}{stop\_execution}}(std::chrono::milliseconds\ timeout\ =\ std::chrono::milliseconds(500))}
+\DoxyCodeLine{00115\ \ \ \{}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{comment}{//\ signal\ listening\ threads\ to\ stop}}
+\DoxyCodeLine{00117\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_abb0aca7529033b5c7f5e36a72253e552}{execution\_should\_stop\_}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \ \ \ \ \textcolor{comment}{//\ try\ join\ in\ a\ non-\/blocking\ way\ and\ log\ if\ threads\ are\ not\ cleaned\ up\ properly}}
+\DoxyCodeLine{00120\ \ \ \ \ \{}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ std::scoped\_lock\ lock(\mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_ae5b5363dde31c25ddc3c324ef6d3f08e}{mutex\_}});}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ [thread\_id,\ exec\_thread]\ :\ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_ac20f6188631fe57af28627273fe86e64}{execution\_thread\_pool\_}})}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (exec\_thread.joinable())}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ TODO:\ FIX\ THIS\ FUTURE\ MICHAEL}}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ exec\_thread.join();}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \textcolor{comment}{//\ clear\ the\ thread\ pool}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_ac20f6188631fe57af28627273fe86e64}{execution\_thread\_pool\_}}.clear();}
+\DoxyCodeLine{00133\ \ \ \ \ \}}
+\DoxyCodeLine{00134\ \ \ \}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00140\ \ \ std::map<std::string,\ std::thread>\ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_ac20f6188631fe57af28627273fe86e64}{execution\_thread\_pool\_}};}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00145\ \ \ std::mutex\ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_ae5b5363dde31c25ddc3c324ef6d3f08e}{mutex\_}};}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00150\ \ \ std::atomic<bool>\ \mbox{\hyperlink{classcapabilities2__runner_1_1ThreadTriggerRunner_abb0aca7529033b5c7f5e36a72253e552}{execution\_should\_stop\_}};}
+\DoxyCodeLine{00151\ \};}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_runner}}
+
+\end{DoxyCode}

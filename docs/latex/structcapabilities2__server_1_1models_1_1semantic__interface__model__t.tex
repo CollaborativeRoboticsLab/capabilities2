@@ -1,0 +1,128 @@
+\doxysection{capabilities2\+\_\+server\+::models\+::semantic\+\_\+interface\+\_\+model\+\_\+t Struct Reference}
+\hypertarget{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}{}\label{structcapabilities2__server_1_1models_1_1semantic__interface__model__t}\index{capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}}
+
+
+semantic interface model  
+
+
+
+
+{\ttfamily \#include "{}semantic\+\_\+interface.\+hpp"{}}
+
+
+
+Inheritance diagram for capabilities2\+\_\+server\+::models\+::semantic\+\_\+interface\+\_\+model\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{structcapabilities2__server_1_1models_1_1semantic__interface__model__t__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for capabilities2\+\_\+server\+::models\+::semantic\+\_\+interface\+\_\+model\+\_\+t\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{structcapabilities2__server_1_1models_1_1semantic__interface__model__t__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a1c82841795835d4359d6bc1fd40b9f26}{from\+\_\+yaml}} (const YAML\+::\+Node \&node)
+\item 
+YAML\+::\+Node \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a27bcd752bad7f0e68baaa7754a6221c5}{to\+\_\+yaml}} () const
+\item 
+std\+::string \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_ac26f0357597dbe2946d9278e5433c8ee}{to\+\_\+sql\+\_\+values}} () const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static const std\+::string \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a189e051f8785603c611c13a71f202fdd}{to\+\_\+sql\+\_\+table}} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t}{header\+\_\+model\+\_\+t}} \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8650d24298ea55e6f6f810e507618fec}{header}}
+\item 
+std\+::string \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8af68a40a89859515ca22b006099a8c7}{redefines}}
+\item 
+std\+::string \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a9a47cbad7f378a30f467cb0520213e3b}{global\+\_\+namespace}}
+\item 
+\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t}{remappings\+\_\+model\+\_\+t}} \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a78bbcbe2e8e34c29600a02d20a064366}{remappings}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes inherited from \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappable__base__t}{capabilities2\+\_\+server\+::models\+::remappable\+\_\+base\+\_\+t}}}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t}{remappings\+\_\+model\+\_\+t}} \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappable__base__t_a4a19d77530cc86fc3cd798eaaea9a8dd}{remappings}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes inherited from \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1predicateable__base__t}{capabilities2\+\_\+server\+::models\+::predicateable\+\_\+base\+\_\+t}}}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1predicate__model__t}{predicate\+\_\+model\+\_\+t}} $>$ \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1predicateable__base__t_a997eab789e250da877a23377975dafe7}{relations}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+semantic interface model 
+
+a semantic interface redefines an interface in a semantic way this helps avoid resource collisions in the computation graph when using abstract capabilities such as when capabilities are shared between different robot implementations 
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a1c82841795835d4359d6bc1fd40b9f26}\label{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a1c82841795835d4359d6bc1fd40b9f26} 
+\index{capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}!from\_yaml@{from\_yaml}}
+\index{from\_yaml@{from\_yaml}!capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}}
+\doxysubsubsection{\texorpdfstring{from\_yaml()}{from\_yaml()}}
+{\footnotesize\ttfamily void capabilities2\+\_\+server\+::models\+::semantic\+\_\+interface\+\_\+model\+\_\+t\+::from\+\_\+yaml (\begin{DoxyParamCaption}\item[{const YAML\+::\+Node \&}]{node }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a189e051f8785603c611c13a71f202fdd}\label{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a189e051f8785603c611c13a71f202fdd} 
+\index{capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}!to\_sql\_table@{to\_sql\_table}}
+\index{to\_sql\_table@{to\_sql\_table}!capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}}
+\doxysubsubsection{\texorpdfstring{to\_sql\_table()}{to\_sql\_table()}}
+{\footnotesize\ttfamily static const std\+::string capabilities2\+\_\+server\+::models\+::semantic\+\_\+interface\+\_\+model\+\_\+t\+::to\+\_\+sql\+\_\+table (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+\Hypertarget{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_ac26f0357597dbe2946d9278e5433c8ee}\label{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_ac26f0357597dbe2946d9278e5433c8ee} 
+\index{capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}!to\_sql\_values@{to\_sql\_values}}
+\index{to\_sql\_values@{to\_sql\_values}!capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}}
+\doxysubsubsection{\texorpdfstring{to\_sql\_values()}{to\_sql\_values()}}
+{\footnotesize\ttfamily std\+::string capabilities2\+\_\+server\+::models\+::semantic\+\_\+interface\+\_\+model\+\_\+t\+::to\+\_\+sql\+\_\+values (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a27bcd752bad7f0e68baaa7754a6221c5}\label{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a27bcd752bad7f0e68baaa7754a6221c5} 
+\index{capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}!to\_yaml@{to\_yaml}}
+\index{to\_yaml@{to\_yaml}!capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}}
+\doxysubsubsection{\texorpdfstring{to\_yaml()}{to\_yaml()}}
+{\footnotesize\ttfamily YAML\+::\+Node capabilities2\+\_\+server\+::models\+::semantic\+\_\+interface\+\_\+model\+\_\+t\+::to\+\_\+yaml (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a9a47cbad7f378a30f467cb0520213e3b}\label{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a9a47cbad7f378a30f467cb0520213e3b} 
+\index{capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}!global\_namespace@{global\_namespace}}
+\index{global\_namespace@{global\_namespace}!capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}}
+\doxysubsubsection{\texorpdfstring{global\_namespace}{global\_namespace}}
+{\footnotesize\ttfamily std\+::string capabilities2\+\_\+server\+::models\+::semantic\+\_\+interface\+\_\+model\+\_\+t\+::global\+\_\+namespace}
+
+\Hypertarget{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8650d24298ea55e6f6f810e507618fec}\label{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8650d24298ea55e6f6f810e507618fec} 
+\index{capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}!header@{header}}
+\index{header@{header}!capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}}
+\doxysubsubsection{\texorpdfstring{header}{header}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1header__model__t}{header\+\_\+model\+\_\+t}} capabilities2\+\_\+server\+::models\+::semantic\+\_\+interface\+\_\+model\+\_\+t\+::header}
+
+\Hypertarget{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8af68a40a89859515ca22b006099a8c7}\label{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a8af68a40a89859515ca22b006099a8c7} 
+\index{capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}!redefines@{redefines}}
+\index{redefines@{redefines}!capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}}
+\doxysubsubsection{\texorpdfstring{redefines}{redefines}}
+{\footnotesize\ttfamily std\+::string capabilities2\+\_\+server\+::models\+::semantic\+\_\+interface\+\_\+model\+\_\+t\+::redefines}
+
+\Hypertarget{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a78bbcbe2e8e34c29600a02d20a064366}\label{structcapabilities2__server_1_1models_1_1semantic__interface__model__t_a78bbcbe2e8e34c29600a02d20a064366} 
+\index{capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}!remappings@{remappings}}
+\index{remappings@{remappings}!capabilities2\_server::models::semantic\_interface\_model\_t@{capabilities2\_server::models::semantic\_interface\_model\_t}}
+\doxysubsubsection{\texorpdfstring{remappings}{remappings}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structcapabilities2__server_1_1models_1_1remappings__model__t}{remappings\+\_\+model\+\_\+t}} capabilities2\+\_\+server\+::models\+::semantic\+\_\+interface\+\_\+model\+\_\+t\+::remappings}
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+capabilities2\+\_\+server/include/capabilities2\+\_\+server/models/\mbox{\hyperlink{semantic__interface_8hpp}{semantic\+\_\+interface.\+hpp}}\end{DoxyCompactItemize}

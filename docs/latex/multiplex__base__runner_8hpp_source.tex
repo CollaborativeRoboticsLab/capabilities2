@@ -1,0 +1,81 @@
+\doxysection{multiplex\+\_\+base\+\_\+runner.\+hpp}
+\hypertarget{multiplex__base__runner_8hpp_source}{}\label{multiplex__base__runner_8hpp_source}\index{capabilities2\_runner/include/capabilities2\_runner/multiplex\_base\_runner.hpp@{capabilities2\_runner/include/capabilities2\_runner/multiplex\_base\_runner.hpp}}
+\mbox{\hyperlink{multiplex__base__runner_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <thread>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <map>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{runner__base_8hpp}{capabilities2\_runner/runner\_base.hpp}}>}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacecapabilities2__runner}{capabilities2\_runner}}}
+\DoxyCodeLine{00009\ \{}
+\DoxyCodeLine{00010\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcapabilities2__runner_1_1MultiplexBaseRunner}{MultiplexBaseRunner}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase}{RunnerBase}}}
+\DoxyCodeLine{00011\ \{}
+\DoxyCodeLine{00012\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00016\ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1MultiplexBaseRunner_a9e4cab14be73162040c91cae3c674343}{MultiplexBaseRunner}}()\ :\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase}{RunnerBase}}()}
+\DoxyCodeLine{00017\ \ \ \{}
+\DoxyCodeLine{00018\ \ \ \}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00026\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1MultiplexBaseRunner_af52788c65f5ca9fb860cee2332abbbe2}{start}}(rclcpp::Node::SharedPtr\ node,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__opts}{runner\_opts}}\&\ run\_config)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00027\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00028\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_a737681af5f4227037a06390bf0bca3e0}{init\_base}}(node,\ run\_config);}
+\DoxyCodeLine{00029\ \ \ \}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00036\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1MultiplexBaseRunner_a7213a134e8a183c4021033e6bd7797c7}{execution}}(\textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id})}
+\DoxyCodeLine{00037\ \ \ \{}
+\DoxyCodeLine{00038\ \ \ \ \ info\_(\textcolor{stringliteral}{"{}execution\ started\ for\ id:\ "{}}\ +\ std::to\_string(\textcolor{keywordtype}{id}));}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{//\ check\ if\ the\ id\ is\ already\ completed}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{classcapabilities2__runner_1_1MultiplexBaseRunner_a59d15e39d4541a418aa230d6ce028859}{completed\_executions}}.find(\textcolor{keywordtype}{id})\ !=\ \mbox{\hyperlink{classcapabilities2__runner_1_1MultiplexBaseRunner_a59d15e39d4541a418aa230d6ce028859}{completed\_executions}}.end()\ \&\&\ \mbox{\hyperlink{classcapabilities2__runner_1_1MultiplexBaseRunner_a59d15e39d4541a418aa230d6ce028859}{completed\_executions}}[\textcolor{keywordtype}{id}])}
+\DoxyCodeLine{00042\ \ \ \ \ \{}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ info\_(\textcolor{stringliteral}{"{}execution\ already\ completed\ for\ id:\ "{}}\ +\ std::to\_string(\textcolor{keywordtype}{id}));}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00045\ \ \ \ \ \}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00047\ \ \ \ \ \{}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \textcolor{comment}{//\ trigger\ the\ events\ related\ to\ on\_success\ state}}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (events[\textcolor{keywordtype}{id}].on\_success.interface\ !=\ \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ event\_(EventType::SUCCEEDED,\ \textcolor{keywordtype}{id},\ events[\textcolor{keywordtype}{id}].on\_success.interface,\ events[\textcolor{keywordtype}{id}].on\_success.provider);}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ triggerFunction\_(events[\textcolor{keywordtype}{id}].on\_success.interface,\ update\_on\_success(events[\textcolor{keywordtype}{id}].on\_success.parameters));}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \textcolor{comment}{//\ trigger\ the\ events\ related\ to\ on\_failure\ state}}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (events[\textcolor{keywordtype}{id}].on\_failure.interface\ !=\ \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ event\_(EventType::FAILED,\ \textcolor{keywordtype}{id},\ events[\textcolor{keywordtype}{id}].on\_failure.interface,\ events[\textcolor{keywordtype}{id}].on\_failure.provider);}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ triggerFunction\_(events[\textcolor{keywordtype}{id}].on\_failure.interface,\ update\_on\_failure(events[\textcolor{keywordtype}{id}].on\_failure.parameters));}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00060\ \ \ \ \ \}}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{comment}{//\ track\ the\ execution\ as\ completed}}
+\DoxyCodeLine{00063\ \ \ \ \ \mbox{\hyperlink{classcapabilities2__runner_1_1MultiplexBaseRunner_a59d15e39d4541a418aa230d6ce028859}{completed\_executions}}[id]\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \ \ info\_(\textcolor{stringliteral}{"{}multiplexing\ complete.\ Thread\ closing."{}},\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{00066\ \ \ \}}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00072\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcapabilities2__runner_1_1MultiplexBaseRunner_aa5cefe19419078fb0a4eb18858a684fe}{stop}}()\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00073\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{comment}{//\ if\ the\ node\ pointer\ is\ empty\ then\ throw\ an\ error}}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{comment}{//\ this\ means\ that\ the\ runner\ was\ not\ started\ and\ is\ being\ used\ out\ of\ order}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase_ab92e5d0bb295489656b6ac35b23eef8e}{node\_}})}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{structcapabilities2__runner_1_1runner__exception}{runner\_exception}}(\textcolor{stringliteral}{"{}cannot\ stop\ runner\ that\ was\ not\ started"{}});}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ info\_(\textcolor{stringliteral}{"{}stopping\ runner"{}});}
+\DoxyCodeLine{00081\ \ \ \}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00084\ \ \ \textcolor{comment}{//\ input\ count\ tracker}}
+\DoxyCodeLine{00085\ \ \ std::map<int,\ int>\ \mbox{\hyperlink{classcapabilities2__runner_1_1MultiplexBaseRunner_afccbbe50f43831a9ad8efa452ed6c99f}{input\_count\_tracker}};}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \ \textcolor{comment}{//\ expected\ input\ count}}
+\DoxyCodeLine{00088\ \ \ std::map<int,\ int>\ \mbox{\hyperlink{classcapabilities2__runner_1_1MultiplexBaseRunner_a8047a02e3c962fe5704ea9e9ef9c5565}{expected\_input\_count}};}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \textcolor{comment}{//\ completed\ executions}}
+\DoxyCodeLine{00091\ \ \ std::map<int,\ bool>\ \mbox{\hyperlink{classcapabilities2__runner_1_1MultiplexBaseRunner_a59d15e39d4541a418aa230d6ce028859}{completed\_executions}};}
+\DoxyCodeLine{00092\ \};}
+\DoxyCodeLine{00093\ \}\ \ \textcolor{comment}{//\ namespace\ capabilities2\_runner}}
+
+\end{DoxyCode}

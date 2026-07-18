@@ -1,0 +1,55 @@
+\chapter{Creating Runner Plugins}
+\hypertarget{md_capabilities2__runner_2docs_2create__runners}{}\label{md_capabilities2__runner_2docs_2create__runners}\index{Creating Runner Plugins@{Creating Runner Plugins}}
+\label{md_capabilities2__runner_2docs_2create__runners_autotoc_md18}%
+\Hypertarget{md_capabilities2__runner_2docs_2create__runners_autotoc_md18}%
+ The runner API is designed to be extensible, so that specific runners can be created on a per provider basis. Another feature that can be implemented is cross-\/runner communication, which could allow capabilities to be combined at runtime to perform more complex tasks. This could overcome limitations in robot programming in which there is a common need for extensive pre-\/definition of tasks.\hypertarget{md_capabilities2__runner_2docs_2create__runners_autotoc_md19}{}\doxysection{\texorpdfstring{Inheritance}{Inheritance}}\label{md_capabilities2__runner_2docs_2create__runners_autotoc_md19}
+A runner is a plugin that inherits from the {\ttfamily \doxylink{classcapabilities2__runner_1_1RunnerBase}{capabilities2\+\_\+runner\+::\+Runner\+Base}} class. The {\ttfamily Runner\+Base} class is a pure virtual class that defines the interface for a runner. The {\ttfamily Runner\+Base} class has the following methods\+:
+
+
+\begin{DoxyEnumerate}
+\item {\ttfamily start} -\/ starts the runner
+\end{DoxyEnumerate}
+\begin{DoxyEnumerate}
+\item {\ttfamily stop} -\/ stops the runner
+\end{DoxyEnumerate}
+\begin{DoxyEnumerate}
+\item {\ttfamily trigger} -\/ triggers the runner
+\end{DoxyEnumerate}
+
+Multiple classes are provided to inherit from, depending on the type of runner you want to create. A notable example is the {\ttfamily \doxylink{classcapabilities2__runner_1_1ActionRunner}{capabilities2\+\_\+runner\+::\+Action\+Runner}} class, which is used to create runners that run actions.\hypertarget{md_capabilities2__runner_2docs_2create__runners_autotoc_md20}{}\doxysection{\texorpdfstring{Export with Pluginlib}{Export with Pluginlib}}\label{md_capabilities2__runner_2docs_2create__runners_autotoc_md20}
+The runner should be exported as a plugin using the {\ttfamily PLUGINLIB\+\_\+\+EXPORT\+\_\+\+CLASS} macro.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ <\mbox{\hyperlink{runner__base_8hpp}{capabilities2\_runner/runner\_base.hpp}}>}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ <pluginlib/class\_list\_macros.hpp>}}
+\DoxyCodeLine{}
+\DoxyCodeLine{...}
+\DoxyCodeLine{}
+\DoxyCodeLine{PLUGINLIB\_EXPORT\_CLASS(capabilities2\_runner::MyRunner,\ \mbox{\hyperlink{classcapabilities2__runner_1_1RunnerBase}{capabilities2\_runner::RunnerBase}})}
+
+\end{DoxyCode}
+\hypertarget{md_capabilities2__runner_2docs_2create__runners_autotoc_md21}{}\doxysection{\texorpdfstring{Expose with plugins.\+xml}{Expose with plugins.xml}}\label{md_capabilities2__runner_2docs_2create__runners_autotoc_md21}
+The runner should be exposed as a plugin in the {\ttfamily plugins.\+xml} file.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{<\textcolor{keywordtype}{library}\ \textcolor{keyword}{path}=\textcolor{stringliteral}{"{}capabilities2\_runner"{}}>}
+\DoxyCodeLine{\ \ \ \ <\textcolor{keywordtype}{class}\ \textcolor{keyword}{type}=\textcolor{stringliteral}{"{}capabilities2\_runner::MyRunner"{}}\ \textcolor{keyword}{base\_class\_type}=\textcolor{stringliteral}{"{}capabilities2\_runner::RunnerBase"{}}>}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ <\textcolor{keywordtype}{description}>}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{A}\ \textcolor{keyword}{plugin}\ \textcolor{keyword}{that}\ \textcolor{keyword}{provides}\ \textcolor{keyword}{a}\ \ \textcolor{keyword}{my-\/runner}\ \textcolor{keyword}{to}\ \textcolor{keyword}{test}\ \textcolor{keyword}{capabilities2}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ </\textcolor{keywordtype}{description}>}
+\DoxyCodeLine{\ \ \ \ </\textcolor{keywordtype}{class}>}
+\DoxyCodeLine{</\textcolor{keywordtype}{library}>}
+
+\end{DoxyCode}
+
+
+{\ttfamily plugin.\+xml} needs to be included in the {\ttfamily CMake\+Lists.\+txt}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{pluginlib\_export\_plugin\_description\_file(\$\{PROJECT\_NAME\}\ plugins.xml)}
+
+\end{DoxyCode}
+ 

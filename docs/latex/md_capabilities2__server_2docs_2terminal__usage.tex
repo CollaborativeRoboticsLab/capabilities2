@@ -1,0 +1,46 @@
+\chapter{Terminal based capability usage}
+\hypertarget{md_capabilities2__server_2docs_2terminal__usage}{}\label{md_capabilities2__server_2docs_2terminal__usage}\index{Terminal based capability usage@{Terminal based capability usage}}
+\label{md_capabilities2__server_2docs_2terminal__usage_autotoc_md40}%
+\Hypertarget{md_capabilities2__server_2docs_2terminal__usage_autotoc_md40}%
+ Using a capability requires the user to establish a bond with the capabilities2 server. The bond is used to maintain a persistent connection with the server.
+
+first, inspect the available capabilities provided under this server on this robot.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{ros2\ service\ call\ /capabilities/get\_capability\_specs\ capabilities2\_msgs/srv/GetCapabilitySpecs}
+
+\end{DoxyCode}
+
+
+then, request a bond id to become a persistent user
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{ros2\ service\ call\ /capabilities/establish\_bond\ capabilities2\_msgs/srv/EstablishBond}
+\DoxyCodeLine{}
+\DoxyCodeLine{\#\ this\ bond\ needs\ to\ be\ updated\ every\ second\ by\ publishing\ a\ heartbeat\ the\ bond\ topic.\ Replace\ the\ ...\ with\ value\ received\ from\ above\ call}
+\DoxyCodeLine{ros2\ topic\ pub\ /capabilities/bonds\ ...}
+
+\end{DoxyCode}
+
+
+then request to use a capability
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{ros2\ service\ call\ /capabilities/use\_capability\ capabilities2\_msgs/srv/UseCapability}
+
+\end{DoxyCode}
+
+
+running capabilities can also be connected together through the event system. this requires a valid bond and both the source and target capabilities to already be running.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{ros2\ service\ call\ /capabilities/connect\_capability\ capabilities2\_msgs/srv/ConnectCapability}
+
+\end{DoxyCode}
+
+
+This capability can be freed by calling the {\ttfamily free\+\_\+capability} service, or just let the bond expire. The capability will be freed automatically. 
