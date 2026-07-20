@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>capabilities2_server</name>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
   <description>
     Package that implements the capabilities2 service, a successor to capabilities
   </description>
