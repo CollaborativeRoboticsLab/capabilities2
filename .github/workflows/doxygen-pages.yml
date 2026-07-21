@@ -7,6 +7,7 @@ on:
     paths:
       - Doxygen
       - README.md
+      - '**/package.xml'
       - docs/**
       - '**/*.md'
       - '**/*.dox'
@@ -26,6 +27,7 @@ on:
     paths:
       - Doxygen
       - README.md
+      - '**/package.xml'
       - docs/**
       - '**/*.md'
       - '**/*.dox'
@@ -58,12 +60,80 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Check package versions
+        id: package_version
+        run: |
+          python3 <<'PY'
+          import re
+          import sys
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          root = Path('.')
+          package_files = sorted(root.glob('**/package.xml'))
+
+          if not package_files:
+            print('No package.xml files found.')
+            sys.exit(1)
+
+          versions = {}
+          invalid = []
+          semver_re = re.compile(r'^\d+\.\d+\.\d+$')
+
+          for pkg_file in package_files:
+            tree = ET.parse(pkg_file)
+            package = tree.getroot()
+            name = package.findtext('name', '').strip()
+            version = package.findtext('version', '').strip()
+
+            if not name or not version:
+              invalid.append((str(pkg_file), name or '<missing name>', version or '<missing version>'))
+              continue
+
+            if not semver_re.match(version):
+              invalid.append((str(pkg_file), name, version))
+              continue
+
+            versions[name] = version
+
+          if invalid:
+            print('Invalid package metadata found:')
+            for path, name, version in invalid:
+              print(f'  - {path}: name={name}, version={version}')
+            sys.exit(1)
+
+          unique_versions = sorted(set(versions.values()))
+
+          print('Discovered package versions:')
+          for name, version in sorted(versions.items()):
+            print(f'  - {name}: {version}')
+
+          if len(unique_versions) != 1:
+            print('\nVersion mismatch detected across package.xml files.')
+            print('Unique versions found:', ', '.join(unique_versions))
+            sys.exit(1)
+
+          version = unique_versions[0]
+          print(f'\nAll package.xml files use version {version}.')
+
+          with open('project_version.txt', 'w', encoding='utf-8') as f:
+            f.write(version)
+          PY
+
+          VERSION=$(cat project_version.txt)
+          echo "PROJECT_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "project_version=$VERSION" >> "$GITHUB_OUTPUT"
+          rm -f project_version.txt
+
       - name: Install Doxygen
         run: sudo apt-get update && sudo apt-get install -y doxygen
 
       - name: Build HTML documentation
         run: |
-          doxygen Doxygen
+          cp Doxygen Doxygen.ci
+          printf '\nPROJECT_NUMBER = %s\n' "${PROJECT_VERSION}" >> Doxygen.ci
+          doxygen Doxygen.ci
+          rm -f Doxygen.ci
           touch docs/html/.nojekyll
 
       - name: Upload Pages artifact
