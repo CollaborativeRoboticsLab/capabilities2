@@ -67,10 +67,9 @@ This work is based on the capabilities package developed by the Open Source Robo
 
 ## Citation
 
-If you use this work in an academic context, please cite the following publication(s):
+If you use this work in an academic context, please cite the following publication(s) based on usecase:
 
 [Capabilities2 for ROS2: Advanced Skill-Based Control for Human-Robot Interaction](https://dl.acm.org/doi/10.5555/3721488.3721623)
-
 ```latex
 @inproceedings{10.5555/3721488.3721623,
     author = {Pritchard, Michael and Ratnayake, Kalana and Gamage, Buddhi and Jayasuriya, Maleen and Herath, Damith},
@@ -81,5 +80,18 @@ If you use this work in an academic context, please cite the following publicati
     pages = {1067–1071},
     location = {Melbourne, Australia},
     series = {HRI '25}
+}
+```
+
+[A Generative Partially Specified Finite State Machine Approach to Complex Behaviour Planning](https://arxiv.org/pdf/2607.15674)
+```bibtex
+@misc{ratnayake2026gpsfsm,
+  title={A Generative Partially Specified Finite State Machine Approach to Complex Behaviour Planning}, 
+  author={Kalana Ratnayake and Michael Pritchard and David Hinwood and Maleen Jayasuriya and Damith Herath},
+  year={2026},
+  eprint={2607.15674},
+  archivePrefix={arXiv},
+  primaryClass={cs.RO},
+  url={https://arxiv.org/abs/2607.15674}, 
 }
 ```
