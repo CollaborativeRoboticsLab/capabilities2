@@ -29,10 +29,12 @@ public:
     size_t first_pos = connection_id.find('/');
     size_t second_pos = connection_id.find('/', first_pos + 1);
 
+    std::string bond_id = (first_pos != std::string::npos) ? connection_id.substr(0, first_pos) : "";
     std::string instance_id = (second_pos != std::string::npos) ? connection_id.substr(first_pos + 1, second_pos - first_pos - 1) : "";
 
     capabilities2_msgs::msg::CapabilityEventStamped event_msg;
     event_msg.header.stamp = rclcpp::Clock().now();
+    event_msg.event.bond_id = bond_id;
     event_msg.event.trigger_id = instance_id;
     event_msg.event.code.code = event_code;
     event_msg.event.connection.source = source;

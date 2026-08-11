@@ -1,6 +1,9 @@
 # the capability event message
 
-# identifying name for the source that triggered this event
+# id for the for the bond this event is related to
+string bond_id
+
+# id for the instance that triggered this event
 string trigger_id
 
 # event can pass over a connection
