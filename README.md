@@ -50,6 +50,7 @@ ros2 launch capabilities2_server capabilities2_server.launch.py
 - [Registering a capability](./capabilities2_server/docs/register.md)
 - [Terminal based capability usage](./capabilities2_server/docs/terminal_usage.md)
 - [Running test scripts](./docs/run_test_scripts.md)
+- [Runnable Information](./docs/runnable.md)
 
 ### Docs
 
