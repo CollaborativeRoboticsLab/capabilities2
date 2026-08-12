@@ -4,5 +4,4 @@
 #include <capabilities2_runner/system/input_multiplex_runner.hpp>
 
 // register runner plugins
-PLUGINLIB_EXPORT_CLASS(capabilities2_runner::GetCapabilitySpecsRunner, capabilities2_runner::RunnerBase);
 PLUGINLIB_EXPORT_CLASS(capabilities2_runner::InputMultiplexRunner, capabilities2_runner::RunnerBase);
