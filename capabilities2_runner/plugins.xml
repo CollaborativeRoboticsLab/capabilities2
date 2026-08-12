@@ -15,9 +15,4 @@
             A plugin that provides a  dummy-runner to test capabilities2
         </description>
     </class>
-    <class type="capabilities2_runner::GetCapabilitySpecsRunner" base_class_type="capabilities2_runner::RunnerBase">
-        <description>
-            A plugin that request capabilities from the capabilities server
-        </description>
-    </class>
 </library>

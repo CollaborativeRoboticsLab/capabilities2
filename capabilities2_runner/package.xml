@@ -38,14 +38,5 @@
     <capability_provider>
       providers/InputMultiplexRunner.yaml
     </capability_provider>
-
-    <!-- GetCapabilitySpecsRunner -->
-    <capability_interface>
-      interfaces/GetCapabilitySpecsRunner.yaml
-    </capability_interface>
-
-    <capability_provider>
-      providers/GetCapabilitySpecsRunner.yaml
-    </capability_provider>
   </export>
 </package>
