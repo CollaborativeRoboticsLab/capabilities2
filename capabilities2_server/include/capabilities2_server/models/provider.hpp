@@ -35,15 +35,21 @@ struct provider_model_t : public remappable_base_t, public predicateable_base_t,
     header.from_yaml(node);
     implements = node["implements"].as<std::string>();
     runner = node["runner"].as<std::string>();
-    for (const auto& dependency : node["depends_on"])
+    if (node["depends_on"])
     {
-      depends_on[dependency.first.as<std::string>()] = dependency.second["provider"].as<std::string>();
+      for (const auto& dependency : node["depends_on"])
+      {
+        depends_on[dependency.first.as<std::string>()] = dependency.second["provider"].as<std::string>();
+      }
     }
     // if remappings exist
     if (node["remappings"])
     {
       remappings.from_yaml(node["remappings"]);
     }
+
+    // relations
+    predicateable_base_t::from_yaml(node);
     
     // definition
     defineable_base_t::from_yaml(node);
@@ -52,6 +58,7 @@ struct provider_model_t : public remappable_base_t, public predicateable_base_t,
   YAML::Node to_yaml() const
   {
     YAML::Node node = header.to_yaml();
+
     node["implements"] = implements;
     for (const auto& dependency : depends_on)
     {
@@ -59,10 +66,11 @@ struct provider_model_t : public remappable_base_t, public predicateable_base_t,
     }
     node["remappings"] = remappings.to_yaml();
     node["runner"] = runner;
+
     // definition
     if (defined())
     {
-      node["definition"] = definition_str;
+      node["definition"] = defineable_base_t::to_yaml();
     }
 
     return node;
@@ -80,7 +88,7 @@ struct provider_model_t : public remappable_base_t, public predicateable_base_t,
     deps["depends_on"] = depends_on;
 
     return header.to_sql_values() + ", '" + implements + "', '" + to_sql_safe(YAML::Dump(deps["depends_on"])) + "', '" +
-           to_sql_safe(YAML::Dump(remappings.to_yaml())) + "', '" + runner + "', '" + definition_str + "'";
+           to_sql_safe(YAML::Dump(remappings.to_yaml())) + "', '" + runner + "', '" + to_sql_safe(YAML::Dump(defineable_base_t::to_yaml())) + "'";
   }
 };
 

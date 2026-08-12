@@ -6,6 +6,7 @@
 #include <capabilities2_server/models/provider.hpp>
 #include <capabilities2_server/models/remappable_base.hpp>
 #include <capabilities2_server/models/running.hpp>
+#include <capabilities2_server/models/runnable.hpp>
 #include <capabilities2_server/models/run_config.hpp>
 
 namespace capabilities2_server
@@ -91,6 +92,12 @@ public:
 
   // get run config model
   virtual models::run_config_model_t get_run_config(const std::string& provider_name) = 0;
+
+  // get runnable capability from provider
+  virtual models::runnable_model_t get_runnable_spec(const std::string& provider_name) = 0;
+
+  // get all runnable capabilities
+  virtual std::vector<models::runnable_model_t> get_runnable_specs() = 0;
 
   // exists in db templated by model type
   template <typename T>

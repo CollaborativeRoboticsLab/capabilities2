@@ -68,9 +68,10 @@ struct run_config_model_t : defineable_base_t
 
     node["provider"] = provider.to_yaml();
     node["interface"] = interface.to_yaml();
+    
     if (defined())
     {
-      node["definition"] = definition_str;
+      node["definition"] = defineable_base_t::to_yaml();
     }
     node["global_namespace"] = global_namespace;
     node["runner"] = runner;

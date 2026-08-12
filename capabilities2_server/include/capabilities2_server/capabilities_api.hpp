@@ -22,8 +22,11 @@
 #include <capabilities2_msgs/msg/remapping.hpp>
 #include <capabilities2_msgs/msg/capability.hpp>
 #include <capabilities2_msgs/msg/capability_spec.hpp>
-#include <capabilities2_msgs/srv/get_remappings.hpp>
 #include <capabilities2_msgs/msg/running_capability.hpp>
+#include <capabilities2_msgs/msg/runnable_spec.hpp>
+
+#include <capabilities2_msgs/srv/get_remappings.hpp>
+#include <capabilities2_msgs/srv/get_runnable_specs.hpp>
 
 namespace capabilities2_server
 {
@@ -622,6 +625,30 @@ public:
     }
 
     return running_capabilities;
+  }
+
+  std::map<std::string, capabilities2_msgs::msg::RunnableSpec> get_runnable_specs()
+  {
+    // create message container
+    std::map<std::string, capabilities2_msgs::msg::RunnableSpec> runnable_specs;
+
+    auto specs = cap_db_->get_runnable_specs();
+
+    // for each cap get the running model from db
+    for (const auto& spec : specs)
+    {
+      YAML::Node spec_node = spec.to_yaml();
+
+      // create a runnable spec msg
+      capabilities2_msgs::msg::RunnableSpec rs;
+
+      rs.spec = YAML::Dump(spec_node);
+
+      // add runnable spec msg
+      runnable_specs[spec.provider.name] = rs;
+    }
+
+    return runnable_specs;
   }
 
   /** */

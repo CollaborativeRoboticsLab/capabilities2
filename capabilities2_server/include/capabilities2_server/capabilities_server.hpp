@@ -206,6 +206,10 @@ public:
         "~/get_running_capabilities", std::bind(&CapabilitiesServer::get_running_capabilities_cb, this,
                                                 std::placeholders::_1, std::placeholders::_2));
 
+    get_runnable_specs_srv_ = create_service<capabilities2_msgs::srv::GetRunnableSpecs>(
+        "~/get_runnable_specs",
+        std::bind(&CapabilitiesServer::get_runnable_specs_cb, this, std::placeholders::_1, std::placeholders::_2));
+
     // log ready
     RCLCPP_INFO(get_logger(), "capabilities server started");
 
@@ -472,6 +476,22 @@ public:
     // set response
     // get running capabilities
     res->running_capabilities = get_running_capabilities();
+  }
+
+  void get_runnable_specs_cb(const std::shared_ptr<capabilities2_msgs::srv::GetRunnableSpecs::Request> req,
+                             std::shared_ptr<capabilities2_msgs::srv::GetRunnableSpecs::Response> res)
+  {
+    // req is empty
+
+    // set response
+    // get runnable specs
+    auto specs = get_runnable_specs();
+
+    for (const auto& [name, spec] : specs)
+    {
+      res->index_of_specs.push_back(name);
+      res->runnable_specs.push_back(spec);
+    }
   }
 
 private:
@@ -763,6 +783,8 @@ private:
   rclcpp::Service<capabilities2_msgs::srv::GetRemappings>::SharedPtr get_remappings_srv_;
   // get running capabilities
   rclcpp::Service<capabilities2_msgs::srv::GetRunningCapabilities>::SharedPtr get_running_capabilities_srv_;
+  // get runnable specs
+  rclcpp::Service<capabilities2_msgs::srv::GetRunnableSpecs>::SharedPtr get_runnable_specs_srv_;
 };
 
 }  // namespace capabilities2_server

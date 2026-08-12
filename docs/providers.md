@@ -39,10 +39,22 @@ relations:
     object: std_capabilities/not_empty
 
 # providers can also have a definition using a snippet of a relevant defining language such as behavior trees
-definition: |
-  <root>
-    <sequence>
-      <action name="empty"/>
-    </sequence>
-  </root>
+definition: 
+  command: "<Runner interface=std_capabilities/empty provider=std_capabilities/empty param1='$value1' param2='$value2' />"
+  configuration_parameters:
+    - name: param1
+      type: string
+      description: description of param1
+    - name: param2
+      type: float
+      description: description of param2
+  runtime_parameters:
+    input:
+      - name: param3
+        type: string
+        description: description of param3
+    output:
+      - name: param4
+        type: float
+        description: description of param4
 ```

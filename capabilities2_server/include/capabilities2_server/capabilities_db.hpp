@@ -13,6 +13,7 @@
 #include <capabilities2_server/models/provider.hpp>
 #include <capabilities2_server/models/running.hpp>
 #include <capabilities2_server/models/run_config.hpp>
+#include <capabilities2_server/models/runnable.hpp>
 #include <capabilities2_server/utils/sql_safe.hpp>
 
 namespace capabilities2_server
@@ -328,6 +329,51 @@ public:
     return running;
   }
 
+  // get runnable capabilities from provider
+  virtual models::runnable_model_t get_runnable_spec(const std::string& provider_name) override
+  {
+    // start with provider and work up the chain
+    models::provider_model_t provider = get_provider(provider_name);
+    if (provider.header.name.empty())
+    {
+      // return empty runnable model
+      return models::runnable_model_t();
+    }
+
+    models::interface_model_t interface = get_interface(provider.implements);
+
+    models::runnable_model_t runnable;
+    runnable.interface = interface.header;
+    runnable.provider = provider.header;
+    runnable.command = provider.command;
+    runnable.configuration_parameters = provider.configuration_parameters;
+    runnable.runtime__input_parameters = provider.runtime__input_parameters;
+    runnable.runtime__output_parameters = provider.runtime__output_parameters;
+    runnable.relations = provider.relations;
+
+    // return runnable model
+    return runnable;
+  }
+
+  virtual std::vector<models::runnable_model_t> get_runnable_specs() override
+  {
+    std::vector<models::runnable_model_t> runnable_specs;
+
+    // get all providers
+    std::vector<models::provider_model_t> providers = get_providers();
+
+    for (const auto& provider : providers)
+    {
+      models::runnable_model_t runnable = get_runnable_spec(provider.header.name);
+      if (runnable.is_valid())
+      {
+        runnable_specs.push_back(runnable);
+      }
+    }
+
+    return runnable_specs;
+  }
+
   // apply a remapping to a specification model
   virtual void apply_remappings(models::specification_model_t& spec,
                                 const models::remappable_base_t& remappable) override
@@ -476,7 +522,8 @@ private:
     interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
     interface.header.version = sqlite3_column_int(stmt, 1);
     interface.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-    interface.header.description = from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
+    interface.header.description =
+        from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
 
     models::specification_model_t spec;
     spec.from_yaml(YAML::Load(from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4))))));
@@ -491,7 +538,8 @@ private:
     semantic_interface.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
     semantic_interface.header.version = sqlite3_column_int(stmt, 1);
     semantic_interface.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-    semantic_interface.header.description = from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
+    semantic_interface.header.description =
+        from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
     semantic_interface.redefines = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
     semantic_interface.global_namespace = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
     semantic_interface.remappings.from_yaml(
@@ -506,12 +554,17 @@ private:
     provider.header.name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
     provider.header.version = sqlite3_column_int(stmt, 1);
     provider.header.type = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-    provider.header.description = from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
+    provider.header.description =
+        from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
     provider.implements = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
-    provider.depends_on = YAML::Load(from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)))))
-                              .as<std::map<std::string, std::string>>();
-    provider.remappings.from_yaml(YAML::Load(from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6))))));
+    provider.depends_on =
+        YAML::Load(from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)))))
+            .as<std::map<std::string, std::string>>();
+    provider.remappings.from_yaml(
+        YAML::Load(from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6))))));
     provider.runner = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 7)));
+    provider.defineable_base_t::from_yaml(
+      YAML::Load(from_sql_safe(std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 8))))));
 
     return provider;
   }
