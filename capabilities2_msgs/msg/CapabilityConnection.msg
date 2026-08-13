@@ -9,3 +9,6 @@ capabilities2_msgs/Capability source
 
 # capability targeted by this connection
 capabilities2_msgs/Capability target
+
+# Capability event ownership
+string ownership_id

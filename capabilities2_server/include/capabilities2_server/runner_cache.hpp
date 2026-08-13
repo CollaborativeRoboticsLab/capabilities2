@@ -126,10 +126,10 @@ public:
     {
       // add connection to the runner
       // callback signature: (capability, parameters, bond_id, instance_id)
-      runner_cache_[capability]->add_connection(connection_id, connection.type, connection.target,
-                                                std::bind(&capabilities2_server::RunnerCache::trigger_runner, this,
-                                                          std::placeholders::_1, std::placeholders::_2,
-                                                          std::placeholders::_3, std::placeholders::_4));
+      runner_cache_[capability]->add_connection(
+          connection_id, connection.ownership_id, connection.type, connection.target,
+          std::bind(&capabilities2_server::RunnerCache::trigger_runner, this, std::placeholders::_1,
+                    std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     }
     catch (const capabilities2_events::event_exception& e)
     {

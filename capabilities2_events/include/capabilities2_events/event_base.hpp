@@ -46,7 +46,8 @@ public:
   typedef capabilities2_events::EventParameters parameter_t;
   typedef std::string access_id_t;
   typedef std::string target_instance_id_t;
-  typedef std::function<void(const access_id_t&, const capability_str_t&, const target_instance_id_t&, parameter_t)> event_callback_t;
+  typedef std::function<void(const access_id_t&, const capability_str_t&, const target_instance_id_t&, parameter_t)>
+      event_callback_t;
 
 public:
   EventBase()
@@ -62,13 +63,14 @@ public:
    * which lets loosely-coupled capabilities propogate state changes
    * when a source capability emits an event to a target capability
    *
-   * @param connection_id connection identifier (format: "bond_id/trigger_id")
+   * @param connection_id connection identifier (format: "bond_id/instance_id/target_instance_id")
+   * @param ownership_id ownership identifier for the connection (used for access control)
    * @param event_code type of event being emitted
    * @param source source capability emitting the event
    * @param target target capability receiving the event
    * @param callback function to trigger target capability with (capability, parameters, bond_id, target_instance_id)
    */
-  virtual void emit(const std::string& connection_id, const uint8_t& event_code,
+  virtual void emit(const std::string& connection_id, const std::string& ownership_id, const uint8_t& event_code,
                     const capabilities2_msgs::msg::Capability& source,
                     const capabilities2_msgs::msg::Capability& target, event_callback_t callback)
   {

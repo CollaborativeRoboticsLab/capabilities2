@@ -157,17 +157,19 @@ public:
    * extract bond_id for access control
    *
    * @param connection_id unique identifier for the connection (format: "bond_id/trigger_id")
+   * @param ownership_id unique identifier for the ownership of the connection
    * @param type type of event to connect to
    * @param target target capability to connect to
    * @param callback callback to trigger target capability with (capability, parameters, bond_id)
    */
-  void add_connection(const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& type,
+  void add_connection(const std::string& connection_id, const std::string& ownership_id,
+                      const capabilities2_msgs::msg::CapabilityEventCode& type,
                       const capabilities2_msgs::msg::Capability& target,
                       std::function<void(const std::string&, const std::string&, const std::string&,
                                          capabilities2_events::EventParameters)>
                           callback)
   {
-    EventNode::add_connection(connection_id, type, target, callback);
+    EventNode::add_connection(connection_id, ownership_id, type, target, callback);
   }
 
   /**

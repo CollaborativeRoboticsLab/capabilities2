@@ -12,7 +12,7 @@ An capability interface describes the capability. It relates ROS primitives to t
 ---
 name: empty
 spec_type: interface
-spec_version: 1.1
+spec_version: 1.2
 description: the empty capability interface helps to test the capability server
 interface:
   parameters:

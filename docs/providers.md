@@ -12,7 +12,7 @@ A provider is a special implementation of a capability that is specific to the c
 ---
 name: empty
 spec_type: provider
-spec_version: 1.1
+spec_version: 1.2
 description: the empty capability provider for the empty interface
 implements: std_capabilities/empty
 runner: launch/empty.launch.py

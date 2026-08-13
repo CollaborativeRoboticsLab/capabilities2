@@ -349,7 +349,7 @@ public:
     runnable.configuration_parameters = provider.configuration_parameters;
     runnable.runtime__input_parameters = provider.runtime__input_parameters;
     runnable.runtime__output_parameters = provider.runtime__output_parameters;
-    runnable.relations = provider.relations;
+    runnable.relations = interface.relations;
 
     // return runnable model
     return runnable;

@@ -1,8 +1,5 @@
 # the capability event message
 
-# id for the for the bond this event is related to
-string bond_id
-
 # id for the instance that triggered this event
 string trigger_id
 

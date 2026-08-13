@@ -40,6 +40,9 @@ private:
     // connection target
     capabilities2_msgs::msg::Capability target;
 
+    // connection ownership id
+    std::string ownership_id;
+
     // event callback with signature: (capability, parameters, bond_id)
     EventBase::event_callback_t callback;
   };
@@ -109,7 +112,8 @@ public:
         // modifying execution of other nodes is not owned by this class
         // this lets the execution flow be made thread-safe
         // in the scope where the thread is owned
-        event_emitter_->emit(conn_id, event_type, source_, target_with_params, connection.callback);
+        event_emitter_->emit(conn_id, connection.ownership_id, event_type, source_, target_with_params,
+                             connection.callback);
       }
     }
   }
@@ -147,11 +151,13 @@ protected:
    * @param connection_id unique identifier for the connection (format: "bond_id/trigger_id")
    * @param type type of event to connect to
    * @param target target capability to connect to
+   * @param ownership_id ownership id of the connection (used for access control)
    * @param event_cb callback to trigger target capability with (capability, parameters, bond_id, target_instance_id)
    *
    * @throws event_exception if connection with given id already exists
    */
-  void add_connection(const std::string& connection_id, const capabilities2_msgs::msg::CapabilityEventCode& type,
+  void add_connection(const std::string& connection_id, const std::string& ownership_id,
+                      const capabilities2_msgs::msg::CapabilityEventCode& type,
                       const capabilities2_msgs::msg::Capability& target, EventBase::event_callback_t event_cb)
   {
     // validate connection id
@@ -164,6 +170,7 @@ protected:
     EventPipe conn;
     conn.type = type;
     conn.target = target;
+    conn.ownership_id = ownership_id;
     conn.callback = event_cb;
 
     // add connection
@@ -224,6 +231,7 @@ protected:
       c.type = connection.type;
       c.source = source_;
       c.target = connection.target;
+      c.ownership_id = connection.ownership_id;
       conns.push_back(c);
     }
 
