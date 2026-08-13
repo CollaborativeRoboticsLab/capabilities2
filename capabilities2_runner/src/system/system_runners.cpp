@@ -1,6 +1,5 @@
 #include <pluginlib/class_list_macros.hpp>
 #include <capabilities2_runner/runner_base.hpp>
-#include <capabilities2_runner/system/get_capability_specs_runner.hpp>
 #include <capabilities2_runner/system/input_multiplex_runner.hpp>
 
 // register runner plugins
