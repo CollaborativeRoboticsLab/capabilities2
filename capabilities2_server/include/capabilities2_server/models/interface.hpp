@@ -111,6 +111,11 @@ struct specification_model_t
     // return node
     return node;
   }
+
+  const bool is_initialized() const
+  {
+    return !parameters.empty() || !topics.empty() || !services.empty() || !actions.empty();
+  }
 };
 
 /**
@@ -128,7 +133,13 @@ struct interface_model_t : public predicateable_base_t
   void from_yaml(const YAML::Node& node)
   {
     header.from_yaml(node);
-    interface.from_yaml(node["interface"]);
+
+    // if interface exists
+    if (node["interface"])
+    {
+      interface.from_yaml(node["interface"]);
+    }
+
     // if relations exist
     if (node["relations"])
     {
@@ -144,7 +155,13 @@ struct interface_model_t : public predicateable_base_t
   YAML::Node to_yaml() const
   {
     YAML::Node node = header.to_yaml();
-    node["interface"] = interface.to_yaml();
+
+    // if interface exists
+    if (interface.is_initialized())
+    {
+      node["interface"] = interface.to_yaml();
+    }
+    
     // if relations exist
     if (relations.size() > 0)
     {
