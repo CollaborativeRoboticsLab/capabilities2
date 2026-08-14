@@ -24,14 +24,16 @@ struct defineable_base_t
   std::vector<resource_model_t> configuration_parameters;
   std::vector<resource_model_t> runtime__input_parameters;
   std::vector<resource_model_t> runtime__output_parameters;
-  
+
   // is the definition valid
   bool valid = false;
 
   void from_yaml(const YAML::Node& node)
   {
+    // get the definition node
     YAML::Node def_node = node["definition"];
 
+    // if no definition exists, return
     if (!def_node)
     {
       return;
@@ -55,8 +57,14 @@ struct defineable_base_t
       }
     }
 
-    // try get the runtime input parameters
+    // get the runtime parameters
     YAML::Node runtime_node = def_node["runtime_parameters"];
+
+    // if no runtime parameters exist, return
+    if (!runtime_node)
+    {
+      return;
+    }
 
     // try get the runtime input parameters
     if (runtime_node["input"])
@@ -85,28 +93,44 @@ struct defineable_base_t
   {
     YAML::Node node;
 
-    node["definition"]["command"] = command;
+    // if command exists
+    if (!command.empty())
+    {
+      node["definition"]["command"] = command;
+    }
 
+    // if configuration parameters exist
     YAML::Node config_params;
-    for (const auto& param : configuration_parameters)
+    if (!configuration_parameters.empty())
     {
-      config_params.push_back(param.to_yaml());
+      for (const auto& param : configuration_parameters)
+      {
+        config_params.push_back(param.to_yaml());
+      }
+      node["definition"]["configuration_parameters"] = config_params;
     }
-    node["definition"]["configuration_parameters"] = config_params;
 
+    // if runtime input parameters exist
     YAML::Node runtime_input_params;
-    for (const auto& param : runtime__input_parameters)
+    if (!runtime__input_parameters.empty())
     {
-      runtime_input_params.push_back(param.to_yaml());
+      for (const auto& param : runtime__input_parameters)
+      {
+        runtime_input_params.push_back(param.to_yaml());
+      }
+      node["definition"]["runtime_parameters"]["input"] = runtime_input_params;
     }
-    node["definition"]["runtime_parameters"]["input"] = runtime_input_params;
 
+    // if runtime output parameters exist
     YAML::Node runtime_output_params;
-    for (const auto& param : runtime__output_parameters)
+    if (!runtime__output_parameters.empty())
     {
-      runtime_output_params.push_back(param.to_yaml());
+      for (const auto& param : runtime__output_parameters)
+      {
+        runtime_output_params.push_back(param.to_yaml());
+      }
+      node["definition"]["runtime_parameters"]["output"] = runtime_output_params;
     }
-    node["definition"]["runtime_parameters"]["output"] = runtime_output_params;
 
     return node;
   }
