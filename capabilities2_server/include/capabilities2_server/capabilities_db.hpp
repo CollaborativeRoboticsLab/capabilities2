@@ -340,7 +340,7 @@ public:
       return models::runnable_model_t();
     }
 
-    models::interface_model_t interface = get_interface(provider.implements);
+    models::interface_model_t interface = apply_provider_remappings(provider);
 
     models::runnable_model_t runnable;
     runnable.interface = interface.header;
