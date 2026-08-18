@@ -170,6 +170,10 @@ protected:
         [this, &instance_id, &completed, &cv,
          &bond_id, &instance_id](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
           RCLCPP_INFO(node_->get_logger(), "received result for instance %s", instance_id.c_str());
+
+          result_ = wrapped_result.result;
+          process_result(result_);
+
           if (wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED)
           {
             RCLCPP_INFO(node_->get_logger(), "action succeeded for instance %s", instance_id.c_str());
@@ -184,7 +188,6 @@ protected:
             emit_failed(bond_id, instance_id, param_on_failure());
           }
 
-          result_ = wrapped_result.result;
           completed = true;
           cv.notify_all();
         };
@@ -223,6 +226,17 @@ protected:
    */
   virtual std::string generate_feedback(const typename ActionT::Feedback::ConstSharedPtr msg) = 0;
 
+  /**
+   * @brief Process the action result before success or failure events are emitted.
+   *
+   * Derived runners can override this hook for side effects such as logging or
+   * caching derived values. By the time this runs, result_ has already been stored,
+   * so param_on_success() and param_on_failure() can safely read it.
+   *
+   * @param result the received action result
+   */
+  virtual void process_result(typename ActionT::Result::SharedPtr result) {}
+
 protected:
   /**< action client */
   typename rclcpp_action::Client<ActionT>::SharedPtr action_client_;
@@ -233,9 +247,6 @@ protected:
 
   /** goal handle parameter to capture goal response from goal_response_callback */
   typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle_;
-
-  /** Wrapped Result */
-  typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult wrapped_result_;
 
   /** Result */
   typename ActionT::Result::SharedPtr result_;
