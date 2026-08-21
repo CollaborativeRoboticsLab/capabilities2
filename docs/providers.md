@@ -87,7 +87,11 @@ The spec keeps the existing sections and adds optional fields to each parameter 
 
 - `semantic_key`: Stable semantic identifier used for cross-capability matching and graph relations. If omitted, `name` is used as the fallback identity.
 - `required`: Declares whether the parameter must be satisfied for valid execution. This is primarily meaningful for runtime inputs.
-- `satisfiable_from`: Declares allowed sources for satisfying a runtime input. Recommended values are `upstream`, `configuration`, `external`, and `default`.
+- `satisfiable_from`: Declares allowed sources for satisfying a runtime input. Recommended values are any combination of the following:
+  - `upstream`: The runtime input may be satisfied by a matching runtime output from an upstream capability.
+  - `configuration`: The runtime input may be satisfied by a matching configuration parameter from the same provider.
+  - `external`: The runtime input may be satisfied by an external source outside the current capability chain.
+  - `default`: The runtime input may be satisfied by a default value declared on the parameter itself or on a fallback configuration parameter.
 - `fallback_parameter`: Names the configuration parameter that may satisfy this runtime input when no upstream producer is connected.
 - `aliases`: Optional alternative names that may be used during semantic matching or migration.
 - `default`: Optional default value when the parameter can be satisfied locally without an upstream producer.
