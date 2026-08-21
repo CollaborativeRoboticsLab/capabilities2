@@ -39,26 +39,42 @@ public:
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
-   * @param action_name action name used in the yaml file, used to load specific configuration from the run_config
+   * @param action_name fallback action name used when no matching action resource is available in the run config
+   * @param action_type action message type used to resolve the remapped action name from the run config
    */
-  virtual void init_action(rclcpp::Node::SharedPtr node, const runner_opts& run_config, const std::string& action_name)
+  virtual void init_action(rclcpp::Node::SharedPtr node, const runner_opts& run_config, const std::string& action_name,
+                           const std::string& action_type)
   {
     // initialize the runner base by storing node pointer and run config
     init_base(node, run_config);
 
+    std::string resolved_action_name = action_name;
+    try
+    {
+      resolved_action_name = get_action_name_by_type(action_type);
+      RCLCPP_INFO(node_->get_logger(), "resolved action name: %s for type: %s", resolved_action_name.c_str(),
+                  action_type.c_str());
+    }
+    catch (const runner_exception&)
+    {
+      // Fall back to the explicit action name for runners that are not backed by interface resources.
+      RCLCPP_ERROR(node_->get_logger(), "failed to resolve action name for type: %s. using fallback action name: %s",
+                   action_type.c_str(), resolved_action_name.c_str());
+    }
+
     // create an action client
-    action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name);
+    action_client_ = rclcpp_action::create_client<ActionT>(node_, resolved_action_name);
 
     // wait for action server
-    RCLCPP_INFO(node_->get_logger(), "waiting for action: %s", action_name.c_str());
+    RCLCPP_INFO(node_->get_logger(), "waiting for action: %s", resolved_action_name.c_str());
 
     if (!action_client_->wait_for_action_server(std::chrono::seconds(1000)))
     {
-      RCLCPP_ERROR(node_->get_logger(), "failed to connect to action: %s", action_name.c_str());
+      RCLCPP_ERROR(node_->get_logger(), "failed to connect to action: %s", resolved_action_name.c_str());
       throw runner_exception("failed to connect to action server");
     }
 
-    RCLCPP_INFO(node_->get_logger(), "connected with action: %s", action_name.c_str());
+    RCLCPP_INFO(node_->get_logger(), "connected with action: %s", resolved_action_name.c_str());
   }
 
   /**
@@ -155,20 +171,21 @@ protected:
           goal_handle_ = goal_handle;
         };
 
-    send_goal_options_.feedback_callback = [this, &instance_id](
-                                               typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle,
-                                               const typename ActionT::Feedback::ConstSharedPtr feedback_msg) {
-      std::string feedback = generate_feedback(feedback_msg);
+    send_goal_options_.feedback_callback =
+        [this, &instance_id](typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle,
+                             const typename ActionT::Feedback::ConstSharedPtr feedback_msg) {
+          std::string feedback = generate_feedback(feedback_msg);
 
-      if (feedback != "")
-      {
-        RCLCPP_INFO(node_->get_logger(), "received feedback:  %s for instance %s", feedback.c_str(), instance_id.c_str());
-      }
-    };
+          if (feedback != "")
+          {
+            RCLCPP_INFO(node_->get_logger(), "received feedback:  %s for instance %s", feedback.c_str(),
+                        instance_id.c_str());
+          }
+        };
 
     send_goal_options_.result_callback =
-        [this, &instance_id, &completed, &cv,
-         &bond_id, &instance_id](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
+        [this, &instance_id, &completed, &cv, &bond_id,
+         &instance_id](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
           RCLCPP_INFO(node_->get_logger(), "received result for instance %s", instance_id.c_str());
 
           result_ = wrapped_result.result;
@@ -235,7 +252,9 @@ protected:
    *
    * @param result the received action result
    */
-  virtual void process_result(typename ActionT::Result::SharedPtr result) {}
+  virtual void process_result(typename ActionT::Result::SharedPtr result)
+  {
+  }
 
 protected:
   /**< action client */

@@ -28,17 +28,32 @@ public:
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
-   * @param topic_name topic name used in the yaml file, used to load specific configuration from the run_config
+   * @param topic_name fallback topic name used when no matching topic resource is available in the run config
+   * @param topic_type topic message type used to resolve the remapped topic name from the run config
    */
   virtual void init_subscriber(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                               const std::string& topic_name)
+                               const std::string& topic_name, const std::string& topic_type)
   {
     // initialize the runner base by storing node pointer and run config
     init_base(node, run_config);
 
+    std::string resolved_topic_name = topic_name;
+    try
+    {
+      resolved_topic_name = get_topic_name_by_type(topic_type);
+      RCLCPP_INFO(node_->get_logger(), "resolved topic name: %s for type: %s", resolved_topic_name.c_str(),
+                  topic_type.c_str());
+    }
+    catch (const runner_exception&)
+    {
+      // Fall back to the explicit topic name for runners that are not backed by interface resources.
+      RCLCPP_ERROR(node_->get_logger(), "failed to resolve topic name for type: %s. using fallback topic name: %s",
+                   topic_type.c_str(), resolved_topic_name.c_str());
+    }
+
     // create an service client
     subscription_ = node_->create_subscription<TopicT>(
-        topic_name, 10, [this](const typename TopicT::SharedPtr msg) { this->callback(msg); });
+        resolved_topic_name, 10, [this](const typename TopicT::SharedPtr msg) { this->callback(msg); });
   }
 
   /**

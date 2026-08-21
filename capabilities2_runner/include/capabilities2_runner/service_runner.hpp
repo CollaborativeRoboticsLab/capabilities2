@@ -28,27 +28,42 @@ public:
    *
    * @param node shared pointer to the capabilities node. Allows to use ros node related functionalities
    * @param run_config runner configuration loaded from the yaml file
-   * @param service_name action name used in the yaml file, used to load specific configuration from the run_config
+   * @param service_name fallback service name used when no matching service resource is available in the run config
+   * @param service_type service message type used to resolve the remapped service name from the run config
    */
   virtual void init_service(rclcpp::Node::SharedPtr node, const runner_opts& run_config,
-                            const std::string& service_name)
+                            const std::string& service_name, const std::string& service_type)
   {
     // initialize the runner base by storing node pointer and run config
     init_base(node, run_config);
 
+    std::string resolved_service_name = service_name;
+    try
+    {
+      resolved_service_name = get_service_name_by_type(service_type);
+      RCLCPP_INFO(node_->get_logger(), "resolved service name: %s for type: %s", resolved_service_name.c_str(),
+                  service_type.c_str());
+    }
+    catch (const runner_exception&)
+    {
+      // Fall back to the explicit service name for runners that are not backed by interface resources.
+      RCLCPP_ERROR(node_->get_logger(), "failed to resolve service name for type: %s. using fallback service name: %s",
+                   service_type.c_str(), resolved_service_name.c_str());
+    }
+
     // create a service client
-    service_client_ = node_->create_client<ServiceT>(service_name);
+    service_client_ = node_->create_client<ServiceT>(resolved_service_name);
 
     // wait for service server
-    RCLCPP_INFO(node_->get_logger(), "waiting for service: %s", service_name.c_str());
+    RCLCPP_INFO(node_->get_logger(), "waiting for service: %s", resolved_service_name.c_str());
 
     if (!service_client_->wait_for_service(std::chrono::seconds(3)))
     {
-      RCLCPP_ERROR(node_->get_logger(), "failed to connect to service: %s", service_name.c_str());
+      RCLCPP_ERROR(node_->get_logger(), "failed to connect to service: %s", resolved_service_name.c_str());
       throw runner_exception("failed to connect to server");
     }
 
-    RCLCPP_INFO(node_->get_logger(), "connected with service: %s", service_name.c_str());
+    RCLCPP_INFO(node_->get_logger(), "connected with service: %s", resolved_service_name.c_str());
   }
 
   /**
@@ -100,8 +115,9 @@ protected:
     std::condition_variable cv;
     bool completed = false;
 
-    auto result_future = service_client_->async_send_request(
-        request_msg, [this,  &instance_id, &completed, &bond_id, &cv](typename rclcpp::Client<ServiceT>::SharedFuture future) {
+    auto result_future =
+        service_client_->async_send_request(request_msg, [this, &instance_id, &completed, &bond_id,
+                                                          &cv](typename rclcpp::Client<ServiceT>::SharedFuture future) {
           if (!future.valid())
           {
             RCLCPP_ERROR(node_->get_logger(), "get result call failed");
@@ -138,7 +154,7 @@ protected:
    *
    * A pattern needs to be implemented in the derived class
    *
-   * @param parameters 
+   * @param parameters
    * @return ServiceT::Request the generated request
    */
   virtual typename ServiceT::Request generate_request(capabilities2_events::EventParameters& parameters) = 0;
@@ -153,7 +169,9 @@ protected:
    * A pattern needs to be implemented in the derived class for processing the response and extracting data if needed,
    * currently does nothing.
    */
-  virtual void process_response(typename ServiceT::Response::SharedPtr /*response*/) {}
+  virtual void process_response(typename ServiceT::Response::SharedPtr /*response*/)
+  {
+  }
 
   typename rclcpp::Client<ServiceT>::SharedPtr service_client_;
   typename ServiceT::Response::SharedPtr response_;
