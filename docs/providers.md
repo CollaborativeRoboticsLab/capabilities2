@@ -96,6 +96,25 @@ The spec keeps the existing sections and adds optional fields to each parameter 
 - `aliases`: Optional alternative names that may be used during semantic matching or migration.
 - `default`: Optional default value when the parameter can be satisfied locally without an upstream producer.
 
+### Collection Type Convention
+
+Provider parameter `type` values are stored as free-form strings in the current server implementation.
+For collection payloads, use the following explicit convention in YAML:
+
+- `string[]`: ordered string vector
+- `double[]`: ordered floating-point vector
+- `int[]`: ordered integer vector
+- `boolean[]`: ordered boolean vector
+
+This convention maps to the event parameter vector variants in `capabilities2_events::OptionType`:
+
+- `string[]` -> `VECTOR_STRING`
+- `double[]` -> `VECTOR_DOUBLE`
+- `int[]` -> `VECTOR_INT`
+- `boolean[]` -> `VECTOR_BOOL`
+
+Use YAML sequences for defaults when a collection parameter has a local default, for example `default: []`.
+
 ### Semantics
 
 - Parameter role is still determined by where the parameter is declared: `configuration_parameters`, `runtime_parameters.input`, or `runtime_parameters.output`.
@@ -137,6 +156,22 @@ definition:
         type: string
         description: Prompt response returned by the provider.
         semantic_key: prompt.response
+```
+
+### Example: Vector Runtime Output
+
+```yaml
+definition:
+  runtime_parameters:
+    output:
+      - name: joint_names
+        type: string[]
+        description: Ordered joint names produced by the runner.
+        semantic_key: robot.joints.names
+      - name: joint_positions
+        type: double[]
+        description: Ordered joint positions in radians matching joint_names.
+        semantic_key: robot.joints.positions
 ```
 
 ### Interpretation For Common Parameters
