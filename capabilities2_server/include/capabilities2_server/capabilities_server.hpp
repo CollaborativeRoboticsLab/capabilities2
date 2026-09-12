@@ -210,6 +210,12 @@ public:
         "~/get_runnable_specs",
         std::bind(&CapabilitiesServer::get_runnable_specs_cb, this, std::placeholders::_1, std::placeholders::_2));
 
+    const auto interface_count = get_interfaces().size();
+    const auto runnable_count = get_runnable_specs().size();
+
+    RCLCPP_INFO(get_logger(), "loaded %zu interfaces and %zu runnable capabilities",
+          interface_count, runnable_count);
+
     // log ready
     RCLCPP_INFO(get_logger(), "capabilities server started");
 
