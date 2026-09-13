@@ -199,7 +199,16 @@ protected:
           }
           else
           {
-            RCLCPP_ERROR(node_->get_logger(), "action failed for instance %s", instance_id.c_str());
+            const std::string diagnostic = result_diagnostic();
+            if (diagnostic.empty())
+            {
+              RCLCPP_ERROR(node_->get_logger(), "action failed for instance %s", instance_id.c_str());
+            }
+            else
+            {
+              RCLCPP_ERROR(
+                node_->get_logger(), "action failed for instance %s: %s", instance_id.c_str(), diagnostic.c_str());
+            }
 
             // emit failed event
             emit_failed(bond_id, instance_id, param_on_failure());
@@ -242,6 +251,18 @@ protected:
    * @return ActionT::Feedback the received feedback
    */
   virtual std::string generate_feedback(const typename ActionT::Feedback::ConstSharedPtr msg) = 0;
+
+  /**
+   * @brief Return a diagnostic string for logging action failures.
+   *
+   * Derived runners can override this to expose result-specific failure text.
+   *
+   * @return Human-readable failure detail.
+   */
+  virtual std::string result_diagnostic() const
+  {
+    return "";
+  }
 
   /**
    * @brief Process the action result before success or failure events are emitted.
