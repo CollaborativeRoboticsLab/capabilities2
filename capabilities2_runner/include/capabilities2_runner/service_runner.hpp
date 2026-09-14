@@ -132,8 +132,14 @@ protected:
             response_ = future.get();
             process_response(response_);
 
-            // emit success event
-            emit_succeeded(bond_id, instance_id, param_on_success());
+            if (response_is_success())
+            {
+              emit_succeeded(bond_id, instance_id, param_on_success());
+            }
+            else
+            {
+              emit_failed(bond_id, instance_id, param_on_failure());
+            }
           }
 
           completed = true;
@@ -171,6 +177,19 @@ protected:
    */
   virtual void process_response(typename ServiceT::Response::SharedPtr /*response*/)
   {
+  }
+
+  /**
+   * @brief Decide whether a completed service response should emit success or failure.
+   *
+   * Derived runners can override this to treat semantically invalid responses as failures
+   * even when the transport-level service call completed successfully.
+   *
+   * @return True when the response should emit an on_success event.
+   */
+  virtual bool response_is_success() const
+  {
+    return true;
   }
 
   typename rclcpp::Client<ServiceT>::SharedPtr service_client_;
