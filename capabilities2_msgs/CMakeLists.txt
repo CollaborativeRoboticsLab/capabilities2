@@ -22,6 +22,7 @@ set(msg_files
   "msg/CapabilityEvent.msg"
   "msg/CapabilityEventCode.msg"
   "msg/CapabilityEventStamped.msg"
+  "msg/CapabilityEventHistoryStamped.msg"
   "msg/CapabilityResponse.msg"
   "msg/CapabilitySpec.msg"
   "msg/RunnableSpec.msg"

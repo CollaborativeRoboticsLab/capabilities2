@@ -75,6 +75,26 @@ public:
       return;
     }
 
+    std::string ownership_id_for_observation;
+
+    for (const auto& [conn_id, connection] : connections_)
+    {
+      size_t first_pos = conn_id.find('/');
+      size_t second_pos = conn_id.find('/', first_pos + 1);
+
+      std::string conn_bond_id = (first_pos != std::string::npos) ? conn_id.substr(0, first_pos) : conn_id;
+      std::string conn_instance_id =
+          (second_pos != std::string::npos) ? conn_id.substr(first_pos + 1, second_pos - first_pos - 1) : "";
+
+      if (bond_id == conn_bond_id && instance_id == conn_instance_id)
+      {
+        ownership_id_for_observation = connection.ownership_id;
+        break;
+      }
+    }
+
+    event_emitter_->publish_observed_event(ownership_id_for_observation, event_type, source_, instance_id);
+
     // check each connection
     for (const auto& [conn_id, connection] : connections_)
     {

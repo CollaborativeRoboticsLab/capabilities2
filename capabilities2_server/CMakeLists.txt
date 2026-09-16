@@ -15,6 +15,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_components REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(bondcpp REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
@@ -58,6 +59,7 @@ ament_target_dependencies(${PROJECT_NAME}_comp
   bondcpp
   pluginlib
   rclcpp_components
+  std_srvs
   capabilities2_msgs
   capabilities2_events
   capabilities2_runner
@@ -100,6 +102,7 @@ ament_target_dependencies(${PROJECT_NAME}_node
   rclcpp_action
   bondcpp
   pluginlib
+  std_srvs
   capabilities2_msgs
   capabilities2_events
   capabilities2_runner

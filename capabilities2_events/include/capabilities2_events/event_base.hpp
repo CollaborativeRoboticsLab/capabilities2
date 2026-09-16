@@ -87,6 +87,22 @@ public:
   }
 
   /**
+   * @brief Publish an observed event for monitoring/telemetry even when no callback is triggered.
+   *
+   * This is used so external observers can see lifecycle events such as STARTED and STOPPED
+   * even when the plan does not define a matching event connection.
+   */
+  virtual void publish_observed_event(const std::string& ownership_id, const uint8_t& event_code,
+                                      const capabilities2_msgs::msg::Capability& source,
+                                      const std::string& instance_id)
+  {
+    (void)ownership_id;
+    (void)event_code;
+    (void)source;
+    (void)instance_id;
+  }
+
+  /**
    * @brief on server ready event
    *
    * @param msg

@@ -43,7 +43,8 @@ public:
    * @param run_config run_config of the runner to be loaded
    */
   void add_runner(rclcpp::Node::SharedPtr node, const std::string& capability,
-                  const models::run_config_model_t& run_config)
+                  const models::run_config_model_t& run_config,
+                  std::shared_ptr<capabilities2_events::EventBase> event_emitter = nullptr)
   {
     // if the runner exists then throw an error preserving uniqueness
     if (running(capability))
@@ -68,6 +69,8 @@ public:
     {
       runner_cache_[capability] = runner_loader_.createSharedInstance(run_config.runner);
     }
+
+    runner_cache_[capability]->enable_events(event_emitter);
 
     // start the runner
     runner_cache_[capability]->start(node, run_config.to_runner_opts(), "");

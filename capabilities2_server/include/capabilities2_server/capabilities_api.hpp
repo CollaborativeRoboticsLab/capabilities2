@@ -104,7 +104,7 @@ public:
     // TODO: consider the logic for multiple runners per capability
     try
     {
-      runner_cache_.add_runner(node, capability, run_config);
+      runner_cache_.add_runner(node, capability, run_config, event_);
 
       // log
       RCLCPP_INFO(logging_->get_logger(), "started capability: %s with provider: %s", capability.c_str(),

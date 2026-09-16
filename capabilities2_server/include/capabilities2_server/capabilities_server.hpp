@@ -12,12 +12,15 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <std_srvs/srv/trigger.hpp>
+
 #include <capabilities2_server/capabilities_api.hpp>
 
 #include <capabilities2_events/published_event.hpp>
 #include <capabilities2_events/event_parameters.hpp>
 
 #include <capabilities2_msgs/msg/capability_spec.hpp>
+#include <capabilities2_msgs/msg/capability_event_history_stamped.hpp>
 #include <capabilities2_msgs/msg/capability_event_stamped.hpp>
 #include <capabilities2_msgs/srv/establish_bond.hpp>
 #include <capabilities2_msgs/srv/start_capability.hpp>
@@ -98,6 +101,10 @@ public:
     declare_parameter("package_paths", std::vector<std::string>());
     std::vector<std::string> package_paths = get_parameter("package_paths").as_string_array();
 
+    declare_parameter("event_history_size", 100);
+    const int event_history_size = get_parameter("event_history_size").as_int();
+    const size_t bounded_event_history_size = event_history_size > 0 ? static_cast<size_t>(event_history_size) : 100U;
+
     // get full path of db file
     std::filesystem::path db_path = std::filesystem::absolute(expand_tilde(db_file));
     db_file = db_path.string();
@@ -130,9 +137,12 @@ public:
 
     // pubs
     event_pub_ = create_publisher<capabilities2_msgs::msg::CapabilityEventStamped>("~/events", 10);
+    event_history_pub_ = create_publisher<capabilities2_msgs::msg::CapabilityEventHistoryStamped>("~/events_history", 10);
 
     // event publisher uses event subsystem
-    event_ = std::make_shared<capabilities2_events::PublishedEvent>(event_pub_);
+    event_ = std::make_shared<capabilities2_events::PublishedEvent>(event_pub_, event_history_pub_, bounded_event_history_size);
+
+    RCLCPP_INFO(get_logger(), "Capability event history size configured to %zu", bounded_event_history_size);
 
     // subs
 
@@ -209,6 +219,10 @@ public:
     get_runnable_specs_srv_ = create_service<capabilities2_msgs::srv::GetRunnableSpecs>(
         "~/get_runnable_specs",
         std::bind(&CapabilitiesServer::get_runnable_specs_cb, this, std::placeholders::_1, std::placeholders::_2));
+
+    ready_srv_ = create_service<std_srvs::srv::Trigger>(
+      "~/ready",
+      std::bind(&CapabilitiesServer::ready_cb, this, std::placeholders::_1, std::placeholders::_2));
 
     const auto interface_count = get_interfaces().size();
     const auto runnable_count = get_runnable_specs().size();
@@ -750,6 +764,14 @@ private:
     spec_file_file.close();
   }
 
+  void ready_cb(const std::shared_ptr<std_srvs::srv::Trigger::Request> req,
+                std::shared_ptr<std_srvs::srv::Trigger::Response> res)
+  {
+    (void)req;
+    res->success = true;
+    res->message = "capabilities server startup complete";
+  }
+
 private:
   // loop hz
   double loop_hz_;
@@ -757,6 +779,7 @@ private:
   // publishers
   // event publisher
   rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEventStamped>::SharedPtr event_pub_;
+  rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEventHistoryStamped>::SharedPtr event_history_pub_;
 
   // services
   // establish bond
@@ -791,6 +814,8 @@ private:
   rclcpp::Service<capabilities2_msgs::srv::GetRunningCapabilities>::SharedPtr get_running_capabilities_srv_;
   // get runnable specs
   rclcpp::Service<capabilities2_msgs::srv::GetRunnableSpecs>::SharedPtr get_runnable_specs_srv_;
+  // ready
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr ready_srv_;
 };
 
 }  // namespace capabilities2_server

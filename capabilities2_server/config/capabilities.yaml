@@ -3,6 +3,7 @@
     loop_rate: 5.0 # Hz
     db_file: ~/.ros/capabilities/capabilities.sqlite3
     rebuild: true # Set to true to rebuild the database
+    event_history_size: 100
     package_paths: # paths to search for capabilities
       - install/
       - /opt/ros/humble/share

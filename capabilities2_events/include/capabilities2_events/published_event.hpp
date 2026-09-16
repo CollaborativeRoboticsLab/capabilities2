@@ -1,9 +1,13 @@
 #pragma once
 
+#include <deque>
+#include <mutex>
+
 #include <capabilities2_events/event_base.hpp>
 
 #include <rclcpp/rclcpp.hpp>
 #include <capabilities2_msgs/msg/capability_event_stamped.hpp>
+#include <capabilities2_msgs/msg/capability_event_history_stamped.hpp>
 
 namespace capabilities2_events
 {
@@ -11,8 +15,10 @@ namespace capabilities2_events
 class PublishedEvent : public EventBase
 {
 public:
-  PublishedEvent(rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEventStamped>::SharedPtr event_pub)
-    : EventBase(), event_pub_(event_pub)
+  PublishedEvent(rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEventStamped>::SharedPtr event_pub,
+                 rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEventHistoryStamped>::SharedPtr event_history_pub,
+                 size_t max_history_size = 100)
+    : EventBase(), event_pub_(event_pub), event_history_pub_(event_history_pub), max_history_size_(max_history_size)
   {
   }
 
@@ -47,11 +53,24 @@ public:
     event_msg.event.connection.target = target;
     event_msg.event.connection.ownership_id = ownership_id;
 
-    // publish event
-    event_pub_->publish(event_msg);
+    publish_event(event_msg);
 
     // call super
     EventBase::emit(connection_id, ownership_id, event_code, source, target, callback);
+  }
+
+  void publish_observed_event(const std::string& ownership_id, const uint8_t& event_code,
+                              const capabilities2_msgs::msg::Capability& source,
+                              const std::string& instance_id) override
+  {
+    capabilities2_msgs::msg::CapabilityEventStamped event_msg;
+    event_msg.header.stamp = rclcpp::Clock().now();
+    event_msg.event.trigger_id = instance_id;
+    event_msg.event.code.code = event_code;
+    event_msg.event.connection.source = source;
+    event_msg.event.connection.ownership_id = ownership_id;
+
+    publish_event(event_msg);
   }
 
   /**
@@ -69,7 +88,7 @@ public:
     event_msg.event.code.code = capabilities2_msgs::msg::CapabilityEventCode::SERVER_READY;
     event_msg.event.description = msg;
 
-    event_pub_->publish(event_msg);
+    publish_event(event_msg);
   }
 
   /**
@@ -87,7 +106,7 @@ public:
     event_msg.event.code.code = capabilities2_msgs::msg::CapabilityEventCode::LAUNCHED;
     event_msg.event.description = "Process launched with PID: " + pid;
 
-    event_pub_->publish(event_msg);
+    publish_event(event_msg);
   }
 
   /**
@@ -105,7 +124,7 @@ public:
     event_msg.event.code.code = capabilities2_msgs::msg::CapabilityEventCode::TERMINATED;
     event_msg.event.description = "Process terminated with PID: " + pid;
 
-    event_pub_->publish(event_msg);
+    publish_event(event_msg);
   }
 
   void on_triggered(const std::string& trigger_id)
@@ -118,7 +137,7 @@ public:
     event_msg.event.code.code = capabilities2_msgs::msg::CapabilityEventCode::TRIGGERED;
     event_msg.event.description = "Triggered event with ID: " + trigger_id;
 
-    event_pub_->publish(event_msg);
+    publish_event(event_msg);
   }
 
   void on_connected(const std::string& source, const std::string& target)
@@ -131,7 +150,7 @@ public:
     event_msg.event.code.code = capabilities2_msgs::msg::CapabilityEventCode::CONNECTED;
     event_msg.event.description = "Connected event from " + source + " to " + target;
 
-    event_pub_->publish(event_msg);
+    publish_event(event_msg);
   }
 
   void on_disconnected(const std::string& source, const std::string& target)
@@ -144,12 +163,42 @@ public:
     event_msg.event.code.code = capabilities2_msgs::msg::CapabilityEventCode::DISCONNECTED;
     event_msg.event.description = "Disconnected event from " + source + " to " + target;
 
-    event_pub_->publish(event_msg);
+    publish_event(event_msg);
   }
 
 private:
+  void publish_event(const capabilities2_msgs::msg::CapabilityEventStamped& event_msg)
+  {
+    event_pub_->publish(event_msg);
+
+    if (!event_history_pub_)
+    {
+      return;
+    }
+
+    capabilities2_msgs::msg::CapabilityEventHistoryStamped history_msg;
+    {
+      std::lock_guard<std::mutex> lock(history_mutex_);
+      event_history_.push_back(event_msg);
+      while (event_history_.size() > max_history_size_)
+      {
+        event_history_.pop_front();
+      }
+
+      history_msg.header.stamp = event_msg.header.stamp;
+      history_msg.max_events = static_cast<uint32_t>(max_history_size_);
+      history_msg.events.assign(event_history_.begin(), event_history_.end());
+    }
+
+    event_history_pub_->publish(history_msg);
+  }
+
   // event publisher
   rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEventStamped>::SharedPtr event_pub_;
+  rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEventHistoryStamped>::SharedPtr event_history_pub_;
+  std::deque<capabilities2_msgs::msg::CapabilityEventStamped> event_history_;
+  std::mutex history_mutex_;
+  size_t max_history_size_;
 };
 
 }  // namespace capabilities2_events
