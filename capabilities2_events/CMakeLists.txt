@@ -12,6 +12,7 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_gtest REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 
@@ -46,6 +47,20 @@ install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
+
+if(BUILD_TESTING)
+  ament_add_gtest(published_event_test
+    test/published_event_test.cpp
+  )
+  if(TARGET published_event_test)
+    target_include_directories(published_event_test PUBLIC include)
+    target_link_libraries(published_event_test ${PROJECT_NAME})
+    ament_target_dependencies(published_event_test
+      rclcpp
+      capabilities2_msgs
+    )
+  endif()
+endif()
 
 ament_export_include_directories(include)
 ament_export_dependencies(rclcpp capabilities2_msgs)

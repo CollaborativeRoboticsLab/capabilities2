@@ -1,13 +1,14 @@
 #pragma once
 
+#include <cstdint>
 #include <deque>
 #include <mutex>
+#include <vector>
 
 #include <capabilities2_events/event_base.hpp>
 
 #include <rclcpp/rclcpp.hpp>
 #include <capabilities2_msgs/msg/capability_event_stamped.hpp>
-#include <capabilities2_msgs/msg/capability_event_history_stamped.hpp>
 
 namespace capabilities2_events
 {
@@ -15,10 +16,19 @@ namespace capabilities2_events
 class PublishedEvent : public EventBase
 {
 public:
+  struct SnapshotResult
+  {
+    rclcpp::Time stamp;
+    uint64_t oldest_sequence{ 0 };
+    uint64_t latest_sequence{ 0 };
+    uint32_t max_events{ 0 };
+    bool truncated{ false };
+    std::vector<capabilities2_msgs::msg::CapabilityEventStamped> events;
+  };
+
   PublishedEvent(rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEventStamped>::SharedPtr event_pub,
-                 rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEventHistoryStamped>::SharedPtr event_history_pub,
                  size_t max_history_size = 100)
-    : EventBase(), event_pub_(event_pub), event_history_pub_(event_history_pub), max_history_size_(max_history_size)
+    : EventBase(), event_pub_(event_pub), max_history_size_(max_history_size)
   {
   }
 
@@ -166,38 +176,79 @@ public:
     publish_event(event_msg);
   }
 
-private:
-  void publish_event(const capabilities2_msgs::msg::CapabilityEventStamped& event_msg)
+  SnapshotResult get_event_snapshot(uint64_t after_sequence, size_t requested_max_events) const
   {
-    event_pub_->publish(event_msg);
+    SnapshotResult snapshot;
+    snapshot.max_events = static_cast<uint32_t>(max_history_size_);
 
-    if (!event_history_pub_)
+    std::lock_guard<std::mutex> lock(history_mutex_);
+
+    if (event_history_.empty())
     {
-      return;
+      snapshot.stamp = rclcpp::Clock().now();
+      return snapshot;
     }
 
-    capabilities2_msgs::msg::CapabilityEventHistoryStamped history_msg;
+    snapshot.stamp = event_history_.back().event.header.stamp;
+    snapshot.oldest_sequence = event_history_.front().sequence;
+    snapshot.latest_sequence = event_history_.back().sequence;
+
+    const size_t bounded_request_count = requested_max_events > 0
+      ? std::min(requested_max_events, max_history_size_)
+      : max_history_size_;
+
+    snapshot.truncated = after_sequence > 0 && after_sequence + 1 < snapshot.oldest_sequence;
+
+    for (const auto& stored_event : event_history_)
+    {
+      if (stored_event.sequence <= after_sequence)
+      {
+        continue;
+      }
+
+      snapshot.events.push_back(stored_event.event);
+      if (snapshot.events.size() >= bounded_request_count)
+      {
+        break;
+      }
+    }
+
+    return snapshot;
+  }
+
+private:
+  struct SequencedEvent
+  {
+    uint64_t sequence{ 0 };
+    capabilities2_msgs::msg::CapabilityEventStamped event;
+  };
+
+  void publish_event(const capabilities2_msgs::msg::CapabilityEventStamped& event_msg)
+  {
+    if (event_pub_)
+    {
+      event_pub_->publish(event_msg);
+    }
+
+    SequencedEvent stored_event;
+
     {
       std::lock_guard<std::mutex> lock(history_mutex_);
-      event_history_.push_back(event_msg);
+      stored_event.sequence = next_sequence_++;
+      stored_event.event = event_msg;
+      event_history_.push_back(stored_event);
       while (event_history_.size() > max_history_size_)
       {
         event_history_.pop_front();
       }
-
-      history_msg.header.stamp = event_msg.header.stamp;
-      history_msg.max_events = static_cast<uint32_t>(max_history_size_);
-      history_msg.events.assign(event_history_.begin(), event_history_.end());
     }
-
-    event_history_pub_->publish(history_msg);
   }
 
   // event publisher
   rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEventStamped>::SharedPtr event_pub_;
-  rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEventHistoryStamped>::SharedPtr event_history_pub_;
-  std::deque<capabilities2_msgs::msg::CapabilityEventStamped> event_history_;
-  std::mutex history_mutex_;
+  std::deque<SequencedEvent> event_history_;
+  mutable std::mutex history_mutex_;
+  uint64_t next_sequence_{ 1 };
   size_t max_history_size_;
 };
 

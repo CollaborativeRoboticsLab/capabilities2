@@ -1,0 +1,9 @@
+uint64 after_sequence
+uint32 max_events
+---
+std_msgs/Header header
+uint64 oldest_sequence
+uint64 latest_sequence
+uint32 max_events
+bool truncated
+capabilities2_msgs/CapabilityEventStamped[] events

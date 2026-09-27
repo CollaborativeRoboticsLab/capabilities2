@@ -20,7 +20,6 @@
 #include <capabilities2_events/event_parameters.hpp>
 
 #include <capabilities2_msgs/msg/capability_spec.hpp>
-#include <capabilities2_msgs/msg/capability_event_history_stamped.hpp>
 #include <capabilities2_msgs/msg/capability_event_stamped.hpp>
 #include <capabilities2_msgs/srv/establish_bond.hpp>
 #include <capabilities2_msgs/srv/start_capability.hpp>
@@ -35,6 +34,7 @@
 #include <capabilities2_msgs/srv/get_providers.hpp>
 #include <capabilities2_msgs/srv/get_capability_spec.hpp>
 #include <capabilities2_msgs/srv/get_capability_specs.hpp>
+#include <capabilities2_msgs/srv/get_event_snapshot.hpp>
 #include <capabilities2_msgs/srv/get_remappings.hpp>
 #include <capabilities2_msgs/srv/get_running_capabilities.hpp>
 
@@ -137,10 +137,10 @@ public:
 
     // pubs
     event_pub_ = create_publisher<capabilities2_msgs::msg::CapabilityEventStamped>("~/events", 10);
-    event_history_pub_ = create_publisher<capabilities2_msgs::msg::CapabilityEventHistoryStamped>("~/events_history", 10);
-
     // event publisher uses event subsystem
-    event_ = std::make_shared<capabilities2_events::PublishedEvent>(event_pub_, event_history_pub_, bounded_event_history_size);
+    published_event_ = std::make_shared<capabilities2_events::PublishedEvent>(
+      event_pub_, bounded_event_history_size);
+    event_ = published_event_;
 
     RCLCPP_INFO(get_logger(), "Capability event history size configured to %zu", bounded_event_history_size);
 
@@ -207,6 +207,10 @@ public:
     get_capability_specs_srv_ = create_service<capabilities2_msgs::srv::GetCapabilitySpecs>(
         "~/get_capability_specs",
         std::bind(&CapabilitiesServer::get_capability_specs_cb, this, std::placeholders::_1, std::placeholders::_2));
+
+    get_event_snapshot_srv_ = create_service<capabilities2_msgs::srv::GetEventSnapshot>(
+      "~/get_event_snapshot",
+      std::bind(&CapabilitiesServer::get_event_snapshot_cb, this, std::placeholders::_1, std::placeholders::_2));
 
     get_remappings_srv_ = create_service<capabilities2_msgs::srv::GetRemappings>(
         "~/get_remappings",
@@ -772,6 +776,29 @@ private:
     res->message = "capabilities server startup complete";
   }
 
+  void get_event_snapshot_cb(const std::shared_ptr<capabilities2_msgs::srv::GetEventSnapshot::Request> req,
+                             std::shared_ptr<capabilities2_msgs::srv::GetEventSnapshot::Response> res)
+  {
+    if (!published_event_)
+    {
+      res->header.stamp = now();
+      res->oldest_sequence = 0;
+      res->latest_sequence = 0;
+      res->max_events = 0;
+      res->truncated = false;
+      res->events.clear();
+      return;
+    }
+
+    const auto snapshot = published_event_->get_event_snapshot(req->after_sequence, req->max_events);
+    res->header.stamp = snapshot.stamp;
+    res->oldest_sequence = snapshot.oldest_sequence;
+    res->latest_sequence = snapshot.latest_sequence;
+    res->max_events = snapshot.max_events;
+    res->truncated = snapshot.truncated;
+    res->events = snapshot.events;
+  }
+
 private:
   // loop hz
   double loop_hz_;
@@ -779,7 +806,7 @@ private:
   // publishers
   // event publisher
   rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEventStamped>::SharedPtr event_pub_;
-  rclcpp::Publisher<capabilities2_msgs::msg::CapabilityEventHistoryStamped>::SharedPtr event_history_pub_;
+  std::shared_ptr<capabilities2_events::PublishedEvent> published_event_;
 
   // services
   // establish bond
@@ -808,6 +835,8 @@ private:
   rclcpp::Service<capabilities2_msgs::srv::GetCapabilitySpec>::SharedPtr get_capability_spec_srv_;
   // get capability specs
   rclcpp::Service<capabilities2_msgs::srv::GetCapabilitySpecs>::SharedPtr get_capability_specs_srv_;
+  // get event snapshot
+  rclcpp::Service<capabilities2_msgs::srv::GetEventSnapshot>::SharedPtr get_event_snapshot_srv_;
   // get remappings
   rclcpp::Service<capabilities2_msgs::srv::GetRemappings>::SharedPtr get_remappings_srv_;
   // get running capabilities
