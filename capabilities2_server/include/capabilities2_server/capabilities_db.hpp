@@ -378,22 +378,33 @@ public:
   virtual void apply_remappings(models::specification_model_t& spec,
                                 const models::remappable_base_t& remappable) override
   {
-    for (auto const& param : remappable.remappings.parameters)
-    {
-      spec.parameters[param.from].name = param.to;
-    }
-    for (auto const& topic : remappable.remappings.topics)
-    {
-      spec.topics[topic.from].name = topic.to;
-    }
-    for (auto const& service : remappable.remappings.services)
-    {
-      spec.services[service.from].name = service.to;
-    }
-    for (auto const& action : remappable.remappings.actions)
-    {
-      spec.actions[action.from].name = action.to;
-    }
+    const auto apply_resource_remappings = [](auto& resources, const auto& remappings) {
+      for (const auto& remapping : remappings)
+      {
+        auto resource = resources.find(remapping.from);
+        if (resource == resources.end())
+        {
+          resource = std::find_if(resources.begin(), resources.end(), [&remapping](const auto& entry) {
+            return entry.second.name == remapping.from;
+          });
+        }
+
+        if (resource == resources.end())
+        {
+          continue;
+        }
+
+        auto remapped_resource = resource->second;
+        resources.erase(resource);
+        remapped_resource.name = remapping.to;
+        resources[remapping.to] = remapped_resource;
+      }
+    };
+
+    apply_resource_remappings(spec.parameters, remappable.remappings.parameters);
+    apply_resource_remappings(spec.topics, remappable.remappings.topics);
+    apply_resource_remappings(spec.services, remappable.remappings.services);
+    apply_resource_remappings(spec.actions, remappable.remappings.actions);
   }
 
   // apply semantics to interface
@@ -436,7 +447,8 @@ public:
   }
 
   // get run config model
-  virtual models::run_config_model_t get_run_config(const std::string& provider_name) override
+  virtual models::run_config_model_t get_run_config(const std::string& provider_name,
+                                                    const std::string& interface_name = "") override
   {
     models::provider_model_t provider = get_provider(provider_name);
     if (provider.header.name.empty())
@@ -450,6 +462,19 @@ public:
     run_config.runner = provider.runner;
     run_config.started_by = provider_name;
     run_config.pid = "0";
+
+    // If the caller requested a semantic interface that redefines the provider's base interface,
+    // apply the semantic remappings before layering provider remappings.
+    if (!interface_name.empty())
+    {
+      models::semantic_interface_model_t requested_semantic = get_semantic_interface(interface_name);
+      if (!requested_semantic.header.name.empty() && requested_semantic.redefines == provider.implements)
+      {
+        run_config.interface = apply_semantic_remappings(requested_semantic);
+        apply_remappings(run_config.interface.interface, provider);
+        return run_config;
+      }
+    }
 
     // remap resources
     run_config.interface = apply_provider_remappings(provider);

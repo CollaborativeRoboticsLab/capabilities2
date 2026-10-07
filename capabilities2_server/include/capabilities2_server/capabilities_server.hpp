@@ -231,6 +231,8 @@ public:
     const auto interface_count = get_interfaces().size();
     const auto runnable_count = get_runnable_specs().size();
 
+    ready_ = true;
+
     RCLCPP_INFO(get_logger(), "loaded %zu interfaces and %zu runnable capabilities",
           interface_count, runnable_count);
 
@@ -772,8 +774,8 @@ private:
                 std::shared_ptr<std_srvs::srv::Trigger::Response> res)
   {
     (void)req;
-    res->success = true;
-    res->message = "capabilities server startup complete";
+    res->success = ready_;
+    res->message = ready_ ? "capabilities server startup complete" : "capabilities server still loading";
   }
 
   void get_event_snapshot_cb(const std::shared_ptr<capabilities2_msgs::srv::GetEventSnapshot::Request> req,
@@ -845,6 +847,7 @@ private:
   rclcpp::Service<capabilities2_msgs::srv::GetRunnableSpecs>::SharedPtr get_runnable_specs_srv_;
   // ready
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr ready_srv_;
+  bool ready_ = false;
 };
 
 }  // namespace capabilities2_server

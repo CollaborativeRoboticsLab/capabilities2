@@ -26,7 +26,6 @@ struct semantic_interface_model_t : public remappable_base_t, predicateable_base
   header_model_t header;
   std::string redefines;
   std::string global_namespace;
-  remappings_model_t remappings;
 
   void from_yaml(const YAML::Node& node)
   {

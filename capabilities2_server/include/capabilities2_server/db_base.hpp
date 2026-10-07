@@ -91,7 +91,8 @@ public:
   virtual models::interface_model_t apply_provider_remappings(models::provider_model_t provider) = 0;
 
   // get run config model
-  virtual models::run_config_model_t get_run_config(const std::string& provider_name) = 0;
+  virtual models::run_config_model_t get_run_config(const std::string& provider_name,
+                                                    const std::string& interface_name = "") = 0;
 
   // get runnable capability from provider
   virtual models::runnable_model_t get_runnable_spec(const std::string& provider_name) = 0;

@@ -3,6 +3,7 @@
 #include <memory>
 #include <map>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include <functional>
 
@@ -95,7 +96,7 @@ public:
     }
 
     // get the provider specification for the capability
-    models::run_config_model_t run_config = cap_db_->get_run_config(provider);
+    models::run_config_model_t run_config = cap_db_->get_run_config(provider, capability);
 
     // create a new runner, this call implicitly starts the runner
     // create a runner id which is the cap name to uniquely identify the runner
@@ -429,16 +430,30 @@ public:
   std::vector<std::string> get_providers(const std::string& interface, const bool& include_semantic)
   {
     std::vector<std::string> providers;
+    std::unordered_set<std::string> provider_names;
 
     for (const auto& provider : cap_db_->get_providers_by_interface(interface))
     {
-      providers.push_back(provider.header.name);
+      if (provider_names.insert(provider.header.name).second)
+      {
+        providers.push_back(provider.header.name);
+      }
     }
 
-    // if not include_semantic, remove providers for semantic interfaces
-    if (!include_semantic)
+    // Semantic interfaces should inherit providers from the base interface they redefine.
+    if (include_semantic)
     {
-      // TODO: implement
+      models::semantic_interface_model_t semantic = cap_db_->get_semantic_interface(interface);
+      if (!semantic.header.name.empty())
+      {
+        for (const auto& provider : cap_db_->get_providers_by_interface(semantic.redefines))
+        {
+          if (provider_names.insert(provider.header.name).second)
+          {
+            providers.push_back(provider.header.name);
+          }
+        }
+      }
     }
 
     return providers;

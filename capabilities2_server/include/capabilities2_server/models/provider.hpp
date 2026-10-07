@@ -27,7 +27,6 @@ struct provider_model_t : public remappable_base_t, public predicateable_base_t,
   header_model_t header;
   std::string implements;
   std::map<std::string, std::string> depends_on;
-  remappings_model_t remappings;
   std::string runner;
 
   void from_yaml(const YAML::Node& node)
