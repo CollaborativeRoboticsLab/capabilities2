@@ -303,6 +303,7 @@ public:
   {
     // start with provider and work up the chain
     models::provider_model_t provider = get_provider(provider_name);
+    
     if (provider.header.name.empty())
     {
       // return empty running model
@@ -471,6 +472,7 @@ public:
       if (!requested_semantic.header.name.empty() && requested_semantic.redefines == provider.implements)
       {
         run_config.interface = apply_semantic_remappings(requested_semantic);
+        run_config.global_namespace = requested_semantic.global_namespace;
         apply_remappings(run_config.interface.interface, provider);
         return run_config;
       }

@@ -24,6 +24,7 @@ The main usage of `capabilities2` will typically involve creating or customizing
 | [Interfaces](./docs/interfaces.md) | The main capability specification file |
 | [Providers](./docs/providers.md) | The capability provider specification file provides a mechanism to operate the capability |
 | [Semantic Interfaces](./docs/semantic_interfaces.md) | The semantic interface specification file provides a mechanism to redefine a capability with semantic information |
+| [Semantic Providers](./docs/semantic_provider.md) | The semantic provider specification file provides a mechanism to redefine a capability provider with semantic information |
 
 Runners can be created using the runner API parent classes [here](./capabilities2_runner/readme.md). The capabilities service can be started using the [capabilities2_server](./capabilities2_server/readme.md) package.
 
