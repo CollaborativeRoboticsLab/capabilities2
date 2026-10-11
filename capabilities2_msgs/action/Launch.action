@@ -2,9 +2,23 @@
 # goal
 std_msgs/Header header
 string launch_file_path
+string package_name
+string launch_file_name
 ---
 # result
 std_msgs/Header header
+string launch_id
+string final_state
+string resolved_launch_file_path
+string message
 ---
 # feedback
 std_msgs/Header header
+string launch_id
+string state
+string resolved_launch_file_path
+uint32 active_process_count
+string message
+string log_level
+string log_source
+string log_text
