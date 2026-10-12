@@ -241,15 +241,7 @@ source install/setup.bash
 ros2 action send_goal \
 	/capabilities2_launch/launch \
 	capabilities2_msgs/action/Launch \
-	"{
-	  reference_name: tb4-maze,
-	  package_name: turtlebot4_maze_sim,
-	  launch_file_name: turtlebot4_maze_small.launch.py,
-	  launch_parameters: [
-	    {key: gui, value: 'false'},
-	    {key: robot_name, value: turtlebot4}
-	  ]
-	}"
+	'{reference_name: tb4-maze, package_name: turtlebot4_maze_sim, launch_file_name: turtlebot4_maze_small.launch.py, launch_parameters: [{key: gui, value: "false"}, {key: robot_name, value: turtlebot4}]}'
 ```
 
 ## Reading resource data
@@ -327,14 +319,7 @@ source install/setup.bash
 ros2 action send_goal \
 	/capabilities2_launch/launch \
 	capabilities2_msgs/action/Launch \
-	"{
-	  reference_name: tb4-maze,
-	  package_name: turtlebot4_maze_sim,
-	  launch_file_name: turtlebot4_maze_small.launch.py,
-	  launch_parameters: [
-	    {key: gui, value: 'false'}
-	  ]
-	}"
+	'{reference_name: tb4-maze, package_name: turtlebot4_maze_sim, launch_file_name: turtlebot4_maze_small.launch.py, launch_parameters: [{key: gui, value: "false"}]}'
 ```
 
 ### Start the navigation stack
