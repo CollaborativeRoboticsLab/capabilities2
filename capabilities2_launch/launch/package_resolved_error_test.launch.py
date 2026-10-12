@@ -6,7 +6,7 @@ import os
 
 def generate_launch_description():
     share_dir = get_package_share_directory('capabilities2_launch')
-    error_script = os.path.join(share_dir, 'launch_server', 'test_error_logger.py')
+    error_script = os.path.join(share_dir, 'test_nodes', 'test_error_logger.py')
 
     return LaunchDescription([
         ExecuteProcess(

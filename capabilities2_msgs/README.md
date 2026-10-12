@@ -16,6 +16,9 @@ This package contains [ROS2](https://index.ros.org/doc/ros2/) `messages`, `servi
 | `CapabilityEventStamped.msg` | A stamped version of event |
 | `CapabilityResponse.msg` | A message type for a response from a robot related to a capability. |
 | `CapabilitySpec.msg` | A message type for the specification of a capability. |
+| `LaunchParameter.msg` | A key/value launch argument entry used in launch action goals. |
+| `LaunchResource.msg` | A per-process resource snapshot for a running launch. |
+| `LaunchResourceList.msg` | A server-wide resource snapshot containing aggregate totals and per-process entries. |
 | `NaturalCapability.msg` | A message type for a natural capability of a robot. |
 | `Remapping.msg` | A message type for a key/value remapping of a capability resource. |
 | `RunningCapability.msg` | A message type for a running capability. |
@@ -50,3 +53,25 @@ New in 0.1.3:
 | --- | --- |
 | `Capability.action` | An action type for an encapsulated capability action. |
 | `Launch.action` | An action type for launching a launch file. |
+
+## Launch-related interface summary
+
+The launch-control path now uses these additional launch-related contracts:
+
+- `LaunchParameter.msg`:
+	- `key`
+	- `value`
+- `LaunchResource.msg`:
+	- identifies one tracked process by key, launch reference, process name, and PID
+	- carries current uptime, CPU, RSS, and VMS values for that process
+- `LaunchResourceList.msg`:
+	- carries one server-wide snapshot of all active tracked launch processes
+	- includes aggregate counts and total CPU/RAM across the currently active launches
+
+`Launch.action` now supports:
+
+- `reference_name` for caller-defined grouping and resource labeling
+- `launch_parameters` as a list of `LaunchParameter.msg` entries
+- resource-oriented feedback fields such as main and child PID lists, current uptime, current CPU estimate, and current memory totals
+
+These launch resource messages are snapshot-oriented, not historical summaries. Memory fields represent the current sampled values, and total counts reflect only the launches and processes active at the time the snapshot was published.

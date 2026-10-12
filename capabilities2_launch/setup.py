@@ -12,7 +12,7 @@ setup(
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*launch.[pxy][yma]*'))),
-        (os.path.join('share', package_name, 'launch_server'), glob(os.path.join('launch_server', '*.py'))),
+        (os.path.join('share', package_name, 'test_nodes'), glob(os.path.join('test_nodes', '*.py'))),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -24,7 +24,6 @@ setup(
     entry_points={
         'console_scripts': [
             'capabilities2_launch = capabilities2_launch.capabilities2_launch:main',
-            'capabilities_launch_proxy = capabilities2_launch.capabilities2_launch:main',
         ],
     },
 )

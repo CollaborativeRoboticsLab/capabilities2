@@ -6,7 +6,7 @@ import os
 
 def generate_launch_description():
     share_dir = get_package_share_directory('capabilities2_launch')
-    talker_script = os.path.join(share_dir, 'launch_server', 'test_talker.py')
+    talker_script = os.path.join(share_dir, 'test_nodes', 'test_talker.py')
 
     return LaunchDescription([
         ExecuteProcess(

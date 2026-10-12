@@ -1,0 +1,15 @@
+std_msgs/Header header
+uint32 active_launch_count
+uint32 main_process_count
+uint32 child_process_count
+uint32 resource_count
+float32 total_cpu_usage_percent
+float32 total_peak_sampled_cpu_usage_percent
+float32 total_time_above_80pct_peak_sampled_cpu_sec
+uint64 total_memory_rss_bytes
+uint64 total_peak_memory_rss_bytes
+float32 total_time_above_90pct_peak_rss_sec
+uint64 total_memory_vms_bytes
+uint64 total_peak_memory_vms_bytes
+float32 total_time_above_90pct_peak_vms_sec
+capabilities2_msgs/LaunchResource[] resources
