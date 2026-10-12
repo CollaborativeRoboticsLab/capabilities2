@@ -20,7 +20,7 @@ The `capabilities2_runner` package provides some standard runners.
 
 | Runner Type | Description |
 |-------------|-------------|
-| `capabilities2_runner::LaunchRunner` | A no-trigger runner that delegates launch-file execution to the `capabilities2_launch` action server. |
+| `capabilities2_runner::LaunchRunner` | A no-trigger runner that delegates launch-file execution to the `capabilities2_launch_proxy` action server. |
 | `capabilities2_runner::DummyRunner` | A sample runner that can be used to test the functionality of capabilities server. |
 | `capabilities2_runner::GetCapabilitySpecsRunner` | A runner that requests capability specifications from the capabilities server. |
 | `capabilities2_runner::InputMultiplexRunner` | A runner that multiplexes multiple input capabilities through the events system. |
@@ -70,7 +70,7 @@ namespace capabilities2_runner
 
 ### LaunchRunner
 
-The `LaunchRunner` inherits from `capabilities2_runner::NoTriggerRunner` and starts package-based or path-based launch files by sending a goal to the `capabilities2_launch` action server. Providers can therefore keep using `runner: package_name/file.launch.py` style entries when the launch server is running.
+The `LaunchRunner` inherits from `capabilities2_runner::NoTriggerRunner` and starts package-based or path-based launch files by sending a goal to the `capabilities2_launch_proxy` action server. Providers can therefore keep using `runner: package_name/file.launch.py` style entries when the launch server is running.
 
 ### Creating a Custom runner
 

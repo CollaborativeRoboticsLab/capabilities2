@@ -51,6 +51,7 @@ public:
       std::lock_guard<std::mutex> lock(state_mutex_);
       launch_reference_ = run_config_.runner;
       stop_requested_ = false;
+      launched_event_emitted_ = false;
       stop_event_emitted_ = false;
       failed_event_emitted_ = false;
       goal_handle_.reset();
@@ -75,15 +76,13 @@ public:
     goal_msg.launch_file_path = launch_reference_;
 
     send_goal_options_ = typename rclcpp_action::Client<LaunchAction>::SendGoalOptions();
-    send_goal_options_.feedback_callback =
-        [this](GoalHandleLaunch::SharedPtr,
-               const LaunchAction::Feedback::ConstSharedPtr feedback) {
-          handle_feedback(feedback);
-        };
-    send_goal_options_.result_callback =
-        [this, bond_id](const GoalHandleLaunch::WrappedResult& wrapped_result) {
-          handle_result(wrapped_result, bond_id);
-        };
+    send_goal_options_.feedback_callback = [this, bond_id](GoalHandleLaunch::SharedPtr,
+                                                           const LaunchAction::Feedback::ConstSharedPtr feedback) {
+      handle_feedback(feedback, bond_id);
+    };
+    send_goal_options_.result_callback = [this, bond_id](const GoalHandleLaunch::WrappedResult& wrapped_result) {
+      handle_result(wrapped_result, bond_id);
+    };
 
     goal_handle_future_ = action_client_->async_send_goal(goal_msg, send_goal_options_);
     if (goal_handle_future_.wait_for(default_timeout_) != std::future_status::ready)
@@ -166,12 +165,14 @@ public:
   }
 
 protected:
-  void handle_feedback(const LaunchAction::Feedback::ConstSharedPtr& feedback)
+  void handle_feedback(const LaunchAction::Feedback::ConstSharedPtr& feedback, const std::string& bond_id)
   {
     if (!feedback)
     {
       return;
     }
+
+    bool should_emit_launched = false;
 
     {
       std::lock_guard<std::mutex> lock(state_mutex_);
@@ -183,6 +184,20 @@ protected:
       {
         resolved_launch_file_path_ = feedback->resolved_launch_file_path;
       }
+
+      const int64_t launched_pid = feedback->resource.pid != 0 ? feedback->resource.pid :
+          (feedback->main_pids.empty() ? 0 : feedback->main_pids.front());
+      if (launched_pid > 0 && !launched_event_emitted_)
+      {
+        launched_event_emitted_ = true;
+        should_emit_launched = true;
+      }
+    }
+
+    if (should_emit_launched)
+    {
+      RCLCPP_INFO(node_->get_logger(), "emitting LAUNCHED event for %s", launch_reference_.c_str());
+      emit_event(bond_id, "", capabilities2_msgs::msg::CapabilityEventCode::LAUNCHED);
     }
 
     if (!feedback->log_text.empty())
@@ -233,8 +248,7 @@ protected:
       result_message = result_message_;
 
       if (wrapped_result.code == rclcpp_action::ResultCode::ABORTED ||
-          wrapped_result.code == rclcpp_action::ResultCode::UNKNOWN ||
-          final_state == "failed" ||
+          wrapped_result.code == rclcpp_action::ResultCode::UNKNOWN || final_state == "failed" ||
           final_state == "rejected")
       {
         should_emit_failure = !failed_event_emitted_;
@@ -249,16 +263,16 @@ protected:
 
     if (should_emit_failure)
     {
-      RCLCPP_ERROR(node_->get_logger(), "launch runner failed for %s: %s",
-                   launch_reference_.c_str(), result_message.c_str());
+      RCLCPP_ERROR(node_->get_logger(), "launch runner failed for %s: %s", launch_reference_.c_str(),
+                   result_message.c_str());
       emit_failed(bond_id, "", param_on_failure());
       return;
     }
 
     if (should_emit_stopped)
     {
-      RCLCPP_INFO(node_->get_logger(), "launch runner completed for %s with state %s",
-                  launch_reference_.c_str(), final_state.c_str());
+      RCLCPP_INFO(node_->get_logger(), "launch runner completed for %s with state %s", launch_reference_.c_str(),
+                  final_state.c_str());
       emit_stopped(bond_id, "", param_on_stopped());
     }
   }
@@ -281,7 +295,7 @@ protected:
   std::string resolve_launch_action_name()
   {
     constexpr const char* parameter_name = "launch_action_name";
-    constexpr const char* default_action_name = "/capabilities2_launch/launch";
+    constexpr const char* default_action_name = "/capabilities2_launch_proxy/launch";
 
     if (!node_->has_parameter(parameter_name))
     {
@@ -334,7 +348,7 @@ protected:
 
   std::string make_client_node_name() const
   {
-    std::string base = "capabilities2_launch_runner_" + run_config_.provider;
+    std::string base = "capabilities2_launch_proxy_runner_" + run_config_.provider;
     for (char& character : base)
     {
       if (!std::isalnum(static_cast<unsigned char>(character)))
@@ -369,6 +383,7 @@ protected:
   std::string final_state_;
   std::string result_message_;
   bool stop_requested_{ false };
+  bool launched_event_emitted_{ false };
   bool stop_event_emitted_{ false };
   bool failed_event_emitted_{ false };
 };

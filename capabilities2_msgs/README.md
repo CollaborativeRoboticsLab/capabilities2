@@ -44,7 +44,7 @@ This package contains [ROS2](https://index.ros.org/doc/ros2/) `messages`, `servi
 New in 0.1.3:
 
 - `ConnectCapability.srv` - A service type for connecting two running capabilities together through the event system.
-- `Launch.srv` - A service type for launching a launch file.
+- `Launch.srv` - A service type for starting or stopping a launch by `package_name + launch_file_name` or `launch_file_path`, with optional `reference_name` and `launch_parameters` on start.
 - `TriggerCapability.srv` - A service type for triggering a capability.
 
 ## Action Types
@@ -72,6 +72,6 @@ The launch-control path now uses these additional launch-related contracts:
 
 - `reference_name` for caller-defined grouping and resource labeling
 - `launch_parameters` as a list of `LaunchParameter.msg` entries
-- resource-oriented feedback fields such as main and child PID lists, current uptime, current CPU estimate, and current memory totals
+- resource-oriented feedback fields such as main and child PID lists plus a nested `LaunchResource.msg` snapshot for current launch-level totals
 
 These launch resource messages are snapshot-oriented, not historical summaries. Memory fields represent the current sampled values, and total counts reflect only the launches and processes active at the time the snapshot was published.

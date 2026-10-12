@@ -23,16 +23,7 @@ uint32 active_process_count
 uint32 child_process_count
 int64[] main_pids
 int64[] child_pids
-float32 launch_uptime_sec
-float32 cpu_usage_percent
-float32 peak_sampled_cpu_usage_percent
-float32 time_above_80pct_peak_sampled_cpu_sec
-uint64 memory_rss_bytes
-uint64 peak_memory_rss_bytes
-float32 time_above_90pct_peak_rss_sec
-uint64 memory_vms_bytes
-uint64 peak_memory_vms_bytes
-float32 time_above_90pct_peak_vms_sec
+capabilities2_msgs/LaunchResource resource
 string message
 string log_level
 string log_source
