@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cctype>
 #include <memory>
 #include <vector>
 #include <string>
@@ -341,19 +342,7 @@ public:
       return models::runnable_model_t();
     }
 
-    models::interface_model_t interface = apply_provider_remappings(provider);
-
-    models::runnable_model_t runnable;
-    runnable.interface = interface.header;
-    runnable.provider = provider.header;
-    runnable.command = provider.command;
-    runnable.configuration_parameters = provider.configuration_parameters;
-    runnable.runtime__input_parameters = provider.runtime__input_parameters;
-    runnable.runtime__output_parameters = provider.runtime__output_parameters;
-    runnable.relations = interface.relations;
-
-    // return runnable model
-    return runnable;
+    return build_runnable_spec(provider);
   }
 
   virtual std::vector<models::runnable_model_t> get_runnable_specs() override
@@ -365,10 +354,37 @@ public:
 
     for (const auto& provider : providers)
     {
-      models::runnable_model_t runnable = get_runnable_spec(provider.header.name);
-      if (runnable.is_valid())
+      models::semantic_interface_model_t provider_semantic = get_semantic_interface(provider.implements);
+      if (!provider_semantic.header.name.empty())
       {
-        runnable_specs.push_back(runnable);
+        models::runnable_model_t runnable = build_runnable_spec(provider, provider.implements);
+        if (runnable.is_valid())
+        {
+          runnable_specs.push_back(runnable);
+        }
+        continue;
+      }
+
+      std::vector<models::semantic_interface_model_t> semantic_interfaces =
+          get_semantic_interfaces_by_interface(provider.implements);
+
+      if (semantic_interfaces.empty())
+      {
+        models::runnable_model_t runnable = build_runnable_spec(provider);
+        if (runnable.is_valid())
+        {
+          runnable_specs.push_back(runnable);
+        }
+        continue;
+      }
+
+      for (const auto& semantic_interface : semantic_interfaces)
+      {
+        models::runnable_model_t runnable = build_runnable_spec(provider, semantic_interface.header.name);
+        if (runnable.is_valid())
+        {
+          runnable_specs.push_back(runnable);
+        }
       }
     }
 
@@ -542,6 +558,85 @@ protected:
   }
 
 private:
+  models::runnable_model_t build_runnable_spec(const models::provider_model_t& provider,
+                                               const std::string& interface_name = "")
+  {
+    if (provider.header.name.empty())
+    {
+      return models::runnable_model_t();
+    }
+
+    models::run_config_model_t run_config = get_run_config(provider.header.name, interface_name);
+    if (!run_config.is_valid())
+    {
+      return models::runnable_model_t();
+    }
+
+    models::runnable_model_t runnable;
+    runnable.interface = run_config.interface.header;
+    runnable.provider = provider.header;
+    runnable.command = rewrite_runner_command(provider.command, runnable.interface.name, runnable.provider.name);
+    runnable.configuration_parameters = provider.configuration_parameters;
+    runnable.runtime__input_parameters = provider.runtime__input_parameters;
+    runnable.runtime__output_parameters = provider.runtime__output_parameters;
+    runnable.relations = run_config.interface.relations;
+
+    return runnable;
+  }
+
+  static std::string rewrite_runner_command(const std::string& command, const std::string& interface_name,
+                                            const std::string& provider_name)
+  {
+    std::string rewritten = rewrite_runner_attribute(command, "interface", interface_name);
+    rewritten = rewrite_runner_attribute(rewritten, "provider", provider_name);
+    return rewritten;
+  }
+
+  static std::string rewrite_runner_attribute(const std::string& command, const std::string& attribute,
+                                              const std::string& value)
+  {
+    const std::string key = attribute + "=";
+    const auto key_pos = command.find(key);
+    if (key_pos == std::string::npos)
+    {
+      return command;
+    }
+
+    const auto value_pos = key_pos + key.size();
+    if (value_pos >= command.size())
+    {
+      return command;
+    }
+
+    std::size_t content_start = value_pos;
+    char quote = '\0';
+    if (command[content_start] == '\'' || command[content_start] == '"')
+    {
+      quote = command[content_start];
+      ++content_start;
+    }
+
+    std::size_t content_end = content_start;
+    if (quote != '\0')
+    {
+      content_end = command.find(quote, content_start);
+      if (content_end == std::string::npos)
+      {
+        return command;
+      }
+    }
+    else
+    {
+      while (content_end < command.size() && !std::isspace(static_cast<unsigned char>(command[content_end])) &&
+             command[content_end] != '>' && command[content_end] != '/')
+      {
+        ++content_end;
+      }
+    }
+
+    return command.substr(0, content_start) + value + command.substr(content_end);
+  }
+
   // model conversion helpers
   models::interface_model_t to_interface(sqlite3_stmt* stmt)
   {

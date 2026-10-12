@@ -660,7 +660,7 @@ public:
       rs.spec = YAML::Dump(spec_node);
 
       // add runnable spec msg
-      runnable_specs[spec.provider.name] = rs;
+      runnable_specs[spec.interface.name + "|" + spec.provider.name] = rs;
     }
 
     return runnable_specs;
