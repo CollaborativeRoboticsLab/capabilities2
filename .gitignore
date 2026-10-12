@@ -61,3 +61,5 @@ qtcreator-*
 CATKIN_IGNORE
 
 __pycache__
+
+.pytest_cache
