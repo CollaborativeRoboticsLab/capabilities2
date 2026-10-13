@@ -579,9 +579,39 @@ private:
     runnable.configuration_parameters = provider.configuration_parameters;
     runnable.runtime__input_parameters = provider.runtime__input_parameters;
     runnable.runtime__output_parameters = provider.runtime__output_parameters;
-    runnable.relations = run_config.interface.relations;
+    for (const auto& relation : run_config.interface.relations)
+    {
+      append_relation_if_missing(runnable.relations, relation);
+    }
+    for (const auto& relation : provider.relations)
+    {
+      append_relation_if_missing(runnable.relations, relation);
+    }
+    for (const auto& [dependency_interface, dependency_provider] : provider.depends_on)
+    {
+      (void)dependency_provider;
+
+      models::predicate_model_t dependency_relation;
+      dependency_relation.subject = runnable.interface.name;
+      dependency_relation.predicate = "depends_on";
+      dependency_relation.object = dependency_interface;
+      append_relation_if_missing(runnable.relations, dependency_relation);
+    }
 
     return runnable;
+  }
+
+  static void append_relation_if_missing(std::vector<models::predicate_model_t>& relations,
+                                         const models::predicate_model_t& candidate)
+  {
+    const auto duplicate = std::find_if(relations.begin(), relations.end(), [&](const auto& relation) {
+      return relation.subject == candidate.subject && relation.predicate == candidate.predicate &&
+             relation.object == candidate.object;
+    });
+    if (duplicate == relations.end())
+    {
+      relations.push_back(candidate);
+    }
   }
 
   static std::string rewrite_runner_command(const std::string& command, const std::string& interface_name,
