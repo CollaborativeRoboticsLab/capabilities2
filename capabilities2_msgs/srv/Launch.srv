@@ -1,6 +1,9 @@
 std_msgs/Header header
+string reference_name
+string launch_file_path
 string package_name
 string launch_file_name
+capabilities2_msgs/LaunchParameter[] launch_parameters
 ---
 std_msgs/Header header
 string status

@@ -7,7 +7,7 @@
 - [x] BUG: handle "'" in db queries
 - [x] BUG: escape db function variables
 - [x] document deferred launch-runner support and planned replacement for current ROS2 launch incompatibilities
-- [ ] restore launch-runner support once the replacement approach is ready
+- [x] restore launch-runner support once the replacement approach is ready
 - [x] add descriptions to packages with TODO in package.xml
 - [x] standardise trigger prototype
 - [x] bump cmake min version to 3.16

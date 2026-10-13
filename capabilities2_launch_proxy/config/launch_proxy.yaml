@@ -1,0 +1,7 @@
+/**:
+  ros__parameters:
+    mirror_child_logs_to_rosout: false
+    feedback_child_log_level: error
+    override_output_method_to_log: true
+    suppress_child_process_output_to_screen: true
+    expand_opaque_functions_for_tracking: true

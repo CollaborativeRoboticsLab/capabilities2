@@ -1,10 +1,30 @@
 # action to run a launch file with variables
 # goal
 std_msgs/Header header
+string reference_name
 string launch_file_path
+string package_name
+string launch_file_name
+capabilities2_msgs/LaunchParameter[] launch_parameters
 ---
 # result
 std_msgs/Header header
+string launch_id
+string final_state
+string resolved_launch_file_path
+string message
 ---
 # feedback
 std_msgs/Header header
+string launch_id
+string state
+string resolved_launch_file_path
+uint32 active_process_count
+uint32 child_process_count
+int64[] main_pids
+int64[] child_pids
+capabilities2_msgs/LaunchResource resource
+string message
+string log_level
+string log_source
+string log_text

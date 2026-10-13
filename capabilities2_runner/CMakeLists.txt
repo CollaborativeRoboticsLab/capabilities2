@@ -57,6 +57,24 @@ install(DIRECTORY providers
   DESTINATION share/${PROJECT_NAME}
 )
 
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  ament_add_gtest(launch_runner_test
+    test/launch_runner_test.cpp
+  )
+  if(TARGET launch_runner_test)
+    target_include_directories(launch_runner_test PUBLIC include)
+    target_link_libraries(launch_runner_test ${PROJECT_NAME})
+    ament_target_dependencies(launch_runner_test
+      rclcpp
+      rclcpp_action
+      capabilities2_msgs
+      capabilities2_events
+    )
+  endif()
+endif()
+
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 
