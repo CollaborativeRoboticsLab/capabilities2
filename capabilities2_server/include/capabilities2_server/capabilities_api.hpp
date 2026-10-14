@@ -42,6 +42,22 @@ namespace capabilities2_server
 class CapabilitiesAPI
 {
 public:
+  struct AddCapabilityResult
+  {
+    enum class Status
+    {
+      Added,
+      Exists,
+      Deferred,
+      Error,
+    };
+
+    Status status{ Status::Error };
+    std::string capability_name;
+    std::string missing_parent;
+    std::string error_message;
+  };
+
   CapabilitiesAPI() : event_(nullptr), cap_db_(nullptr), bond_cache_(), runner_cache_(), logging_(nullptr)
   {
   }
@@ -303,24 +319,23 @@ public:
 
   // capability api
   /** */
-  void add_capability(const capabilities2_msgs::msg::CapabilitySpec& spec)
+  AddCapabilityResult try_add_capability(const capabilities2_msgs::msg::CapabilitySpec& spec)
   {
-    // peak at the spec header
+    AddCapabilityResult result;
+
     models::header_model_t header;
     header.from_yaml(YAML::Load(spec.content));
     header.name = spec.package + "/" + header.name;
+    result.capability_name = header.name;
 
-    // check type and exists, create model and add to db
     if (spec.type == capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_INTERFACE)
     {
-      // exists guard
       if (cap_db_->exists<models::interface_model_t>(header.name))
       {
-        RCLCPP_WARN(logging_->get_logger(), "interface already exists: %s", header.name.c_str());
-        return;
+        result.status = AddCapabilityResult::Status::Exists;
+        return result;
       }
 
-      // convert message to model and add to db
       models::interface_model_t model;
       try
       {
@@ -328,25 +343,33 @@ public:
       }
       catch (const std::exception& e)
       {
-        RCLCPP_ERROR(logging_->get_logger(), "failed to convert spec to model: %s", e.what());
-        return;
+        result.error_message = "failed to convert spec to model: " + std::string(e.what());
+        result.status = AddCapabilityResult::Status::Error;
+        return result;
       }
 
-      // add package to name probably to avoid collisions (this was previous convention)
       model.header.name = spec.package + "/" + model.header.name;
-      cap_db_->insert_interface(model);
+      try
+      {
+        cap_db_->insert_interface(model);
+      }
+      catch (const std::exception& e)
+      {
+        result.error_message = e.what();
+        result.status = AddCapabilityResult::Status::Error;
+        return result;
+      }
 
-      // log
-      RCLCPP_INFO(logging_->get_logger(), "interface added to db: %s", model.header.name.c_str());
-      return;
+      result.status = AddCapabilityResult::Status::Added;
+      return result;
     }
 
     if (spec.type == capabilities2_msgs::msg::CapabilitySpec::SEMANTIC_CAPABILITY_INTERFACE)
     {
       if (cap_db_->exists<models::semantic_interface_model_t>(header.name))
       {
-        RCLCPP_WARN(logging_->get_logger(), "semantic interface already exists: %s", header.name.c_str());
-        return;
+        result.status = AddCapabilityResult::Status::Exists;
+        return result;
       }
 
       models::semantic_interface_model_t model;
@@ -357,24 +380,40 @@ public:
       }
       catch (const std::exception& e)
       {
-        RCLCPP_ERROR(logging_->get_logger(), "failed to convert spec to model: %s", e.what());
-        return;
+        result.error_message = "failed to convert spec to model: " + std::string(e.what());
+        result.status = AddCapabilityResult::Status::Error;
+        return result;
       }
 
       model.header.name = spec.package + "/" + model.header.name;
-      cap_db_->insert_semantic_interface(model);
+      try
+      {
+        cap_db_->insert_semantic_interface(model);
+      }
+      catch (const std::exception& e)
+      {
+        result.error_message = e.what();
+        if (is_foreign_key_violation(result.error_message))
+        {
+          result.missing_parent = model.redefines;
+          result.status = AddCapabilityResult::Status::Deferred;
+          return result;
+        }
 
-      // log
-      RCLCPP_INFO(logging_->get_logger(), "semantic interface added to db: %s", model.header.name.c_str());
-      return;
+        result.status = AddCapabilityResult::Status::Error;
+        return result;
+      }
+
+      result.status = AddCapabilityResult::Status::Added;
+      return result;
     }
 
     if (spec.type == capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_PROVIDER)
     {
       if (cap_db_->exists<models::provider_model_t>(header.name))
       {
-        RCLCPP_WARN(logging_->get_logger(), "provider already exists");
-        return;
+        result.status = AddCapabilityResult::Status::Exists;
+        return result;
       }
 
       models::provider_model_t model;
@@ -385,21 +424,67 @@ public:
       }
       catch (const std::exception& e)
       {
-        RCLCPP_ERROR(logging_->get_logger(), "failed to convert spec to model: %s", e.what());
-        return;
+        result.error_message = "failed to convert spec to model: " + std::string(e.what());
+        result.status = AddCapabilityResult::Status::Error;
+        return result;
       }
 
       model.header.name = spec.package + "/" + model.header.name;
-      cap_db_->insert_provider(model);
+      try
+      {
+        cap_db_->insert_provider(model);
+      }
+      catch (const std::exception& e)
+      {
+        result.error_message = e.what();
+        if (is_foreign_key_violation(result.error_message))
+        {
+          result.missing_parent = model.implements;
+          result.status = AddCapabilityResult::Status::Deferred;
+          return result;
+        }
 
-      // log
-      RCLCPP_INFO(logging_->get_logger(), "provider added to db: %s", model.header.name.c_str());
+        result.status = AddCapabilityResult::Status::Error;
+        return result;
+      }
+
+      result.status = AddCapabilityResult::Status::Added;
+      return result;
+    }
+
+    result.error_message = "unknown capability type: " + spec.type;
+    result.status = AddCapabilityResult::Status::Error;
+    return result;
+  }
+
+  void add_capability(const capabilities2_msgs::msg::CapabilitySpec& spec)
+  {
+    const auto result = try_add_capability(spec);
+
+    if (result.status == AddCapabilityResult::Status::Added)
+    {
+      const char* label = spec.type == capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_INTERFACE ? "interface" :
+                          spec.type == capabilities2_msgs::msg::CapabilitySpec::SEMANTIC_CAPABILITY_INTERFACE ?
+                              "semantic interface" :
+                              "provider";
+      RCLCPP_INFO(logging_->get_logger(), "%s added to db: %s", label, result.capability_name.c_str());
       return;
     }
 
-    // couldn't parse unknown capability type
-    RCLCPP_ERROR(logging_->get_logger(), "unknown capability type: %s", spec.type.c_str());
-    return;
+    if (result.status == AddCapabilityResult::Status::Exists)
+    {
+      RCLCPP_WARN(logging_->get_logger(), "capability already exists: %s", result.capability_name.c_str());
+      return;
+    }
+
+    if (result.status == AddCapabilityResult::Status::Deferred)
+    {
+      RCLCPP_WARN(logging_->get_logger(), "capability deferred due to missing dependency %s: %s",
+                  result.missing_parent.c_str(), result.capability_name.c_str());
+      return;
+    }
+
+    RCLCPP_ERROR(logging_->get_logger(), "%s", result.error_message.c_str());
   }
 
   // query api
@@ -766,6 +851,11 @@ protected:
 private:
   // db
   std::unique_ptr<DBBase> cap_db_;
+
+  bool is_foreign_key_violation(const std::string& message) const
+  {
+    return message.find("FOREIGN KEY constraint failed") != std::string::npos;
+  }
 
   // for internal logging
   rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_;

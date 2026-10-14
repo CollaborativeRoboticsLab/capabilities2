@@ -124,6 +124,16 @@ redefines: test_capabilities/RobotPoseRunner
 global_namespace: turtlebot4
 )";
 
+  const std::string semantic_without_namespace_yaml = R"(
+%YAML 1.1
+---
+name: GenericWaypointRunner
+spec_type: semantic_interface
+spec_version: 1.2
+description: Generic waypoint wrapper without an explicit global namespace.
+redefines: test_capabilities/WaypointRunner
+)";
+
   const std::string robotpose_provider_yaml = R"(
 %YAML 1.1
 ---
@@ -178,12 +188,13 @@ definition:
   db.insert_provider(load_provider(waypoint_provider_yaml, "test_capabilities"));
   db.insert_interface(load_interface(robotpose_interface_yaml, "test_capabilities"));
   db.insert_semantic_interface(load_semantic_interface(turtlebot_robotpose_semantic_yaml, "test_semantic_capabilities"));
+  db.insert_semantic_interface(load_semantic_interface(semantic_without_namespace_yaml, "test_semantic_capabilities"));
   db.insert_provider(load_provider(robotpose_provider_yaml, "test_capabilities"));
   db.insert_interface(load_interface(plain_interface_yaml, "plain_capabilities"));
   db.insert_provider(load_provider(plain_provider_yaml, "plain_capabilities"));
 
   const auto runnable_specs = db.get_runnable_specs();
-  assert(runnable_specs.size() == 3);
+  assert(runnable_specs.size() == 4);
 
   const auto find_runnable = [&runnable_specs](const std::string& interface_name, const std::string& provider_name) {
     return std::find_if(runnable_specs.begin(), runnable_specs.end(),
@@ -198,6 +209,10 @@ definition:
   assert(turtlebot_waypoint->command.find("interface=test_semantic_capabilities/TurtlebotWaypointRunner") !=
          std::string::npos);
   assert(turtlebot_waypoint->command.find("provider=test_capabilities/WaypointRunner") != std::string::npos);
+  const auto generic_waypoint_run_config =
+      db.get_run_config("test_capabilities/WaypointRunner", "test_semantic_capabilities/GenericWaypointRunner");
+  assert(generic_waypoint_run_config.is_valid());
+  assert(generic_waypoint_run_config.global_namespace.empty());
   const auto has_waypoint_relation = [&turtlebot_waypoint](const std::string& subject, const std::string& predicate,
                                                            const std::string& object) {
     return std::find_if(turtlebot_waypoint->relations.begin(), turtlebot_waypoint->relations.end(),

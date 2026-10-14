@@ -523,6 +523,142 @@ public:
 private:
   void load_capabilities(const std::string& package_path)
   {
+    struct PendingCapabilitySpec
+    {
+      capabilities2_msgs::msg::CapabilitySpec spec;
+      std::string spec_label;
+      std::string missing_parent;
+    };
+
+    std::vector<PendingCapabilitySpec> pending_specs;
+
+    auto process_capability_spec = [&](const capabilities2_msgs::msg::CapabilitySpec& capability_spec,
+                                       const std::string& spec_label) {
+      const auto result = try_add_capability(capability_spec);
+
+      if (result.status == CapabilitiesAPI::AddCapabilityResult::Status::Added)
+      {
+        const char* label = capability_spec.type == capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_INTERFACE ?
+                                "interface" :
+                            capability_spec.type ==
+                                    capabilities2_msgs::msg::CapabilitySpec::SEMANTIC_CAPABILITY_INTERFACE ?
+                                "semantic interface" :
+                                "provider";
+        RCLCPP_INFO(get_logger(), "%s added to db: %s", label, result.capability_name.c_str());
+        return;
+      }
+
+      if (result.status == CapabilitiesAPI::AddCapabilityResult::Status::Exists)
+      {
+        RCLCPP_WARN(get_logger(), "capability already exists: %s", result.capability_name.c_str());
+        return;
+      }
+
+      if (result.status == CapabilitiesAPI::AddCapabilityResult::Status::Deferred)
+      {
+        pending_specs.push_back({ capability_spec, spec_label, result.missing_parent });
+        RCLCPP_WARN(get_logger(), "deferring capability until a future retry: %s because parent %s is missing",
+                    spec_label.c_str(), result.missing_parent.c_str());
+        return;
+      }
+
+      RCLCPP_ERROR(get_logger(), "failed to load spec file: %s", result.error_message.c_str());
+    };
+
+    auto retry_pending_capabilities = [&]() {
+      while (!pending_specs.empty())
+      {
+        RCLCPP_INFO(get_logger(), "retrying %zu deferred capabilities", pending_specs.size());
+
+        bool progress_made = false;
+        std::vector<PendingCapabilitySpec> remaining_specs;
+
+        for (const auto& pending_spec : pending_specs)
+        {
+          const auto result = try_add_capability(pending_spec.spec);
+
+          if (result.status == CapabilitiesAPI::AddCapabilityResult::Status::Added)
+          {
+            progress_made = true;
+            const char* label = pending_spec.spec.type ==
+                                        capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_INTERFACE ?
+                                    "interface" :
+                                pending_spec.spec.type ==
+                                        capabilities2_msgs::msg::CapabilitySpec::SEMANTIC_CAPABILITY_INTERFACE ?
+                                    "semantic interface" :
+                                    "provider";
+                              RCLCPP_INFO(get_logger(), "%s added to db from deferred queue: %s", label,
+                              result.capability_name.c_str());
+            continue;
+          }
+
+          if (result.status == CapabilitiesAPI::AddCapabilityResult::Status::Exists)
+          {
+            progress_made = true;
+            continue;
+          }
+
+          if (result.status == CapabilitiesAPI::AddCapabilityResult::Status::Deferred)
+          {
+            PendingCapabilitySpec deferred_spec = pending_spec;
+            deferred_spec.missing_parent = result.missing_parent;
+            remaining_specs.push_back(deferred_spec);
+            continue;
+          }
+
+          RCLCPP_ERROR(get_logger(), "failed to load spec file: %s", result.error_message.c_str());
+        }
+
+        if (!progress_made)
+        {
+          for (const auto& unresolved_spec : remaining_specs)
+          {
+            RCLCPP_ERROR(get_logger(), "failed to load deferred capability %s: missing parent %s",
+                         unresolved_spec.spec_label.c_str(), unresolved_spec.missing_parent.c_str());
+          }
+          break;
+        }
+
+        pending_specs = remaining_specs;
+      }
+    };
+
+    auto load_capability_specs_from_exports = [&](const std::string& package, const std::string& spec_base_path,
+                                                  tinyxml2::XMLElement* exports) {
+      auto get_capability_specs = [&](const std::string& spec_type) {
+        for (tinyxml2::XMLElement* spec = exports->FirstChildElement(spec_type.c_str()); spec != nullptr;
+             spec = spec->NextSiblingElement(spec_type.c_str()))
+        {
+          std::string spec_path = spec->GetText();
+          spec_path.erase(std::remove_if(spec_path.begin(), spec_path.end(), isspace), spec_path.end());
+          if (spec_path[0] == '/')
+          {
+            spec_path = spec_path.substr(1);
+          }
+
+          capabilities2_msgs::msg::CapabilitySpec capability_spec;
+          capability_spec.package = package;
+          capability_spec.type = spec_type;
+
+          try
+          {
+            load_spec_content(spec_base_path + "/" + spec_path, capability_spec);
+            const std::string spec_label = package + "/" + spec_path;
+            RCLCPP_INFO(get_logger(), "adding capability: %s", spec_label.c_str());
+            process_capability_spec(capability_spec, spec_label);
+          }
+          catch (const std::runtime_error& e)
+          {
+            RCLCPP_ERROR(get_logger(), "failed to load spec file: %s", e.what());
+          }
+        }
+      };
+
+      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_INTERFACE);
+      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::SEMANTIC_CAPABILITY_INTERFACE);
+      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_PROVIDER);
+    };
+
     RCLCPP_DEBUG(get_logger(), "Loading capabilities from package path: %s", package_path.c_str());
 
     // check if path exists
@@ -589,49 +725,7 @@ private:
         continue;
       }
 
-      // get capability specs of each type using a lambda
-      auto get_capability_specs = [&](const std::string& spec_type) {
-        // get capability spec
-        for (tinyxml2::XMLElement* spec = exports->FirstChildElement(spec_type.c_str()); spec != nullptr;
-             spec = spec->NextSiblingElement(spec_type.c_str()))
-        {
-          // read spec relative path for spec file from element contents
-          std::string spec_path = spec->GetText();
-          // clear white spaces
-          spec_path.erase(std::remove_if(spec_path.begin(), spec_path.end(), isspace), spec_path.end());
-          // remove leading slash
-          if (spec_path[0] == '/')
-          {
-            spec_path = spec_path.substr(1);
-          }
-          // create a spec message
-          capabilities2_msgs::msg::CapabilitySpec capability_spec;
-          // add package details
-          capability_spec.package = package;
-          capability_spec.type = spec_type;
-          // try load spec file
-          try
-          {
-            // read spec file
-            load_spec_content(package_path + "/" + package + "/" + spec_path, capability_spec);
-
-            // add capability to db
-            RCLCPP_INFO(get_logger(), "adding capability: %s/%s", package.c_str(), spec_path.c_str());
-            add_capability(capability_spec);
-          }
-          catch (const std::runtime_error& e)
-          {
-            RCLCPP_ERROR(get_logger(), "failed to load spec file: %s", e.what());
-          }
-        }
-      };
-
-      // get interface specs
-      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_INTERFACE);
-      // get semantic interface specs
-      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::SEMANTIC_CAPABILITY_INTERFACE);
-      // get provider specs
-      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_PROVIDER);
+      load_capability_specs_from_exports(package, package_path + "/" + package, exports);
     }
 
     // load capabilities from packages in workspace install folder
@@ -671,51 +765,10 @@ private:
         continue;
       }
 
-      // get capability specs of each type using a lambda
-      auto get_capability_specs = [&](const std::string& spec_type) {
-        // get capability spec
-        for (tinyxml2::XMLElement* spec = exports->FirstChildElement(spec_type.c_str()); spec != nullptr;
-             spec = spec->NextSiblingElement(spec_type.c_str()))
-        {
-          // read spec relative path for spec file from element contents
-          std::string spec_path = spec->GetText();
-          // clear white spaces
-          spec_path.erase(std::remove_if(spec_path.begin(), spec_path.end(), isspace), spec_path.end());
-          // remove leading slash
-          if (spec_path[0] == '/')
-          {
-            spec_path = spec_path.substr(1);
-          }
-          // create a spec message
-          capabilities2_msgs::msg::CapabilitySpec capability_spec;
-          // add package details
-          capability_spec.package = package;
-          capability_spec.type = spec_type;
-          // try load spec file
-          try
-          {
-            // read spec file
-            load_spec_content(package_path + "/" + package + "/share/" + package + "/" + spec_path, capability_spec);
-
-            // add capability to db
-            RCLCPP_INFO(get_logger(), "adding capability: %s/%s", package.c_str(), spec_path.c_str());
-
-            add_capability(capability_spec);
-          }
-          catch (const std::runtime_error& e)
-          {
-            RCLCPP_ERROR(get_logger(), "failed to load spec file: %s", e.what());
-          }
-        }
-      };
-
-      // get interface specs
-      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_INTERFACE);
-      // get semantic interface specs
-      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::SEMANTIC_CAPABILITY_INTERFACE);
-      // get provider specs
-      get_capability_specs(capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_PROVIDER);
+      load_capability_specs_from_exports(package, package_path + "/" + package + "/share/" + package, exports);
     }
+
+    retry_pending_capabilities();
   }
 
   /**

@@ -31,7 +31,7 @@ struct semantic_interface_model_t : public remappable_base_t, predicateable_base
   {
     header.from_yaml(node);
     redefines = node["redefines"].as<std::string>();
-    global_namespace = node["global_namespace"].as<std::string>();
+    global_namespace = node["global_namespace"] ? node["global_namespace"].as<std::string>() : "";
     // if remappings exist
     if (node["remappings"])
     {
