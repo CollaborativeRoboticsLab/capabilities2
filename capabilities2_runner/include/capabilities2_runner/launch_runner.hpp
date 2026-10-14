@@ -36,6 +36,23 @@ public:
   {
   }
 
+  LaunchAction::Goal make_goal_message() const
+  {
+    LaunchAction::Goal goal_msg;
+    goal_msg.reference_name = run_config_.provider.empty() ? run_config_.interface : run_config_.provider;
+    goal_msg.launch_file_path = launch_reference_;
+
+    for (const auto& launch_parameter : run_config_.launch_parameters)
+    {
+      capabilities2_msgs::msg::LaunchParameter parameter_msg;
+      parameter_msg.key = launch_parameter.key;
+      parameter_msg.value = launch_parameter.value;
+      goal_msg.launch_parameters.push_back(parameter_msg);
+    }
+
+    return goal_msg;
+  }
+
   /**
    * @brief Starter function for starting the launch runner
    *
@@ -71,9 +88,7 @@ public:
       throw runner_exception("failed to connect to launch action server: " + action_name);
     }
 
-    LaunchAction::Goal goal_msg;
-    goal_msg.reference_name = run_config_.provider.empty() ? run_config_.interface : run_config_.provider;
-    goal_msg.launch_file_path = launch_reference_;
+    LaunchAction::Goal goal_msg = make_goal_message();
 
     send_goal_options_ = typename rclcpp_action::Client<LaunchAction>::SendGoalOptions();
     send_goal_options_.feedback_callback = [this, bond_id](GoalHandleLaunch::SharedPtr,

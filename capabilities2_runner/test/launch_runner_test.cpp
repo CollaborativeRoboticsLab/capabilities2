@@ -73,6 +73,11 @@ public:
     launch_reference_ = launch_reference;
   }
 
+  capabilities2_msgs::action::Launch::Goal build_goal_message() const
+  {
+    return make_goal_message();
+  }
+
   void deliver_feedback(const capabilities2_msgs::action::Launch::Feedback& feedback, const std::string& bond_id)
   {
     handle_feedback(std::make_shared<const capabilities2_msgs::action::Launch::Feedback>(feedback), bond_id);
@@ -132,6 +137,32 @@ TEST_F(LaunchRunnerTest, EmitsObservedLaunchedEventOnlyOnceWhenFeedbackReportsPi
   EXPECT_EQ(events->observed_events.front().instance_id, "");
   EXPECT_EQ(events->observed_events.front().source.capability, run_config.interface);
   EXPECT_EQ(events->observed_events.front().source.provider, run_config.provider);
+}
+
+TEST_F(LaunchRunnerTest, IncludesConfiguredLaunchParametersInGoal)
+{
+  auto node = std::make_shared<rclcpp::Node>("launch_runner_goal_test_node");
+
+  capabilities2_runner::runner_opts run_config;
+  run_config.interface = "demo/LaunchCapability";
+  run_config.provider = "demo_launch_provider";
+  run_config.runner = "capabilities2_launch_proxy:demo.launch.py";
+  run_config.launch_parameters.push_back({ "use_sim_time", "true" });
+  run_config.launch_parameters.push_back({ "robot_name", "tb4" });
+
+  TestableLaunchRunner runner;
+  runner.init_base(node, run_config);
+  runner.set_launch_reference(run_config.runner);
+
+  const auto goal = runner.build_goal_message();
+
+  EXPECT_EQ(goal.reference_name, run_config.provider);
+  EXPECT_EQ(goal.launch_file_path, run_config.runner);
+  ASSERT_EQ(goal.launch_parameters.size(), 2U);
+  EXPECT_EQ(goal.launch_parameters[0].key, "use_sim_time");
+  EXPECT_EQ(goal.launch_parameters[0].value, "true");
+  EXPECT_EQ(goal.launch_parameters[1].key, "robot_name");
+  EXPECT_EQ(goal.launch_parameters[1].value, "tb4");
 }
 
 }  // namespace

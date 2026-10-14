@@ -45,6 +45,12 @@ struct resource
   std::string msg_type;
 };
 
+struct launch_parameter
+{
+  std::string key;
+  std::string value;
+};
+
 /**
  * @brief runner options
  *
@@ -57,6 +63,7 @@ struct runner_opts
   std::string interface;
   std::string provider;
   std::vector<resource> resources;
+  std::vector<launch_parameter> launch_parameters;
   std::string global_namespace;
   std::string runner;
   std::string started_by;

@@ -239,6 +239,12 @@ spec_version: 1.2
 description: Launch provider used by navigation capabilities.
 implements: nav2_capabilities/Nav2LaunchRunner
 runner: capabilities2_runner::DummyRunner
+definition:
+  launch_parameters:
+    - key: use_sim_time
+      value: "true"
+    - key: autostart
+      value: "false"
 )";
 
   const std::string nav2_waypoint_interface_yaml = R"(
@@ -268,6 +274,14 @@ depends_on:
   db.insert_provider(load_provider(nav2_launch_provider_yaml, "nav2_capabilities"));
   db.insert_interface(load_interface(nav2_waypoint_interface_yaml, "nav2_capabilities"));
   db.insert_provider(load_provider(nav2_waypoint_provider_yaml, "nav2_capabilities"));
+
+  const auto nav2_launch_run_config = db.get_run_config("nav2_capabilities/Nav2LaunchRunner");
+  const auto nav2_launch_runner_opts = nav2_launch_run_config.to_runner_opts();
+  assert(nav2_launch_runner_opts.launch_parameters.size() == 2);
+  assert(nav2_launch_runner_opts.launch_parameters[0].key == "use_sim_time");
+  assert(nav2_launch_runner_opts.launch_parameters[0].value == "true");
+  assert(nav2_launch_runner_opts.launch_parameters[1].key == "autostart");
+  assert(nav2_launch_runner_opts.launch_parameters[1].value == "false");
 
   capabilities2_server::CapabilitiesAPI api;
   auto node = std::make_shared<rclcpp::Node>("capabilities2_server_runtime_test");

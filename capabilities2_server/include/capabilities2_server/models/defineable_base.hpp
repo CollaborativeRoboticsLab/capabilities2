@@ -9,6 +9,26 @@ namespace capabilities2_server
 namespace models
 {
 
+struct launch_parameter_model_t
+{
+  std::string key;
+  std::string value;
+
+  void from_yaml(const YAML::Node& node)
+  {
+    key = node["key"].as<std::string>();
+    value = node["value"].as<std::string>();
+  }
+
+  YAML::Node to_yaml() const
+  {
+    YAML::Node node;
+    node["key"] = key;
+    node["value"] = value;
+    return node;
+  }
+};
+
 /**
  * @brief defineable base
  *
@@ -22,6 +42,7 @@ struct defineable_base_t
 {
   std::string command;
   std::vector<resource_model_t> configuration_parameters;
+  std::vector<launch_parameter_model_t> launch_parameters;
   std::vector<resource_model_t> runtime__input_parameters;
   std::vector<resource_model_t> runtime__output_parameters;
 
@@ -49,11 +70,23 @@ struct defineable_base_t
     // try get the configuration parameters
     if (def_node["configuration_parameters"])
     {
+      valid = true;
       for (const auto& param : def_node["configuration_parameters"])
       {
         resource_model_t r;
         r.from_yaml(param);
         configuration_parameters.push_back(r);
+      }
+    }
+
+    if (def_node["launch_parameters"])
+    {
+      valid = true;
+      for (const auto& param : def_node["launch_parameters"])
+      {
+        launch_parameter_model_t launch_parameter;
+        launch_parameter.from_yaml(param);
+        launch_parameters.push_back(launch_parameter);
       }
     }
 
@@ -69,6 +102,7 @@ struct defineable_base_t
     // try get the runtime input parameters
     if (runtime_node["input"])
     {
+      valid = true;
       for (const auto& param : runtime_node["input"])
       {
         resource_model_t r;
@@ -80,6 +114,7 @@ struct defineable_base_t
     // try get the runtime output parameters
     if (runtime_node["output"])
     {
+      valid = true;
       for (const auto& param : runtime_node["output"])
       {
         resource_model_t r;
@@ -108,6 +143,16 @@ struct defineable_base_t
         config_params.push_back(param.to_yaml());
       }
       node["definition"]["configuration_parameters"] = config_params;
+    }
+
+    YAML::Node launch_params;
+    if (!launch_parameters.empty())
+    {
+      for (const auto& param : launch_parameters)
+      {
+        launch_params.push_back(param.to_yaml());
+      }
+      node["definition"]["launch_parameters"] = launch_params;
     }
 
     // if runtime input parameters exist

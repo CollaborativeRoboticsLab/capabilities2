@@ -479,6 +479,12 @@ public:
     run_config.runner = provider.runner;
     run_config.started_by = provider_name;
     run_config.pid = "0";
+    run_config.command = provider.command;
+    run_config.configuration_parameters = provider.configuration_parameters;
+    run_config.launch_parameters = provider.launch_parameters;
+    run_config.runtime__input_parameters = provider.runtime__input_parameters;
+    run_config.runtime__output_parameters = provider.runtime__output_parameters;
+    run_config.valid = provider.defined();
 
     // If the caller requested a semantic interface that redefines the provider's base interface,
     // apply the semantic remappings before layering provider remappings.

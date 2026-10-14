@@ -35,6 +35,10 @@ struct run_config_model_t : defineable_base_t
 
     opts.interface = interface.header.name;
     opts.provider = provider.name;
+    for (const auto& launch_parameter : launch_parameters)
+    {
+      opts.launch_parameters.push_back({ launch_parameter.key, launch_parameter.value });
+    }
     opts.global_namespace = global_namespace;
     opts.runner = runner;
     opts.started_by = started_by;

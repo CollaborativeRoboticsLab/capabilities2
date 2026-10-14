@@ -33,7 +33,19 @@ ros2 action send_goal \
 	--feedback \
 	/capabilities2_launch_proxy/launch \
 	capabilities2_msgs/action/Launch \
-	"{package_name: turtlebot4_maze_sim, launch_file_name: sim_navigation.launch.py}"
+	"{package_name: turtlebot4_navigation, launch_file_name: slam.launch.py, launch_parameters: [{key: use_sim_time, value: \"true\"}]}"
+```
+
+In a second terminal:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+ros2 action send_goal \
+	--feedback \
+	/capabilities2_launch_proxy/launch \
+	capabilities2_msgs/action/Launch \
+	"{package_name: turtlebot4_navigation, launch_file_name: nav2.launch.py, launch_parameters: [{key: use_sim_time, value: \"true\"}]}"
 ```
 
 ## Service-based launch goals
@@ -57,7 +69,18 @@ source install/setup.bash
 ros2 service call \
 	/capabilities2_launch_proxy/launch \
 	capabilities2_msgs/srv/Launch \
-	"{package_name: turtlebot4_maze_sim, launch_file_name: sim_navigation.launch.py}"
+	"{package_name: turtlebot4_navigation, launch_file_name: slam.launch.py, launch_parameters: [{key: use_sim_time, value: \"true\"}]}"
+```
+
+In a second terminal:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+ros2 service call \
+	/capabilities2_launch_proxy/launch \
+	capabilities2_msgs/srv/Launch \
+	"{package_name: turtlebot4_navigation, launch_file_name: nav2.launch.py, launch_parameters: [{key: use_sim_time, value: \"true\"}]}"
 ```
 
 ### Stop the simulation world
@@ -79,5 +102,16 @@ source install/setup.bash
 ros2 service call \
 	/capabilities2_launch_proxy/stop_launch \
 	capabilities2_msgs/srv/Launch \
-	"{package_name: turtlebot4_maze_sim, launch_file_name: sim_navigation.launch.py}"
+	"{package_name: turtlebot4_navigation, launch_file_name: nav2.launch.py}"
+```
+
+In a second terminal:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+ros2 service call \
+	/capabilities2_launch_proxy/stop_launch \
+	capabilities2_msgs/srv/Launch \
+	"{package_name: turtlebot4_navigation, launch_file_name: slam.launch.py}"
 ```	

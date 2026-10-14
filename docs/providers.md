@@ -51,6 +51,11 @@ definition:
       description: local configuration threshold for this provider
       semantic_key: provider.threshold
       default: 0.5
+  launch_parameters:
+    - key: use_sim_time
+      value: "true"
+    - key: robot_name
+      value: turtlebot4
   runtime_parameters:
     input:
       - name: param1
@@ -84,6 +89,8 @@ The missing piece is how to describe a runtime input that may also be satisfied 
 The spec keeps the existing sections and adds optional fields to each parameter entry.
 
 ### Optional Fields
+
+For launch-backed providers that use `capabilities2_runner::LaunchRunner`, `definition.launch_parameters` may be used to pass static ROS 2 launch arguments to the target launch file. Each entry is forwarded as a `key` and `value` pair and applied as a launch configuration before the launch description executes.
 
 - `semantic_key`: Stable semantic identifier used for cross-capability matching and graph relations. If omitted, `name` is used as the fallback identity.
 - `required`: Declares whether the parameter must be satisfied for valid execution. This is primarily meaningful for runtime inputs.
