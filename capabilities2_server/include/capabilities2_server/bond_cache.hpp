@@ -176,6 +176,11 @@ public:
     live_bonds_[bond_id]->start();
   }
 
+  void stop()
+  {
+    live_bonds_.clear();
+  }
+
 private:
   // bonds topic
   std::string bonds_topic_;

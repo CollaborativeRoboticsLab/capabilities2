@@ -62,6 +62,11 @@ public:
   {
   }
 
+  void shutdown_bonds()
+  {
+    bond_cache_.stop();
+  }
+
   /**
    * @brief connect with the database file
    *
