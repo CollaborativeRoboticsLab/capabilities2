@@ -13,6 +13,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(capabilities2_msgs REQUIRED)
 find_package(capabilities2_events REQUIRED)
@@ -30,6 +31,7 @@ add_library(${PROJECT_NAME} SHARED
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
   rclcpp_action
+  lifecycle_msgs
   pluginlib
   capabilities2_msgs
   capabilities2_events
@@ -69,6 +71,7 @@ if(BUILD_TESTING)
     ament_target_dependencies(launch_runner_test
       rclcpp
       rclcpp_action
+      lifecycle_msgs
       capabilities2_msgs
       capabilities2_events
     )
@@ -77,5 +80,6 @@ endif()
 
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(lifecycle_msgs)
 
 ament_package()

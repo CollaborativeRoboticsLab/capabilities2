@@ -260,6 +260,9 @@ definition:
       value: "true"
     - key: autostart
       value: "false"
+  lifecycle_readiness:
+    nodes: [/planner_server, /bt_navigator]
+    timeout_sec: 45.0
 )";
 
   const std::string nav2_waypoint_interface_yaml = R"(
@@ -290,6 +293,48 @@ depends_on:
   db.insert_interface(load_interface(nav2_waypoint_interface_yaml, "nav2_capabilities"));
   db.insert_provider(load_provider(nav2_waypoint_provider_yaml, "nav2_capabilities"));
 
+  const std::string failing_interface_yaml = R"(
+name: ZFailingLaunch
+spec_version: 1.2
+spec_type: interface
+description: Launches a capability with invalid readiness.
+)";
+  const std::string failing_provider_yaml = R"(
+name: ZFailingLaunch
+spec_version: 1.2
+spec_type: provider
+description: Invalid readiness timeout.
+implements: test_capabilities/ZFailingLaunch
+runner: demo.launch.py
+definition:
+  lifecycle_readiness:
+    nodes: [test_node]
+    timeout_sec: -1
+)";
+  const std::string dependent_interface_yaml = R"(
+name: Dependent
+spec_version: 1.2
+spec_type: interface
+description: Capability with multiple dependencies.
+)";
+  const std::string dependent_provider_yaml = R"(
+name: Dependent
+spec_version: 1.2
+spec_type: provider
+description: Capability with one failing dependency.
+implements: test_capabilities/Dependent
+runner: capabilities2_runner::DummyRunner
+depends_on:
+  nav2_capabilities/Nav2LaunchRunner:
+    provider: nav2_capabilities/Nav2LaunchRunner
+  test_capabilities/ZFailingLaunch:
+    provider: test_capabilities/ZFailingLaunch
+)";
+  db.insert_interface(load_interface(failing_interface_yaml, "test_capabilities"));
+  db.insert_provider(load_provider(failing_provider_yaml, "test_capabilities"));
+  db.insert_interface(load_interface(dependent_interface_yaml, "test_capabilities"));
+  db.insert_provider(load_provider(dependent_provider_yaml, "test_capabilities"));
+
   const auto nav2_launch_run_config = db.get_run_config("nav2_capabilities/Nav2LaunchRunner");
   const auto nav2_launch_runner_opts = nav2_launch_run_config.to_runner_opts();
   assert(nav2_launch_runner_opts.launch_parameters.size() == 2);
@@ -297,6 +342,8 @@ depends_on:
   assert(nav2_launch_runner_opts.launch_parameters[0].value == "true");
   assert(nav2_launch_runner_opts.launch_parameters[1].key == "autostart");
   assert(nav2_launch_runner_opts.launch_parameters[1].value == "false");
+  assert(nav2_launch_runner_opts.lifecycle_nodes == std::vector<std::string>({ "/planner_server", "/bt_navigator" }));
+  assert(nav2_launch_runner_opts.lifecycle_timeout_sec == 45.0);
 
   capabilities2_server::CapabilitiesAPI api;
   auto node = std::make_shared<rclcpp::Node>("capabilities2_server_runtime_test");
@@ -325,6 +372,14 @@ depends_on:
 
   api.free_capability("nav2_capabilities/WaypointRunner", "bond-nav2");
   assert(api.get_running_capabilities().empty());
+
+  for (int attempt = 0; attempt < 2; ++attempt)
+  {
+    const bool dependent_started = api.use_capability(node, "test_capabilities/Dependent",
+                                                      "test_capabilities/Dependent", "bond-failure");
+    assert(!dependent_started);
+    assert(api.get_running_capabilities().empty());
+  }
 
   std::filesystem::remove(db_path);
   rclcpp::shutdown();

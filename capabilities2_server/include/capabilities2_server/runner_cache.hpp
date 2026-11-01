@@ -73,7 +73,15 @@ public:
     runner_cache_[capability]->enable_events(event_emitter);
 
     // start the runner
-    runner_cache_[capability]->start(node, run_config.to_runner_opts(), "");
+    try
+    {
+      runner_cache_[capability]->start(node, run_config.to_runner_opts(), "");
+    }
+    catch (...)
+    {
+      runner_cache_.erase(capability);
+      throw;
+    }
   }
 
   /**

@@ -43,6 +43,8 @@ struct defineable_base_t
   std::string command;
   std::vector<resource_model_t> configuration_parameters;
   std::vector<launch_parameter_model_t> launch_parameters;
+  std::vector<std::string> lifecycle_nodes;
+  double lifecycle_timeout_sec{ 60.0 };
   std::vector<resource_model_t> runtime__input_parameters;
   std::vector<resource_model_t> runtime__output_parameters;
 
@@ -87,6 +89,20 @@ struct defineable_base_t
         launch_parameter_model_t launch_parameter;
         launch_parameter.from_yaml(param);
         launch_parameters.push_back(launch_parameter);
+      }
+    }
+
+    if (def_node["lifecycle_readiness"])
+    {
+      valid = true;
+      const auto readiness = def_node["lifecycle_readiness"];
+      if (readiness["nodes"])
+      {
+        lifecycle_nodes = readiness["nodes"].as<std::vector<std::string>>();
+      }
+      if (readiness["timeout_sec"])
+      {
+        lifecycle_timeout_sec = readiness["timeout_sec"].as<double>();
       }
     }
 
@@ -153,6 +169,12 @@ struct defineable_base_t
         launch_params.push_back(param.to_yaml());
       }
       node["definition"]["launch_parameters"] = launch_params;
+    }
+
+    if (!lifecycle_nodes.empty())
+    {
+      node["definition"]["lifecycle_readiness"]["nodes"] = lifecycle_nodes;
+      node["definition"]["lifecycle_readiness"]["timeout_sec"] = lifecycle_timeout_sec;
     }
 
     // if runtime input parameters exist

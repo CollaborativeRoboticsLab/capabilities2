@@ -2,12 +2,15 @@
 
 #include <chrono>
 #include <cctype>
+#include <cmath>
 #include <future>
 #include <mutex>
 #include <string>
 #include <thread>
 
 #include <action_msgs/srv/cancel_goal.hpp>
+#include <lifecycle_msgs/msg/state.hpp>
+#include <lifecycle_msgs/srv/get_state.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <rclcpp/executors/single_threaded_executor.hpp>
 
@@ -76,50 +79,104 @@ public:
       resolved_launch_file_path_.clear();
       final_state_.clear();
       result_message_.clear();
+      launch_finished_ = false;
+    }
+
+    if (!run_config_.lifecycle_nodes.empty() &&
+        (!std::isfinite(run_config_.lifecycle_timeout_sec) || run_config_.lifecycle_timeout_sec <= 0.0))
+    {
+      throw runner_exception("lifecycle readiness timeout must be positive and finite");
     }
 
     const std::string action_name = resolve_launch_action_name();
     ensure_client_node();
-    action_client_ = rclcpp_action::create_client<LaunchAction>(client_node_, action_name);
-
-    RCLCPP_INFO(node_->get_logger(), "waiting for launch action: %s", action_name.c_str());
-    if (!action_client_->wait_for_action_server(default_timeout_))
+    try
     {
-      throw runner_exception("failed to connect to launch action server: " + action_name);
+      action_client_ = rclcpp_action::create_client<LaunchAction>(client_node_, action_name);
+
+      RCLCPP_INFO(node_->get_logger(), "waiting for launch action: %s", action_name.c_str());
+      if (!action_client_->wait_for_action_server(default_timeout_))
+      {
+        throw runner_exception("failed to connect to launch action server: " + action_name);
+      }
+
+      LaunchAction::Goal goal_msg = make_goal_message();
+
+      send_goal_options_ = typename rclcpp_action::Client<LaunchAction>::SendGoalOptions();
+      send_goal_options_.feedback_callback = [this, bond_id](GoalHandleLaunch::SharedPtr,
+                                                             const LaunchAction::Feedback::ConstSharedPtr feedback) {
+        handle_feedback(feedback, bond_id);
+      };
+      send_goal_options_.result_callback = [this, bond_id](const GoalHandleLaunch::WrappedResult& wrapped_result) {
+        handle_result(wrapped_result, bond_id);
+      };
+
+      goal_handle_future_ = action_client_->async_send_goal(goal_msg, send_goal_options_);
+      if (goal_handle_future_.wait_for(default_timeout_) != std::future_status::ready)
+      {
+        throw runner_exception("timed out waiting for launch goal acceptance: " + launch_reference_);
+      }
+
+      auto goal_handle = goal_handle_future_.get();
+      if (!goal_handle)
+      {
+        throw runner_exception("launch goal rejected: " + launch_reference_);
+      }
+
+      {
+        std::lock_guard<std::mutex> lock(state_mutex_);
+        if (!launch_finished_)
+        {
+          goal_handle_ = goal_handle;
+        }
+      }
+
+      wait_for_lifecycle_nodes();
+
+      RCLCPP_INFO(node_->get_logger(), "launch runner started: %s", launch_reference_.c_str());
+
+      // emit started event
+      emit_started(bond_id, "", param_on_started());
     }
-
-    LaunchAction::Goal goal_msg = make_goal_message();
-
-    send_goal_options_ = typename rclcpp_action::Client<LaunchAction>::SendGoalOptions();
-    send_goal_options_.feedback_callback = [this, bond_id](GoalHandleLaunch::SharedPtr,
-                                                           const LaunchAction::Feedback::ConstSharedPtr feedback) {
-      handle_feedback(feedback, bond_id);
-    };
-    send_goal_options_.result_callback = [this, bond_id](const GoalHandleLaunch::WrappedResult& wrapped_result) {
-      handle_result(wrapped_result, bond_id);
-    };
-
-    goal_handle_future_ = action_client_->async_send_goal(goal_msg, send_goal_options_);
-    if (goal_handle_future_.wait_for(default_timeout_) != std::future_status::ready)
+    catch (const std::exception& error)
     {
-      throw runner_exception("timed out waiting for launch goal acceptance: " + launch_reference_);
+      GoalHandleLaunch::SharedPtr goal_handle;
+      bool emit_failure;
+      {
+        std::lock_guard<std::mutex> lock(state_mutex_);
+        goal_handle = goal_handle_;
+        stop_requested_ = true;
+        stop_event_emitted_ = true;
+        emit_failure = !failed_event_emitted_;
+        failed_event_emitted_ = true;
+      }
+      if (goal_handle && action_client_)
+      {
+        try
+        {
+          auto cancel = action_client_->async_cancel_goal(goal_handle);
+          if (cancel.wait_for(default_timeout_) != std::future_status::ready)
+          {
+            RCLCPP_WARN(node_->get_logger(), "timed out cancelling launch %s", launch_reference_.c_str());
+          }
+          else if (cancel.get()->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE)
+          {
+            RCLCPP_WARN(node_->get_logger(), "launch cancellation was not accepted for %s", launch_reference_.c_str());
+          }
+        }
+        catch (const std::exception& cleanup_error)
+        {
+          RCLCPP_WARN(node_->get_logger(), "failed to cancel launch %s: %s", launch_reference_.c_str(),
+                      cleanup_error.what());
+        }
+      }
+      cleanup_client_node();
+      if (emit_failure)
+      {
+        emit_failed(bond_id, "", param_on_failure());
+      }
+      throw runner_exception(error.what());
     }
-
-    auto goal_handle = goal_handle_future_.get();
-    if (!goal_handle)
-    {
-      throw runner_exception("launch goal rejected: " + launch_reference_);
-    }
-
-    {
-      std::lock_guard<std::mutex> lock(state_mutex_);
-      goal_handle_ = goal_handle;
-    }
-
-    RCLCPP_INFO(node_->get_logger(), "launch runner started: %s", launch_reference_.c_str());
-
-    // emit started event
-    emit_started(bond_id, "", param_on_started());
   }
 
   /**
@@ -144,42 +201,159 @@ public:
       goal_handle = goal_handle_;
     }
 
-    if (goal_handle)
+    std::exception_ptr stop_error;
+    try
     {
-      try
+      if (goal_handle)
       {
-        auto cancel_future = action_client_->async_cancel_goal(goal_handle);
-        if (cancel_future.wait_for(default_timeout_) != std::future_status::ready)
+        try
         {
-          throw runner_exception("timed out waiting for launch cancellation: " + launch_reference_);
-        }
+          auto cancel_future = action_client_->async_cancel_goal(goal_handle);
+          if (cancel_future.wait_for(default_timeout_) != std::future_status::ready)
+          {
+            throw runner_exception("timed out waiting for launch cancellation: " + launch_reference_);
+          }
 
-        auto response = cancel_future.get();
-        if (response == nullptr)
-        {
-          throw runner_exception("launch cancellation returned no response: " + launch_reference_);
-        }
+          auto response = cancel_future.get();
+          if (response == nullptr)
+          {
+            throw runner_exception("launch cancellation returned no response: " + launch_reference_);
+          }
 
-        if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE &&
-            response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_GOAL_TERMINATED)
+          if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE &&
+              response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_GOAL_TERMINATED)
+          {
+            throw runner_exception("launch cancellation failed with code " + std::to_string(response->return_code) +
+                                   " for: " + launch_reference_);
+          }
+        }
+        catch (const rclcpp_action::exceptions::UnknownGoalHandleError& e)
         {
-          throw runner_exception("launch cancellation failed with code " + std::to_string(response->return_code) +
-                                 " for: " + launch_reference_);
+          RCLCPP_WARN(node_->get_logger(), "launch goal already finished while stopping %s: %s",
+                      launch_reference_.c_str(), e.what());
         }
       }
-      catch (const rclcpp_action::exceptions::UnknownGoalHandleError& e)
-      {
-        RCLCPP_WARN(node_->get_logger(), "launch goal already finished while stopping %s: %s",
-                    launch_reference_.c_str(), e.what());
-      }
+    }
+    catch (...)
+    {
+      stop_error = std::current_exception();
     }
 
     cleanup_client_node();
 
+    if (stop_error)
+    {
+      std::rethrow_exception(stop_error);
+    }
     emit_stopped_once(bond_id, instance_id);
   }
 
 protected:
+  void wait_for_lifecycle_nodes()
+  {
+    if (run_config_.lifecycle_nodes.empty())
+    {
+      return;
+    }
+
+    using GetState = lifecycle_msgs::srv::GetState;
+    std::vector<std::pair<std::string, rclcpp::Client<GetState>::SharedPtr>> clients;
+    for (const auto& configured_name : run_config_.lifecycle_nodes)
+    {
+      if (configured_name.empty())
+      {
+        throw runner_exception("lifecycle node name must not be empty");
+      }
+      std::string name = configured_name;
+      if (name.front() != '/')
+      {
+        std::string name_space = run_config_.global_namespace;
+        for (const auto& parameter : run_config_.launch_parameters)
+        {
+          if (parameter.key == "namespace")
+          {
+            name_space = parameter.value;
+            break;
+          }
+        }
+        if (!name_space.empty() && name_space.front() != '/')
+        {
+          name_space.insert(name_space.begin(), '/');
+        }
+        if (!name_space.empty() && name_space.back() == '/')
+        {
+          name_space.pop_back();
+        }
+        name = name_space + "/" + name;
+      }
+      RCLCPP_INFO(node_->get_logger(), "waiting for lifecycle node to become active: %s", name.c_str());
+      clients.emplace_back(name, client_node_->create_client<GetState>(name + "/get_state"));
+    }
+
+    const auto deadline =
+        std::chrono::steady_clock::now() + std::chrono::duration<double>(run_config_.lifecycle_timeout_sec);
+    std::string waiting_for;
+    while (rclcpp::ok(node_->get_node_base_interface()->get_context()) && std::chrono::steady_clock::now() < deadline)
+    {
+      bool all_active = true;
+      for (const auto& entry : clients)
+      {
+        {
+          std::lock_guard<std::mutex> lock(state_mutex_);
+          if (launch_finished_)
+          {
+            throw runner_exception("launch ended before lifecycle readiness: " + result_message_);
+          }
+        }
+        waiting_for = entry.first;
+        if (!entry.second->wait_for_service(std::chrono::milliseconds(100)))
+        {
+          all_active = false;
+          break;
+        }
+        auto future = entry.second->async_send_request(std::make_shared<GetState::Request>());
+        bool response_ready = false;
+        while (std::chrono::steady_clock::now() < deadline &&
+               rclcpp::ok(node_->get_node_base_interface()->get_context()))
+        {
+          if (future.wait_for(std::chrono::milliseconds(100)) == std::future_status::ready)
+          {
+            response_ready = true;
+            break;
+          }
+          std::lock_guard<std::mutex> lock(state_mutex_);
+          if (launch_finished_)
+          {
+            entry.second->remove_pending_request(future);
+            throw runner_exception("launch ended before lifecycle readiness: " + result_message_);
+          }
+        }
+        if (!response_ready)
+        {
+          entry.second->remove_pending_request(future);
+          all_active = false;
+          break;
+        }
+        if (future.get()->current_state.id != lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE)
+        {
+          all_active = false;
+          break;
+        }
+      }
+      if (all_active)
+      {
+        std::lock_guard<std::mutex> lock(state_mutex_);
+        if (launch_finished_)
+        {
+          throw runner_exception("launch ended before lifecycle readiness: " + result_message_);
+        }
+        return;
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    throw runner_exception("timed out waiting for active lifecycle node: " + waiting_for);
+  }
+
   void handle_feedback(const LaunchAction::Feedback::ConstSharedPtr& feedback, const std::string& bond_id)
   {
     if (!feedback)
@@ -200,8 +374,9 @@ protected:
         resolved_launch_file_path_ = feedback->resolved_launch_file_path;
       }
 
-      const int64_t launched_pid = feedback->resource.pid != 0 ? feedback->resource.pid :
-          (feedback->main_pids.empty() ? 0 : feedback->main_pids.front());
+      const int64_t launched_pid = feedback->resource.pid != 0 ?
+                                       feedback->resource.pid :
+                                       (feedback->main_pids.empty() ? 0 : feedback->main_pids.front());
       if (launched_pid > 0 && !launched_event_emitted_)
       {
         launched_event_emitted_ = true;
@@ -244,6 +419,7 @@ protected:
 
     {
       std::lock_guard<std::mutex> lock(state_mutex_);
+      launch_finished_ = true;
       goal_handle_.reset();
 
       if (wrapped_result.result)
@@ -401,6 +577,7 @@ protected:
   bool launched_event_emitted_{ false };
   bool stop_event_emitted_{ false };
   bool failed_event_emitted_{ false };
+  bool launch_finished_{ false };
 };
 
 }  // namespace capabilities2_runner

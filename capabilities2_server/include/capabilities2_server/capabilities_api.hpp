@@ -103,6 +103,18 @@ public:
     // get the running model from the db
     models::running_model_t running = cap_db_->get_running(provider);
 
+    std::vector<std::string> bound_dependencies;
+    const auto release_dependencies = [&]() {
+      for (auto dependency = bound_dependencies.rbegin(); dependency != bound_dependencies.rend(); ++dependency)
+      {
+        unbind_dependency(*dependency);
+        if (!bond_cache_.exists(*dependency) && runner_cache_.running(*dependency))
+        {
+          stop_capability(*dependency);
+        }
+      }
+    };
+
     // start all dependencies
     // go through the running model and start the necessary dependencies
     for (const auto& run : running.dependencies)
@@ -111,9 +123,15 @@ public:
 
       // make an internal 'use' bond for the capability dependency
       bind_dependency(run.interface);
+      bound_dependencies.push_back(run.interface);
 
       // add the runner to the cache
       value = value and start_capability(node, run.interface, run.provider);
+      if (!value)
+      {
+        release_dependencies();
+        return false;
+      }
     }
 
     // get the provider specification for the capability
@@ -137,6 +155,7 @@ public:
     catch (const capabilities2_runner::runner_exception& e)
     {
       RCLCPP_WARN(logging_->get_logger(), "could not start runner: %s", e.what());
+      release_dependencies();
       return false;
     }
   }
@@ -263,11 +282,20 @@ public:
   bool use_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
                       const std::string& bond_id)
   {
+    const bool already_bound = bond_cache_.exists(capability, bond_id);
     // add bond to cache for capability
     bond_cache_.add_bond(capability, bond_id);
 
     // start the capability with the provider
-    return start_capability(node, capability, provider);
+    if (!start_capability(node, capability, provider))
+    {
+      if (!already_bound)
+      {
+        bond_cache_.remove_bond(capability, bond_id);
+      }
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -303,9 +331,10 @@ public:
 
     try
     {
-      // create a unique connection id for the connection using the bond_id and instance ids 
+      // create a unique connection id for the connection using the bond_id and instance ids
       //(format: "bond_id/instance_id/target_instance_id")
-      const std::string connection_id = bond_id + '/' + connection.source.instance_id + '/' + connection.target.instance_id;
+      const std::string connection_id =
+          bond_id + '/' + connection.source.instance_id + '/' + connection.target.instance_id;
 
       // need to pass event emitter to the runner cache so that it can be set in the runner
       // this allows the runner to emit events on state changes
@@ -469,9 +498,12 @@ public:
     if (result.status == AddCapabilityResult::Status::Added)
     {
       const char* label = spec.type == capabilities2_msgs::msg::CapabilitySpec::CAPABILITY_INTERFACE ? "interface" :
-                          spec.type == capabilities2_msgs::msg::CapabilitySpec::SEMANTIC_CAPABILITY_INTERFACE ?
-                              "semantic interface" :
-                              "provider";
+                          spec.type == capabilities2_msgs::msg::CapabilitySpec::SEMANTIC_CAPABILITY_INTERFACE ? "semant"
+                                                                                                                "ic "
+                                                                                                                "interf"
+                                                                                                                "ace" :
+                                                                                                                "provid"
+                                                                                                                "er";
       RCLCPP_INFO(logging_->get_logger(), "%s added to db: %s", label, result.capability_name.c_str());
       return;
     }

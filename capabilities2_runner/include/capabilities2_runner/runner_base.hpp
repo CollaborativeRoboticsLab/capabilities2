@@ -64,6 +64,8 @@ struct runner_opts
   std::string provider;
   std::vector<resource> resources;
   std::vector<launch_parameter> launch_parameters;
+  std::vector<std::string> lifecycle_nodes;
+  double lifecycle_timeout_sec{ 60.0 };
   std::string global_namespace;
   std::string runner;
   std::string started_by;

@@ -72,6 +72,17 @@ namespace capabilities2_runner
 
 The `LaunchRunner` inherits from `capabilities2_runner::NoTriggerRunner` and starts package-based or path-based launch files by sending a goal to the `capabilities2_launch_proxy` action server. Providers can therefore keep using `runner: package_name/file.launch.py` style entries when the launch server is running.
 
+Providers can optionally wait for lifecycle nodes to become active before startup completes:
+
+```yaml
+definition:
+  lifecycle_readiness:
+    nodes: [planner_server, bt_navigator]
+    timeout_sec: 60.0
+```
+
+The timeout applies to the whole readiness check and defaults to 60 seconds. Relative node names use the launch `namespace` parameter when supplied, or the runner's global namespace otherwise; absolute names are unchanged. Without a node list, startup retains its existing behavior. A launch failure or readiness timeout fails startup and attempts to cancel the launch.
+
 ### Creating a Custom runner
 
 The main idea is to allow users to create custom runners for their specific capabilities. Runners can be created to perform capabilities. The runner can be specified in a capability provider as the `runner` tag:
