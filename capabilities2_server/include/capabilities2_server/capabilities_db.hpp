@@ -484,6 +484,9 @@ public:
     run_config.launch_parameters = provider.launch_parameters;
     run_config.lifecycle_nodes = provider.lifecycle_nodes;
     run_config.lifecycle_timeout_sec = provider.lifecycle_timeout_sec;
+    run_config.action_readiness = provider.action_readiness;
+    run_config.service_readiness = provider.service_readiness;
+    run_config.topic_readiness = provider.topic_readiness;
     run_config.runtime__input_parameters = provider.runtime__input_parameters;
     run_config.runtime__output_parameters = provider.runtime__output_parameters;
     run_config.valid = provider.defined();

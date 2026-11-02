@@ -39,8 +39,11 @@ struct run_config_model_t : defineable_base_t
     {
       opts.launch_parameters.push_back({ launch_parameter.key, launch_parameter.value });
     }
-    opts.lifecycle_nodes = lifecycle_nodes;
-    opts.lifecycle_timeout_sec = lifecycle_timeout_sec;
+    opts.launch_readiness.lifecycle_nodes = lifecycle_nodes;
+    opts.launch_readiness.lifecycle_timeout_sec = lifecycle_timeout_sec;
+    opts.launch_readiness.action = { action_readiness.name, action_readiness.type, action_readiness.timeout };
+    opts.launch_readiness.service = { service_readiness.name, service_readiness.type, service_readiness.timeout };
+    opts.launch_readiness.topic = { topic_readiness.name, topic_readiness.type, topic_readiness.timeout };
     opts.global_namespace = global_namespace;
     opts.runner = runner;
     opts.started_by = started_by;

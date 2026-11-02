@@ -11,6 +11,7 @@
 
 #include <capabilities2_msgs/msg/capability.hpp>
 #include <capabilities2_msgs/msg/capability_event_code.hpp>
+#include <capabilities2_runner/launch_readiness.hpp>
 
 namespace capabilities2_runner
 {
@@ -64,8 +65,7 @@ struct runner_opts
   std::string provider;
   std::vector<resource> resources;
   std::vector<launch_parameter> launch_parameters;
-  std::vector<std::string> lifecycle_nodes;
-  double lifecycle_timeout_sec{ 60.0 };
+  launch_readiness_config launch_readiness;
   std::string global_namespace;
   std::string runner;
   std::string started_by;

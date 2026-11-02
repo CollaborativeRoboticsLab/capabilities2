@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <chrono>
 #include <cctype>
 #include <cmath>
@@ -12,6 +13,7 @@
 #include <lifecycle_msgs/msg/state.hpp>
 #include <lifecycle_msgs/srv/get_state.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
+#include <rclcpp_action/create_generic_client.hpp>
 #include <rclcpp/executors/single_threaded_executor.hpp>
 
 #include <capabilities2_msgs/action/launch.hpp>
@@ -82,8 +84,9 @@ public:
       launch_finished_ = false;
     }
 
-    if (!run_config_.lifecycle_nodes.empty() &&
-        (!std::isfinite(run_config_.lifecycle_timeout_sec) || run_config_.lifecycle_timeout_sec <= 0.0))
+    if (!run_config_.launch_readiness.lifecycle_nodes.empty() &&
+      (!std::isfinite(run_config_.launch_readiness.lifecycle_timeout_sec) ||
+       run_config_.launch_readiness.lifecycle_timeout_sec <= 0.0))
     {
       throw runner_exception("lifecycle readiness timeout must be positive and finite");
     }
@@ -92,6 +95,18 @@ public:
     ensure_client_node();
     try
     {
+      const auto& readiness = run_config_.launch_readiness;
+      validate_endpoint(readiness.action, "action");
+      validate_endpoint(readiness.service, "service");
+      validate_endpoint(readiness.topic, "topic");
+      auto topic_received = std::make_shared<std::atomic<bool>>(false);
+      rclcpp::GenericSubscription::SharedPtr topic_subscription;
+      if (!readiness.topic.name.empty())
+      {
+        topic_subscription = client_node_->create_generic_subscription(
+            resolve_readiness_name(readiness.topic.name), readiness.topic.type, rclcpp::SensorDataQoS(),
+            [topic_received](std::shared_ptr<rclcpp::SerializedMessage>) { topic_received->store(true); });
+      }
       action_client_ = rclcpp_action::create_client<LaunchAction>(client_node_, action_name);
 
       RCLCPP_INFO(node_->get_logger(), "waiting for launch action: %s", action_name.c_str());
@@ -132,6 +147,7 @@ public:
       }
 
       wait_for_lifecycle_nodes();
+      wait_for_endpoints(topic_received);
 
       RCLCPP_INFO(node_->get_logger(), "launch runner started: %s", launch_reference_.c_str());
 
@@ -249,49 +265,116 @@ public:
   }
 
 protected:
+  void validate_endpoint(const readiness_endpoint& endpoint, const std::string& kind) const
+  {
+    if (endpoint.name.empty() && endpoint.type.empty())
+      return;
+    if (endpoint.name.empty() || endpoint.type.empty())
+      throw runner_exception(kind + " readiness requires both name and type");
+    if (!std::isfinite(endpoint.timeout) || endpoint.timeout <= 0.0)
+      throw runner_exception(kind + " readiness timeout must be positive and finite");
+  }
+
+  std::string resolve_readiness_name(const std::string& configured_name) const
+  {
+    if (configured_name.front() == '/')
+      return configured_name;
+    std::string name_space = run_config_.global_namespace;
+    for (const auto& parameter : run_config_.launch_parameters)
+    {
+      if (parameter.key == "namespace")
+      {
+        name_space = parameter.value;
+        break;
+      }
+    }
+    if (!name_space.empty() && name_space.front() != '/')
+      name_space.insert(name_space.begin(), '/');
+    while (!name_space.empty() && name_space.back() == '/')
+      name_space.pop_back();
+    return name_space + "/" + configured_name;
+  }
+
+  void check_launch_running()
+  {
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    if (launch_finished_)
+      throw runner_exception("launch ended before readiness: " + result_message_);
+    if (!rclcpp::ok(node_->get_node_base_interface()->get_context()))
+      throw runner_exception("ROS shutdown before launch readiness");
+  }
+
+  template <typename Predicate>
+  void wait_for_endpoint(const readiness_endpoint& endpoint, const std::string& kind, Predicate ready)
+  {
+    if (endpoint.name.empty())
+      return;
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::duration<double>(endpoint.timeout);
+    while (std::chrono::steady_clock::now() < deadline)
+    {
+      check_launch_running();
+      if (ready())
+      {
+        check_launch_running();
+        return;
+      }
+    }
+    throw runner_exception("timed out waiting for " + kind + " readiness: " + endpoint.name);
+  }
+
+  void wait_for_endpoints(const std::shared_ptr<std::atomic<bool>>& topic_received)
+  {
+    const auto& readiness = run_config_.launch_readiness;
+    if (!readiness.action.name.empty())
+    {
+      auto client = rclcpp_action::create_generic_client(
+          client_node_, resolve_readiness_name(readiness.action.name), readiness.action.type);
+      wait_for_endpoint(readiness.action, "action", [&client]() {
+        return client->wait_for_action_server(std::chrono::milliseconds(100));
+      });
+    }
+    if (!readiness.service.name.empty())
+    {
+      auto client = client_node_->create_generic_client(
+          resolve_readiness_name(readiness.service.name), readiness.service.type);
+      wait_for_endpoint(readiness.service, "service", [&client]() {
+        return client->wait_for_service(std::chrono::milliseconds(100));
+      });
+    }
+    if (!readiness.topic.name.empty())
+    {
+      wait_for_endpoint(readiness.topic, "topic", [&topic_received]() {
+        if (topic_received->load())
+          return true;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        return topic_received->load();
+      });
+    }
+    check_launch_running();
+  }
+
   void wait_for_lifecycle_nodes()
   {
-    if (run_config_.lifecycle_nodes.empty())
+    if (run_config_.launch_readiness.lifecycle_nodes.empty())
     {
       return;
     }
 
     using GetState = lifecycle_msgs::srv::GetState;
     std::vector<std::pair<std::string, rclcpp::Client<GetState>::SharedPtr>> clients;
-    for (const auto& configured_name : run_config_.lifecycle_nodes)
+    for (const auto& configured_name : run_config_.launch_readiness.lifecycle_nodes)
     {
       if (configured_name.empty())
       {
         throw runner_exception("lifecycle node name must not be empty");
       }
-      std::string name = configured_name;
-      if (name.front() != '/')
-      {
-        std::string name_space = run_config_.global_namespace;
-        for (const auto& parameter : run_config_.launch_parameters)
-        {
-          if (parameter.key == "namespace")
-          {
-            name_space = parameter.value;
-            break;
-          }
-        }
-        if (!name_space.empty() && name_space.front() != '/')
-        {
-          name_space.insert(name_space.begin(), '/');
-        }
-        if (!name_space.empty() && name_space.back() == '/')
-        {
-          name_space.pop_back();
-        }
-        name = name_space + "/" + name;
-      }
+      const std::string name = resolve_readiness_name(configured_name);
       RCLCPP_INFO(node_->get_logger(), "waiting for lifecycle node to become active: %s", name.c_str());
       clients.emplace_back(name, client_node_->create_client<GetState>(name + "/get_state"));
     }
 
-    const auto deadline =
-        std::chrono::steady_clock::now() + std::chrono::duration<double>(run_config_.lifecycle_timeout_sec);
+    const auto deadline = std::chrono::steady_clock::now() +
+                std::chrono::duration<double>(run_config_.launch_readiness.lifecycle_timeout_sec);
     std::string waiting_for;
     while (rclcpp::ok(node_->get_node_base_interface()->get_context()) && std::chrono::steady_clock::now() < deadline)
     {

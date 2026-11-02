@@ -260,9 +260,22 @@ definition:
       value: "true"
     - key: autostart
       value: "false"
-  lifecycle_readiness:
-    nodes: [/planner_server, /bt_navigator]
-    timeout_sec: 45.0
+  launch_readiness:
+    lifecycle:
+      nodes: [/planner_server, /bt_navigator]
+      timeout_sec: 45.0
+    action:
+      name: navigate_to_pose
+      type: nav2_msgs/action/NavigateToPose
+      timeout: 12.0
+    service:
+      name: clear_costmap
+      type: std_srvs/srv/Empty
+      timeout: 13.0
+    topic:
+      name: scan
+      type: sensor_msgs/msg/LaserScan
+      timeout: 14.0
 )";
 
   const std::string nav2_waypoint_interface_yaml = R"(
@@ -307,9 +320,10 @@ description: Invalid readiness timeout.
 implements: test_capabilities/ZFailingLaunch
 runner: demo.launch.py
 definition:
-  lifecycle_readiness:
-    nodes: [test_node]
-    timeout_sec: -1
+  launch_readiness:
+    lifecycle:
+      nodes: [test_node]
+      timeout_sec: -1
 )";
   const std::string dependent_interface_yaml = R"(
 name: Dependent
@@ -342,8 +356,17 @@ depends_on:
   assert(nav2_launch_runner_opts.launch_parameters[0].value == "true");
   assert(nav2_launch_runner_opts.launch_parameters[1].key == "autostart");
   assert(nav2_launch_runner_opts.launch_parameters[1].value == "false");
-  assert(nav2_launch_runner_opts.lifecycle_nodes == std::vector<std::string>({ "/planner_server", "/bt_navigator" }));
-  assert(nav2_launch_runner_opts.lifecycle_timeout_sec == 45.0);
+  assert(nav2_launch_runner_opts.launch_readiness.lifecycle_nodes == std::vector<std::string>({ "/planner_server", "/bt_navigator" }));
+  assert(nav2_launch_runner_opts.launch_readiness.lifecycle_timeout_sec == 45.0);
+  assert(nav2_launch_runner_opts.launch_readiness.action.name == "navigate_to_pose");
+  assert(nav2_launch_runner_opts.launch_readiness.action.type == "nav2_msgs/action/NavigateToPose");
+  assert(nav2_launch_runner_opts.launch_readiness.action.timeout == 12.0);
+  assert(nav2_launch_runner_opts.launch_readiness.service.name == "clear_costmap");
+  assert(nav2_launch_runner_opts.launch_readiness.service.type == "std_srvs/srv/Empty");
+  assert(nav2_launch_runner_opts.launch_readiness.service.timeout == 13.0);
+  assert(nav2_launch_runner_opts.launch_readiness.topic.name == "scan");
+  assert(nav2_launch_runner_opts.launch_readiness.topic.type == "sensor_msgs/msg/LaserScan");
+  assert(nav2_launch_runner_opts.launch_readiness.topic.timeout == 14.0);
 
   capabilities2_server::CapabilitiesAPI api;
   auto node = std::make_shared<rclcpp::Node>("capabilities2_server_runtime_test");

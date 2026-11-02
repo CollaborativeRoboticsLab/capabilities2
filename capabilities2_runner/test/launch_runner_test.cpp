@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
 
 #include <capabilities2_events/event_base.hpp>
 #include <capabilities2_runner/launch_runner.hpp>
@@ -186,8 +187,8 @@ capabilities2_runner::runner_opts readiness_config()
   config.provider = "demo_launch_provider";
   config.runner = "demo.launch.py";
   config.launch_parameters.push_back({ "namespace", "readiness_test" });
-  config.lifecycle_nodes = { "nav", "/readiness_test/planner" };
-  config.lifecycle_timeout_sec = 3.0;
+  config.launch_readiness.lifecycle_nodes = { "nav", "/readiness_test/planner" };
+  config.launch_readiness.lifecycle_timeout_sec = 3.0;
   return config;
 }
 
@@ -284,7 +285,7 @@ TEST_F(LaunchRunnerTest, TimesOutAndCancelsLaunchWhenNodeRemainsInactive)
   TestableLaunchRunner runner;
   runner.enable_events(events);
   auto config = readiness_config();
-  config.lifecycle_timeout_sec = 0.5;
+  config.launch_readiness.lifecycle_timeout_sec = 0.5;
 
   EXPECT_THROW(runner.start(node, config, "bond"), capabilities2_runner::runner_exception);
   EXPECT_GT(environment.request_count.load(), 0);
@@ -300,7 +301,7 @@ TEST_F(LaunchRunnerTest, StartsWithoutLifecycleReadinessConfiguration)
   node->declare_parameter("launch_action_name", "/test_launch_readiness");
   TestableLaunchRunner runner;
   auto config = readiness_config();
-  config.lifecycle_nodes.clear();
+  config.launch_readiness.lifecycle_nodes.clear();
 
   EXPECT_NO_THROW(runner.start(node, config, "bond"));
   EXPECT_EQ(environment.request_count.load(), 0);
@@ -314,8 +315,8 @@ TEST_F(LaunchRunnerTest, TimesOutWhenLifecycleServiceIsMissing)
   node->declare_parameter("launch_action_name", "/test_launch_readiness");
   TestableLaunchRunner runner;
   auto config = readiness_config();
-  config.lifecycle_nodes = { "missing" };
-  config.lifecycle_timeout_sec = 0.4;
+  config.launch_readiness.lifecycle_nodes = { "missing" };
+  config.launch_readiness.lifecycle_timeout_sec = 0.4;
 
   EXPECT_THROW(runner.start(node, config, "bond"), capabilities2_runner::runner_exception);
   EXPECT_EQ(environment.cancel_count.load(), 1);
@@ -330,8 +331,8 @@ TEST_F(LaunchRunnerTest, AcceptsLifecycleResponsesSlowerThanPollingInterval)
   node->declare_parameter("launch_action_name", "/test_launch_readiness");
   TestableLaunchRunner runner;
   auto config = readiness_config();
-  config.lifecycle_nodes = { "nav" };
-  config.lifecycle_timeout_sec = 2.0;
+  config.launch_readiness.lifecycle_nodes = { "nav" };
+  config.launch_readiness.lifecycle_timeout_sec = 2.0;
 
   EXPECT_NO_THROW(runner.start(node, config, "bond"));
   EXPECT_EQ(environment.request_count.load(), 1);
@@ -346,7 +347,7 @@ TEST_F(LaunchRunnerTest, CleansUpExecutorWhenCancellationIsRejected)
   node->declare_parameter("launch_action_name", "/test_launch_readiness");
   TestableLaunchRunner runner;
   auto config = readiness_config();
-  config.lifecycle_nodes.clear();
+  config.launch_readiness.lifecycle_nodes.clear();
 
   runner.start(node, config, "bond");
   EXPECT_THROW(runner.stop("bond"), capabilities2_runner::runner_exception);
@@ -374,6 +375,150 @@ TEST_F(LaunchRunnerTest, FailsEarlyWhenLaunchAbortsDuringReadiness)
   EXPECT_THROW(started.get(), capabilities2_runner::runner_exception);
   ASSERT_EQ(events->observed_events.size(), 1U);
   EXPECT_EQ(events->observed_events.front().event_code, capabilities2_msgs::msg::CapabilityEventCode::FAILED);
+}
+
+TEST_F(LaunchRunnerTest, WaitsForActionServiceAndFirstTopicMessage)
+{
+  FakeLaunchEnvironment environment;
+  auto publisher = environment.node->create_publisher<std_msgs::msg::String>(
+      "/readiness_test/status", rclcpp::SensorDataQoS());
+  auto node = std::make_shared<rclcpp::Node>("endpoint_readiness_test");
+  node->declare_parameter("launch_action_name", "/test_launch_readiness");
+  TestableLaunchRunner runner;
+  auto config = readiness_config();
+  config.launch_readiness.lifecycle_nodes.clear();
+  config.launch_readiness.action = { "/test_launch_readiness", "capabilities2_msgs/action/Launch", 2.0 };
+  config.launch_readiness.service = { "nav/get_state", "lifecycle_msgs/srv/GetState", 2.0 };
+  config.launch_readiness.topic = { "status", "std_msgs/msg/String", 2.0 };
+
+  auto started = std::async(std::launch::async, [&]() { runner.start(node, config, "bond"); });
+  EXPECT_EQ(started.wait_for(std::chrono::milliseconds(400)), std::future_status::timeout);
+  std_msgs::msg::String message;
+  message.data = "ready";
+  publisher->publish(message);
+  EXPECT_NO_THROW(started.get());
+  runner.stop("bond");
+}
+
+TEST_F(LaunchRunnerTest, ReceivesTopicMessageWhileWaitingForLifecycle)
+{
+  FakeLaunchEnvironment environment;
+  auto publisher = environment.node->create_publisher<std_msgs::msg::String>(
+      "/readiness_test/status", rclcpp::SensorDataQoS());
+  auto node = std::make_shared<rclcpp::Node>("early_topic_readiness_test");
+  node->declare_parameter("launch_action_name", "/test_launch_readiness");
+  TestableLaunchRunner runner;
+  auto config = readiness_config();
+  config.launch_readiness.lifecycle_nodes = { "nav" };
+  config.launch_readiness.topic = { "status", "std_msgs/msg/String", 1.0 };
+
+  auto started = std::async(std::launch::async, [&]() { runner.start(node, config, "bond"); });
+  for (int attempt = 0; attempt < 30 && publisher->get_subscription_count() == 0; ++attempt)
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  ASSERT_GT(publisher->get_subscription_count(), 0U);
+  publisher->publish(std_msgs::msg::String());
+  std::this_thread::sleep_for(std::chrono::milliseconds(200));
+  EXPECT_EQ(started.wait_for(std::chrono::milliseconds(0)), std::future_status::timeout);
+  environment.nav_state = lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE;
+  EXPECT_NO_THROW(started.get());
+  runner.stop("bond");
+}
+
+TEST_F(LaunchRunnerTest, MissingEndpointsTimeoutAndCancelLaunch)
+{
+  for (const std::string kind : { "action", "service", "topic" })
+  {
+    FakeLaunchEnvironment environment;
+    auto node = std::make_shared<rclcpp::Node>("missing_endpoint_" + kind);
+    node->declare_parameter("launch_action_name", "/test_launch_readiness");
+    TestableLaunchRunner runner;
+    auto config = readiness_config();
+    config.launch_readiness.lifecycle_nodes.clear();
+    if (kind == "action")
+      config.launch_readiness.action = { "missing", "capabilities2_msgs/action/Launch", 0.3 };
+    else if (kind == "service")
+      config.launch_readiness.service = { "missing", "lifecycle_msgs/srv/GetState", 0.3 };
+    else
+      config.launch_readiness.topic = { "missing", "std_msgs/msg/String", 0.3 };
+    EXPECT_THROW(runner.start(node, config, "bond"), capabilities2_runner::runner_exception) << kind;
+    EXPECT_EQ(environment.cancel_count.load(), 1) << kind;
+  }
+}
+
+TEST_F(LaunchRunnerTest, RejectsPartialEndpointAndInvalidTimeout)
+{
+  FakeLaunchEnvironment environment;
+  auto node = std::make_shared<rclcpp::Node>("invalid_endpoint_readiness_test");
+  node->declare_parameter("launch_action_name", "/test_launch_readiness");
+  auto config = readiness_config();
+  config.launch_readiness.lifecycle_nodes.clear();
+  config.launch_readiness.action = { "test", "", 1.0 };
+  TestableLaunchRunner partial_runner;
+  EXPECT_THROW(partial_runner.start(node, config, "bond"), capabilities2_runner::runner_exception);
+  config.launch_readiness.action = { "test", "capabilities2_msgs/action/Launch", 0.0 };
+  TestableLaunchRunner timeout_runner;
+  EXPECT_THROW(timeout_runner.start(node, config, "bond"), capabilities2_runner::runner_exception);
+  EXPECT_EQ(environment.cancel_count.load(), 0);
+}
+
+TEST_F(LaunchRunnerTest, RejectsEndpointsWithWrongTypes)
+{
+  for (const std::string kind : { "action", "service", "topic" })
+  {
+    FakeLaunchEnvironment environment;
+    auto publisher = environment.node->create_publisher<std_msgs::msg::String>(
+        "/readiness_test/status", rclcpp::SensorDataQoS());
+    auto node = std::make_shared<rclcpp::Node>("wrong_type_" + kind);
+    node->declare_parameter("launch_action_name", "/test_launch_readiness");
+    TestableLaunchRunner runner;
+    auto config = readiness_config();
+    config.launch_readiness.lifecycle_nodes.clear();
+    if (kind == "action")
+      config.launch_readiness.action = { "/test_launch_readiness", "capabilities2_msgs/action/Capability", 0.4 };
+    else if (kind == "service")
+      config.launch_readiness.service = { "nav/get_state", "std_srvs/srv/Empty", 0.4 };
+    else
+      config.launch_readiness.topic = { "status", "std_msgs/msg/Bool", 0.4 };
+    EXPECT_THROW(runner.start(node, config, "bond"), capabilities2_runner::runner_exception) << kind;
+    EXPECT_EQ(environment.cancel_count.load(), 1) << kind;
+  }
+}
+
+TEST_F(LaunchRunnerTest, RejectsUnavailableMessageType)
+{
+  FakeLaunchEnvironment environment;
+  auto node = std::make_shared<rclcpp::Node>("invalid_message_type_test");
+  node->declare_parameter("launch_action_name", "/test_launch_readiness");
+  auto config = readiness_config();
+  config.launch_readiness.lifecycle_nodes.clear();
+  config.launch_readiness.topic = { "status", "nonexistent_interfaces/msg/Missing", 1.0 };
+  TestableLaunchRunner runner;
+  EXPECT_THROW(runner.start(node, config, "bond"), capabilities2_runner::runner_exception);
+  EXPECT_EQ(environment.cancel_count.load(), 0);
+}
+
+TEST_F(LaunchRunnerTest, FailsEarlyWhenLaunchAbortsDuringEndpointWait)
+{
+  FakeLaunchEnvironment environment;
+  auto node = std::make_shared<rclcpp::Node>("endpoint_abort_test");
+  node->declare_parameter("launch_action_name", "/test_launch_readiness");
+  auto config = readiness_config();
+  config.launch_readiness.lifecycle_nodes.clear();
+  config.launch_readiness.topic = { "missing", "std_msgs/msg/String", 5.0 };
+  TestableLaunchRunner runner;
+  auto started = std::async(std::launch::async, [&]() { runner.start(node, config, "bond"); });
+  for (int attempt = 0; attempt < 30; ++attempt)
+  {
+    {
+      std::lock_guard<std::mutex> lock(environment.goal_mutex);
+      if (environment.goal_handle)
+        break;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
+  environment.abort_goal();
+  EXPECT_EQ(started.wait_for(std::chrono::seconds(2)), std::future_status::ready);
+  EXPECT_THROW(started.get(), capabilities2_runner::runner_exception);
 }
 
 }  // namespace

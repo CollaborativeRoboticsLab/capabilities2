@@ -29,6 +29,32 @@ struct launch_parameter_model_t
   }
 };
 
+struct readiness_endpoint_model_t
+{
+  std::string name;
+  std::string type;
+  double timeout{ 60.0 };
+
+  void from_yaml(const YAML::Node& node)
+  {
+    if (node["name"] && !node["name"].IsNull())
+      name = node["name"].as<std::string>();
+    if (node["type"] && !node["type"].IsNull())
+      type = node["type"].as<std::string>();
+    if (node["timeout"] && !node["timeout"].IsNull())
+      timeout = node["timeout"].as<double>();
+  }
+
+  YAML::Node to_yaml() const
+  {
+    YAML::Node node;
+    node["name"] = name;
+    node["type"] = type;
+    node["timeout"] = timeout;
+    return node;
+  }
+};
+
 /**
  * @brief defineable base
  *
@@ -45,6 +71,9 @@ struct defineable_base_t
   std::vector<launch_parameter_model_t> launch_parameters;
   std::vector<std::string> lifecycle_nodes;
   double lifecycle_timeout_sec{ 60.0 };
+  readiness_endpoint_model_t action_readiness;
+  readiness_endpoint_model_t service_readiness;
+  readiness_endpoint_model_t topic_readiness;
   std::vector<resource_model_t> runtime__input_parameters;
   std::vector<resource_model_t> runtime__output_parameters;
 
@@ -92,18 +121,29 @@ struct defineable_base_t
       }
     }
 
-    if (def_node["lifecycle_readiness"])
+    const auto readiness = def_node["launch_readiness"];
+    if (readiness && readiness["lifecycle"])
     {
       valid = true;
-      const auto readiness = def_node["lifecycle_readiness"];
-      if (readiness["nodes"])
+      const auto lifecycle = readiness["lifecycle"];
+      if (lifecycle["nodes"])
       {
-        lifecycle_nodes = readiness["nodes"].as<std::vector<std::string>>();
+        lifecycle_nodes = lifecycle["nodes"].as<std::vector<std::string>>();
       }
-      if (readiness["timeout_sec"])
+      if (lifecycle["timeout_sec"])
       {
-        lifecycle_timeout_sec = readiness["timeout_sec"].as<double>();
+        lifecycle_timeout_sec = lifecycle["timeout_sec"].as<double>();
       }
+    }
+    if (readiness)
+    {
+      if (readiness["action"] && !readiness["action"].IsNull())
+        action_readiness.from_yaml(readiness["action"]);
+      if (readiness["service"] && !readiness["service"].IsNull())
+        service_readiness.from_yaml(readiness["service"]);
+      if (readiness["topic"] && !readiness["topic"].IsNull())
+        topic_readiness.from_yaml(readiness["topic"]);
+      valid = true;
     }
 
     // get the runtime parameters
@@ -173,9 +213,15 @@ struct defineable_base_t
 
     if (!lifecycle_nodes.empty())
     {
-      node["definition"]["lifecycle_readiness"]["nodes"] = lifecycle_nodes;
-      node["definition"]["lifecycle_readiness"]["timeout_sec"] = lifecycle_timeout_sec;
+      node["definition"]["launch_readiness"]["lifecycle"]["nodes"] = lifecycle_nodes;
+      node["definition"]["launch_readiness"]["lifecycle"]["timeout_sec"] = lifecycle_timeout_sec;
     }
+    if (!action_readiness.name.empty() || !action_readiness.type.empty())
+      node["definition"]["launch_readiness"]["action"] = action_readiness.to_yaml();
+    if (!service_readiness.name.empty() || !service_readiness.type.empty())
+      node["definition"]["launch_readiness"]["service"] = service_readiness.to_yaml();
+    if (!topic_readiness.name.empty() || !topic_readiness.type.empty())
+      node["definition"]["launch_readiness"]["topic"] = topic_readiness.to_yaml();
 
     // if runtime input parameters exist
     YAML::Node runtime_input_params;

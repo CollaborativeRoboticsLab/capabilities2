@@ -72,16 +72,31 @@ namespace capabilities2_runner
 
 The `LaunchRunner` inherits from `capabilities2_runner::NoTriggerRunner` and starts package-based or path-based launch files by sending a goal to the `capabilities2_launch_proxy` action server. Providers can therefore keep using `runner: package_name/file.launch.py` style entries when the launch server is running.
 
-Providers can optionally wait for lifecycle nodes to become active before startup completes:
+Providers can optionally wait for launch readiness before startup completes:
 
 ```yaml
 definition:
-  lifecycle_readiness:
-    nodes: [planner_server, bt_navigator]
-    timeout_sec: 60.0
+  launch_readiness:
+    lifecycle:
+      nodes: [planner_server, bt_navigator]
+      timeout_sec: 60.0
+    action:
+      name: navigate_to_pose
+      type: nav2_msgs/action/NavigateToPose
+      timeout: 60.0
+    service:
+      name: clear_costmap
+      type: nav2_msgs/srv/ClearEntireCostmap
+      timeout: 60.0
+    topic:
+      name: scan
+      type: sensor_msgs/msg/LaserScan
+      timeout: 60.0
 ```
 
-The timeout applies to the whole readiness check and defaults to 60 seconds. Relative node names use the launch `namespace` parameter when supplied, or the runner's global namespace otherwise; absolute names are unchanged. Without a node list, startup retains its existing behavior. A launch failure or readiness timeout fails startup and attempts to cancel the launch.
+Each section is optional. Lifecycle readiness waits for all listed nodes to be active, with one timeout for the list. Action and service readiness wait for a server of the specified type; topic readiness waits for an actual message, not just a publisher. Endpoint types use ROS interface names and require installed type support. Endpoint sections with both name and type blank are disabled; otherwise both are required. Timeouts default to 60 seconds and must be positive and finite. Checks run in the order shown, with a separate timeout for each section.
+
+Relative names use the launch `namespace` parameter when supplied, or the runner's global namespace otherwise; absolute names are unchanged. The topic subscription is created before the launch goal is sent, and uses best-effort, volatile sensor-data QoS. It can receive reliable or best-effort publishers, but does not request historical transient-local messages. A one-shot publication can still be missed before ROS discovery completes. A launch failure or readiness timeout fails startup and attempts to cancel the launch.
 
 ### Creating a Custom runner
 

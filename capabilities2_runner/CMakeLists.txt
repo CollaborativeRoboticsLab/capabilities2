@@ -61,6 +61,7 @@ install(DIRECTORY providers
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(std_msgs REQUIRED)
 
   ament_add_gtest(launch_runner_test
     test/launch_runner_test.cpp
@@ -72,6 +73,7 @@ if(BUILD_TESTING)
       rclcpp
       rclcpp_action
       lifecycle_msgs
+      std_msgs
       capabilities2_msgs
       capabilities2_events
     )
