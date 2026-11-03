@@ -4,8 +4,6 @@ capabilities2_server launch file
 
 import os
 
-import yaml
-
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
@@ -27,15 +25,12 @@ def generate_launch_description():
         'capabilities.yaml'
     )
 
-    with open(server_config, encoding='utf-8') as config:
-        proxy_parameters = yaml.safe_load(config)['/**']['ros__parameters']['launch_proxy']
-
     # create cap node
     capabilities2 = Node(
         package='capabilities2_server',
         executable='capabilities2_server_node',
         name='capabilities',
-        parameters=[server_config],
+        parameters=[LaunchConfiguration('capabilities_config')],
         output='screen',
         arguments=['--ros-args', '--log-level', 'info']
     )
@@ -44,7 +39,7 @@ def generate_launch_description():
         package='capabilities2_launch_proxy',
         executable='capabilities2_launch_proxy',
         name='capabilities2_launch_proxy',
-        parameters=[proxy_parameters],
+        parameters=[LaunchConfiguration('capabilities_config')],
         condition=IfCondition(LaunchConfiguration('enable_launch_proxy')),
         output='screen',
         arguments=['--ros-args', '--log-level', 'info']
@@ -53,6 +48,7 @@ def generate_launch_description():
     # return
     return LaunchDescription([
         DeclareLaunchArgument('enable_launch_proxy', default_value='true'),
+        DeclareLaunchArgument('capabilities_config', default_value=server_config),
         capabilities2,
         launch_proxy,
     ])

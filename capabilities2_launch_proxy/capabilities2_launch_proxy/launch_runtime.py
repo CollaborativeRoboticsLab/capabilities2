@@ -27,17 +27,19 @@ class LaunchRuntime:
         self.resource_publisher = self.node.create_publisher(LaunchResourceList, '~/resources', 10)
         self.resource_timer = self.node.create_timer(0.5, self.publish_resource_snapshot)
         self.mirror_child_logs_to_rosout = bool(
-            self.node.get_parameter('mirror_child_logs_to_rosout').value)
+            self.node.get_parameter('launch_proxy.mirror_child_logs_to_rosout').value)
+        self.feedback_child_log_enabled = bool(
+            self.node.get_parameter('launch_proxy.feedback_child_log_enabled').value)
         self.feedback_child_log_level = str(
-            self.node.get_parameter('feedback_child_log_level').value or 'error').lower()
+            self.node.get_parameter('launch_proxy.feedback_child_log_level').value or 'error').lower()
         self.override_output_method_to_log = bool(
-            self.node.get_parameter('override_output_method_to_log').value)
+            self.node.get_parameter('launch_proxy.override_output_method_to_log').value)
         self.suppress_child_process_output_to_screen = bool(
-            self.node.get_parameter('suppress_child_process_output_to_screen').value)
+            self.node.get_parameter('launch_proxy.suppress_child_process_output_to_screen').value)
         self.expand_opaque_functions_for_tracking = bool(
-            self.node.get_parameter('expand_opaque_functions_for_tracking').value)
+            self.node.get_parameter('launch_proxy.expand_opaque_functions_for_tracking').value)
         self.stop_wait_timeout_sec = float(
-            self.node.get_parameter('stop_wait_timeout_sec').value)
+            self.node.get_parameter('launch_proxy.stop_wait_timeout_sec').value)
 
         launch_output_override = self.get_launch_process_output_override()
         if launch_output_override is not None:
@@ -458,6 +460,9 @@ class LaunchRuntime:
         return 'info'
 
     def should_send_feedback_log(self, log_level: str) -> bool:
+        if not self.feedback_child_log_enabled:
+            return False
+
         threshold_order = {
             'debug': 10,
             'info': 20,

@@ -11,6 +11,7 @@ from capabilities2_msgs.action import Launch as LaunchAction
 from capabilities2_msgs.msg import LaunchParameter, LaunchResourceList
 from capabilities2_msgs.srv import Launch as LaunchService
 from rclpy.action import ActionClient
+from rclpy.parameter_client import AsyncParameterClient
 from std_msgs.msg import String
 
 
@@ -68,6 +69,43 @@ def _spin_until(predicate, node, timeout_sec):
         if predicate():
             return True
     return False
+
+
+def test_proxy_reads_namespaced_yaml_parameters(tmp_path):
+    config = tmp_path / 'capabilities.yaml'
+    config.write_text(
+        '/**:\n'
+        '  ros__parameters:\n'
+        '    launch_proxy:\n'
+        '      mirror_child_logs_to_rosout: true\n'
+        '      feedback_child_log_enabled: false\n'
+        '      feedback_child_log_level: warn\n'
+        '      stop_wait_timeout_sec: 3.5\n',
+        encoding='utf-8',
+    )
+    rclpy.init()
+    try:
+        with ServerHarness(['--ros-args', '--params-file', str(config)]) as harness:
+            node = rclpy.create_node('capabilities2_launch_proxy_parameter_test')
+            try:
+                client = AsyncParameterClient(node, harness.node_name)
+                assert client.wait_for_services(timeout_sec=5.0)
+                future = client.get_parameters([
+                    'launch_proxy.mirror_child_logs_to_rosout',
+                    'launch_proxy.feedback_child_log_enabled',
+                    'launch_proxy.feedback_child_log_level',
+                    'launch_proxy.stop_wait_timeout_sec',
+                ])
+                rclpy.spin_until_future_complete(node, future, timeout_sec=5.0)
+                values = future.result().values
+                assert values[0].bool_value is True
+                assert values[1].bool_value is False
+                assert values[2].string_value == 'warn'
+                assert values[3].double_value == 3.5
+            finally:
+                node.destroy_node()
+    finally:
+        rclpy.shutdown()
 
 
 def test_action_resolves_package_fields_and_exposes_node():
@@ -400,7 +438,7 @@ def test_action_feedback_returns_error_logs_without_mirroring_child_output_to_se
     rclpy.init()
     with ServerHarness([
         '--ros-args',
-        '-p', 'suppress_child_process_output_to_screen:=true',
+        '-p', 'launch_proxy.suppress_child_process_output_to_screen:=true',
     ]) as harness:
         client_node = rclpy.create_node('capabilities2_launch_proxy_error_feedback_client')
 
@@ -455,11 +493,51 @@ def test_action_feedback_returns_error_logs_without_mirroring_child_output_to_se
     assert '[ERROR] [test_error_logger]: simulated error from launched process' not in harness.output
 
 
+def test_disabling_child_logs_preserves_action_feedback_and_rosout_mirroring():
+    rclpy.init()
+    with ServerHarness([
+        '--ros-args',
+        '-p', 'launch_proxy.feedback_child_log_enabled:=false',
+        '-p', 'launch_proxy.mirror_child_logs_to_rosout:=true',
+        '-p', 'launch_proxy.suppress_child_process_output_to_screen:=true',
+    ]) as harness:
+        client_node = rclpy.create_node('capabilities2_launch_proxy_no_log_feedback_client')
+        try:
+            action_client = ActionClient(client_node, LaunchAction, harness.action_name)
+            assert action_client.wait_for_server(timeout_sec=5.0)
+            goal = LaunchAction.Goal()
+            goal.reference_name = 'no-log-feedback'
+            goal.package_name = 'capabilities2_launch_proxy'
+            goal.launch_file_name = 'package_resolved_error_test.launch.py'
+            feedback_messages = []
+            send_goal_future = action_client.send_goal_async(
+                goal,
+                feedback_callback=lambda feedback: feedback_messages.append(feedback.feedback),
+            )
+            rclpy.spin_until_future_complete(client_node, send_goal_future, timeout_sec=10.0)
+            goal_handle = send_goal_future.result()
+            assert goal_handle is not None and goal_handle.accepted
+            assert _spin_until(lambda: len(feedback_messages) >= 4, client_node, timeout_sec=10.0)
+            assert any(message.state for message in feedback_messages)
+            assert all(not message.log_text for message in feedback_messages)
+            cancel_future = goal_handle.cancel_goal_async()
+            rclpy.spin_until_future_complete(client_node, cancel_future, timeout_sec=10.0)
+            result_future = goal_handle.get_result_async()
+            rclpy.spin_until_future_complete(client_node, result_future, timeout_sec=10.0)
+        finally:
+            client_node.destroy_node()
+            if rclpy.ok():
+                rclpy.shutdown()
+
+    assert '[test_error_logger]: simulated error from launched process' in harness.output
+    assert all(not message.log_text for message in feedback_messages)
+
+
 def test_action_can_optionally_mirror_child_output_to_rosout():
     rclpy.init()
     with ServerHarness([
         '--ros-args',
-        '-p', 'mirror_child_logs_to_rosout:=true',
+        '-p', 'launch_proxy.mirror_child_logs_to_rosout:=true',
     ]) as harness:
         client_node = rclpy.create_node('capabilities2_launch_proxy_error_feedback_client_with_rosout')
 

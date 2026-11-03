@@ -23,6 +23,7 @@ class ContainerEntity:
 
 def make_runtime(feedback_child_log_level='error'):
     runtime = LaunchRuntime.__new__(LaunchRuntime)
+    runtime.feedback_child_log_enabled = True
     runtime.feedback_child_log_level = feedback_child_log_level
     runtime.override_output_method_to_log = False
     runtime.suppress_child_process_output_to_screen = False
@@ -201,6 +202,10 @@ def test_log_classification_and_feedback_thresholds_follow_configured_level():
     assert runtime.classify_log_level('plain stdout line', is_stderr=False) == 'info'
     assert runtime.should_send_feedback_log('warn') is True
     assert runtime.should_send_feedback_log('info') is False
+
+    runtime.feedback_child_log_enabled = False
+    assert runtime.should_send_feedback_log('fatal') is False
+    assert runtime.should_send_feedback_log('warn') is False
 
 
 def test_stop_launch_waits_for_terminal_event_before_reporting_success():

@@ -3,7 +3,6 @@ from pathlib import Path
 
 from launch import LaunchContext
 from launch_ros.utilities import evaluate_parameters
-import yaml
 
 
 def test_combined_launch(monkeypatch):
@@ -14,15 +13,17 @@ def test_combined_launch(monkeypatch):
     spec.loader.exec_module(launch_module)
     monkeypatch.setattr(launch_module, 'get_package_share_directory', lambda _: str(package_dir))
 
-    argument, server, proxy = launch_module.generate_launch_description().entities
+    argument, config_argument, server, proxy = launch_module.generate_launch_description().entities
     assert argument.name == 'enable_launch_proxy'
     assert argument.default_value[0].text == 'true'
-
-    with (package_dir / 'config' / 'capabilities.yaml').open(encoding='utf-8') as config:
-        expected = yaml.safe_load(config)['/**']['ros__parameters']['launch_proxy']
-    assert evaluate_parameters(LaunchContext(), proxy._Node__parameters)[0] == expected
+    assert config_argument.name == 'capabilities_config'
 
     context = LaunchContext()
+    context.launch_configurations['capabilities_config'] = str(package_dir / 'config' / 'capabilities.yaml')
+    assert evaluate_parameters(context, server._Node__parameters) == evaluate_parameters(
+        context, proxy._Node__parameters)
+    assert str(evaluate_parameters(context, proxy._Node__parameters)[0]) == context.launch_configurations['capabilities_config']
+
     context.launch_configurations['enable_launch_proxy'] = 'true'
     assert proxy.condition.evaluate(context)
     context.launch_configurations['enable_launch_proxy'] = 'false'

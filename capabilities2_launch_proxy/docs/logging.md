@@ -19,20 +19,23 @@ By default:
 
 This keeps the action feedback useful without duplicating every child log line in the proxy terminal.
 
+Set `launch_proxy.feedback_child_log_enabled` to `false` in the shared configuration to disable
+child log forwarding. Launch state feedback and optional ROS log mirroring are unaffected.
+
 ### Optional ROS log mirroring
 
 Set the following parameter to enable server-side ROS log mirroring of child output:
 
 ```bash
 ros2 run capabilities2_launch_proxy capabilities2_launch_proxy \
-	--ros-args -p mirror_child_logs_to_rosout:=true
+	--ros-args -p launch_proxy.mirror_child_logs_to_rosout:=true
 ```
 
 You can also control the minimum log level forwarded into feedback:
 
 ```bash
 ros2 run capabilities2_launch_proxy capabilities2_launch_proxy \
-	--ros-args -p feedback_child_log_level:=warn
+	--ros-args -p launch_proxy.feedback_child_log_level:=warn
 ```
 
 Supported values follow the server's internal thresholds:
@@ -47,7 +50,7 @@ You can also override child process output handling at load time:
 
 ```bash
 ros2 run capabilities2_launch_proxy capabilities2_launch_proxy \
-	--ros-args -p override_output_method_to_log:=true
+	--ros-args -p launch_proxy.override_output_method_to_log:=true
 ```
 
 When `override_output_method_to_log` is true, the proxy temporarily exports
@@ -59,7 +62,7 @@ log forwarding, use:
 
 ```bash
 ros2 run capabilities2_launch_proxy capabilities2_launch_proxy \
-	--ros-args -p suppress_child_process_output_to_screen:=true
+	--ros-args -p launch_proxy.suppress_child_process_output_to_screen:=true
 ```
 
 For CLI callers, use `ros2 action send_goal --feedback ...` so forwarded child log lines appear in the

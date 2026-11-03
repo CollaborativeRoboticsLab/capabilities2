@@ -16,6 +16,7 @@ from capabilities2_msgs.srv import Launch as LaunchService
 class CapabilitiesLaunchServer(Node):
     RUNTIME_PARAMETER_DEFAULTS = {
         'mirror_child_logs_to_rosout': False,
+        'feedback_child_log_enabled': True,
         'feedback_child_log_level': 'error',
         'override_output_method_to_log': False,
         'suppress_child_process_output_to_screen': False,
@@ -55,11 +56,11 @@ class CapabilitiesLaunchServer(Node):
 
     def declare_runtime_parameters(self) -> None:
         for name, default_value in self.RUNTIME_PARAMETER_DEFAULTS.items():
-            self.declare_parameter(name, default_value)
+            self.declare_parameter(f'launch_proxy.{name}', default_value)
 
     def get_runtime_parameters(self) -> dict:
         return {
-            name: self.get_parameter(name).value
+            name: self.get_parameter(f'launch_proxy.{name}').value
             for name in self.RUNTIME_PARAMETER_DEFAULTS
         }
 

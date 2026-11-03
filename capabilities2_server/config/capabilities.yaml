@@ -22,6 +22,9 @@
       # Mirror child process output to the proxy's ROS logger.
       mirror_child_logs_to_rosout: false
 
+      # Enable or disable child process log lines in action feedback.
+      feedback_child_log_enabled: true
+
       # Minimum child log level forwarded in action feedback: debug, info, warn, error, or fatal.
       feedback_child_log_level: error
 
