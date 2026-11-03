@@ -18,6 +18,7 @@ ros2 launch capabilities2_server capabilities2_server.launch.py
 ```
 
 Refer `capabilities2_server/config/capabilities.yaml` for the default node parameters loaded by the launch file.
+The launch proxy starts by default; disable it with `enable_launch_proxy:=false`.
 
 ## System dependencies
 

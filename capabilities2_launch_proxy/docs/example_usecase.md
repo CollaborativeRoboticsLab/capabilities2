@@ -7,7 +7,7 @@ If the workspace has `turtlebot4_maze_sim` from [CollaborativeRoboticsLab/turtle
 ```bash
 source /opt/ros/jazzy/setup.bash
 source install/setup.bash
-ros2 launch capabilities2_launch_proxy server.launch.py
+ros2 launch capabilities2_server capabilities2_server.launch.py
 ```
 
 ## Action-based launch goals

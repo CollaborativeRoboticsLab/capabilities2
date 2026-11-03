@@ -6,7 +6,7 @@ You can also start it through the package launch file:
 
 ```bash
 source install/setup.bash
-ros2 launch capabilities2_launch_proxy server.launch.py
+ros2 launch capabilities2_server capabilities2_server.launch.py
 ```
 
 ## Sending launch goals

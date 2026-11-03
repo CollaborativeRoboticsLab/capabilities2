@@ -14,7 +14,7 @@ By default:
 
 - the server publishes launch state in action feedback,
 - child process logs at `error` level and above are forwarded into feedback,
-- `server.launch.py` suppresses child process stdout and stderr on the proxy terminal,
+- the combined server launch suppresses child process stdout and stderr on the proxy terminal,
 - child process logs are not additionally mirrored through the server node's ROS logger.
 
 This keeps the action feedback useful without duplicating every child log line in the proxy terminal.
@@ -58,8 +58,8 @@ To explicitly keep child stdout and stderr off the proxy terminal while preservi
 log forwarding, use:
 
 ```bash
-ros2 launch capabilities2_launch_proxy server.launch.py \
-	suppress_child_process_output_to_screen:=true
+ros2 run capabilities2_launch_proxy capabilities2_launch_proxy \
+	--ros-args -p suppress_child_process_output_to_screen:=true
 ```
 
 For CLI callers, use `ros2 action send_goal --feedback ...` so forwarded child log lines appear in the

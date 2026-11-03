@@ -30,7 +30,7 @@ You can also start it through the package launch file:
 
 ```bash
 source install/setup.bash
-ros2 launch capabilities2_launch_proxy server.launch.py
+ros2 launch capabilities2_server capabilities2_server.launch.py
 ```
 
 ### Sending launch action goals
@@ -90,6 +90,6 @@ The server accepts action cancellation and then:
 - [Usage](./docs/usage.md) for running the server and sending launch goals.
 - [Logging](./docs/logging.md) for child-process log forwarding and optional ROS log mirroring.
 - [Example use case](./docs/example_usecase.md) for a TurtleBot4 simulation launch through the action server.
-- [ROS parameters](./docs/ros_param.md) for the information and [configuration](./config/launch_proxy.yaml) or actual launch file overrides.
+- [ROS parameters](./docs/ros_param.md) for parameter information and the shared configuration.
 - [Limitations](./docs/limitations.md) for current known limitations of the package.
 - [Testing](./docs/testing.md) for the included test suite and how to run it.

@@ -1,10 +1,38 @@
 /**:
   ros__parameters:
-    loop_rate: 5.0 # Hz
+    # Configured loop rate in Hz; currently stored but not used to control a loop.
+    loop_rate: 5.0
+
+    # SQLite database used to store capability specifications.
     db_file: ~/.ros/capabilities/capabilities.sqlite3
-    rebuild: true # Set to true to rebuild the database
+
+    # Delete and rebuild the database on server startup.
+    rebuild: true
+
+    # Maximum number of capability events retained in memory; nonpositive values use 100.
     event_history_size: 100
-    package_paths: # paths to search for capabilities
+
+    # Paths searched for packages containing capability specifications.
+    package_paths:
       - install/
-      - /opt/ros/humble/share
       - /opt/ros/jazzy/share
+
+    # The combined server launch passes these settings to the launch proxy.
+    launch_proxy:
+      # Mirror child process output to the proxy's ROS logger.
+      mirror_child_logs_to_rosout: false
+
+      # Minimum child log level forwarded in action feedback: debug, info, warn, error, or fatal.
+      feedback_child_log_level: error
+
+      # Override child launch process output to use launch-managed logging.
+      override_output_method_to_log: true
+
+      # Suppress child stdout and stderr on the proxy terminal; takes precedence over the override above.
+      suppress_child_process_output_to_screen: true
+
+      # Expand opaque functions when discovering processes for tracking.
+      expand_opaque_functions_for_tracking: true
+      
+      # Maximum time in seconds to wait for a launch to stop.
+      stop_wait_timeout_sec: 10.0
