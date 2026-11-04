@@ -80,6 +80,8 @@ public:
     // start execution thread
     {
       std::scoped_lock lock(mutex_);
+      if (execution_should_stop_)
+        throw runner_exception("cannot trigger a stopping runner");
       // TODO: consider emitting on start event here
       // emit_event(bond_id, capabilities2_msgs::msg::CapabilityEventCode::ON_STARTED, updated_on_started(parameters));
       execution_thread_pool_[thread_id] = std::thread(&ThreadTriggerRunner::execution, this, parameters, thread_id);
@@ -109,27 +111,22 @@ protected:
    */
   virtual void execution(capabilities2_events::EventParameters parameters, const std::string& thread_id) = 0;
 
-private:
+protected:
   /** */
   void stop_execution(std::chrono::milliseconds timeout = std::chrono::milliseconds(500))
   {
-    // signal listening threads to stop
-    execution_should_stop_ = true;
-
-    // try join in a non-blocking way and log if threads are not cleaned up properly
+    std::map<std::string, std::thread> threads;
     {
       std::scoped_lock lock(mutex_);
-      for (auto& [thread_id, exec_thread] : execution_thread_pool_)
+      execution_should_stop_ = true;
+      threads.swap(execution_thread_pool_);
+    }
+    for (auto& [thread_id, exec_thread] : threads)
+    {
+      if (exec_thread.joinable())
       {
-        if (exec_thread.joinable())
-        {
-          // TODO: FIX THIS FUTURE MICHAEL
-          exec_thread.join();
-        }
+        exec_thread.join();
       }
-
-      // clear the thread pool
-      execution_thread_pool_.clear();
     }
   }
 

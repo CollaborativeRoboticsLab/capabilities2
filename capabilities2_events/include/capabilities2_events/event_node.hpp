@@ -2,6 +2,7 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -67,8 +68,17 @@ public:
   void emit_event(const std::string& bond_id, const std::string& instance_id, const uint8_t& event_type,
                   capabilities2_events::EventParameters parameters = capabilities2_events::EventParameters())
   {
+    std::map<std::string, EventPipe> connections;
+    std::shared_ptr<EventBase> event_emitter;
+    capabilities2_msgs::msg::Capability source;
+    {
+      std::lock_guard<std::mutex> lock(connections_mutex_);
+      connections = connections_;
+      event_emitter = event_emitter_;
+      source = source_;
+    }
     // check if event emitter is set
-    if (!event_emitter_)
+    if (!event_emitter)
     {
       // No event emitter configured - silently skip
       // This allows runners to work without event system if needed
@@ -77,7 +87,7 @@ public:
 
     std::string ownership_id_for_observation;
 
-    for (const auto& [conn_id, connection] : connections_)
+    for (const auto& [conn_id, connection] : connections)
     {
       size_t first_pos = conn_id.find('/');
       size_t second_pos = conn_id.find('/', first_pos + 1);
@@ -93,10 +103,10 @@ public:
       }
     }
 
-    event_emitter_->publish_observed_event(ownership_id_for_observation, event_type, source_, instance_id);
+    event_emitter->publish_observed_event(ownership_id_for_observation, event_type, source, instance_id);
 
     // check each connection
-    for (const auto& [conn_id, connection] : connections_)
+    for (const auto& [conn_id, connection] : connections)
     {
       // extract bond_id from connection_id (format: "bond_id/instance_id/target_instance_id")
       size_t first_pos = conn_id.find('/');
@@ -132,7 +142,7 @@ public:
         // modifying execution of other nodes is not owned by this class
         // this lets the execution flow be made thread-safe
         // in the scope where the thread is owned
-        event_emitter_->emit(conn_id, connection.ownership_id, event_type, source_, target_with_params,
+        event_emitter->emit(conn_id, connection.ownership_id, event_type, source, target_with_params,
                              connection.callback);
       }
     }
@@ -146,6 +156,7 @@ protected:
    */
   void set_source(const capabilities2_msgs::msg::Capability& src)
   {
+    std::lock_guard<std::mutex> lock(connections_mutex_);
     source_ = src;
   }
 
@@ -158,6 +169,7 @@ protected:
    */
   void set_event_emitter(std::shared_ptr<EventBase> event_emitter)
   {
+    std::lock_guard<std::mutex> lock(connections_mutex_);
     event_emitter_ = event_emitter;
   }
 
@@ -180,6 +192,7 @@ protected:
                       const capabilities2_msgs::msg::CapabilityEventCode& type,
                       const capabilities2_msgs::msg::Capability& target, EventBase::event_callback_t event_cb)
   {
+    std::lock_guard<std::mutex> lock(connections_mutex_);
     // validate connection id
     if (connections_.find(connection_id) != connections_.end())
     {
@@ -210,6 +223,7 @@ protected:
    */
   void remove_connection(const std::string& connection_id)
   {
+    std::lock_guard<std::mutex> lock(connections_mutex_);
     // remove connection
     auto it = connections_.find(connection_id);
     if (it == connections_.end())
@@ -233,6 +247,7 @@ protected:
    */
   void clear_connections()
   {
+    std::lock_guard<std::mutex> lock(connections_mutex_);
     connections_.clear();
   }
 
@@ -243,6 +258,7 @@ protected:
    */
   std::vector<capabilities2_msgs::msg::CapabilityConnection> list_connections() const
   {
+    std::lock_guard<std::mutex> lock(connections_mutex_);
     std::vector<capabilities2_msgs::msg::CapabilityConnection> conns;
 
     for (const auto& [conn_id, connection] : connections_)
@@ -267,6 +283,7 @@ protected:
    */
   bool has_connection(const std::string& connection_id) const
   {
+    std::lock_guard<std::mutex> lock(connections_mutex_);
     return connections_.find(connection_id) != connections_.end();
   }
 
@@ -277,6 +294,7 @@ protected:
    */
   size_t connection_count() const
   {
+    std::lock_guard<std::mutex> lock(connections_mutex_);
     return connections_.size();
   }
 
@@ -305,6 +323,7 @@ protected:
    */
   bool is_event_emitter_set() const
   {
+    std::lock_guard<std::mutex> lock(connections_mutex_);
     return event_emitter_ != nullptr;
   }
 
@@ -324,5 +343,6 @@ private:
   // Key: connection_id (format: "bond_id/trigger_id")
   // Value: EventPipe with type, target, callback
   std::map<std::string, EventPipe> connections_;
+  mutable std::mutex connections_mutex_;
 };
 }  // namespace capabilities2_events

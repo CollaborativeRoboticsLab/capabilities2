@@ -6,6 +6,8 @@
 #include <unordered_set>
 #include <vector>
 #include <functional>
+#include <mutex>
+#include <utility>
 
 #include <tinyxml2.h>
 #include <yaml-cpp/yaml.h>
@@ -97,54 +99,61 @@ public:
    */
   bool start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider)
   {
+    std::lock_guard<std::recursive_mutex> lock(lifecycle_mutex_);
+    if (runner_cache_.running(capability))
+    {
+      const auto config = cap_db_->get_run_config(provider, capability);
+      auto existing = runner_configs_.find(capability);
+      if (runner_cache_.provider(capability) == provider && existing != runner_configs_.end() &&
+          existing->second == YAML::Dump(config.to_yaml()))
+      {
+        return true;
+      }
+      RCLCPP_WARN(logging_->get_logger(), "capability %s is already running with a different provider",
+                  capability.c_str());
+      return false;
+    }
+
     // return value
     bool value = true;
 
     // get the running model from the db
     models::running_model_t running = cap_db_->get_running(provider);
 
-    std::vector<std::string> bound_dependencies;
-    const auto release_dependencies = [&]() {
-      for (auto dependency = bound_dependencies.rbegin(); dependency != bound_dependencies.rend(); ++dependency)
-      {
-        unbind_dependency(*dependency);
-        if (!bond_cache_.exists(*dependency) && runner_cache_.running(*dependency))
-        {
-          stop_capability(*dependency);
-        }
-      }
-    };
+    std::vector<std::pair<std::string, std::string>> bound_dependencies;
 
-    // start all dependencies
-    // go through the running model and start the necessary dependencies
-    for (const auto& run : running.dependencies)
-    {
-      RCLCPP_INFO(logging_->get_logger(), "found dependency: %s", run.interface.c_str());
-
-      // make an internal 'use' bond for the capability dependency
-      bind_dependency(run.interface);
-      bound_dependencies.push_back(run.interface);
-
-      // add the runner to the cache
-      value = value and start_capability(node, run.interface, run.provider);
-      if (!value)
-      {
-        release_dependencies();
-        return false;
-      }
-    }
-
-    // get the provider specification for the capability
-    models::run_config_model_t run_config = cap_db_->get_run_config(provider, capability);
-
-    // create a new runner, this call implicitly starts the runner
-    // create a runner id which is the cap name to uniquely identify the runner
-    // this means only one runner per capability name
-    //
-    // TODO: consider the logic for multiple runners per capability
     try
     {
+      // start all dependencies
+      // go through the running model and start the necessary dependencies
+      for (const auto& run : running.dependencies)
+      {
+        RCLCPP_INFO(logging_->get_logger(), "found dependency: %s", run.interface.c_str());
+
+        // make an internal 'use' bond for the capability dependency
+        bound_dependencies.emplace_back(run.interface, bind_dependency(run.interface));
+
+        // add the runner to the cache
+        value = value and start_capability(node, run.interface, run.provider);
+        if (!value)
+        {
+          release_dependencies(bound_dependencies);
+          return false;
+        }
+      }
+
+      // get the provider specification for the capability
+      models::run_config_model_t run_config = cap_db_->get_run_config(provider, capability);
+
+      // create a new runner, this call implicitly starts the runner
+      // create a runner id which is the cap name to uniquely identify the runner
+      // this means only one runner per capability name
+      //
+      // TODO: consider the logic for multiple runners per capability
+      const auto serialized_config = YAML::Dump(run_config.to_yaml());
       runner_cache_.add_runner(node, capability, run_config, event_);
+      dependency_bonds_[capability] = std::move(bound_dependencies);
+      runner_configs_[capability] = serialized_config;
 
       // log
       RCLCPP_INFO(logging_->get_logger(), "started capability: %s with provider: %s", capability.c_str(),
@@ -152,10 +161,10 @@ public:
 
       return value and true;
     }
-    catch (const capabilities2_runner::runner_exception& e)
+    catch (const std::exception& e)
     {
       RCLCPP_WARN(logging_->get_logger(), "could not start runner: %s", e.what());
-      release_dependencies();
+      release_dependencies(bound_dependencies);
       return false;
     }
   }
@@ -168,34 +177,13 @@ public:
    */
   void stop_capability(const std::string& capability)
   {
+    std::lock_guard<std::recursive_mutex> lock(lifecycle_mutex_);
     // make sure provider exists
     // this can happen if dependencies fail to resolve in the first place
     if (!runner_cache_.running(capability))
     {
       RCLCPP_ERROR(logging_->get_logger(), "could not get provider for: %s", capability.c_str());
       return;
-    }
-
-    // get the provider from runner
-    std::string provider = runner_cache_.provider(capability);
-
-    // get the running model from the db
-    models::running_model_t running = cap_db_->get_running(provider);
-
-    // unbind and stop dependencies
-    // FIXME: this unrolls the dependency tree from the bottom up but should probably be top down
-    for (const auto& run : running.dependencies)
-    {
-      RCLCPP_INFO(logging_->get_logger(), "freeing dependency: %s of : %s", run.interface.c_str(), capability.c_str());
-
-      // remove the internal 'use' bond for the capability dependency
-      unbind_dependency(run.interface);
-
-      // stop the dependency if no more bonds
-      if (!bond_cache_.exists(run.interface))
-      {
-        stop_capability(run.interface);
-      }
     }
 
     // remove the runner
@@ -208,6 +196,15 @@ public:
     {
       RCLCPP_WARN(logging_->get_logger(), "could not stop runner: %s", e.what());
       return;
+    }
+
+    auto dependencies = dependency_bonds_.find(capability);
+    runner_configs_.erase(capability);
+    if (dependencies != dependency_bonds_.end())
+    {
+      auto bound_dependencies = std::move(dependencies->second);
+      dependency_bonds_.erase(dependencies);
+      release_dependencies(bound_dependencies);
     }
 
     // log
@@ -223,6 +220,25 @@ public:
    */
   void free_capability(const std::string& capability, const std::string& bond_id)
   {
+    std::lock_guard<std::recursive_mutex> lock(lifecycle_mutex_);
+    auto connections = connection_ids_.find(bond_id);
+    if (connections != connection_ids_.end())
+    {
+      auto& entries = connections->second;
+      for (auto entry = entries.begin(); entry != entries.end();)
+      {
+        if (entry->first == capability)
+        {
+          runner_cache_.remove_connection(entry->first, entry->second);
+          entry = entries.erase(entry);
+        }
+        else
+        {
+          ++entry;
+        }
+      }
+      if (entries.empty()) connection_ids_.erase(connections);
+    }
     // remove bond from cache for capability
     bond_cache_.remove_bond(capability, bond_id);
 
@@ -246,7 +262,7 @@ public:
    * @param bond_id
    * @param instance_id
    */
-  void trigger_capability(const std::string& bond_id, const std::string& capability, const std::string& instance_id,
+  bool trigger_capability(const std::string& bond_id, const std::string& capability, const std::string& instance_id,
                           capabilities2_events::EventParameters parameters)
   {
     // validate bond
@@ -254,17 +270,19 @@ public:
     {
       RCLCPP_ERROR(logging_->get_logger(), "this bond: %s is not using capability: %s", bond_id.c_str(),
                    capability.c_str());
-      return;
+      return false;
     }
 
     // trigger the runner
     try
     {
       runner_cache_.trigger_runner(bond_id, capability, instance_id, parameters);
+      return true;
     }
     catch (const capabilities2_runner::runner_exception& e)
     {
       RCLCPP_ERROR(logging_->get_logger(), "could not trigger runner: %s", e.what());
+      return false;
     }
   }
 
@@ -282,12 +300,22 @@ public:
   bool use_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider,
                       const std::string& bond_id)
   {
+    std::lock_guard<std::recursive_mutex> lock(lifecycle_mutex_);
     const bool already_bound = bond_cache_.exists(capability, bond_id);
     // add bond to cache for capability
     bond_cache_.add_bond(capability, bond_id);
 
     // start the capability with the provider
-    if (!start_capability(node, capability, provider))
+    bool started = false;
+    try
+    {
+      started = start_capability(node, capability, provider);
+    }
+    catch (const std::exception& e)
+    {
+      RCLCPP_WARN(logging_->get_logger(), "could not use capability: %s", e.what());
+    }
+    if (!started)
     {
       if (!already_bound)
       {
@@ -306,8 +334,9 @@ public:
    * Each running capability is a node that can be connected to other capabilities
    * these connections emit events when the capability states change
    */
-  void connect_capability(const std::string& bond_id, const capabilities2_msgs::msg::CapabilityConnection& connection)
+  bool connect_capability(const std::string& bond_id, const capabilities2_msgs::msg::CapabilityConnection& connection)
   {
+    std::lock_guard<std::recursive_mutex> lock(lifecycle_mutex_);
     // TODO: implement connection storage for non-running capabilities
     // could also implicitly increment use counts for capabilities with this bond
     // so that the capabilities are started and then connected
@@ -319,14 +348,14 @@ public:
         !bond_cache_.exists(connection.target.capability, bond_id))
     {
       RCLCPP_ERROR(logging_->get_logger(), "no bond with id: %s exists for these capabilities", bond_id.c_str());
-      return;
+      return false;
     }
 
     // check if source and target capabilities are running
     if (!runner_cache_.running(connection.source.capability) || !runner_cache_.running(connection.target.capability))
     {
       RCLCPP_ERROR(logging_->get_logger(), "both source and target capabilities must be running to connect");
-      return;
+      return false;
     }
 
     try
@@ -340,14 +369,17 @@ public:
       // this allows the runner to emit events on state changes
       // default runner behaviour does not use event subsystem
       runner_cache_.add_connection(connection.source.capability, connection_id, connection, event_);
+      connection_ids_[bond_id].emplace_back(connection.source.capability, connection_id);
 
       // log
       RCLCPP_INFO(logging_->get_logger(), "set 'type %d' connection for runner: %s with id: %s", connection.type.code,
                   connection.source.capability.c_str(), connection_id.c_str());
+      return true;
     }
     catch (const capabilities2_runner::runner_exception& e)
     {
       RCLCPP_ERROR(logging_->get_logger(), "could not connect runners: %s", e.what());
+      return false;
     }
   }
 
@@ -825,6 +857,7 @@ public:
 
   void on_bond_broken(const std::string& bond_id)
   {
+    std::lock_guard<std::recursive_mutex> lock(lifecycle_mutex_);
     // log warning
     RCLCPP_WARN(logging_->get_logger(), "bond broken for id: %s", bond_id.c_str());
 
@@ -839,44 +872,21 @@ public:
   }
 
 private:
-  // bind a dependency to an internal bond
-  // this is a bond without a live external connection
-  // this will help keep the capability runners scoped to a reference
-  // only when all the bonds (including internal) are broken the capability is freed
-  // this is specifically needed for running dependencies of a capability
-  void bind_dependency(const std::string& capability)
+  std::string bind_dependency(const std::string& capability)
   {
-    // create a new unique bond id
-    // std::string bond_id = CapabilitiesAPI::gen_bond_id(); // DEPRECATED
     std::string bond_id = capabilities2_events::UUIDGenerator::gen_uuid_str();
-
-    // add the bond id to the bond cache
     bond_cache_.add_bond(capability, bond_id);
-
-    // keep the bond id in the internal bond ids
-    internal_bond_ids_.push_back(bond_id);
+    return bond_id;
   }
 
-  void unbind_dependency(const std::string& capability)
+  void release_dependencies(const std::vector<std::pair<std::string, std::string>>& dependencies)
   {
-    // do we have a bond id for this capability
-
-    // get cap bonds
-    std::vector<std::string> cap_bonds = bond_cache_.get_bonds(capability);
-
-    // if any internal bonds in cap_bonds
-    for (const auto& bond : cap_bonds)
+    for (auto dependency = dependencies.rbegin(); dependency != dependencies.rend(); ++dependency)
     {
-      auto it = std::find(internal_bond_ids_.begin(), internal_bond_ids_.end(), bond);
-      if (it != internal_bond_ids_.end())
+      bond_cache_.remove_bond(dependency->first, dependency->second);
+      if (!bond_cache_.exists(dependency->first) && runner_cache_.running(dependency->first))
       {
-        // remove just the first bond id found in cap_bonds and internal_bond_ids_
-        bond_cache_.remove_bond(capability, bond);
-
-        // delete internal bond
-        internal_bond_ids_.erase(it);
-
-        return;
+        stop_capability(dependency->first);
       }
     }
   }
@@ -902,7 +912,10 @@ private:
   RunnerCache runner_cache_;
 
   // internal bindings
-  std::vector<std::string> internal_bond_ids_;
+  std::map<std::string, std::vector<std::pair<std::string, std::string>>> dependency_bonds_;
+  std::map<std::string, std::string> runner_configs_;
+  std::map<std::string, std::vector<std::pair<std::string, std::string>>> connection_ids_;
+  std::recursive_mutex lifecycle_mutex_;
 };
 
 }  // namespace capabilities2_server

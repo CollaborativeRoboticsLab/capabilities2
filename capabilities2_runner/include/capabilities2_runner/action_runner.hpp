@@ -95,40 +95,41 @@ public:
     if (!action_client_)
       throw runner_exception("cannot stop runner action that was not started");
 
-    // stop runner using action client
-    if (goal_handle_)
+    std::shared_future<action_msgs::srv::CancelGoal_Response::SharedPtr> cancel_future;
+    try
     {
-      try
       {
-        auto cancel_future = action_client_->async_cancel_goal(
-            goal_handle_, [this, &bond_id, &instance_id](action_msgs::srv::CancelGoal_Response::SharedPtr response) {
-              if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE)
-              {
-                // throw runner_exception("failed to cancel runner");
-                RCLCPP_ERROR(node_->get_logger(), "Runner cancellation failed.");
-              }
-
-              // emit stopped event
-              emit_stopped(bond_id, instance_id, param_on_stopped());
-            });
-
-        // wait for action to be stopped. hold the thread for 2 seconds to help keep callbacks in scope
-        // BUG: the line below does not work in jazzy build, so a workaround is used
-        auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(2);
-        while (std::chrono::steady_clock::now() < timeout)
+        std::lock_guard<std::mutex> lock(goal_mutex_);
+        if (goal_handle_)
         {
-          // Check if the cancel operation is complete
-          if (cancel_future.wait_for(std::chrono::milliseconds(100)) == std::future_status::ready)
-            break;
+          cancel_future = action_client_->async_cancel_goal(goal_handle_);
         }
       }
-      catch (const rclcpp_action::exceptions::UnknownGoalHandleError& e)
+      if (cancel_future.valid())
       {
-        RCLCPP_ERROR(node_->get_logger(), "failed to cancel goal: %s", e.what());
-        throw runner_exception(e.what());
+        if (cancel_future.wait_for(std::chrono::seconds(2)) == std::future_status::ready)
+        {
+          auto response = cancel_future.get();
+          if (response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE &&
+              response->return_code != action_msgs::srv::CancelGoal_Response::ERROR_GOAL_TERMINATED)
+          {
+            RCLCPP_ERROR(node_->get_logger(), "Runner cancellation failed.");
+          }
+          emit_stopped(bond_id, instance_id, param_on_stopped());
+        }
+        else
+        {
+          RCLCPP_WARN(node_->get_logger(), "Timed out waiting for runner cancellation.");
+        }
       }
     }
+    catch (const rclcpp_action::exceptions::UnknownGoalHandleError& e)
+    {
+      RCLCPP_ERROR(node_->get_logger(), "failed to cancel goal: %s", e.what());
+      throw runner_exception(e.what());
+    }
 
+    stop_execution();
     RCLCPP_INFO(node_->get_logger(), "runner cleaned. stopping..");
   }
 
@@ -157,22 +158,28 @@ protected:
 
     // trigger the action client with goal
     send_goal_options_.goal_response_callback =
-        [this, &instance_id](const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
+        [this, bond_id, instance_id, &completed, &cv, &block_mutex](
+            const typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr& goal_handle) {
           if (goal_handle)
           {
             RCLCPP_INFO(node_->get_logger(), "goal accepted. Waiting for result for instance %s", instance_id.c_str());
+            std::lock_guard<std::mutex> lock(goal_mutex_);
+            goal_handle_ = goal_handle;
           }
           else
           {
             RCLCPP_ERROR(node_->get_logger(), "goal rejected for instance %s", instance_id.c_str());
+            emit_failed(bond_id, instance_id, param_on_failure());
+            {
+              std::lock_guard<std::mutex> completion_lock(block_mutex);
+              completed = true;
+              cv.notify_all();
+            }
           }
-
-          // store goal handle to be used with stop funtion
-          goal_handle_ = goal_handle;
         };
 
     send_goal_options_.feedback_callback =
-        [this, &instance_id](typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle,
+        [this, instance_id](typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle,
                              const typename ActionT::Feedback::ConstSharedPtr feedback_msg) {
           std::string feedback = generate_feedback(feedback_msg);
 
@@ -184,10 +191,17 @@ protected:
         };
 
     send_goal_options_.result_callback =
-        [this, &instance_id, &completed, &cv, &bond_id,
-         &instance_id](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
+        [this, instance_id, &completed, &cv, bond_id,
+         &block_mutex](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult& wrapped_result) {
           RCLCPP_INFO(node_->get_logger(), "received result for instance %s", instance_id.c_str());
 
+          {
+            std::lock_guard<std::mutex> lock(goal_mutex_);
+            if (goal_handle_ && goal_handle_->get_goal_id() == wrapped_result.goal_id)
+            {
+              goal_handle_.reset();
+            }
+          }
           result_ = wrapped_result.result;
           process_result(result_);
 
@@ -214,8 +228,11 @@ protected:
             emit_failed(bond_id, instance_id, param_on_failure());
           }
 
-          completed = true;
-          cv.notify_all();
+          {
+            std::lock_guard<std::mutex> completion_lock(block_mutex);
+            completed = true;
+            cv.notify_all();
+          }
         };
 
     goal_handle_future_ = action_client_->async_send_goal(goal_msg_, send_goal_options_);
@@ -287,6 +304,7 @@ protected:
 
   /** goal handle parameter to capture goal response from goal_response_callback */
   typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle_;
+  std::mutex goal_mutex_;
 
   /** Result */
   typename ActionT::Result::SharedPtr result_;

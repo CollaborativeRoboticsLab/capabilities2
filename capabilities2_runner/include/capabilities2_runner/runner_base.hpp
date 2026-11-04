@@ -82,6 +82,8 @@ struct runner_opts
 class RunnerBase : public capabilities2_events::EventNode
 {
 public:
+  using capabilities2_events::EventNode::remove_connection;
+
   RunnerBase() : node_(nullptr), run_config_()
   {
   }

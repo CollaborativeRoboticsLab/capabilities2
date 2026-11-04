@@ -295,6 +295,7 @@ public:
     if (req->capability.capability.empty())
     {
       RCLCPP_ERROR(get_logger(), "trigger_capability: capability is empty");
+      res->error_message = "capability is empty";
       return;
     }
 
@@ -302,6 +303,7 @@ public:
     if (req->bond_id.empty())
     {
       RCLCPP_ERROR(get_logger(), "trigger_capability: bond_id is empty");
+      res->error_message = "bond_id is empty";
       return;
     }
 
@@ -309,15 +311,22 @@ public:
     if (req->capability.instance_id.empty())
     {
       RCLCPP_ERROR(get_logger(), "trigger_capability: instance_id is empty");
+      res->error_message = "instance_id is empty";
       return;
     }
 
     // try triggering capability
     // TODO: handle errors
-    trigger_capability(req->bond_id, req->capability.capability, req->capability.instance_id,
-                       capabilities2_events::EventParameters(req->capability));
-
-    // response is empty
+    try
+    {
+      res->successful = trigger_capability(req->bond_id, req->capability.capability, req->capability.instance_id,
+                                           capabilities2_events::EventParameters(req->capability));
+      if (!res->successful) res->error_message = "trigger failed; see server log";
+    }
+    catch (const std::exception& e)
+    {
+      res->error_message = e.what();
+    }
   }
 
   // free capability
@@ -353,25 +362,34 @@ public:
     if (req->capability.empty())
     {
       RCLCPP_ERROR(get_logger(), "use_capability: capability is empty");
+      res->error_message = "capability is empty";
       return;
     }
 
     if (req->preferred_provider.empty())
     {
       RCLCPP_ERROR(get_logger(), "use_capability: preferred_provider is empty");
+      res->error_message = "preferred_provider is empty";
       return;
     }
 
     if (req->bond_id.empty())
     {
       RCLCPP_ERROR(get_logger(), "use_capability: bond_id is empty");
+      res->error_message = "bond_id is empty";
       return;
     }
 
     // use capability with this bond
-    use_capability(shared_from_this(), req->capability, req->preferred_provider, req->bond_id);
-
-    // response is empty
+    try
+    {
+      res->successful = use_capability(shared_from_this(), req->capability, req->preferred_provider, req->bond_id);
+      if (!res->successful) res->error_message = "capability start or reuse failed; see server log";
+    }
+    catch (const std::exception& e)
+    {
+      res->error_message = e.what();
+    }
   }
 
   // FIXME: repair this to use new event subsystem
@@ -384,6 +402,7 @@ public:
     if (req->bond_id.empty())
     {
       RCLCPP_ERROR(get_logger(), "connect_capability: bond_id is empty");
+      res->error_message = "bond_id is empty";
       return;
     }
 
@@ -391,6 +410,7 @@ public:
     if (req->connection.source.instance_id.empty())
     {
       RCLCPP_ERROR(get_logger(), "connect_capability: instance_id is empty");
+      res->error_message = "instance_id is empty";
       return;
     }
 
@@ -398,13 +418,20 @@ public:
     if (req->connection.target.instance_id.empty())
     {
       RCLCPP_ERROR(get_logger(), "connect_capability: target_instance_id is empty");
+      res->error_message = "target_instance_id is empty";
       return;
     }
 
     // api connect capability
-    connect_capability(req->bond_id, req->connection);
-
-    // response is empty
+    try
+    {
+      res->successful = connect_capability(req->bond_id, req->connection);
+      if (!res->successful) res->error_message = "connection failed; see server log";
+    }
+    catch (const std::exception& e)
+    {
+      res->error_message = e.what();
+    }
   }
 
   // register capability

@@ -118,7 +118,7 @@ install(TARGETS ${PROJECT_NAME}_node
 
 # make test executable
 
-add_executable(test_capabilities_server test/test.cpp)
+add_executable(test_capabilities_server test/test_capabilities_server.cpp)
 
 target_link_libraries(test_capabilities_server
   ${PROJECT_NAME}_comp
@@ -151,6 +151,7 @@ install(DIRECTORY config
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
+  add_test(NAME test_capabilities_server COMMAND test_capabilities_server)
   ament_add_pytest_test(test_server_launch test/test_server_launch.py)
 endif()
 

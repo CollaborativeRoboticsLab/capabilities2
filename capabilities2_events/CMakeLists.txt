@@ -50,7 +50,7 @@ install(TARGETS ${PROJECT_NAME}
 
 if(BUILD_TESTING)
   ament_add_gtest(published_event_test
-    test/published_event_test.cpp
+    test/test_published_event.cpp
   )
   if(TARGET published_event_test)
     target_include_directories(published_event_test PUBLIC include)

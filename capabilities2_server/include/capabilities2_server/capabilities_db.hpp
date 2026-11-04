@@ -368,18 +368,22 @@ public:
       std::vector<models::semantic_interface_model_t> semantic_interfaces =
           get_semantic_interfaces_by_interface(provider.implements);
 
-      if (semantic_interfaces.empty())
+      models::runnable_model_t runnable = build_runnable_spec(provider);
+      if (runnable.is_valid())
       {
-        models::runnable_model_t runnable = build_runnable_spec(provider);
-        if (runnable.is_valid())
-        {
-          runnable_specs.push_back(runnable);
-        }
-        continue;
+        runnable_specs.push_back(runnable);
       }
 
       for (const auto& semantic_interface : semantic_interfaces)
       {
+        const auto direct_provider = std::find_if(providers.begin(), providers.end(), [&](const auto& candidate) {
+          return candidate.implements == semantic_interface.header.name &&
+                 build_runnable_spec(candidate, semantic_interface.header.name).is_valid();
+        });
+        if (direct_provider != providers.end())
+        {
+          continue;
+        }
         models::runnable_model_t runnable = build_runnable_spec(provider, semantic_interface.header.name);
         if (runnable.is_valid())
         {
@@ -506,6 +510,11 @@ public:
     }
 
     // remap resources
+    const auto provider_semantic = get_semantic_interface(provider.implements);
+    if (!provider_semantic.header.name.empty())
+    {
+      run_config.global_namespace = provider_semantic.global_namespace;
+    }
     run_config.interface = apply_provider_remappings(provider);
 
     return run_config;

@@ -2,3 +2,5 @@ string capability
 string preferred_provider
 string bond_id
 ---
+bool successful
+string error_message

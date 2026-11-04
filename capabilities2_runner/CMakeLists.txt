@@ -64,7 +64,7 @@ if(BUILD_TESTING)
   find_package(std_msgs REQUIRED)
 
   ament_add_gtest(launch_runner_test
-    test/launch_runner_test.cpp
+    test/test_launch_runner.cpp
   )
   if(TARGET launch_runner_test)
     target_include_directories(launch_runner_test PUBLIC include)
@@ -74,6 +74,20 @@ if(BUILD_TESTING)
       rclcpp_action
       lifecycle_msgs
       std_msgs
+      capabilities2_msgs
+      capabilities2_events
+    )
+  endif()
+
+  ament_add_gtest(action_runner_test
+    test/test_action_runner.cpp
+  )
+  if(TARGET action_runner_test)
+    target_include_directories(action_runner_test PUBLIC include)
+    target_link_libraries(action_runner_test ${PROJECT_NAME})
+    ament_target_dependencies(action_runner_test
+      rclcpp
+      rclcpp_action
       capabilities2_msgs
       capabilities2_events
     )

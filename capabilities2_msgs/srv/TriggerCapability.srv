@@ -1,3 +1,5 @@
 string bond_id
 capabilities2_msgs/Capability capability
 ---
+bool successful
+string error_message

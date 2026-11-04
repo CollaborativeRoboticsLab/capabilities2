@@ -26,7 +26,7 @@ capabilities2_server::models::interface_model_t load_interface(const std::string
 }
 
 capabilities2_server::models::semantic_interface_model_t load_semantic_interface(const std::string& yaml,
-                                                                                  const std::string& package)
+                                                                                 const std::string& package)
 {
   capabilities2_server::models::semantic_interface_model_t model;
   model.from_yaml(YAML::Load(yaml));
@@ -134,6 +134,16 @@ description: Generic waypoint wrapper without an explicit global namespace.
 redefines: test_capabilities/WaypointRunner
 )";
 
+  const std::string other_robotpose_semantic_yaml = R"(
+%YAML 1.1
+---
+name: OtherRobotposeRunner
+spec_type: semantic_interface
+spec_version: 1.2
+description: Another robot pose wrapper.
+redefines: test_capabilities/RobotPoseRunner
+)";
+
   const std::string robotpose_provider_yaml = R"(
 %YAML 1.1
 ---
@@ -166,6 +176,22 @@ spec_type: interface
 description: Base plain interface.
 )";
 
+  const std::string turtlebot_robotpose_provider_yaml = R"(
+%YAML 1.1
+---
+name: TurtlebotRobotposeRunner
+spec_type: provider
+spec_version: 1.2
+description: TurtleBot robot pose provider.
+implements: test_semantic_capabilities/TurtlebotRobotposeRunner
+runner: capabilities2_runner::RobotPoseRunner
+depends_on:
+  "nav2_capabilities/Nav2LaunchRunner":
+    provider: "turtlebot_capabilities/TurtlebotNav2LaunchRunner"
+definition:
+  command: "<Runner interface=test_semantic_capabilities/TurtlebotRobotposeRunner provider=turtlebot_capabilities/TurtlebotRobotposeRunner />"
+)";
+
   const std::string plain_provider_yaml = R"(
 %YAML 1.1
 ---
@@ -183,18 +209,35 @@ definition:
       description: Plain value.
 )";
 
+  const std::string second_robotpose_provider_yaml = R"(
+%YAML 1.1
+---
+name: AlternateRobotposeRunner
+spec_type: provider
+spec_version: 1.2
+description: Another provider for the TurtleBot robot pose wrapper.
+implements: test_semantic_capabilities/TurtlebotRobotposeRunner
+runner: capabilities2_runner::RobotPoseRunner
+definition:
+  command: "<Runner interface=test_semantic_capabilities/TurtlebotRobotposeRunner provider=turtlebot_capabilities/AlternateRobotposeRunner />"
+)";
+
   db.insert_interface(load_interface(waypoint_interface_yaml, "test_capabilities"));
   db.insert_semantic_interface(load_semantic_interface(turtlebot_waypoint_semantic_yaml, "test_semantic_capabilities"));
   db.insert_provider(load_provider(waypoint_provider_yaml, "test_capabilities"));
   db.insert_interface(load_interface(robotpose_interface_yaml, "test_capabilities"));
-  db.insert_semantic_interface(load_semantic_interface(turtlebot_robotpose_semantic_yaml, "test_semantic_capabilities"));
+  db.insert_semantic_interface(load_semantic_interface(turtlebot_robotpose_semantic_yaml, "test_semantic_"
+                                                                                          "capabilities"));
+  db.insert_semantic_interface(load_semantic_interface(other_robotpose_semantic_yaml, "test_semantic_capabilities"));
   db.insert_semantic_interface(load_semantic_interface(semantic_without_namespace_yaml, "test_semantic_capabilities"));
   db.insert_provider(load_provider(robotpose_provider_yaml, "test_capabilities"));
+  db.insert_provider(load_provider(turtlebot_robotpose_provider_yaml, "turtlebot_capabilities"));
+  db.insert_provider(load_provider(second_robotpose_provider_yaml, "turtlebot_capabilities"));
   db.insert_interface(load_interface(plain_interface_yaml, "plain_capabilities"));
   db.insert_provider(load_provider(plain_provider_yaml, "plain_capabilities"));
 
   const auto runnable_specs = db.get_runnable_specs();
-  assert(runnable_specs.size() == 4);
+  assert(runnable_specs.size() == 8);
 
   const auto find_runnable = [&runnable_specs](const std::string& interface_name, const std::string& provider_name) {
     return std::find_if(runnable_specs.begin(), runnable_specs.end(),
@@ -203,33 +246,57 @@ definition:
                         });
   };
 
-  const auto turtlebot_waypoint =
-      find_runnable("test_semantic_capabilities/TurtlebotWaypointRunner", "test_capabilities/WaypointRunner");
+  const auto turtlebot_waypoint = find_runnable("test_semantic_capabilities/TurtlebotWaypointRunner", "test_"
+                                                                                                      "capabilities/"
+                                                                                                      "WaypointRunner");
   assert(turtlebot_waypoint != runnable_specs.end());
   assert(turtlebot_waypoint->command.find("interface=test_semantic_capabilities/TurtlebotWaypointRunner") !=
          std::string::npos);
   assert(turtlebot_waypoint->command.find("provider=test_capabilities/WaypointRunner") != std::string::npos);
-  const auto generic_waypoint_run_config =
-      db.get_run_config("test_capabilities/WaypointRunner", "test_semantic_capabilities/GenericWaypointRunner");
+  const auto generic_waypoint_run_config = db.get_run_config("test_capabilities/WaypointRunner", "test_semantic_"
+                                                                                                 "capabilities/"
+                                                                                                 "GenericWaypointRunne"
+                                                                                                 "r");
   assert(generic_waypoint_run_config.is_valid());
   assert(generic_waypoint_run_config.global_namespace.empty());
   const auto has_waypoint_relation = [&turtlebot_waypoint](const std::string& subject, const std::string& predicate,
                                                            const std::string& object) {
-    return std::find_if(turtlebot_waypoint->relations.begin(), turtlebot_waypoint->relations.end(),
-                        [&](const auto& relation) {
-                          return relation.subject == subject && relation.predicate == predicate &&
-                                 relation.object == object;
-                        }) != turtlebot_waypoint->relations.end();
+    return std::find_if(
+               turtlebot_waypoint->relations.begin(), turtlebot_waypoint->relations.end(), [&](const auto& relation) {
+                 return relation.subject == subject && relation.predicate == predicate && relation.object == object;
+               }) != turtlebot_waypoint->relations.end();
   };
   assert(has_waypoint_relation("test_semantic_capabilities/TurtlebotWaypointRunner", "depends_on",
                                "test_capabilities/RobotPoseRunner"));
 
-  const auto turtlebot_robotpose =
-      find_runnable("test_semantic_capabilities/TurtlebotRobotposeRunner", "test_capabilities/RobotPoseRunner");
-  assert(turtlebot_robotpose != runnable_specs.end());
-  assert(turtlebot_robotpose->command.find("interface=test_semantic_capabilities/TurtlebotRobotposeRunner") !=
-         std::string::npos);
-  assert(turtlebot_robotpose->command.find("provider=test_capabilities/RobotPoseRunner") != std::string::npos);
+  assert(find_runnable("test_capabilities/WaypointRunner", "test_capabilities/WaypointRunner") != runnable_specs.end());
+  assert(find_runnable("test_capabilities/RobotPoseRunner", "test_capabilities/RobotPoseRunner") != runnable_specs.end());
+    assert(find_runnable("test_semantic_capabilities/OtherRobotposeRunner", "test_capabilities/RobotPoseRunner") !=
+      runnable_specs.end());
+    assert(find_runnable("test_semantic_capabilities/OtherRobotposeRunner",
+          "turtlebot_capabilities/TurtlebotRobotposeRunner") == runnable_specs.end());
+  const auto turtlebot_robotpose = find_runnable("test_semantic_capabilities/TurtlebotRobotposeRunner", "test_"
+                                                                                                        "capabilities/"
+                                                                                                        "RobotPoseRunne"
+                                                                                                        "r");
+    assert(turtlebot_robotpose == runnable_specs.end());
+
+  const auto direct_robotpose = find_runnable("test_semantic_capabilities/TurtlebotRobotposeRunner",
+                                               "turtlebot_capabilities/TurtlebotRobotposeRunner");
+  assert(direct_robotpose != runnable_specs.end());
+  assert(find_runnable("test_semantic_capabilities/TurtlebotRobotposeRunner",
+                       "turtlebot_capabilities/AlternateRobotposeRunner") != runnable_specs.end());
+  const auto direct_robotpose_config = db.get_run_config("turtlebot_capabilities/TurtlebotRobotposeRunner",
+                                                         "test_semantic_capabilities/TurtlebotRobotposeRunner");
+  assert(direct_robotpose_config.is_valid());
+  assert(direct_robotpose_config.global_namespace == "turtlebot4");
+  const auto implicit_robotpose_config = db.get_run_config("turtlebot_capabilities/TurtlebotRobotposeRunner");
+  assert(implicit_robotpose_config.global_namespace == "turtlebot4");
+  const auto direct_robotpose_running = db.get_running("turtlebot_capabilities/TurtlebotRobotposeRunner");
+  assert(direct_robotpose_running.interface == "test_semantic_capabilities/TurtlebotRobotposeRunner");
+  assert(direct_robotpose_running.dependencies.size() == 1);
+  assert(direct_robotpose_running.dependencies[0].interface == "nav2_capabilities/Nav2LaunchRunner");
+  assert(direct_robotpose_running.dependencies[0].provider == "turtlebot_capabilities/TurtlebotNav2LaunchRunner");
 
   const auto plain_runnable = find_runnable("plain_capabilities/PlainRunner", "plain_capabilities/PlainRunner");
   assert(plain_runnable != runnable_specs.end());
@@ -306,6 +373,26 @@ depends_on:
   db.insert_interface(load_interface(nav2_waypoint_interface_yaml, "nav2_capabilities"));
   db.insert_provider(load_provider(nav2_waypoint_provider_yaml, "nav2_capabilities"));
 
+  const std::string second_parent_interface_yaml = R"(
+name: SecondParent
+spec_version: 1.2
+spec_type: interface
+description: Another capability requiring Nav2 launch.
+)";
+  const std::string second_parent_provider_yaml = R"(
+name: SecondParent
+spec_version: 1.2
+spec_type: provider
+description: Another provider requiring Nav2 launch.
+implements: test_capabilities/SecondParent
+runner: capabilities2_runner::DummyRunner
+depends_on:
+  nav2_capabilities/Nav2LaunchRunner:
+    provider: nav2_capabilities/Nav2LaunchRunner
+)";
+  db.insert_interface(load_interface(second_parent_interface_yaml, "test_capabilities"));
+  db.insert_provider(load_provider(second_parent_provider_yaml, "test_capabilities"));
+
   const std::string failing_interface_yaml = R"(
 name: ZFailingLaunch
 spec_version: 1.2
@@ -356,7 +443,8 @@ depends_on:
   assert(nav2_launch_runner_opts.launch_parameters[0].value == "true");
   assert(nav2_launch_runner_opts.launch_parameters[1].key == "autostart");
   assert(nav2_launch_runner_opts.launch_parameters[1].value == "false");
-  assert(nav2_launch_runner_opts.launch_readiness.lifecycle_nodes == std::vector<std::string>({ "/planner_server", "/bt_navigator" }));
+  assert(nav2_launch_runner_opts.launch_readiness.lifecycle_nodes ==
+         std::vector<std::string>({ "/planner_server", "/bt_navigator" }));
   assert(nav2_launch_runner_opts.launch_readiness.lifecycle_timeout_sec == 45.0);
   assert(nav2_launch_runner_opts.launch_readiness.action.name == "navigate_to_pose");
   assert(nav2_launch_runner_opts.launch_readiness.action.type == "nav2_msgs/action/NavigateToPose");
@@ -372,17 +460,16 @@ depends_on:
   auto node = std::make_shared<rclcpp::Node>("capabilities2_server_runtime_test");
   api.connect(db_path.string(), node->get_node_logging_interface());
 
-  const bool started = api.use_capability(node, "nav2_capabilities/WaypointRunner",
-                                          "nav2_capabilities/WaypointRunner", "bond-nav2");
+  const bool started =
+      api.use_capability(node, "nav2_capabilities/WaypointRunner", "nav2_capabilities/WaypointRunner", "bond-nav2");
   assert(started);
 
   const auto running_capabilities = api.get_running_capabilities();
   assert(running_capabilities.size() == 2);
 
-  const auto running_waypoint = std::find_if(running_capabilities.begin(), running_capabilities.end(),
-                                             [](const auto& cap) {
-                                               return cap.capability.capability == "nav2_capabilities/WaypointRunner";
-                                             });
+  const auto running_waypoint =
+      std::find_if(running_capabilities.begin(), running_capabilities.end(),
+                   [](const auto& cap) { return cap.capability.capability == "nav2_capabilities/WaypointRunner"; });
   assert(running_waypoint != running_capabilities.end());
   assert(running_waypoint->dependent_capabilities.size() == 1);
   assert(running_waypoint->dependent_capabilities.front().capability == "nav2_capabilities/Nav2LaunchRunner");
@@ -393,13 +480,44 @@ depends_on:
   });
   assert(running_nav2 != running_capabilities.end());
 
+  assert(
+      api.use_capability(node, "nav2_capabilities/WaypointRunner", "nav2_capabilities/WaypointRunner", "bond-shared"));
+  assert(
+      api.use_capability(node, "nav2_capabilities/WaypointRunner", "nav2_capabilities/WaypointRunner", "bond-shared"));
+  assert(!api.use_capability(node, "nav2_capabilities/WaypointRunner", "test_capabilities/OtherProvider",
+                             "bond-conflict"));
+  capabilities2_msgs::msg::CapabilityConnection connection;
+  connection.source.capability = "nav2_capabilities/WaypointRunner";
+  connection.source.instance_id = "source";
+  connection.target.capability = "nav2_capabilities/WaypointRunner";
+  connection.target.instance_id = "target";
+  assert(api.connect_capability("bond-nav2", connection));
+  assert(api.connect_capability("bond-shared", connection));
   api.free_capability("nav2_capabilities/WaypointRunner", "bond-nav2");
+  assert(api.get_running_capabilities().size() == 2);
+  assert(api.use_capability(node, "nav2_capabilities/WaypointRunner", "nav2_capabilities/WaypointRunner", "bond-nav2"));
+  assert(api.connect_capability("bond-nav2", connection));
+  api.free_capability("nav2_capabilities/WaypointRunner", "bond-nav2");
+  api.free_capability("nav2_capabilities/WaypointRunner", "bond-shared");
+  assert(api.get_running_capabilities().empty());
+
+  assert(
+      api.use_capability(node, "nav2_capabilities/WaypointRunner", "nav2_capabilities/WaypointRunner", "bond-first"));
+  assert(api.use_capability(node, "test_capabilities/SecondParent", "test_capabilities/SecondParent", "bond-second"));
+  assert(api.get_running_capabilities().size() == 3);
+  assert(!api.use_capability(node, "test_capabilities/Dependent", "test_capabilities/Dependent", "bond-failure"));
+  assert(api.get_running_capabilities().size() == 3);
+  api.on_bond_broken("bond-first");
+  assert(api.get_running_capabilities().size() == 2);
+  api.on_bond_broken("bond-first");
+  assert(api.get_running_capabilities().size() == 2);
+  api.on_bond_broken("bond-second");
   assert(api.get_running_capabilities().empty());
 
   for (int attempt = 0; attempt < 2; ++attempt)
   {
-    const bool dependent_started = api.use_capability(node, "test_capabilities/Dependent",
-                                                      "test_capabilities/Dependent", "bond-failure");
+    const bool dependent_started =
+        api.use_capability(node, "test_capabilities/Dependent", "test_capabilities/Dependent", "bond-failure");
     assert(!dependent_started);
     assert(api.get_running_capabilities().empty());
   }

@@ -148,6 +148,14 @@ public:
     }
   }
 
+  void remove_connection(const std::string& capability, const std::string& connection_id)
+  {
+    if (running(capability))
+    {
+      runner_cache_[capability]->remove_connection(connection_id);
+    }
+  }
+
   /**
    * @brief Remove a given runner
    *
