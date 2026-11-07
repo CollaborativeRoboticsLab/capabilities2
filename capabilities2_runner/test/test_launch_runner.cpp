@@ -120,9 +120,18 @@ public:
         [](const rclcpp_action::GoalUUID&, std::shared_ptr<const LaunchAction::Goal>) {
           return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
         },
-        [this](const std::shared_ptr<ServerGoalHandle>) {
+        [this](const std::shared_ptr<ServerGoalHandle> goal) {
           ++cancel_count;
-          return reject_cancel.load() ? rclcpp_action::CancelResponse::REJECT : rclcpp_action::CancelResponse::ACCEPT;
+          if (reject_cancel.load())
+            return rclcpp_action::CancelResponse::REJECT;
+          cancel_thread = std::thread([this, goal]() {
+            while (!goal->is_canceling() || !finish_cancel.load())
+              std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            auto result = std::make_shared<LaunchAction::Result>();
+            result->final_state = "canceled";
+            goal->canceled(result);
+          });
+          return rclcpp_action::CancelResponse::ACCEPT;
         },
         [this](const std::shared_ptr<ServerGoalHandle> goal) {
           std::lock_guard<std::mutex> lock(goal_mutex);
@@ -136,6 +145,9 @@ public:
 
   ~FakeLaunchEnvironment()
   {
+    finish_cancel = true;
+    if (cancel_thread.joinable())
+      cancel_thread.join();
     executor.cancel();
     thread.join();
   }
@@ -152,13 +164,13 @@ public:
         });
   }
 
-  void abort_goal()
+  void abort_goal(const std::string& final_state = "failed")
   {
     std::lock_guard<std::mutex> lock(goal_mutex);
     if (goal_handle)
     {
       auto result = std::make_shared<LaunchAction::Result>();
-      result->final_state = "failed";
+      result->final_state = final_state;
       result->message = "test launch failure";
       goal_handle->abort(result);
     }
@@ -176,6 +188,8 @@ public:
   std::atomic<int> service_delay_ms{ 0 };
   std::atomic<int> cancel_count{ 0 };
   std::atomic<bool> reject_cancel{ false };
+  std::atomic<bool> finish_cancel{ true };
+  std::thread cancel_thread;
   std::mutex goal_mutex;
   std::shared_ptr<ServerGoalHandle> goal_handle;
 };
@@ -294,6 +308,53 @@ TEST_F(LaunchRunnerTest, TimesOutAndCancelsLaunchWhenNodeRemainsInactive)
   EXPECT_EQ(events->observed_events.front().event_code, capabilities2_msgs::msg::CapabilityEventCode::FAILED);
 }
 
+TEST_F(LaunchRunnerTest, WaitsForCancellationResultAfterReadinessFailure)
+{
+  FakeLaunchEnvironment environment;
+  environment.finish_cancel = false;
+  auto node = std::make_shared<rclcpp::Node>("readiness_cleanup_test");
+  node->declare_parameter("launch_action_name", "/test_launch_readiness");
+  TestableLaunchRunner runner;
+  auto config = readiness_config();
+  config.launch_readiness.lifecycle_timeout_sec = 0.3;
+
+  auto started = std::async(std::launch::async, [&]() { runner.start(node, config, "bond"); });
+  for (int attempt = 0; attempt < 100 && environment.cancel_count.load() == 0; ++attempt)
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  EXPECT_EQ(environment.cancel_count.load(), 1);
+  EXPECT_EQ(started.wait_for(std::chrono::milliseconds(200)), std::future_status::timeout);
+  environment.finish_cancel = true;
+  EXPECT_THROW(started.get(), capabilities2_runner::runner_exception);
+}
+
+TEST_F(LaunchRunnerTest, ReportsUnconfirmedCleanupAfterReadinessFailure)
+{
+  FakeLaunchEnvironment environment;
+  environment.reject_cancel = true;
+  auto node = std::make_shared<rclcpp::Node>("readiness_cleanup_rejected_test");
+  node->declare_parameter("launch_action_name", "/test_launch_readiness");
+  TestableLaunchRunner runner;
+  auto config = readiness_config();
+  config.launch_readiness.lifecycle_timeout_sec = 0.3;
+
+  EXPECT_THROW(runner.start(node, config, "bond"), capabilities2_runner::runner_unconfirmed_exception);
+  EXPECT_EQ(environment.cancel_count.load(), 1);
+}
+
+TEST_F(LaunchRunnerTest, ReportsUnconfirmedSupervisorExitDuringReadiness)
+{
+  FakeLaunchEnvironment environment;
+  auto node = std::make_shared<rclcpp::Node>("readiness_supervisor_exit_test");
+  node->declare_parameter("launch_action_name", "/test_launch_readiness");
+  TestableLaunchRunner runner;
+  auto started = std::async(std::launch::async, [&]() { runner.start(node, readiness_config(), "bond"); });
+  for (int attempt = 0; attempt < 100 && environment.request_count.load() == 0; ++attempt)
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  ASSERT_GT(environment.request_count.load(), 0);
+  environment.abort_goal("unconfirmed");
+  EXPECT_THROW(started.get(), capabilities2_runner::runner_unconfirmed_exception);
+}
+
 TEST_F(LaunchRunnerTest, StartsWithoutLifecycleReadinessConfiguration)
 {
   FakeLaunchEnvironment environment;
@@ -306,6 +367,24 @@ TEST_F(LaunchRunnerTest, StartsWithoutLifecycleReadinessConfiguration)
   EXPECT_NO_THROW(runner.start(node, config, "bond"));
   EXPECT_EQ(environment.request_count.load(), 0);
   runner.stop("bond");
+}
+
+TEST_F(LaunchRunnerTest, WaitsForCancellationResultBeforeStopping)
+{
+  FakeLaunchEnvironment environment;
+  environment.finish_cancel = false;
+  auto node = std::make_shared<rclcpp::Node>("shutdown_result_test");
+  node->declare_parameter("launch_action_name", "/test_launch_readiness");
+  TestableLaunchRunner runner;
+  auto config = readiness_config();
+  config.launch_readiness.lifecycle_nodes.clear();
+
+  runner.start(node, config, "bond");
+  auto stopped = std::async(std::launch::async, [&runner]() { runner.stop("bond"); });
+  EXPECT_EQ(stopped.wait_for(std::chrono::milliseconds(400)), std::future_status::timeout);
+  EXPECT_EQ(environment.cancel_count.load(), 1);
+  environment.finish_cancel = true;
+  EXPECT_NO_THROW(stopped.get());
 }
 
 TEST_F(LaunchRunnerTest, TimesOutWhenLifecycleServiceIsMissing)

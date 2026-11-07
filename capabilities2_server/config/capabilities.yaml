@@ -34,8 +34,8 @@
       # Suppress child stdout and stderr on the proxy terminal; takes precedence over the override above.
       suppress_child_process_output_to_screen: true
 
-      # Expand opaque functions when discovering processes for tracking.
+      # Retained for compatibility; launches are now isolated by supervisor process.
       expand_opaque_functions_for_tracking: true
       
       # Maximum time in seconds to wait for a launch to stop.
-      stop_wait_timeout_sec: 10.0
+      stop_wait_timeout_sec: 45.0

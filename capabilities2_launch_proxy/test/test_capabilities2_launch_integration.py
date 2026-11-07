@@ -717,6 +717,98 @@ def test_resource_topic_reports_main_and_child_processes():
                 rclpy.shutdown()
 
 
+def test_action_preserves_empty_launch_parameter(tmp_path):
+    result_file = tmp_path / 'argument'
+    launch_file = tmp_path / 'argument.launch.py'
+    launch_file.write_text(
+        'from pathlib import Path\n'
+        'from launch import LaunchDescription\n'
+        'from launch.actions import DeclareLaunchArgument, ExecuteProcess, OpaqueFunction\n'
+        'from launch.substitutions import LaunchConfiguration\n'
+        'def record(context):\n'
+        f'    Path({str(result_file)!r}).write_text(LaunchConfiguration("namespace").perform(context))\n'
+        '    return []\n'
+        'def generate_launch_description():\n'
+        '    return LaunchDescription([\n'
+        '        DeclareLaunchArgument("namespace", default_value="nonempty"),\n'
+        '        OpaqueFunction(function=record),\n'
+        '        ExecuteProcess(cmd=["python3", "-c", "import time; time.sleep(30)"]),\n'
+        '    ])\n',
+        encoding='utf-8',
+    )
+    rclpy.init()
+    with ServerHarness([
+        '-p', 'launch_proxy.suppress_child_process_output_to_screen:=true',
+        '-p', 'launch_proxy.feedback_child_log_enabled:=false',
+    ]) as harness:
+        node = rclpy.create_node('capabilities2_launch_proxy_empty_argument_client')
+        try:
+            client = ActionClient(node, LaunchAction, harness.action_name)
+            assert client.wait_for_server(timeout_sec=5.0)
+            goal = LaunchAction.Goal()
+            goal.launch_file_path = str(launch_file)
+            goal.launch_parameters = [LaunchParameter(key='namespace', value='')]
+            future = client.send_goal_async(goal)
+            rclpy.spin_until_future_complete(node, future, timeout_sec=10.0)
+            handle = future.result()
+            assert handle is not None and handle.accepted
+            assert _spin_until(result_file.exists, node, timeout_sec=10.0)
+            assert result_file.read_text(encoding='utf-8') == ''
+
+            cancel = handle.cancel_goal_async()
+            rclpy.spin_until_future_complete(node, cancel, timeout_sec=10.0)
+            result = handle.get_result_async()
+            rclpy.spin_until_future_complete(node, result, timeout_sec=10.0)
+            assert result.result() is not None
+            assert result.result().status == GoalStatus.STATUS_CANCELED
+        finally:
+            node.destroy_node()
+            if rclpy.ok():
+                rclpy.shutdown()
+
+
+def test_cancel_prevents_delayed_launch_actions(tmp_path):
+    ready = tmp_path / 'ready'
+    delayed = tmp_path / 'delayed'
+    launch_file = tmp_path / 'delayed.launch.py'
+    ready_command = f'from pathlib import Path; import time; Path({str(ready)!r}).touch(); time.sleep(30)'
+    launch_file.write_text(
+        'from launch import LaunchDescription\n'
+        'from launch.actions import ExecuteProcess, TimerAction\n'
+        'def generate_launch_description():\n'
+        '    return LaunchDescription([\n'
+        f'        ExecuteProcess(cmd=["python3", "-c", {ready_command!r}]),\n'
+        f'        TimerAction(period=3.0, actions=[ExecuteProcess(cmd=["touch", {str(delayed)!r}])]),\n'
+        '    ])\n',
+        encoding='utf-8',
+    )
+    rclpy.init()
+    with ServerHarness() as harness:
+        node = rclpy.create_node('capabilities2_launch_proxy_delayed_action_client')
+        try:
+            client = ActionClient(node, LaunchAction, harness.action_name)
+            assert client.wait_for_server(timeout_sec=5.0)
+            goal = LaunchAction.Goal()
+            goal.launch_file_path = str(launch_file)
+            future = client.send_goal_async(goal)
+            rclpy.spin_until_future_complete(node, future, timeout_sec=10.0)
+            handle = future.result()
+            assert handle is not None and handle.accepted
+            assert _spin_until(ready.exists, node, timeout_sec=10.0)
+
+            cancel = handle.cancel_goal_async()
+            rclpy.spin_until_future_complete(node, cancel, timeout_sec=10.0)
+            result = handle.get_result_async()
+            rclpy.spin_until_future_complete(node, result, timeout_sec=10.0)
+            assert result.result() is not None
+            assert result.result().status == GoalStatus.STATUS_CANCELED
+            assert not _spin_until(delayed.exists, node, timeout_sec=3.5)
+        finally:
+            node.destroy_node()
+            if rclpy.ok():
+                rclpy.shutdown()
+
+
 def test_multiple_launches_can_run_concurrently_and_communicate():
     rclpy.init()
     with ServerHarness() as harness:
@@ -796,19 +888,25 @@ def test_multiple_launches_can_run_concurrently_and_communicate():
             assert talker_cancel_response is not None
             assert len(talker_cancel_response.goals_canceling) == 1
 
+            talker_result_future = talker_goal_handle.get_result_async()
+            rclpy.spin_until_future_complete(client_node, talker_result_future, timeout_sec=10.0)
+            assert talker_result_future.result() is not None
+            assert talker_result_future.result().status == GoalStatus.STATUS_CANCELED
+
+            listener_result_future = listener_goal_handle.get_result_async()
+            rclpy.spin_until_future_complete(client_node, listener_result_future, timeout_sec=1.0)
+            assert not listener_result_future.done()
+
             listener_cancel_future = listener_goal_handle.cancel_goal_async()
             rclpy.spin_until_future_complete(client_node, listener_cancel_future, timeout_sec=10.0)
             listener_cancel_response = listener_cancel_future.result()
             assert listener_cancel_response is not None
             assert len(listener_cancel_response.goals_canceling) == 1
 
-            talker_result_future = talker_goal_handle.get_result_async()
-            rclpy.spin_until_future_complete(client_node, talker_result_future, timeout_sec=10.0)
             talker_result = talker_result_future.result()
             assert talker_result is not None
             assert talker_result.status == GoalStatus.STATUS_CANCELED
 
-            listener_result_future = listener_goal_handle.get_result_async()
             rclpy.spin_until_future_complete(client_node, listener_result_future, timeout_sec=10.0)
             listener_result = listener_result_future.result()
             assert listener_result is not None

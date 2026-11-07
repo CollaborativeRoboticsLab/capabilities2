@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cctype>
 #include <cmath>
+#include <condition_variable>
 #include <future>
 #include <mutex>
 #include <string>
@@ -39,6 +40,11 @@ public:
    */
   LaunchRunner() : NoTriggerRunner()
   {
+  }
+
+  ~LaunchRunner() override
+  {
+    cleanup_client_node();
   }
 
   LaunchAction::Goal make_goal_message() const
@@ -82,6 +88,7 @@ public:
       final_state_.clear();
       result_message_.clear();
       launch_finished_ = false;
+      result_code_ = rclcpp_action::ResultCode::UNKNOWN;
     }
 
     if (!run_config_.launch_readiness.lifecycle_nodes.empty() &&
@@ -93,6 +100,7 @@ public:
 
     const std::string action_name = resolve_launch_action_name();
     ensure_client_node();
+    bool goal_response_pending = false;
     try
     {
       const auto& readiness = run_config_.launch_readiness;
@@ -129,6 +137,7 @@ public:
       goal_handle_future_ = action_client_->async_send_goal(goal_msg, send_goal_options_);
       if (goal_handle_future_.wait_for(default_timeout_) != std::future_status::ready)
       {
+        goal_response_pending = true;
         throw runner_exception("timed out waiting for launch goal acceptance: " + launch_reference_);
       }
 
@@ -158,6 +167,7 @@ public:
     {
       GoalHandleLaunch::SharedPtr goal_handle;
       bool emit_failure;
+      bool cleanup_unconfirmed = goal_response_pending;
       {
         std::lock_guard<std::mutex> lock(state_mutex_);
         goal_handle = goal_handle_;
@@ -165,32 +175,36 @@ public:
         stop_event_emitted_ = true;
         emit_failure = !failed_event_emitted_;
         failed_event_emitted_ = true;
+        if (launch_finished_ &&
+            !((result_code_ == rclcpp_action::ResultCode::CANCELED && final_state_ == "canceled") ||
+              (result_code_ == rclcpp_action::ResultCode::SUCCEEDED && final_state_ == "stopped") ||
+              (result_code_ == rclcpp_action::ResultCode::ABORTED && final_state_ == "failed")))
+        {
+          cleanup_unconfirmed = true;
+        }
       }
       if (goal_handle && action_client_)
       {
         try
         {
-          auto cancel = action_client_->async_cancel_goal(goal_handle);
-          if (cancel.wait_for(default_timeout_) != std::future_status::ready)
-          {
-            RCLCPP_WARN(node_->get_logger(), "timed out cancelling launch %s", launch_reference_.c_str());
-          }
-          else if (cancel.get()->return_code != action_msgs::srv::CancelGoal_Response::ERROR_NONE)
-          {
-            RCLCPP_WARN(node_->get_logger(), "launch cancellation was not accepted for %s", launch_reference_.c_str());
-          }
+          stop(bond_id);
         }
         catch (const std::exception& cleanup_error)
         {
+          cleanup_unconfirmed = true;
           RCLCPP_WARN(node_->get_logger(), "failed to cancel launch %s: %s", launch_reference_.c_str(),
                       cleanup_error.what());
         }
       }
-      cleanup_client_node();
       if (emit_failure)
       {
         emit_failed(bond_id, "", param_on_failure());
       }
+      if (cleanup_unconfirmed)
+      {
+        throw runner_unconfirmed_exception(error.what());
+      }
+      cleanup_client_node();
       throw runner_exception(error.what());
     }
   }
@@ -220,6 +234,20 @@ public:
     std::exception_ptr stop_error;
     try
     {
+      if (!goal_handle && goal_handle_future_.valid())
+      {
+        if (goal_handle_future_.wait_for(default_timeout_) != std::future_status::ready)
+        {
+          throw runner_exception("timed out waiting for launch goal acceptance: " + launch_reference_);
+        }
+        goal_handle = goal_handle_future_.get();
+        if (!goal_handle)
+        {
+          cleanup_client_node();
+          emit_stopped_once(bond_id, instance_id);
+          return;
+        }
+      }
       if (goal_handle)
       {
         try
@@ -249,18 +277,30 @@ public:
                       launch_reference_.c_str(), e.what());
         }
       }
+
+      std::unique_lock<std::mutex> lock(state_mutex_);
+      if (!state_changed_.wait_for(lock, shutdown_timeout_, [this]() { return launch_finished_; }))
+      {
+        throw runner_exception("timed out waiting for launch termination: " + launch_reference_);
+      }
+      if (!((result_code_ == rclcpp_action::ResultCode::CANCELED && final_state_ == "canceled") ||
+        (result_code_ == rclcpp_action::ResultCode::SUCCEEDED && final_state_ == "stopped") ||
+        (result_code_ == rclcpp_action::ResultCode::ABORTED && final_state_ == "failed")))
+      {
+        throw runner_exception("launch termination was not confirmed for " + launch_reference_ + ": " +
+                               result_message_);
+      }
     }
     catch (...)
     {
       stop_error = std::current_exception();
     }
 
-    cleanup_client_node();
-
     if (stop_error)
     {
       std::rethrow_exception(stop_error);
     }
+    cleanup_client_node();
     emit_stopped_once(bond_id, instance_id);
   }
 
@@ -503,6 +543,7 @@ protected:
     {
       std::lock_guard<std::mutex> lock(state_mutex_);
       launch_finished_ = true;
+      result_code_ = wrapped_result.code;
       goal_handle_.reset();
 
       if (wrapped_result.result)
@@ -534,6 +575,8 @@ protected:
         stop_event_emitted_ = true;
       }
     }
+
+    state_changed_.notify_all();
 
     if (should_emit_failure)
     {
@@ -642,6 +685,7 @@ protected:
 
 protected:
   static constexpr auto default_timeout_ = std::chrono::seconds(10);
+  static constexpr auto shutdown_timeout_ = std::chrono::seconds(60);
 
   typename rclcpp_action::Client<LaunchAction>::SharedPtr action_client_;
   rclcpp::Node::SharedPtr client_node_;
@@ -651,6 +695,7 @@ protected:
   typename GoalHandleLaunch::SharedPtr goal_handle_;
   std::shared_future<typename GoalHandleLaunch::SharedPtr> goal_handle_future_;
   std::mutex state_mutex_;
+  std::condition_variable state_changed_;
   std::string launch_reference_;
   std::string launch_id_;
   std::string resolved_launch_file_path_;
@@ -661,6 +706,7 @@ protected:
   bool stop_event_emitted_{ false };
   bool failed_event_emitted_{ false };
   bool launch_finished_{ false };
+  rclcpp_action::ResultCode result_code_{ rclcpp_action::ResultCode::UNKNOWN };
 };
 
 }  // namespace capabilities2_runner

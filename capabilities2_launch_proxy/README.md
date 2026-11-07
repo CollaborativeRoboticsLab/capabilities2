@@ -4,7 +4,7 @@
 
 It is intended to provide the launch-control part of a capabilities-style runtime in ROS 2, where a capability may need to start a launch file, keep it running, stream state back to a client, and stop it through action cancel.
 
-The package is implemented in Python around a persistent `launch.LaunchService` owned by an `rclpy` node.
+The proxy owns a persistent `launch.LaunchService` and runs each requested launch file in a separate ROS launch supervisor process.
 
 ## What it provides
 
@@ -81,8 +81,10 @@ Service-based start requests may also set `reference_name` so resource snapshots
 The server accepts action cancellation and then:
 
 - marks the launch as stopping,
-- emits `ShutdownProcess` events for tracked child processes,
-- returns a canceled result to the action client.
+- sends `ShutdownProcess` to that launch's supervisor, which shuts down its own ROS launch actions,
+- returns a canceled result only after the supervisor exits cleanly.
+
+A timeout or unclean supervisor exit is reported as an unconfirmed shutdown, not a successful cancellation. See [limitations](./docs/limitations.md) before restarting the proxy after an unconfirmed shutdown.
 
 ## Read more information
 

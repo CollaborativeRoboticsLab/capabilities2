@@ -60,7 +60,7 @@ string status
 Response meanings:
 
 - start returns values such as `successfully started` or `already started. ignoring`
-- stop returns values such as `successfully stopped` or `already stopped. ignoring`
+- stop returns `successfully stopped` only after a clean supervisor exit; it reports an unconfirmed shutdown after a timeout or unclean exit
 - runtime resolution or inclusion failures are returned as plain-text error status strings
 
 ## Launch action contract
@@ -104,7 +104,7 @@ string message
 Important result meanings:
 
 - `launch_id`: currently the canonical resolved launch path used internally as the launch key.
-- `final_state`: typically `canceled`, `stopped`, `failed`, or `rejected`.
+- `final_state`: typically `canceled`, `stopped`, `failed`, or `rejected`; `stopping` and `unconfirmed` indicate shutdown has not been confirmed.
 - `message`: summary of the terminal launch outcome.
 
 ### Feedback
@@ -176,7 +176,7 @@ The resource data is snapshot-oriented.
 
 ## How it works
 
-The server owns a single persistent `LaunchService` instance and includes new launch descriptions into that service as action goals arrive.
+The server owns a persistent `LaunchService` and starts a separate ROS launch supervisor for each requested launch file.
 
 The active implementation is split across:
 
@@ -184,15 +184,12 @@ The active implementation is split across:
 - `launch_runtime.py` for launch inclusion, process events, child log forwarding, and resource publication
 - `resource_tracker.py` for `/proc` sampling and peak/threshold accounting
 
-For each included launch description, the server:
+For each launch, the server:
 
-- discovers `ExecuteProcess` actions,
-- applies caller-provided launch configurations before the description runs,
-- tracks process start and exit events,
+- passes caller-provided launch arguments to the supervisor,
+- tracks the supervisor by action identity and samples its process tree,
 - forwards selected child-process logs into action feedback,
-- records process IDs for stop requests,
-- samples `/proc` for the active process tree,
 - publishes a server-wide resource snapshot topic,
-- cancels the launch by emitting `ShutdownProcess` events when an action goal is canceled.
+- cancels the supervisor and waits for its exit when an action goal is canceled.
 
 Each active launch is tracked by canonical file path, so the same launch file cannot be started twice simultaneously. Different launch files can run at the same time.

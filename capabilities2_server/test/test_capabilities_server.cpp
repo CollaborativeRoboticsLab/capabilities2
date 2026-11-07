@@ -3,11 +3,18 @@
 #include <filesystem>
 #include <iostream>
 #include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <future>
+#include <mutex>
+#include <thread>
 
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp_action/rclcpp_action.hpp>
 
 #include <yaml-cpp/yaml.h>
 
+#include <capabilities2_msgs/action/launch.hpp>
 #include <capabilities2_server/capabilities_api.hpp>
 #include <capabilities2_server/capabilities_db.hpp>
 #include <capabilities2_server/models/interface.hpp>
@@ -40,6 +47,91 @@ capabilities2_server::models::provider_model_t load_provider(const std::string& 
   model.from_yaml(YAML::Load(yaml));
   model.header.name = package + "/" + model.header.name;
   return model;
+}
+
+class ShutdownActionServer
+{
+public:
+  using Launch = capabilities2_msgs::action::Launch;
+  using GoalHandle = rclcpp_action::ServerGoalHandle<Launch>;
+
+  ShutdownActionServer() : node(std::make_shared<rclcpp::Node>("shutdown_order_action_server"))
+  {
+    server = rclcpp_action::create_server<Launch>(
+        node, "/shutdown_order_launch",
+        [](const rclcpp_action::GoalUUID&, std::shared_ptr<const Launch::Goal>) {
+          return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+        },
+        [this](const std::shared_ptr<GoalHandle> goal) {
+          if (reject_cancel.load())
+            return rclcpp_action::CancelResponse::REJECT;
+          const std::string provider = goal->get_goal()->reference_name;
+          std::lock_guard<std::mutex> lock(mutex);
+          cancellations.push_back(provider);
+          cancel_threads.emplace_back([this, goal, provider]() {
+            while (!goal->is_canceling() ||
+                   (provider == "test_capabilities/OrderedNav" ? !allow_nav.load() : !allow_slam.load()))
+              std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            auto result = std::make_shared<Launch::Result>();
+            result->final_state = "canceled";
+            goal->canceled(result);
+          });
+          return rclcpp_action::CancelResponse::ACCEPT;
+        },
+        [this](const std::shared_ptr<GoalHandle> goal) {
+          std::lock_guard<std::mutex> lock(mutex);
+          starts.push_back(goal->get_goal()->reference_name);
+          goals.push_back(goal);
+        });
+    executor.add_node(node);
+    executor_thread = std::thread([this]() { executor.spin(); });
+  }
+
+  ~ShutdownActionServer()
+  {
+    allow_nav = true;
+    allow_slam = true;
+    executor.cancel();
+    executor_thread.join();
+    for (auto& thread : cancel_threads)
+      thread.join();
+  }
+
+  std::vector<std::string> get_cancellations()
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+    return cancellations;
+  }
+
+  std::vector<std::string> get_starts()
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+    return starts;
+  }
+
+  rclcpp::Node::SharedPtr node;
+  rclcpp_action::Server<Launch>::SharedPtr server;
+  rclcpp::executors::SingleThreadedExecutor executor;
+  std::thread executor_thread;
+  std::mutex mutex;
+  std::vector<std::thread> cancel_threads;
+  std::vector<std::string> cancellations;
+  std::vector<std::string> starts;
+  std::vector<std::shared_ptr<GoalHandle>> goals;
+  std::atomic<bool> allow_nav{ false };
+  std::atomic<bool> allow_slam{ false };
+  std::atomic<bool> reject_cancel{ false };
+};
+
+bool wait_for_count(ShutdownActionServer& server, size_t count)
+{
+  for (int attempt = 0; attempt < 100; ++attempt)
+  {
+    if (server.get_cancellations().size() >= count)
+      return true;
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  }
+  return false;
 }
 
 }  // namespace
@@ -223,8 +315,12 @@ definition:
 )";
 
   db.insert_interface(load_interface(waypoint_interface_yaml, "test_capabilities"));
-  db.insert_semantic_interface(load_semantic_interface(turtlebot_waypoint_semantic_yaml, "test_semantic_capabilities"));
   db.insert_provider(load_provider(waypoint_provider_yaml, "test_capabilities"));
+  const auto generic_only_specs = db.get_runnable_specs();
+  assert(generic_only_specs.size() == 1);
+  assert(generic_only_specs.front().interface.name == "test_capabilities/WaypointRunner");
+  assert(generic_only_specs.front().provider.name == "test_capabilities/WaypointRunner");
+  db.insert_semantic_interface(load_semantic_interface(turtlebot_waypoint_semantic_yaml, "test_semantic_capabilities"));
   db.insert_interface(load_interface(robotpose_interface_yaml, "test_capabilities"));
   db.insert_semantic_interface(load_semantic_interface(turtlebot_robotpose_semantic_yaml, "test_semantic_"
                                                                                           "capabilities"));
@@ -237,7 +333,7 @@ definition:
   db.insert_provider(load_provider(plain_provider_yaml, "plain_capabilities"));
 
   const auto runnable_specs = db.get_runnable_specs();
-  assert(runnable_specs.size() == 8);
+  assert(runnable_specs.size() == 6);
 
   const auto find_runnable = [&runnable_specs](const std::string& interface_name, const std::string& provider_name) {
     return std::find_if(runnable_specs.begin(), runnable_specs.end(),
@@ -269,8 +365,8 @@ definition:
   assert(has_waypoint_relation("test_semantic_capabilities/TurtlebotWaypointRunner", "depends_on",
                                "test_capabilities/RobotPoseRunner"));
 
-  assert(find_runnable("test_capabilities/WaypointRunner", "test_capabilities/WaypointRunner") != runnable_specs.end());
-  assert(find_runnable("test_capabilities/RobotPoseRunner", "test_capabilities/RobotPoseRunner") != runnable_specs.end());
+  assert(find_runnable("test_capabilities/WaypointRunner", "test_capabilities/WaypointRunner") == runnable_specs.end());
+  assert(find_runnable("test_capabilities/RobotPoseRunner", "test_capabilities/RobotPoseRunner") == runnable_specs.end());
     assert(find_runnable("test_semantic_capabilities/OtherRobotposeRunner", "test_capabilities/RobotPoseRunner") !=
       runnable_specs.end());
     assert(find_runnable("test_semantic_capabilities/OtherRobotposeRunner",
@@ -519,6 +615,106 @@ depends_on:
     const bool dependent_started =
         api.use_capability(node, "test_capabilities/Dependent", "test_capabilities/Dependent", "bond-failure");
     assert(!dependent_started);
+    assert(api.get_running_capabilities().empty());
+  }
+
+  const std::string ordered_slam_interface = R"(
+name: OrderedSlam
+spec_version: 1.2
+spec_type: interface
+description: Ordered SLAM launch.
+)";
+  const std::string ordered_slam_provider = R"(
+name: OrderedSlam
+spec_type: provider
+spec_version: 1.2
+description: Ordered SLAM launch.
+implements: test_capabilities/OrderedSlam
+runner: slam.launch.py
+)";
+  const std::string ordered_nav_interface = R"(
+name: OrderedNav
+spec_version: 1.2
+spec_type: interface
+description: Ordered Nav2 launch.
+)";
+  const std::string ordered_nav_provider = R"(
+name: OrderedNav
+spec_type: provider
+spec_version: 1.2
+description: Ordered Nav2 launch.
+implements: test_capabilities/OrderedNav
+runner: nav.launch.py
+depends_on:
+  test_capabilities/OrderedSlam:
+    provider: test_capabilities/OrderedSlam
+)";
+  const std::string failing_nav_interface = R"(
+name: OrderedFailingNav
+spec_version: 1.2
+spec_type: interface
+description: Launch with failing readiness.
+)";
+  const std::string failing_nav_provider = R"(
+name: OrderedFailingNav
+spec_type: provider
+spec_version: 1.2
+description: Launch with failing readiness.
+implements: test_capabilities/OrderedFailingNav
+runner: failing_nav.launch.py
+depends_on:
+  test_capabilities/OrderedSlam:
+    provider: test_capabilities/OrderedSlam
+definition:
+  launch_readiness:
+    lifecycle:
+      nodes: [missing]
+      timeout_sec: 0.3
+)";
+  db.insert_interface(load_interface(ordered_slam_interface, "test_capabilities"));
+  db.insert_provider(load_provider(ordered_slam_provider, "test_capabilities"));
+  db.insert_interface(load_interface(ordered_nav_interface, "test_capabilities"));
+  db.insert_provider(load_provider(ordered_nav_provider, "test_capabilities"));
+  db.insert_interface(load_interface(failing_nav_interface, "test_capabilities"));
+  db.insert_provider(load_provider(failing_nav_provider, "test_capabilities"));
+
+  {
+    ShutdownActionServer launch_server;
+    node->declare_parameter("launch_action_name", "/shutdown_order_launch");
+    assert(api.use_capability(node, "test_capabilities/OrderedNav", "test_capabilities/OrderedNav", "first"));
+    auto released = std::async(std::launch::async, [&api]() {
+      api.free_capability("test_capabilities/OrderedNav", "first");
+    });
+    assert(wait_for_count(launch_server, 1));
+    assert(launch_server.get_cancellations().front() == "test_capabilities/OrderedNav");
+    auto restarted = std::async(std::launch::async, [&api, &node]() {
+      return api.use_capability(node, "test_capabilities/OrderedNav", "test_capabilities/OrderedNav", "second");
+    });
+    assert(restarted.wait_for(std::chrono::milliseconds(200)) == std::future_status::timeout);
+    assert(launch_server.get_cancellations().size() == 1);
+    assert(launch_server.get_starts().size() == 2);
+    launch_server.allow_nav = true;
+    assert(wait_for_count(launch_server, 2));
+    assert(launch_server.get_cancellations().back() == "test_capabilities/OrderedSlam");
+    assert(restarted.wait_for(std::chrono::milliseconds(200)) == std::future_status::timeout);
+    assert(launch_server.get_starts().size() == 2);
+    launch_server.allow_slam = true;
+    released.get();
+    assert(restarted.get());
+    assert(launch_server.get_starts() == std::vector<std::string>({
+        "test_capabilities/OrderedSlam", "test_capabilities/OrderedNav",
+        "test_capabilities/OrderedSlam", "test_capabilities/OrderedNav" }));
+    api.free_capability("test_capabilities/OrderedNav", "second");
+    assert(api.get_running_capabilities().empty());
+
+    launch_server.reject_cancel = true;
+    assert(!api.use_capability(node, "test_capabilities/OrderedFailingNav",
+                               "test_capabilities/OrderedFailingNav", "failed-start"));
+    assert(api.get_running_capabilities().size() == 2);
+    assert(!api.use_capability(node, "test_capabilities/OrderedFailingNav",
+                               "test_capabilities/OrderedFailingNav", "retry"));
+    launch_server.reject_cancel = false;
+    api.stop_capability("test_capabilities/OrderedFailingNav");
     assert(api.get_running_capabilities().empty());
   }
 

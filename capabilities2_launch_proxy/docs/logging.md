@@ -53,9 +53,7 @@ ros2 run capabilities2_launch_proxy capabilities2_launch_proxy \
 	--ros-args -p launch_proxy.override_output_method_to_log:=true
 ```
 
-When `override_output_method_to_log` is true, the proxy temporarily exports
-`OVERRIDE_LAUNCH_PROCESS_OUTPUT=log` while loading the target launch description. This lets the proxy
-coerce launch actions that consult that environment variable toward launch-managed logging.
+When `override_output_method_to_log` is true, the proxy directs the supervisor's output to launch-managed logging. Child output is forwarded through the supervisor for action feedback and optional ROS log mirroring.
 
 To explicitly keep child stdout and stderr off the proxy terminal while preserving action-feedback
 log forwarding, use:

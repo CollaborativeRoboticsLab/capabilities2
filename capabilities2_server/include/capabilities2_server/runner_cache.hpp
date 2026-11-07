@@ -77,6 +77,10 @@ public:
     {
       runner_cache_[capability]->start(node, run_config.to_runner_opts(), "");
     }
+    catch (const capabilities2_runner::runner_unconfirmed_exception&)
+    {
+      throw;
+    }
     catch (...)
     {
       runner_cache_.erase(capability);
@@ -172,21 +176,7 @@ public:
       throw capabilities2_runner::runner_exception("capability runner not found: " + capability);
     }
 
-    // safely stop the runner
-    try
-    {
-      runner_cache_[capability]->stop("");
-    }
-    catch (const capabilities2_runner::runner_exception& e)
-    {
-      // pass
-      // RCLCPP_ERROR(node_logging_interface_ptr_->get_logger(), "%s", e.what());
-    }
-
-    // reset the runner pointer
-    // runner_cache_[capability].reset();
-
-    // remove the runner from map
+    runner_cache_[capability]->stop("");
     runner_cache_.erase(capability);
   }
 

@@ -35,6 +35,11 @@ struct runner_exception : public std::runtime_error
   }
 };
 
+struct runner_unconfirmed_exception : public runner_exception
+{
+  using runner_exception::runner_exception;
+};
+
 /**
  * @brief resource definition
  *

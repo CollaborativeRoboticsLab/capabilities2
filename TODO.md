@@ -18,12 +18,14 @@
 
 - [x] Share capabilities2 server and launch-proxy configuration through launch arguments
 - [x] Add a proxy setting to disable child-log action feedback while retaining status feedback and independent ROS log mirroring; focused tests and affected package builds passed.
-- [ ] Complete context-aware provider selection for generated plans. Base providers remain advertised for their base interface and can still be selected despite a conflicting running dependency; multiple direct providers may also be available. Direct semantic providers now take precedence for their own wrapper over inherited generic providers, without affecting other wrappers; descriptor regressions pass.
+- [ ] Complete context-aware provider selection for generated plans when multiple semantic interfaces or direct providers are available, or their dependencies conflict. Generic runnable descriptors are omitted when a semantic interface exists; direct semantic providers take precedence over inherited generic providers for their wrapper. Descriptor regressions cover generic-only, semantic replacement, multiple wrappers, and direct-provider alternatives.
 - [ ] Complete synchronization and thread-safety review for compatible runner reuse, bond claims, provider/configuration conflicts, and concurrent acquisition; reuse and conflict checks are implemented. Shared action and service runners still hold per-execution state in members, and action cancellation while a goal is awaiting acceptance needs a bounded lifecycle.
 - [ ] Validate dependency ownership and exact rollback across remaining failure and bond-break cases. Per-parent dependency bonds and the `release_dependencies` helper are implemented.
 - [x] Return explicit success or failure for use, connect, and trigger requests and rebuild affected service consumers.
 - [ ] Extend lifecycle tests for shared runners and dependencies, failed startup rollback, conflicting providers, repeated claims, and bond-break cleanup. Focused server tests now include repeated bond-break cleanup while another parent retains the shared dependency; client tests cover separate bond claims.
 - [x] Investigate why stopping the earlier launch coincided with SLAM receiving SIGINT during plan handoff: the generated plan selected a waypoint provider with a conflicting Nav2 dependency. A later run using the TurtleBot provider retained Nav2 and SLAM through handoff and completed navigation.
+- [x] Isolate launch files in separate ROS launch supervisor processes and wait for confirmed shutdown before releasing dependencies. Tests cover unrelated concurrent launches, delayed actions, ordered dependency restart, and rejected startup cleanup.
+- [ ] Reconcile unconfirmed launch shutdowns automatically after the proxy action has timed out; inspect and clean up remaining processes before restarting the proxy.
 - [x] Avoid cancelling already-completed action goals during runner cleanup. Action-server regressions cover completed, active, and rejected goals and stop during result processing; a terminal cancellation response is handled as a normal race outcome.
 
 ## Features

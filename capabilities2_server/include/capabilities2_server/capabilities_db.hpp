@@ -368,10 +368,14 @@ public:
       std::vector<models::semantic_interface_model_t> semantic_interfaces =
           get_semantic_interfaces_by_interface(provider.implements);
 
-      models::runnable_model_t runnable = build_runnable_spec(provider);
-      if (runnable.is_valid())
+      if (semantic_interfaces.empty())
       {
-        runnable_specs.push_back(runnable);
+        models::runnable_model_t runnable = build_runnable_spec(provider);
+        if (runnable.is_valid())
+        {
+          runnable_specs.push_back(runnable);
+        }
+        continue;
       }
 
       for (const auto& semantic_interface : semantic_interfaces)

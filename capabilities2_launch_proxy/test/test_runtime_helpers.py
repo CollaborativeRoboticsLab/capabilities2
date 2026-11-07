@@ -10,6 +10,8 @@ from launch.substitutions import LaunchConfiguration
 import pytest
 
 from capabilities2_launch_proxy.launch_runtime import LaunchRuntime
+from capabilities2_launch_proxy.launch_node import CapabilitiesLaunchServer
+import capabilities2_launch_proxy.launch_node as launch_node_module
 import capabilities2_launch_proxy.launch_runtime as launch_runtime_module
 from capabilities2_launch_proxy.resource_tracker import ActiveLaunch, ProcessMetrics, ProcessResourceSnapshot, ProcessStats, ResourceTracker
 import capabilities2_launch_proxy.resource_tracker as resource_tracker_module
@@ -217,18 +219,114 @@ def test_stop_launch_waits_for_terminal_event_before_reporting_success():
         launch_id='demo-id',
         reference_name='demo',
         process_ids={123},
+        active_pids={123},
     )
     runtime.registry_lock = threading.Lock()
     runtime.active_launches = {'/tmp/demo.launch.py': active_launch}
     runtime.launch_service = SimpleNamespace(emit_event=lambda event: emitted_events.append(event))
     runtime.node = SimpleNamespace(get_logger=lambda: SimpleNamespace(info=lambda message: None))
 
-    threading.Timer(0.01, active_launch.terminal_event.set).start()
+    def finish():
+        active_launch.state = 'stopped'
+        active_launch.terminal_event.set()
+
+    threading.Timer(0.01, finish).start()
 
     assert runtime.stop_launch('/tmp/demo.launch.py', wait_timeout_sec=0.5) == 'successfully stopped'
     assert active_launch.stop_requested is True
-    assert active_launch.state == 'stopping'
+    assert active_launch.state == 'stopped'
     assert len(emitted_events) == 1
+
+
+@pytest.mark.parametrize('stop_requested', [True, False])
+def test_unclean_supervisor_exit_is_not_confirmed(stop_requested):
+    runtime = make_runtime()
+    process = object()
+    active_launch = ActiveLaunch('/tmp/demo.launch.py', 'demo', 'demo-id', 'demo',
+                                 stop_requested=stop_requested, active_pids={123}, process_action=process)
+    runtime.registry_lock = threading.Lock()
+    runtime.active_launches = {'/tmp/demo.launch.py': active_launch}
+    runtime.last_terminal_status = {}
+    event = SimpleNamespace(action=process, pid=123, process_name='ros2-1', returncode=-9)
+
+    runtime.make_on_process_exit(active_launch)(event, None)
+
+    assert active_launch.terminal_event.is_set()
+    assert active_launch.state == 'unconfirmed'
+    assert runtime.last_terminal_status['/tmp/demo.launch.py'] == 'unconfirmed'
+    assert runtime.stop_launch('/tmp/demo.launch.py', wait_timeout_sec=0.0) == (
+        'launch shutdown unconfirmed: supervisor exited uncleanly')
+    assert runtime.start_launch('/tmp/demo.launch.py', 'demo', 'demo', []) == (
+        None, 'previous launch shutdown unconfirmed')
+
+
+def test_stop_before_supervisor_ready_defers_shutdown():
+    runtime = make_runtime()
+    process = object()
+    active_launch = ActiveLaunch('/tmp/demo.launch.py', 'demo', 'demo-id', 'demo',
+                                 active_pids={123}, process_action=process,
+                                 supervisor_ready_token='ready-token')
+    runtime.registry_lock = threading.Lock()
+    runtime.active_launches = {'/tmp/demo.launch.py': active_launch}
+    emitted_events = []
+    runtime.launch_service = SimpleNamespace(emit_event=emitted_events.append)
+    runtime.node = SimpleNamespace(get_logger=lambda: SimpleNamespace(info=lambda message: None))
+    runtime.mirror_child_logs_to_rosout = False
+
+    assert runtime.stop_launch('/tmp/demo.launch.py', wait_timeout_sec=0.0) == (
+        'stop requested; shutdown still in progress')
+    assert emitted_events == []
+    on_stdout = runtime.make_on_process_stdout(active_launch)
+    assert on_stdout(SimpleNamespace(action=process, pid=123, process_name='supervisor', text=b'ready-')) is None
+    deferred = on_stdout(SimpleNamespace(action=process, pid=123, process_name='supervisor', text=b'token\n'))
+    assert isinstance(deferred, launch_runtime_module.EmitEvent)
+    assert active_launch.supervisor_ready
+    assert active_launch.shutdown_sent
+
+
+def test_stop_launch_does_not_report_success_without_waiting():
+    runtime = make_runtime()
+    active_launch = ActiveLaunch('/tmp/demo.launch.py', 'demo', 'demo-id', 'demo')
+    runtime.registry_lock = threading.Lock()
+    runtime.active_launches = {'/tmp/demo.launch.py': active_launch}
+    runtime.node = SimpleNamespace(get_logger=lambda: SimpleNamespace(info=lambda message: None))
+
+    assert runtime.stop_launch('/tmp/demo.launch.py', wait_timeout_sec=0.0) == 'stop requested; shutdown still in progress'
+    assert runtime.stop_launch('/tmp/demo.launch.py') == 'stop requested; shutdown still in progress'
+
+
+@pytest.mark.parametrize('terminated,state,outcome,final_state', [
+    (False, 'starting', 'aborted', 'stopping'),
+    (True, 'stopped', 'canceled', 'canceled'),
+    (True, 'failed', 'aborted', 'unconfirmed'),
+])
+def test_cancel_result_requires_terminal_event(monkeypatch, terminated, state, outcome, final_state):
+    active_launch = ActiveLaunch('/tmp/demo.launch.py', 'demo', 'demo-id', 'demo')
+    active_launch.state = state
+    if terminated:
+        active_launch.terminal_event.set()
+    outcomes = []
+    request = SimpleNamespace(reference_name='', launch_parameters=[], launch_file_path='/tmp/demo.launch.py',
+                              package_name='', launch_file_name='')
+    goal = SimpleNamespace(request=request, is_cancel_requested=True,
+                           canceled=lambda: outcomes.append('canceled'),
+                           abort=lambda: outcomes.append('aborted'))
+    runtime = SimpleNamespace(
+        normalize_launch_parameters=lambda parameters: parameters,
+        resolve_launch_reference=lambda *args: ('/tmp/demo.launch.py', 'demo'),
+        stop_launch=lambda *args, **kwargs: 'stop requested',
+        stop_wait_timeout_sec=1.0,
+    )
+    server = SimpleNamespace(runtime=runtime, resolve_start_request=lambda *args: (active_launch, 'started'),
+                             get_logger=lambda: SimpleNamespace(info=lambda message: None),
+                             create_rate=lambda frequency: None,
+                             make_result=lambda **kwargs: kwargs)
+    monkeypatch.setattr(launch_node_module.rclpy, 'ok', lambda: True)
+
+    result = CapabilitiesLaunchServer.execute_cb(server, goal)
+
+    assert outcomes == [outcome]
+    assert result['final_state'] == final_state
 
 
 def test_resource_tracker_applies_and_accumulates_metrics():

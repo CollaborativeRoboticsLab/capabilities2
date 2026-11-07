@@ -43,6 +43,11 @@ class ActiveLaunch:
     latest_metrics: Optional['ProcessMetrics'] = None
     metrics_lock: threading.Lock = field(default_factory=threading.Lock)
     process_matcher: Optional[Any] = None
+    process_action: Optional[Any] = None
+    supervisor_ready_token: str = ''
+    supervisor_output_buffer: str = ''
+    supervisor_ready: bool = False
+    shutdown_sent: bool = False
 
 
 @dataclass

@@ -1,6 +1,11 @@
+import json
 import os
+import re
+import sys
 import threading
+import uuid
 from contextlib import contextmanager
+from types import SimpleNamespace
 from typing import Dict, List, Optional, Tuple
 
 from ament_index_python.packages import PackageNotFoundError
@@ -147,6 +152,8 @@ class LaunchRuntime:
         with self.registry_lock:
             if canonical_path in self.active_launches:
                 return None, 'already started. ignoring'
+            if self.last_terminal_status.get(canonical_path) == 'unconfirmed':
+                return None, 'previous launch shutdown unconfirmed'
 
             active_launch = ActiveLaunch(
                 launch_file_path=canonical_path,
@@ -159,8 +166,21 @@ class LaunchRuntime:
             self.last_terminal_status[canonical_path] = 'starting'
 
         try:
-            description = self.build_launch_description(canonical_path, launch_parameters)
-            self.prepare_active_launch(description, active_launch)
+            active_launch.supervisor_ready_token = f'CAPABILITIES2_SUPERVISOR_READY_{uuid.uuid4().hex}'
+            process = ExecuteProcess(
+                cmd=[sys.executable, '-m', 'capabilities2_launch_proxy.launch_supervisor',
+                     canonical_path, json.dumps(launch_parameters), active_launch.supervisor_ready_token],
+                additional_env=(
+                    {'OVERRIDE_LAUNCH_PROCESS_OUTPUT': 'screen'}
+                    if self.get_launch_process_output_override() is not None else None
+                ),
+                output='screen',
+                sigterm_timeout='30',
+                sigkill_timeout='10',
+            )
+            active_launch.process_action = process
+            description = LaunchDescription([process])
+            self.register_process_event_handlers(description, active_launch)
 
             self.launch_service.include_launch_description(description)
             active_launch.last_message = 'launch included in LaunchService'
@@ -215,29 +235,39 @@ class LaunchRuntime:
         with self.registry_lock:
             active_launch = self.active_launches.get(canonical_path)
             if active_launch is None:
+                if self.last_terminal_status.get(canonical_path) == 'unconfirmed':
+                    return 'launch shutdown unconfirmed: supervisor exited uncleanly'
                 return 'already stopped. ignoring'
 
             active_launch.stop_requested = True
             if active_launch.state not in ('stopped', 'failed'):
                 active_launch.state = 'stopping'
                 active_launch.last_message = 'stop requested'
+            pids = self.take_shutdown_pids(active_launch)
 
         self.node.get_logger().info(f"stop requested for {active_launch.launch_key}")
 
-        if active_launch.process_ids:
+        if pids:
             self.launch_service.emit_event(ShutdownProcess(
-                process_matcher=lambda action, pids=set(active_launch.process_ids): (
+                process_matcher=lambda action, pids=pids: (
                     action.process_details['pid'] in pids
                 ),
             ))
 
-        if wait_timeout_sec is None:
-            return 'successfully stopped'
-
-        if wait_timeout_sec <= 0.0 or active_launch.terminal_event.wait(wait_timeout_sec):
-            return 'successfully stopped'
+        if wait_timeout_sec is not None and active_launch.terminal_event.wait(max(0.0, wait_timeout_sec)):
+            if active_launch.state == 'stopped':
+                return 'successfully stopped'
+            return 'launch shutdown unconfirmed: supervisor exited uncleanly'
 
         return 'stop requested; shutdown still in progress'
+
+    def take_shutdown_pids(self, active_launch: ActiveLaunch) -> set:
+        if active_launch.shutdown_sent or not active_launch.active_pids:
+            return set()
+        if active_launch.process_action is not None and not active_launch.supervisor_ready:
+            return set()
+        active_launch.shutdown_sent = True
+        return set(active_launch.active_pids)
 
     def make_on_process_start(self, active_launch: ActiveLaunch):
         def on_process_start(event, context):
@@ -248,10 +278,10 @@ class LaunchRuntime:
             active_launch.process_ids.add(event.pid)
             active_launch.active_pids.add(event.pid)
             active_launch.process_names[event.pid] = event.process_name
-            active_launch.state = 'running'
+            active_launch.state = 'stopping' if active_launch.stop_requested else 'running'
             active_launch.last_message = f'process started: {event.process_name}'
             self.last_terminal_status[active_launch.launch_file_path] = 'running'
-            if active_launch.stop_requested:
+            if active_launch.stop_requested and active_launch.process_action is None:
                 return EmitEvent(event=ShutdownProcess(
                     process_matcher=lambda action, pid=event.pid: action.process_details['pid'] == pid,
                 ))
@@ -263,6 +293,24 @@ class LaunchRuntime:
     def make_on_process_stdout(self, active_launch: ActiveLaunch):
         def on_process_stdout(event):
             if not self.event_matches_active_launch(active_launch, event):
+                return None
+
+            if active_launch.process_action is not None and not active_launch.supervisor_ready:
+                text = event.text.decode(errors='replace') if isinstance(event.text, bytes) else str(event.text)
+                with self.registry_lock:
+                    active_launch.supervisor_output_buffer += text
+                    if active_launch.supervisor_ready_token not in active_launch.supervisor_output_buffer:
+                        return None
+                    active_launch.supervisor_ready = True
+                    output = active_launch.supervisor_output_buffer.replace(active_launch.supervisor_ready_token, '', 1)
+                    active_launch.supervisor_output_buffer = ''
+                    pids = self.take_shutdown_pids(active_launch) if active_launch.stop_requested else set()
+                self.log_process_output(active_launch, SimpleNamespace(
+                    text=output, process_name=event.process_name, pid=event.pid), is_stderr=False)
+                if pids:
+                    return EmitEvent(event=ShutdownProcess(
+                        process_matcher=lambda action, pids=pids: action.process_details['pid'] in pids,
+                    ))
                 return None
 
             self.log_process_output(active_launch, event, is_stderr=False)
@@ -292,7 +340,11 @@ class LaunchRuntime:
             active_launch.last_message = (
                 f'process exited: {event.process_name} returncode={return_code}'
             )
-            if return_code not in (0, None) and not active_launch.stop_requested:
+            if active_launch.process_action is not None and return_code != 0:
+                active_launch.state = 'unconfirmed'
+                active_launch.last_message = f'launch supervisor exited uncleanly: returncode={return_code}'
+                self.last_terminal_status[active_launch.launch_file_path] = 'unconfirmed'
+            elif return_code not in (0, None) and not active_launch.stop_requested:
                 active_launch.state = 'failed'
                 active_launch.last_message = (
                     f'launch failed because process {event.process_name} exited with code {return_code}'
@@ -306,7 +358,7 @@ class LaunchRuntime:
                 self.last_terminal_status[active_launch.launch_file_path] = 'failed'
 
             if not active_launch.active_pids:
-                if active_launch.state != 'failed':
+                if active_launch.state not in ('failed', 'unconfirmed'):
                     active_launch.state = 'stopped'
                     if active_launch.stop_requested:
                         active_launch.last_message = 'launch stopped after cancel request'
@@ -350,11 +402,15 @@ class LaunchRuntime:
             if not line.strip():
                 continue
 
+            source = event.process_name
+            child_output = re.match(r'^\[([^]]+-\d+)\]\s+(.*)', line)
+            if active_launch.process_action is not None and child_output:
+                source, line = child_output.groups()
             log_level = self.classify_log_level(line, is_stderr)
-            message = f"[{active_launch.launch_key}] [{event.process_name}:{event.pid}] {line}"
+            message = f"[{active_launch.launch_key}] [{source}:{event.pid}] {line}"
 
             if self.should_send_feedback_log(log_level):
-                self.queue_feedback_log(active_launch, log_level, event.process_name, line)
+                self.queue_feedback_log(active_launch, log_level, source, line)
 
             if self.mirror_child_logs_to_rosout:
                 self.log_to_rosout(log_level, message)
@@ -438,6 +494,9 @@ class LaunchRuntime:
         with self.registry_lock:
             if self.active_launches.get(active_launch.launch_file_path) is not active_launch:
                 return False
+
+        if active_launch.process_action is not None:
+            return event.action is active_launch.process_action
 
         if active_launch.process_matcher is None:
             return False

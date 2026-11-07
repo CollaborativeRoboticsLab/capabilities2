@@ -21,7 +21,7 @@ class CapabilitiesLaunchServer(Node):
         'override_output_method_to_log': False,
         'suppress_child_process_output_to_screen': False,
         'expand_opaque_functions_for_tracking': True,
-        'stop_wait_timeout_sec': 10.0,
+        'stop_wait_timeout_sec': 45.0,
     }
 
     def __init__(self, node_name: str = 'capabilities2_launch_proxy'):
@@ -206,16 +206,21 @@ class CapabilitiesLaunchServer(Node):
                     launch_file_path,
                     wait_timeout_sec=self.runtime.stop_wait_timeout_sec,
                 )
-                goal_handle.canceled()
+                if active_launch.terminal_event.is_set() and active_launch.state == 'stopped':
+                    goal_handle.canceled()
+                    final_state = 'canceled'
+                else:
+                    goal_handle.abort()
+                    final_state = 'unconfirmed' if active_launch.terminal_event.is_set() else 'stopping'
                 return self.make_result(
                     launch_id=active_launch.launch_id,
-                    final_state='canceled',
+                    final_state=final_state,
                     resolved_launch_file_path=active_launch.launch_file_path,
                     message=stop_status,
                 )
 
             if active_launch.terminal_event.is_set():
-                if active_launch.state == 'failed':
+                if active_launch.state in ('failed', 'unconfirmed'):
                     goal_handle.abort()
                 else:
                     goal_handle.succeed()

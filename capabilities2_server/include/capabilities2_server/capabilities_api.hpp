@@ -7,6 +7,7 @@
 #include <vector>
 #include <functional>
 #include <mutex>
+#include <set>
 #include <utility>
 
 #include <tinyxml2.h>
@@ -100,6 +101,11 @@ public:
   bool start_capability(rclcpp::Node::SharedPtr node, const std::string& capability, const std::string& provider)
   {
     std::lock_guard<std::recursive_mutex> lock(lifecycle_mutex_);
+    if (failed_stops_.count(capability))
+    {
+      RCLCPP_ERROR(logging_->get_logger(), "capability %s has an unconfirmed shutdown", capability.c_str());
+      return false;
+    }
     if (runner_cache_.running(capability))
     {
       const auto config = cap_db_->get_run_config(provider, capability);
@@ -161,6 +167,13 @@ public:
 
       return value and true;
     }
+    catch (const capabilities2_runner::runner_unconfirmed_exception& e)
+    {
+      failed_stops_.insert(capability);
+      dependency_bonds_[capability] = std::move(bound_dependencies);
+      RCLCPP_WARN(logging_->get_logger(), "startup cleanup is unconfirmed for %s: %s", capability.c_str(), e.what());
+      return false;
+    }
     catch (const std::exception& e)
     {
       RCLCPP_WARN(logging_->get_logger(), "could not start runner: %s", e.what());
@@ -192,12 +205,14 @@ public:
     {
       runner_cache_.remove_runner(capability);
     }
-    catch (const capabilities2_runner::runner_exception& e)
+    catch (const std::exception& e)
     {
+      failed_stops_.insert(capability);
       RCLCPP_WARN(logging_->get_logger(), "could not stop runner: %s", e.what());
       return;
     }
 
+    failed_stops_.erase(capability);
     auto dependencies = dependency_bonds_.find(capability);
     runner_configs_.erase(capability);
     if (dependencies != dependency_bonds_.end())
@@ -915,6 +930,7 @@ private:
   std::map<std::string, std::vector<std::pair<std::string, std::string>>> dependency_bonds_;
   std::map<std::string, std::string> runner_configs_;
   std::map<std::string, std::vector<std::pair<std::string, std::string>>> connection_ids_;
+  std::set<std::string> failed_stops_;
   std::recursive_mutex lifecycle_mutex_;
 };
 

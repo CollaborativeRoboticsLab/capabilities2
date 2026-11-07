@@ -34,7 +34,7 @@ The capabilities2 server provides the following ROS2 API:
 
 ### Runnable provider selection
 
-Generic providers are advertised for their base interface and, unless a direct semantic provider exists, for each semantic interface that redefines it. A provider implementing a semantic interface directly is advertised for that interface only; it takes precedence over inherited generic providers for that interface. Other semantic interfaces over the same base are unaffected. Multiple direct providers remain available, and an explicitly requested provider is not restricted by this advertising rule. Providers for different interfaces can still conflict through shared dependencies.
+Generic providers are advertised for their base interface only when no semantic interface redefines it. Otherwise, they are advertised for each semantic interface unless a direct semantic provider exists for that interface. A provider implementing a semantic interface directly is advertised for that interface only; it takes precedence over inherited generic providers for that interface. Other semantic interfaces over the same base are unaffected. Multiple direct providers remain available, and an explicitly requested provider is not restricted by this advertising rule. Providers for different interfaces can still conflict through shared dependencies. Plans validated against runnable descriptors must use a semantic interface when one is registered for the base interface.
 
 ### Services
 
